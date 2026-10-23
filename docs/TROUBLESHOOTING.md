@@ -442,6 +442,44 @@ jq '.runtime.runner, .runtime.explain' ~/.local/share/lunarward/launch-report.js
 **只读借用**的含义：LunarWard 注册的是 `Custom` 条目，**从不**写入那个目录。
 对方更新/删除后，这里立即失效——这是预期行为，不是 bug。
 
+### 6.1b 创建 prefix 卡住 / 超时（wine-mono 提示）
+
+**症状**：第一次启动时长时间没反应（约 2 分半），最后报"创建 wine prefix 超时"。
+
+**原因**：`wineboot -u` 在冷 prefix 上会弹「是否下载 wine-mono」的对话框并
+**阻塞等待输入**。启动器是无窗口运行的，于是只能等到超时。
+
+**实测**（本机，wine-10.0 CachyOS）：
+
+| 场景 | 冷 prefix 耗时 |
+|---|---|
+| 默认 | **2 分 32 秒**（卡在 mono 提示） |
+| 禁 mono/gecko | **8 秒** |
+
+**本项目已默认禁掉**：`PrefixManager.InitializeAsync` 会合并
+`WINEDLLOVERRIDES=mscoree,mshtml=`。原神/绝区零是原生 PE 游戏，
+不需要 .NET Framework 或 MSHTML，禁掉没有副作用。
+
+**如果你自己手动建 prefix**，也请带上这个变量，否则会卡同样的地方：
+
+```bash
+WINEPREFIX=~/.local/share/lunarward/prefixes/my-prefix \
+  WINEDLLOVERRIDES="mscoree,mshtml=" \
+  wine wineboot -u
+```
+
+**若仍然超时**，按顺序查：
+
+| 检查 | 命令 | 说明 |
+|---|---|---|
+| 磁盘满了 | `df -h "<prefix 的父目录>"` | wineboot 要写 ~300 MB |
+| 权限 | `ls -ld "<prefix>"` | 必须当前用户可写 |
+| wineserver 残留 | `pgrep -af wineserver` | 有残留先 `WINEPREFIX=<prefix> wineserver -k` |
+| 卡在别处 | 前台跑一次看输出 | 见上面的命令，去掉重定向 |
+
+> **注意**：超时后本项目会**删掉半成品 prefix** 再报错。
+> 所以你看到的不会是一个"半死的 prefix"，而是干净的重试机会。
+
 ### 6.2 DXVK 装错
 
 | 症状 | 原因 | 修 |

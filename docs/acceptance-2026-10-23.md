@@ -144,7 +144,47 @@ error: 未找到软件包 'vlc'        # ← Arch 上插件包是独立的
 **结论**：仍然是 ⚠️ 部分，但已从"只有清理逻辑单侧"推进到"残留 → 清理 → 启动成功"的闭环
 （用的仍是合成残留，不是真游戏）。
 
-### 2.5 过程中发现并修复的产品缺陷：进程组信号
+### 2.5 真 wine 端到端验证（本次新增）
+
+比合成游戏更强的一层验证：**用真实 wine 起真实 Windows PE 程序**跑完整七相位。
+
+> 为什么需要这一层：`PhaseEngineTests` 用假 wine 脚本验证的是**状态机**；
+> 而 `docs/01-RESEARCH.md` §1.6 的核心假设——"能不能靠 `/proc/<pid>/maps`
+> 找到游戏"——只有在真实 wine 进程上才成立。
+
+复现命令：
+
+```bash
+LUNARWARD_REAL_WINE=1 dotnet test tests/LunarWard.IntegrationTests \
+  --filter 'FullyQualifiedName~RealWine'
+```
+
+实测输出（本机 CachyOS，wine-10.0 CachyOS，合成 PE 程序）：
+
+```
+signal = WineDevice
+gamePid = 427
+  Prepare         528 ms
+  Launch            1 ms  …/bin/wine SyntheticGame.exe --sleep=2
+  AwaitImage      818 ms  pid=427
+  AwaitReady        4 ms  WineDevice
+  PostLaunch        0 ms  0 个自动程序
+  Running        2503 ms  exit=0
+  Cleanup           0 ms
+```
+
+**关键结论**：`AwaitReady` 只用 **4 毫秒**就命中了 `WineDevice`（最强信号），
+不是靠 `Grace` 兜底。这直接验证了两件事：
+
+1. `winedevice.exe` 检测逻辑对真实 wine 成立；
+2. 引擎不会无谓地等到 grace 超时才放行外部程序（那会让补丁注入太晚）。
+
+`AwaitImage` 用 818 ms 靠 `/proc/<pid>/maps` 找到真实 PE 进程，
+证实了"必须按 maps 而不是 comm"这条设计。
+
+---
+
+### 2.6 过程中发现并修复的产品缺陷 ①：进程组信号
 
 **这是本次验收最有价值的产出**——一次真实的"测试暴露产品 bug"。
 
@@ -196,6 +236,52 @@ $ dotnet test tests/LunarWard.IntegrationTests --filter 'FullyQualifiedName~S4'
 
 耗时从 **10 秒（等满超时后失败）** 降到 **98 毫秒**——这个数量级变化本身就是
 "整组信号真的送达了"的证据。
+
+
+### 2.7 过程中发现并修复的产品缺陷 ②：首次建 prefix 卡在 wine-mono 提示
+
+**这是比 ① 更严重的一个**——它会让**每一个首次使用的用户**踩到。
+
+**现象**：真 wine 测试单次跑要 3 分 25 秒，远超预期。追查发现 `wineboot -u`
+在**冷 prefix** 上会弹出「是否下载 wine-mono」的对话框并**阻塞等待输入**。
+
+**实测对比**（同一台机器、同一个 runner `spritz-wine-cachyos-wow64-10.0-11`）：
+
+| 场景 | 冷 prefix 创建耗时 | 结果 |
+|---|---|---|
+| 默认 | **2 分 32 秒** | 卡在 mono 提示 |
+| `WINEDLLOVERRIDES=mscoree,mshtml=` | **8 秒** | 直接完成 |
+
+**而 `PrefixManager.InitializeAsync` 的超时是 2 分钟**——也就是说：
+
+- 用户第一次启动 → wineboot 卡 2 分 32 秒 → **超时被 kill**；
+- 此时 prefix 只写了一半（有 `drive_c` 没有 `system.reg`）→ **下此启动依然不是"有效 prefix"**；
+- 用户看到的是"创建 prefix 超时"，且**每次重试都重复同样的 2 分钟**。
+
+**为什么危险**：这是**必然发生**的，不是偶发。只要用户用的是没有预装 wine-mono 的
+runner（绝大多数托管 runner 都是），首次配置 100% 中招。
+
+**修复**（`src/LunarWard.Wine/PrefixManager.cs`）：
+
+| 改动 | 内容 |
+|---|---|
+| 禁 mono/gecko | `InitializeAsync` 里合并 `WINEDLLOVERRIDES=mscoree,mshtml=`（保留用户已有配置） |
+| 超时 | 2 分钟 → **3 分钟**（冷启动实测 8 秒，留足慢磁盘余量） |
+| 超时清理 | 超时且 prefix 仍无效时，**杀掉残留进程并删掉半成品目录**，然后抛 `TimeoutException`；绝不把半个 prefix 留给下一次启动 |
+
+**为什么不影响功能**：启动器跑的是原神/绝区零这类**原生 PE 游戏**，
+不需要 .NET Framework（`mscoree`）或 MSHTML 渲染引擎（`mshtml`）。
+禁掉这两个组件的自动安装没有任何副作用，只是省掉了没用的对话框。
+
+**修复后实测**：
+
+```
+$ LUNARWARD_REAL_WINE=1 dotnet test --filter 'FullyQualifiedName~RealWine'
+已通过! - 失败: 0，通过: 2 — 持续时间: 21 s     ← 修复前 3 分 25 秒
+```
+
+测试里也加了回归断言：**冷 prefix 初始化超过 30 秒即判定失败**，
+并在失败信息里点名"疑似卡在 wine-mono/wine-gecko 安装提示上"。
 
 **教训**：凡是"返回 bool 的清理/信号操作"，调用方**必须**检查返回值。
 这次的 bug 能潜伏，是因为 `Signal` 返回 `false` 而无人看。

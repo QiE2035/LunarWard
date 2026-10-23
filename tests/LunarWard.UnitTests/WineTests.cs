@@ -490,3 +490,57 @@ public class PlanFactoryTests
         }
     }
 }
+
+
+/// <summary>prefix 初始化：mono/gecko 提示必须禁掉（否则 wineboot 阻塞，见实测 2分32秒 vs 8秒）。</summary>
+public class PrefixInitTests
+{
+    [Fact]
+    public void MergeDllOverrides_AddsMonoGeckoDisableWhenEmpty()
+    {
+        Assert.Equal("mscoree,mshtml=", Wine.PrefixManager.MergeDllOverrides(null));
+        Assert.Equal("mscoree,mshtml=", Wine.PrefixManager.MergeDllOverrides(""));
+        Assert.Equal("mscoree,mshtml=", Wine.PrefixManager.MergeDllOverrides("   "));
+    }
+
+
+    [Fact]
+    public void MergeDllOverrides_KeepsUserEntriesAndAppends()
+    {
+        Assert.Equal("winemenubuilder.exe=d;mscoree,mshtml=",
+            Wine.PrefixManager.MergeDllOverrides("winemenubuilder.exe=d"));
+    }
+
+
+    [Fact]
+    public void MergeDllOverrides_DoesNotDuplicateTrailingSemicolon()
+    {
+        Assert.Equal("winemenubuilder.exe=d;mscoree,mshtml=",
+            Wine.PrefixManager.MergeDllOverrides("winemenubuilder.exe=d;"));
+    }
+
+
+    [Theory]
+    [InlineData("mscoree=b")]
+    [InlineData("mshtml=n")]
+    [InlineData("foo=1;mscoree,mshtml")]
+    public void MergeDllOverrides_RespectsUserOverride(string existing)
+    {
+        Assert.Equal(existing, Wine.PrefixManager.MergeDllOverrides(existing));
+    }
+
+
+    [Fact]
+    public async Task Initialize_ExistingValidPrefix_IsNoOp()
+    {
+        using var temp = new TempDirectory();
+        var prefix = temp.CreatePrefix();
+        var paths = new XdgPaths(temp.Combine("c"), temp.Combine("d"), temp.Combine("k"));
+        var manager = new Wine.PrefixManager(new LinuxProcessTree(), new LinuxProcessController(),
+            new UnixProcessLauncher(), paths);
+
+        // 传一个不存在的 wine：若真的去调 wineboot 就会抛异常
+        await manager.InitializeAsync("/definitely/not/wine", prefix, new Dictionary<string, string>());
+        Assert.True(manager.IsValid(prefix));
+    }
+}

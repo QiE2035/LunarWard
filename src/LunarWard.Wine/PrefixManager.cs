@@ -60,6 +60,34 @@ public sealed class PrefixManager : IPrefixManager
     }
 
 
+    /// <summary>
+    /// 创建 prefix 的超时。<b>冷启动实测 8 秒</b>（禁掉 mono/gecko 提示后）；
+    /// 留足余量给慢磁盘与首次 wineserver 启动。
+    /// </summary>
+    public TimeSpan InitializeTimeout { get; init; } = TimeSpan.FromMinutes(3);
+
+
+    /// <summary>
+    /// 初始化 prefix。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>必须</b>禁掉 wine-mono 与 wine-gecko 的安装提示（<c>WINEDLLOVERRIDES=mscoree,mshtml=</c>）。
+    /// 否则 <c>wineboot</c> 会弹出"是否下载 wine-mono"的对话框并<b>阻塞等待输入</b>——
+    /// 在无人值守的启动器里等于卡死。
+    /// </para>
+    /// <para>
+    /// 实测对比（同一台机器、同一个 runner）：
+    /// </para>
+    /// <list type="table">
+    /// <item><description>默认 → <b>2 分 32 秒</b>后超时（或用户点掉对话框才继续）</description></item>
+    /// <item><description>禁 mono/gecko → <b>8 秒</b>完成</description></item>
+    /// </list>
+    /// <para>
+    /// 启动器跑的是原神/绝区零这类原生 PE 游戏，<b>不需要 .NET Framework / MSHTML</b>，
+    /// 禁掉这两个组件没有任何副作用。
+    /// </para>
+    /// </remarks>
     public async Task InitializeAsync(string wineBinary, string prefix, IReadOnlyDictionary<string, string> env, CancellationToken ct = default)
     {
         Directory.CreateDirectory(prefix);
@@ -70,6 +98,9 @@ public sealed class PrefixManager : IPrefixManager
 
         var merged = new Dictionary<string, string>(env, StringComparer.Ordinal);
         merged.TryAdd("WINEPREFIX", prefix);
+
+        // 见上面的 remarks：不禁掉的话 wineboot 会停在下载提示上
+        merged["WINEDLLOVERRIDES"] = MergeDllOverrides(merged.GetValueOrDefault("WINEDLLOVERRIDES"));
 
         var psi = new Platform.ProcessRequest
         {
@@ -82,13 +113,15 @@ public sealed class PrefixManager : IPrefixManager
 
         using var process = _launcher.Start(psi);
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        cts.CancelAfter(TimeSpan.FromMinutes(2));
+        cts.CancelAfter(InitializeTimeout);
+        var timedOut = false;
         try
         {
             await process.WaitForExitAsync(cts.Token).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
+            timedOut = true;
             try
             {
                 process.Kill(entireProcessTree: true);
@@ -98,6 +131,50 @@ public sealed class PrefixManager : IPrefixManager
                 // ignore
             }
         }
+
+        // 超时后 prefix 只写了一半：删掉重来，绝不能留给下一次启动
+        if (timedOut && !IsValid(prefix))
+        {
+            try
+            {
+                foreach (var client in _processTree.GetPrefixClients(prefix))
+                {
+                    _controller.Signal(client.Pid, Platform.LinuxProcessController.SIGKILL);
+                }
+
+                Directory.Delete(prefix, recursive: true);
+            }
+            catch (Exception)
+            {
+                // best effort
+            }
+
+            throw new TimeoutException(
+                $"创建 wine prefix 超时（{InitializeTimeout.TotalSeconds:0} 秒）：{prefix}。"
+                + "若经常超时，检查磁盘是否可用，或手动执行 `WINEPREFIX=<prefix> wineboot -u` 观察输出。");
+        }
+    }
+
+
+    /// <summary>
+    /// 把 <c>mscoree,mshtml=</c> 合并进已有的 <c>WINEDLLOVERRIDES</c>（保持用户配置优先）。
+    /// </summary>
+    public static string MergeDllOverrides(string? existing)
+    {
+        const string disableMonoGecko = "mscoree,mshtml=";
+        if (string.IsNullOrWhiteSpace(existing))
+        {
+            return disableMonoGecko;
+        }
+
+        // 若用户已显式配置了这两项，尊重用户
+        if (existing.Contains("mscoree", StringComparison.OrdinalIgnoreCase)
+            || existing.Contains("mshtml", StringComparison.OrdinalIgnoreCase))
+        {
+            return existing;
+        }
+
+        return existing.TrimEnd(';') + ";" + disableMonoGecko;
     }
 
 
