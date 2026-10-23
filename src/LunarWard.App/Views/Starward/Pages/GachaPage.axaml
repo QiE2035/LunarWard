@@ -29,12 +29,14 @@
   <Grid Margin="24,0,24,0" RowDefinitions="Auto,Auto,*,Auto">
 
     <!-- ══ 页头工具条（高 40） ═════════════════════════════════════ -->
-    <Grid Grid.Row="0" Height="40" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+    <Grid Grid.Row="0" Height="40" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
 
       <TextBlock Grid.Column="0"
                  VerticalAlignment="Center"
                  FontSize="20"
                  FontWeight="Bold"
+                 MaxWidth="180"
+                 TextTrimming="CharacterEllipsis"
                  Text="{Binding Strings[Gacha.Title]}" />
 
       <!-- 抽卡链接：占满剩余宽度（Starward 放在设置 Flyout 里，这里按契约提到工具条） -->
@@ -47,27 +49,27 @@
       <StackPanel Grid.Column="2"
                   Orientation="Horizontal"
                   VerticalAlignment="Center"
-                  Spacing="8">
+                  Spacing="6">
 
         <!-- 强调色只给当前可用的那一个：有链接 → 读取记录；没链接 → 重新定位 -->
-        <Button Height="32" Padding="12,0"
+        <Button Height="32" Padding="10,0"
                 Classes.accent="{Binding IsRelocatePrimary}"
                 Command="{Binding RelocateCommand}"
                 Content="{Binding Strings[Gacha.Relocate]}" />
 
-        <Button Height="32" Padding="12,0"
+        <Button Height="32" Padding="10,0"
                 Classes.accent="{Binding IsFetchPrimary}"
                 Command="{Binding FetchCommand}"
                 IsEnabled="{Binding !IsBusy}"
                 Content="{Binding Strings[Gacha.Fetch]}" />
 
-        <Button Height="32" Padding="12,0"
+        <Button Height="32" Padding="10,0"
                 Command="{Binding ExportJsonCommand}"
                 Content="{Binding Strings[Gacha.Export]}" />
 
         <!-- UIGF 4：Core 还没有读写实现 → 禁用并在按钮文字上注明"待接"，不伪造功能
              （禁用的控件不弹 Tooltip，所以状态必须写在可见文字里） -->
-        <Button Height="32" Padding="12,0"
+        <Button Height="32" Padding="10,0"
                 IsEnabled="{Binding IsUigfAvailable}"
                 ToolTip.Tip="{Binding UigfHint}"
                 Content="{Binding Strings[Gacha.UigfButton]}" />
