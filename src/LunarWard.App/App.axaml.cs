@@ -30,6 +30,22 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var viewModel = new MainWindowViewModel(AppServices.Current, _log);
+
+            // 自检：--screenshot <png> --window settings 直接开设置窗口
+            if (CaptureMode.Enabled && CaptureMode.TargetWindow == "settings")
+            {
+                var settings = new SettingsWindow
+                {
+                    DataContext = new SettingsViewModel(AppServices.Current, viewModel.Profiles[0]),
+                };
+                var mainWindow = new MainWindow { DataContext = viewModel };
+                desktop.MainWindow = mainWindow;
+                settings.Opened += (_, _) => CaptureMode.Capture(settings);
+                settings.Show();
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
+
             var window = new MainWindow { DataContext = viewModel };
             desktop.MainWindow = window;
             desktop.Exit += (_, _) =>

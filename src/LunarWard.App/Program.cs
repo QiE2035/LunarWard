@@ -15,7 +15,14 @@ internal static class Program
         var index = Array.IndexOf(args, "--screenshot");
         if (index >= 0 && index + 1 < args.Length)
         {
+            // --screenshot <png>            主窗口
+            // --screenshot <png> --window settings   设置窗口
             CaptureMode.Path = args[index + 1];
+            var windowIndex = Array.IndexOf(args, "--window");
+            if (windowIndex >= 0 && windowIndex + 1 < args.Length)
+            {
+                CaptureMode.TargetWindow = args[windowIndex + 1];
+            }
         }
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
@@ -33,6 +40,9 @@ internal static class Program
 internal static class CaptureMode
 {
     public static string? Path { get; set; }
+
+    /// <summary>要截图的窗口：<c>main</c>（默认）/ <c>settings</c>。</summary>
+    public static string TargetWindow { get; set; } = "main";
 
     public static bool Enabled => Path is not null;
 

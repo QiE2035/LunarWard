@@ -207,22 +207,22 @@ $ dotnet test tests/LunarWard.IntegrationTests --filter 'FullyQualifiedName~S4'
 ### 3.1 测试规模（实测）
 
 **注意：任务下达时的口径是 "152 个测试（138 单元 + 14 集成）"。**
-在本次编写过程中仓库新增了一个测试项目（`LunarWard.Installer.UnitTests`）
-与一组验收测试（`AcceptanceTests`），**当前真实数字已变化**。以实测为准：
+此后仓库陆续新增了 `LunarWard.Installer.UnitTests`、`AcceptanceTests`，
+以及时长 / 截图 / i18n / 组件下载器的测试，**当前真实数字已变化**。以实测为准：
 
 ```bash
 $ dotnet test LunarWard.slnx
-LunarWard.UnitTests.dll           — 通过: 138，失败: 0，跳过: 0
+LunarWard.UnitTests.dll           — 通过: 178，失败: 0，跳过: 0
 LunarWard.Installer.UnitTests.dll — 通过:  31，失败: 0，跳过: 0
 LunarWard.IntegrationTests.dll    — 通过:  25，失败: 0，跳过: 0
 ```
 
 | 套件 | 数量 | 位置 |
 |---|---|---|
-| **核心单元测试** | **138** | `tests/LunarWard.UnitTests/` |
+| **核心单元测试** | **178** | `tests/LunarWard.UnitTests/` |
 | **安装器单元测试** | **31** | `tests/LunarWard.Installer.UnitTests/` |
 | **集成测试** | **25** | `tests/LunarWard.IntegrationTests/` |
-| **合计** | **194** | — |
+| **合计** | **234** | — |
 
 **集成测试 25 个的构成**：
 
@@ -232,18 +232,19 @@ LunarWard.IntegrationTests.dll    — 通过:  25，失败: 0，跳过: 0
 | **S 系列**（环境 shell） | 5 | `ShellTests.cs` | S1–S5 |
 | **A 系列**（验收自动化） | 6 | `AcceptanceTests.cs` | R9 / R12 / R15 / 报告结构 / plan 一致性 / dry-run |
 
-**三个口径，按需取用**：
+**演进（数字随提交漂移，以 `dotnet test` 为准）**：
 
-| 口径 | 算式 | 数字 |
+| 时点 | 算式 | 数字 |
 |---|---|---|
-| 任务下达时的口径（138 单元 + 14 集成） | 138 + 14 | **152** |
-| 加 S 系列 shell 测试（138 + 19） | 138 + 19 | **157** |
-| **当前实际**（138 + 31 + 25） | 138 + 31 + 25 | **194** |
+| 任务下达时 | 138 单元 + 14 集成 | 152 |
+| 加了 S 系列 shell 测试 | 138 + 19 | 157 |
+| 加了 Installer 单测 + 验收测试 | 138 + 31 + 25 | 194 |
+| 加了时长 / 截图 / i18n / 组件下载器 | 178 + 31 + 25 | **234** |
 
-> 前两个数字不再准确，仅保留以便与任务描述对照。**引用测试规模时请用 194**。
-> 单一数字会随提交漂移，需要精确值时直接跑 `dotnet test`。
+> **引用测试规模时请用 234**（当前实测）。单一数字必然漂移，
+> 需要精确值请直接跑 `dotnet test LunarWard.slnx`。
 
-**核心单元测试分布（138）**：
+**核心单元测试分布（178）**：
 
 | 文件 | 用例数 | 覆盖 |
 |---|---|---|
