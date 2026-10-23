@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using LunarWard.App.ViewModels;
-using LunarWard.App.ViewModels;
 using LunarWard.App.Views;
 using LunarWard.Platform;
 
