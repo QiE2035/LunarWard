@@ -8,8 +8,29 @@ Linux 下的《原神》/《绝区零》启动器，定位是 **Starward 在 Lin
 
 > 当前状态：**已实现（M0–M7 完成，M8 移植完成待真机验证）**。
 > 解决方案 0 warning / 0 error，334 个测试全通过（276 单元 + 31 安装器 + 27 集成），
-> 主界面可运行（见下方截图自检命令）。真机验收 R1–R15 的完成情况见
+> UI 已按 Starward 逐页复刻（见下节）。真机验收 R1–R15 的完成情况见
 > [acceptance-2026-10-23.md](docs/acceptance-2026-10-23.md)。
+
+---
+
+## UI：Starward 的复刻，不是重新设计
+
+界面按 Starward（WinUI 3）**逐页复刻**：同样的 1200×676 固定窗口、48px 标题栏、
+56px 左栏导航、公告卡（Banner + 活动/公告/资讯）、右下胶囊启动按钮、全屏游戏选择层、
+260px 二级导航设置页。LunarWard 独有的能力（wine 运行时、十层 env、外部程序、
+诊断、环境 shell）**追加在 Starward 已有页面里**，不新造导航。
+
+| 页面 | 截图 |
+|---|---|
+| 启动器 | ![launcher](artifacts/screens/sw-launcher.png) |
+| 游戏设置（含 LunarWard 追加区） | ![game setting](artifacts/screens/sw-game-setting.png) |
+| 设置（260px 二级导航 + 9 个子页） | ![settings](artifacts/screens/sw-setting.png) |
+| 抽卡记录 | ![gacha](artifacts/screens/sw-gacha.png) |
+| 游戏截图 | ![screenshot](artifacts/screens/sw-screenshot.png) |
+| 工具箱（便笺 / 账号） | ![toolbox](artifacts/screens/sw-toolbox.png) |
+
+像素与交互契约、已知偏差（Acrylic 真模糊、圆角窗口、动画）
+见 [07-UI-REPLICA.md](docs/07-UI-REPLICA.md)。
 
 ---
 
@@ -30,8 +51,11 @@ dotnet test  LunarWard.slnx
 # 3. 运行
 dotnet run --project src/LunarWard.App
 
-# 4. 无头自检（渲染一帧主窗口到 PNG 后退出，用于 CI）
+# 4. 无头自检（渲染一帧 Starward 界面到 PNG 后退出，用于 CI）
 dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
+#    逐页出图：--page launcher|game-setting|screenshot|gacha|toolbox|settings
+#    其它自检开关：--open-selector（打开游戏选择层）、--tab accounts（工具箱账号页）、
+#                 --profile <id>、--wait <ms>
 
 # 5. 打包（Arch）
 cd packaging && makepkg -si
@@ -56,7 +80,7 @@ lunarward/
 │   ├── LunarWard.Launch/          # 七相位启动引擎（核心）、LaunchPlan、启动报告
 │   ├── LunarWard.Games/           # 区服（config.ini）、B站 PCGameSDK、游戏适配
 │   ├── LunarWard.Installer/       # ← Starward.RPC/GameInstall 移植（去 gRPC/Vanara）
-│   └── LunarWard.App/             # Avalonia 12 视图层
+│   └── LunarWard.App/             # Avalonia 12 视图层（Starward UI 复刻）
 ├── tests/
 │   ├── LunarWard.UnitTests/           # 276
 │   ├── LunarWard.Installer.UnitTests/ # 31
@@ -91,6 +115,7 @@ App ──→ Games ──→ Launch ──→ Wine ──→ Platform
 | [USER-GUIDE.md](docs/USER-GUIDE.md) | 用户手册 | 给用户 |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | 排障手册（退出码、signal、依赖缺失） | 启动失败时 |
 | [acceptance-2026-10-23.md](docs/acceptance-2026-10-23.md) | 真机验收 R1–R15 的当次状态 | 交付评审 |
+| [07-UI-REPLICA.md](docs/07-UI-REPLICA.md) | UI 复刻 Starward：布局/视觉 token/交互/页面映射/验收 | 改 UI 前必读 |
 
 ---
 

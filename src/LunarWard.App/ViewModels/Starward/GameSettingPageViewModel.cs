@@ -665,9 +665,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         var profile = Profile.Profile;
         foreach (var program in profile.ExternalPrograms)
         {
-            var item = CreateProgramItem(program, keywords);
-            item.IsExpanded = Environment.GetEnvironmentVariable("LW_EXPAND") is "1";
-            Programs.Add(item);
+            Programs.Add(CreateProgramItem(program, keywords));
         }
 
         HasPrograms = Programs.Count > 0;

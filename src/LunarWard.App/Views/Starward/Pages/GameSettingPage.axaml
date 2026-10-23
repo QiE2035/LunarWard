@@ -54,7 +54,7 @@
   <Grid RowDefinitions="*,60">
 
     <!-- ══ 内容区 ═══════════════════════════════════════════════════════ -->
-    <ScrollViewer x:Name="ContentScroll" VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
       <Grid Margin="24,20,24,24" ColumnDefinitions="*,*" ColumnSpacing="24">
 
         <!-- ══════════════════════════════════════════════════════════
@@ -427,17 +427,28 @@
                       </Button>
                     </Grid>
 
-                    <TextBlock Classes="tertiary"
-                               TextTrimming="CharacterEllipsis"
-                               ToolTip.Tip="{Binding ResolvedPath}"
-                               Text="{Binding ResolvedPath}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                      <TextBlock Grid.Column="0"
+                                 Classes="tertiary"
+                                 TextTrimming="CharacterEllipsis"
+                                 ToolTip.Tip="{Binding ResolvedPath}"
+                                 Text="{Binding ResolvedPath}" />
+                      <TextBlock Grid.Column="1"
+                                 Classes="tertiary"
+                                 Text="{Binding TriggerSummary}" />
+                    </Grid>
 
                     <!-- 展开区 -->
                     <StackPanel Spacing="8" IsVisible="{Binding IsExpanded}">
 
+                      <StackPanel Spacing="4" Margin="0,4,0,0">
+                        <TextBlock Classes="tertiary"
+                                   Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramName]}" />
+                        <TextBox Height="32" Text="{Binding Name, Mode=TwoWay}" />
+                      </StackPanel>
+
                       <TextBlock Classes="tertiary"
-                                 Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramPath]}"
-                                 Margin="0,4,0,0" />
+                                 Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramPath]}" />
 
                       <Grid ColumnDefinitions="*,8,Auto">
                         <TextBox Grid.Column="0"
@@ -663,11 +674,11 @@
             <TextBlock VerticalAlignment="Center" Text="{Binding Strings[GameSetting.Apply]}" />
           </StackPanel>
         </Button>
-        <TextBlock Margin="24,0,0,0"
+        <TextBlock Classes="description"
+                   Margin="24,0,0,0"
                    VerticalAlignment="Center"
                    MaxWidth="640"
                    TextTrimming="WordEllipsis"
-                   Foreground="{StaticResource StarTextSecondary}"
                    Text="{Binding ApplyHint}" />
       </StackPanel>
     </Border>
