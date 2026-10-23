@@ -151,6 +151,21 @@ LUNARWARD_REAL_WINE=1 dotnet test tests/LunarWard.IntegrationTests \
 
 ---
 
+## 实现期间发现的三个"静默缺陷"
+
+这三个都不报错、不抛异常、日志里也没有"错误"字样，但都是真问题。
+记录在此，因为它们说明了为什么"必须真跑验证"。
+
+| # | 缺陷 | 表现 | 根因 | 发现方式 |
+|---|---|---|---|---|
+| 1 | 进程组信号被拒 | shell 关标签后子进程残留 | `Signal()` 拒绝负 pid（`kill` 的"进程组"语义），且无人检查返回值 | 集成测试间歇失败 |
+| 2 | 启动按钮是灰的 | 属性/绑定/命令**全对**，像素是灰 | Fluent 的 `ControlTheme` 管模板内背景，`Button.Background` 不穿透 | **截图采样像素** |
+| 3 | 首次建 prefix 卡 2 分半 | 每个新用户首次启动必然超时，还留下半成品 prefix | `wineboot -u` 弹「下 wine-mono」并**阻塞等输入** | 真 wine 测试耗时异常（3m25s → 修后 21s） |
+
+详见 `docs/M0-RESULTS.md` §3.5 与 `docs/acceptance-2026-10-23.md` §2.6–2.8。
+
+---
+
 ## 与设计的偏差（如实记录）
 
 | 项 | 计划 | 实际 | 原因 |
