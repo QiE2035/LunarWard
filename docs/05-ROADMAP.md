@@ -254,12 +254,13 @@ cd src/LunarWard.Core && dotnet build
 | 检查项 | 状态 | 证据 |
 |---|---|---|
 | `dotnet build` 无警告 | ✅ | `dotnet build LunarWard.slnx` → 0 warning / 0 error |
-| 全部单元测试通过 | ✅ | 145（Unit）+ 31（Installer） |
-| 集成测试 I1–I13 通过 | ✅ | 25 个集成测试通过（合成游戏 + 真 `/proc`，不需要真 wine） |
-| 真机清单 R1–R15 全部记录 | ⚠️ | 已记录，但仅 R9/R12 ✅、R13/R15 ⚠️、其余 ⏳ → `acceptance-2026-10-23.md` |
+| 全部单元测试通过 | ✅ | **276**（Unit）+ **31**（Installer）= 307 |
+| 集成测试 I1–I13 通过 | ✅ | **27** 个集成测试（I1–I13 + S1–S5 + 真 wine 2 个）；合计 **334** 全绿 |
+| 真机清单 R1–R15 全部记录 | ⚠️ | 已记录：R9/R12 ✅、R1/R13/R15 ⚠️、其余 ⏳ → `acceptance-2026-10-23.md` |
 | `launch-report.json` 能正确输出 | ✅ | `I13` / `Report_HasSevenPhasesAndFullChain` |
 | 配置损坏时能恢复 | ✅ | `U13` / `PlayTimeTests.CorruptStore_IsBackedUpAndReset` |
 | 崩溃时不留下 wine 进程残留 | ✅ | `I10` / `R12_NoResidualWineClientsAfterExit` / `R15_...AreCleanedOnNextLaunch` |
+| 真 wine 端到端（非合成） | ✅ | `RealWineTests`：真 wine + 真 PE，`AwaitReady` 4ms 命中 `WineDevice`（`LUNARWARD_REAL_WINE=1`） |
 | i18n：至少 zh-CN + en-US | ✅ | `App/Localization/AppStrings.cs`（zh-CN + en-US，键缺失时回显键名）；Core 另有 13 种语言资源 |
 | 文档：README、用户手册、排障指南 | ✅ | `README.md` / `docs/USER-GUIDE.md` / `docs/TROUBLESHOOTING.md` |
 | 许可文件与第三方声明 | ✅ | `LICENSE` / `THIRD-PARTY-NOTICES.md` |
