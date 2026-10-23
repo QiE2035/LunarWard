@@ -81,7 +81,7 @@ lunarward/
 │   ├── LunarWard.UnitTests/
 │   └── LunarWard.IntegrationTests/   # 合成游戏 + 临时 prefix，无需游戏本体
 └── third_party/
-    └── Starward/                  # git submodule（只读参考 + 移植来源）
+    └── README.md                  # 说明：按 §3.1 用 subtree，不建 submodule
 ```
 
 ### 解决方案文件格式：`.slnx`
@@ -89,8 +89,7 @@ lunarward/
 **用 `LunarWard.slnx`（XML 格式），不用传统的 `.sln`。**
 
 理由：
-1. **Starward 自己就是 `Starward.slnx`**（见 `third_party/Starward/`），
-   保持与上游一致的工程习惯
+1. **Starward 自己就是 `Starward.slnx`**，保持与上游一致的工程习惯
 2. XML 可读可 diff，传统 `.sln` 是自定义文本格式，合并冲突难解
 3. .NET 10 SDK 原生支持
 
