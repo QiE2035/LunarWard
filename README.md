@@ -7,7 +7,7 @@ Linux 下的《原神》/《绝区零》启动器，定位是 **Starward 在 Lin
 运行时管理与 UI 视图。
 
 > 当前状态：**已实现（M0–M7 完成，M8 移植完成待真机验证）**。
-> 解决方案 0 warning / 0 error，234 个测试全通过（178 单元 + 31 安装器 + 25 集成），
+> 解决方案 0 warning / 0 error，315 个测试全通过（257 单元 + 31 安装器 + 27 集成），
 > 主界面可运行（见下方截图自检命令）。真机验收 R1–R15 的完成情况见
 > [acceptance-2026-10-23.md](docs/acceptance-2026-10-23.md)。
 
@@ -55,9 +55,9 @@ lunarward/
 │   ├── LunarWard.Installer/       # ← Starward.RPC/GameInstall 移植（去 gRPC/Vanara）
 │   └── LunarWard.App/             # Avalonia 12 视图层
 ├── tests/
-│   ├── LunarWard.UnitTests/           # 178
+│   ├── LunarWard.UnitTests/           # 257
 │   ├── LunarWard.Installer.UnitTests/ # 31
-│   └── LunarWard.IntegrationTests/    # 25（合成游戏 + 真 /proc）
+│   └── LunarWard.IntegrationTests/    # 27（合成游戏 + 真 /proc + 真 wine）
 ├── packaging/                     # .desktop / PKGBUILD
 └── docs/                          # 设计文档 + 用户手册 + 排障 + 验收记录
 ```
@@ -127,7 +127,21 @@ env 十层合并，每层来源记入 `EnvSources`，UI 与启动报告都能显
 B 站三条件（国服 + `PCGameSDK.dll` 存在且非空 + `config.ini` 正确）缺一即**硬拒绝**——
 因为游戏在缺插件时会**静默回落官服**，这是最坑的失败模式。
 
-### 5. 安装器（`Starward.RPC/GameInstall` 移植）
+### 5. 真 wine 端到端验证
+
+合成游戏（假 wine 脚本）验证的是**状态机**；另有一层用**真 wine 起真 PE 程序**
+验证 `docs/01-RESEARCH.md` §1.6 的核心假设："能不能靠 `/proc/<pid>/maps` 找到游戏"。
+
+```bash
+LUNARWARD_REAL_WINE=1 dotnet test tests/LunarWard.IntegrationTests \
+  --filter 'FullyQualifiedName~RealWine'
+```
+
+实测（wine-10.0 CachyOS）：`AwaitImage` 818 ms 靠 maps 命中；
+`AwaitReady` **4 ms** 就拿到 `WineDevice` 最强信号，不是靠 `Grace` 兜底。
+默认跳过（要建 prefix），设 `LUNARWARD_REAL_WINE=1` 启用。
+
+### 6. 安装器（`Starward.RPC/GameInstall` 移植）
 
 保留全部关键行为：`Parallel.ForEachAsync` 文件级并行、Polly 重试、
 `SocketsHttpHandler`（HTTP/2+3 多连接、5 分钟连接池）、硬链接去重、MD5 跳过、断点续传。
@@ -147,6 +161,7 @@ B 站三条件（国服 + `PCGameSDK.dll` 存在且非空 + `config.ini` 正确�
 | 视频背景 | `LibVLCSharp` 真机播放 | 已实现，但本机 `libvlc_new` 返回 NULL（缺 VLC 插件包）→ **回退静态图** | Arch 上 `libvlc` 与 `vlc` 是分开的包 |
 | 托管组件下载 | an-anime-team 索引 + git 同步 | ✅ 已实现，但**不引 git**：直接下载 `components.json` 与分组 JSON（`ComponentInstaller`） | 少一个外部依赖 |
 | 沙箱 | namespace 隔离 | 只记录配置 | 首期不做 |
+| prefix 初始化 | 直接 `wineboot -u` | **必须**加 `WINEDLLOVERRIDES=mscoree,mshtml=` | 否则卡在 wine-mono 下载提示（实测 2分32秒 vs 8秒） |
 
 ---
 
