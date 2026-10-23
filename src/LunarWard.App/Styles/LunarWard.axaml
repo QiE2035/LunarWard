@@ -33,6 +33,12 @@
   </Style>
 
   <!-- 主启动按钮 -->
+  <!--
+    Fluent 主题的 Button 模板用 Border 的 Background 做填充，但它自己有一套
+    "禁用态/常态" 的 ControlTheme 覆盖。要真正改底色，必须同时设置
+    Background 与 Template，或者直接给 ContentPresenter 上色。
+    这里用最稳的做法：显式给模板内的 ContentPresenter 设背景。
+  -->
   <Style Selector="Button.launch">
     <Setter Property="CornerRadius" Value="26" />
     <Setter Property="Padding" Value="44,14" />
@@ -43,12 +49,29 @@
     <Setter Property="Foreground" Value="#FF08131A" />
   </Style>
 
+  <Style Selector="Button.launch /template/ ContentPresenter">
+    <Setter Property="Background" Value="#E64FC3F7" />
+    <Setter Property="CornerRadius" Value="26" />
+  </Style>
+
+  <Style Selector="Button.launch:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#FF7FD8FF" />
+  </Style>
+
+  <Style Selector="Button.launch:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="#FF4FC3F7" />
+  </Style>
+
   <Style Selector="Button.launch:pointerover">
     <Setter Property="Background" Value="#FF7FD8FF" />
   </Style>
 
   <Style Selector="Button.launch:disabled">
     <Setter Property="Opacity" Value="0.55" />
+  </Style>
+
+  <Style Selector="Button.launch:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="#66FFFFFF" />
   </Style>
 
   <Style Selector="Button.toolbar">

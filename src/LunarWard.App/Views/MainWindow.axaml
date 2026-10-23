@@ -68,7 +68,8 @@
 
           <!-- 启动区 -->
           <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14">
-            <Button Classes="launch"
+            <Button x:Name="LaunchButton"
+                    Classes="launch"
                     Content="{Binding LaunchButtonText}"
                     IsEnabled="{Binding LaunchButtonEnabled}"
                     Command="{Binding LaunchCommand}"
