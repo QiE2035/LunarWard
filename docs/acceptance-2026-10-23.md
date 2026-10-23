@@ -298,17 +298,17 @@ $ LUNARWARD_REAL_WINE=1 dotnet test --filter 'FullyQualifiedName~RealWine'
 
 ```bash
 $ dotnet test LunarWard.slnx
-LunarWard.UnitTests.dll           — 通过: 178，失败: 0，跳过: 0
+LunarWard.UnitTests.dll           — 通过: 257，失败: 0，跳过: 0
 LunarWard.Installer.UnitTests.dll — 通过:  31，失败: 0，跳过: 0
-LunarWard.IntegrationTests.dll    — 通过:  25，失败: 0，跳过: 0
+LunarWard.IntegrationTests.dll    — 通过:  27，失败: 0，跳过: 0
 ```
 
 | 套件 | 数量 | 位置 |
 |---|---|---|
-| **核心单元测试** | **178** | `tests/LunarWard.UnitTests/` |
+| **核心单元测试** | **257** | `tests/LunarWard.UnitTests/` |
 | **安装器单元测试** | **31** | `tests/LunarWard.Installer.UnitTests/` |
-| **集成测试** | **25** | `tests/LunarWard.IntegrationTests/` |
-| **合计** | **234** | — |
+| **集成测试** | **27** | `tests/LunarWard.IntegrationTests/` |
+| **合计** | **315** | — |
 
 **集成测试 25 个的构成**：
 
@@ -316,6 +316,7 @@ LunarWard.IntegrationTests.dll    — 通过:  25，失败: 0，跳过: 0
 |---|---|---|---|
 | **I 系列**（相位引擎） | 14 | `PhaseEngineTests.cs` | I1–I13 + 退出码 2 失败路径 |
 | **S 系列**（环境 shell） | 5 | `ShellTests.cs` | S1–S5 |
+| **R 系列**（真 wine） | 2 | `RealWineTests.cs` | 真 wine 起真 PE；`LUNARWARD_REAL_WINE=1` 才跑 |
 | **A 系列**（验收自动化） | 6 | `AcceptanceTests.cs` | R9 / R12 / R15 / 报告结构 / plan 一致性 / dry-run |
 
 **演进（数字随提交漂移，以 `dotnet test` 为准）**：
@@ -325,12 +326,13 @@ LunarWard.IntegrationTests.dll    — 通过:  25，失败: 0，跳过: 0
 | 任务下达时 | 138 单元 + 14 集成 | 152 |
 | 加了 S 系列 shell 测试 | 138 + 19 | 157 |
 | 加了 Installer 单测 + 验收测试 | 138 + 31 + 25 | 194 |
-| 加了时长 / 截图 / i18n / 组件下载器 | 178 + 31 + 25 | **234** |
+| 加了时长 / 截图 / i18n / 组件下载器 | 178 + 31 + 25 | 234 |
+| 加了抽卡 / 便笺 / 截图窗口 / prefix 修复 | 257 + 31 + 27 | **315** |
 
-> **引用测试规模时请用 234**（当前实测）。单一数字必然漂移，
+> **引用测试规模时请用 315**（当前实测）。单一数字必然漂移，
 > 需要精确值请直接跑 `dotnet test LunarWard.slnx`。
 
-**核心单元测试分布（178）**：
+**核心单元测试分布（257）**：
 
 | 文件 | 用例数 | 覆盖 |
 |---|---|---|
@@ -340,6 +342,11 @@ LunarWard.IntegrationTests.dll    — 通过:  25，失败: 0，跳过: 0
 | `KeywordTests.cs` | 19 | 关键字替换、命令模板 `%post%`、参数切分 |
 | `EnvAndTriggerTests.cs` | 11 | 三态 env 矩阵、`Trigger` 合法性、警告、启发式 |
 | `ProcSnapshotsTests.cs` | 8 | `/proc` 快照匹配（精确 prefix、排除僵尸/自身/他人 uid） |
+| `GachaStatisticsTests.cs` | 22 | 抽卡统计（保底进度、平均出货、去重、多池分离、卡池名） |
+| `DailyNoteTests.cs` | 11 | 便笺归一化（三种游戏）+ cookie 凭据存储（权限 0600） |
+| `UrlProtocolTests.cs` | 19 | `lunarward://` 解析（未知 verb 降级、不把 URI 当路径） |
+| `GachaCachePathTests.cs` | 12 | 抽卡缓存路径无反斜杠、`user.reg` 解析与 Windows→Linux 路径翻译 |
+| `PrefixInitTests` / `WineMonoDisableTests` | 9 | prefix 初始化的 mono/gecko 禁用（实测 2分32秒 → 8秒） |
 | `PlayTimeTests.cs` | 7 | 时长累计、持久化、非法时间戳、排序、损坏恢复、未知字段、原子写 |
 | `ScreenshotTests.cs` | 9 | 截图目录发现、排序、扩展名过滤、UID 提取、导出防覆盖、占用统计 |
 | `AppStringsTests.cs` | 16 | 英文覆盖、无空值、语言归一化、切换通知、未知键回显 |
