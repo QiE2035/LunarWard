@@ -76,9 +76,20 @@ public sealed class RuntimeResolver
             DxvkDirectory = dxvkDir,
             RunnerEnv = runnerEnv,
             DxvkEnv = dxvkEnv,
-            Explain = $"{explainPrefix} → {source} › {name}（{runnerExplain}）",
+            Explain = $"{explainPrefix} → {FriendlySource(source)} › {runnerExplain}",
         }.WithSync(config.Sync);
     }
+
+
+    private static string FriendlySource(string source) => source switch
+    {
+        "profile（独占）" => "本档案独占",
+        "profile（自定义）" => "自定义",
+        "shared" => "共用运行时",
+        "default" => "默认运行时",
+        "system" => "系统兜底",
+        _ => source,
+    };
 
 
     private (RuntimeConfig Config, string Name, string Source) ResolveConfig(Scoped<RuntimeConfig> scope)
@@ -125,7 +136,14 @@ public sealed class RuntimeResolver
 
 internal static class ResolvedRuntimeExtensions
 {
-    /// <summary>把 <see cref="WineSync"/> 记录到解释串里（不改变 invalidity）。</summary>
+    /// <summary>把 <see cref="WineSync"/> 追加到解释串（供 UI 一行展示）。</summary>
     public static ResolvedRuntime WithSync(this ResolvedRuntime runtime, WineSync sync)
-        => runtime with { Explain = runtime.Explain + $" [sync={sync}]" };
+    {
+        var text = sync switch
+        {
+            WineSync.None => "",
+            _ => $" · sync={sync}",
+        };
+        return runtime with { Explain = runtime.Explain + text };
+    }
 }
