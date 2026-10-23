@@ -1,13 +1,16 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="using:LunarWard.App"
-             xmlns:loc="using:LunarWard.App.Localization"
              x:Class="LunarWard.App.App"
              RequestedThemeVariant="Dark">
 
+  <!--
+    主题顺序与 Starward 一致：先 WinUI 基础主题（Avalonia Fluent），再叠 Starward 覆盖层。
+    Starward.axaml 只覆盖颜色/圆角/字体层级，不重画控件模板（模板沿用 Fluent，
+    与 WinUI 的 DefaultButtonStyle 同源）。
+  -->
   <Application.Styles>
-    <FluentTheme DensityStyle="Compact" />
-    <StyleInclude Source="avares://LunarWard/Styles/LunarWard.axaml" />
+    <FluentTheme />
+    <StyleInclude Source="avares://LunarWard/Styles/Starward.axaml" />
   </Application.Styles>
 
 </Application>

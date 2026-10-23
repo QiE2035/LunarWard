@@ -21,7 +21,7 @@ public partial class ShellWindow : Window
     }
 
 
-    private ShellViewModel? ViewModel => DataContext as ShellViewModel;
+    private EnvironmentShellViewModel? ViewModel => DataContext as EnvironmentShellViewModel;
 
 
     private void OnOpened(object? sender, EventArgs e)

@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LunarWard.App.Views.Starward.Pages.ScreenshotPage">
+
+  <!-- 占位：结构照 docs/07-UI-REPLICA.md §5 的映射表。由页面负责人实现。 -->
+  <Grid>
+    <TextBlock Classes="section" Margin="24,20" Text="Screenshot" />
+  </Grid>
+</UserControl>

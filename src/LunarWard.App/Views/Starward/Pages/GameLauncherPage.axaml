@@ -1,0 +1,252 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Pages.GameLauncherPage"
+             x:DataType="vm:GameLauncherPageViewModel">
+
+  <!--
+    复刻 Starward Features/GameLauncher/GameLauncherPage.xaml。
+    坐标全部是相对内容区（x=56 起）的偏移，和 Starward 的 Margin 一致：
+      公告卡   左 60、底 40，380×304
+      开始按钮 右 40、底 40，高 44 胶囊
+      时长胶囊 紧挨开始按钮左侧，ColumnSpacing 12
+      便笺等    右上角纵向栈，Margin 4
+  -->
+
+  <Grid x:Name="RootGrid" Background="Transparent">
+
+    <!-- ── 公告卡（GameBannerAndPost） ───────────────────────────── -->
+    <Border Width="380" Height="304"
+          Margin="60,0,0,40"
+          HorizontalAlignment="Left"
+          VerticalAlignment="Bottom"
+          CornerRadius="8"
+          Background="{StaticResource StarAcrylicBrush}"
+          ClipToBounds="True"
+          IsVisible="{Binding HasContent}">
+      <Grid RowDefinitions="176,*">
+
+      <!-- Banner（FlipView 等价物：单张 Image + PipsPager） -->
+      <Grid x:Name="BannerHost"
+            PointerEntered="OnBannerPointerEntered"
+            PointerExited="OnBannerPointerExited"
+            Cursor="Hand"
+            Tapped="OnBannerTapped">
+        <Image Source="{Binding CurrentBanner.Image}" Stretch="UniformToFill" />
+        <Border Padding="10,2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Background="{StaticResource StarOverlayAcrylicBrush}"
+                CornerRadius="8,0,8,0"
+                IsVisible="{Binding ShowBannerCounter}">
+          <TextBlock FontSize="14" Foreground="{StaticResource StarTextSecondary}" Text="{Binding BannerCounterText}" />
+        </Border>
+      </Grid>
+
+      <!-- 活动 / 公告 / 资讯（Pivot 等价物：表头 + 列表） -->
+      <Grid Grid.Row="1" RowDefinitions="36,*">
+        <ItemsControl Grid.Row="0" ItemsSource="{Binding Posts}" Margin="12,0">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="0" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:PostGroupViewModel">
+              <Button Background="Transparent" Padding="0" MinHeight="36" Height="36"
+                      BorderThickness="0"
+                      Command="{Binding $parent[UserControl].((vm:GameLauncherPageViewModel)DataContext).SelectPivotCommand}"
+                      CommandParameter="{Binding}">
+                <Panel>
+                  <TextBlock Classes="pivot-header" Margin="12,0" Text="{Binding Header}" />
+                  <Border x:Name="PivotUnderline"
+                          Height="3" CornerRadius="1.5" Margin="12,0"
+                          VerticalAlignment="Bottom"
+                          Background="{StaticResource StarAccentBrush}"
+                          IsVisible="{Binding IsSelected}" />
+                </Panel>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- 游戏公告铃铛（Starward Pivot.RightHeader） -->
+        <Button Grid.Row="0" Grid.Column="0"
+                Width="36" Height="32" Padding="0"
+                HorizontalAlignment="Right" VerticalAlignment="Center"
+                Margin="0,0,8,0"
+                Background="Transparent"
+                Command="{Binding OpenInGameNoticesCommand}"
+                ToolTip.Tip="{Binding Strings[Launcher.GameNotices]}">
+          <Panel>
+            <TextBlock Classes="icon" FontSize="18" Text="&#xE789;" Foreground="{StaticResource StarTextSecondary}" />
+            <Ellipse Width="8" Height="8" Fill="#FFE81123"
+                     HorizontalAlignment="Right" VerticalAlignment="Top"
+                     Margin="0,2,4,0"
+                     IsVisible="{Binding HasNoticeAlert}" />
+          </Panel>
+        </Button>
+
+        <ScrollViewer Grid.Row="1" Margin="12,0,0,0" VerticalScrollBarVisibility="Auto">
+          <ItemsControl ItemsSource="{Binding CurrentPosts}" Margin="0,0,16,8">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:PostItemViewModel">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,0,8">
+                  <TextBlock Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Text="{Binding Title}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="1"
+                             VerticalAlignment="Center"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding Date}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
+      </Grid>
+    </Border>
+
+    <!-- 没有拿到资讯时的轻提示（Starward 离线时整卡隐藏，这里同构但不留白坑） -->
+    <TextBlock Margin="76,0,0,40"
+               HorizontalAlignment="Left" VerticalAlignment="Bottom"
+               Classes="tertiary"
+               Text="{Binding ContentStatus}"
+               IsVisible="{Binding !HasContent}" />
+
+    <!-- ── 右下：时长胶囊 + 开始按钮 ─────────────────────────────── -->
+    <Grid Margin="0,0,40,40"
+          HorizontalAlignment="Right" VerticalAlignment="Bottom"
+          ColumnDefinitions="Auto,Auto" ColumnSpacing="12">
+
+      <Border Grid.Column="0"
+              Height="44"
+              CornerRadius="22"
+              Background="{StaticResource StarOverlayAcrylicBrush}">
+        <Button Background="Transparent" BorderThickness="0" Padding="16,0" MinHeight="44" CornerRadius="22">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="20" Text="&#xE823;" Foreground="{StaticResource StarTextSecondary}" />
+            <TextBlock FontWeight="SemiBold" Foreground="{StaticResource StarTextSecondary}" Text="{Binding PlayTimeText}" />
+          </StackPanel>
+        </Button>
+      </Border>
+
+      <Grid Grid.Column="1" Height="44" MinWidth="180">
+        <Border CornerRadius="22" Background="{StaticResource StarAcrylicBrush}" />
+
+        <!-- 运行中：强调色底（Starward Rect_AccentBackground） -->
+        <Border CornerRadius="22" Background="{StaticResource StarAccentBrush}" IsVisible="{Binding IsRunning}" />
+
+        <Button Padding="0"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Background="Transparent" BorderThickness="0"
+                CornerRadius="22"
+                Command="{Binding StartGameCommand}"
+                IsEnabled="{Binding IsStartButtonEnabled}">
+          <Grid>
+            <Border Width="20" Height="20" Margin="14,0,0,0"
+                          HorizontalAlignment="Left"
+                          CornerRadius="10"
+                          IsVisible="{Binding IsBusy}">
+              <Arc Width="18" Height="18" Stroke="{StaticResource StarTextSecondary}" StrokeThickness="2" StartAngle="0" SweepAngle="270" />
+            </Border>
+            <TextBlock Margin="41,0,53,0"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Text="{Binding StartButtonText}" />
+          </Grid>
+        </Button>
+
+        <!-- 游戏设置齿轮（Starward Button_Setting） -->
+        <Button Width="44" Height="44" Padding="0"
+                HorizontalAlignment="Right"
+                Background="Transparent" BorderThickness="0" CornerRadius="22"
+                Command="{Binding OpenGameSettingsCommand}"
+                ToolTip.Tip="{Binding Strings[Shell.GameSetting]}">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE713;" />
+        </Button>
+      </Grid>
+    </Grid>
+
+    <!-- 定位游戏 / 未安装（Starward 在按钮正下方一行小字） -->
+    <Button Classes="link"
+            Margin="0,0,44,18"
+            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+            Content="{Binding Strings[Launcher.LocateGame]}"
+            IsVisible="{Binding ShowLocateGame}"
+            Command="{Binding OpenGameSettingsCommand}" />
+
+    <!-- ── 右上：便笺 / 账号 ─────────────────────────────────────── -->
+    <StackPanel Margin="4" HorizontalAlignment="Right" VerticalAlignment="Top" Spacing="4">
+      <Button Classes="icon-button"
+              Command="{Binding OpenDailyNoteCommand}"
+              ToolTip.Tip="{Binding Strings[Main.DailyNote]}">
+        <Panel Width="40" Height="40">
+          <Border CornerRadius="8" Background="{StaticResource StarOverlayAcrylicBrush}" />
+          <TextBlock Classes="icon" FontSize="20" Text="&#xE823;" />
+        </Panel>
+      </Button>
+    </StackPanel>
+
+    <!-- ── 底部背景切换条（悬停 60px 区域出现） ─────────────────── -->
+    <Panel x:Name="BackgroundBarHost"
+           Height="60"
+           VerticalAlignment="Bottom"
+           PointerEntered="OnBackgroundBarPointerEntered"
+           PointerExited="OnBackgroundBarPointerExited">
+      <Border IsVisible="{Binding ShowBackgroundBar}"
+              VerticalAlignment="Stretch"
+              PointerEntered="OnBackgroundBarPointerEntered"
+              PointerExited="OnBackgroundBarPointerExited">
+        <Border.Background>
+          <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0" Color="#00000000" />
+            <GradientStop Offset="1" Color="#88000000" />
+          </LinearGradientBrush>
+        </Border.Background>
+
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                    Margin="16,0,0,4"
+                    Orientation="Horizontal" Spacing="4">
+          <!-- 圆点指示器（PipsPager） -->
+          <ItemsControl ItemsSource="{Binding BackgroundImages}" VerticalAlignment="Center">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="4" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BackgroundSwitchItem">
+                <Ellipse Width="6" Height="6" VerticalAlignment="Center" Fill="#AAFFFFFF" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Border Width="1" Height="16" Margin="4,0" Background="#44FFFFFF" />
+
+          <Button Classes="overlay" Padding="6" MinWidth="28" ToolTip.Tip="{Binding Strings[Launcher.Gallery]}">
+            <TextBlock Classes="icon" Text="&#xE91B;" Foreground="{StaticResource StarTextSecondary}" />
+          </Button>
+          <Button Classes="overlay" Padding="6" MinWidth="28" ToolTip.Tip="{Binding Strings[Launcher.Copy]}">
+            <TextBlock Classes="icon" Text="&#xE8C8;" Foreground="{StaticResource StarTextSecondary}" />
+          </Button>
+          <Button Classes="overlay" Padding="6" MinWidth="28" ToolTip.Tip="{Binding Strings[Launcher.SaveAs]}">
+            <TextBlock Classes="icon" Text="&#xE74E;" Foreground="{StaticResource StarTextSecondary}" />
+          </Button>
+        </StackPanel>
+      </Border>
+    </Panel>
+
+    <!-- 错误提示（启动失败时 Starward 用 Toast；这里用同位置的小条） -->
+    <Border Margin="0,0,0,100"
+            HorizontalAlignment="Center" VerticalAlignment="Bottom"
+            Classes="infobar error"
+            MaxWidth="600"
+            IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" />
+    </Border>
+
+  </Grid>
+</UserControl>

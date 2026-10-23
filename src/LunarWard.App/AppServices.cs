@@ -161,6 +161,30 @@ public sealed class AppServices
 
 
     public Launch.LaunchPlanFactory CreatePlanFactory() => new(CreateRuntimeResolver(), Paths);
+
+
+    /// <summary>用系统默认浏览器打开链接（公告/资讯/帮助）。失败只记日志，不抛。</summary>
+    public Task OpenUriAsync(string uri)
+    {
+        try
+        {
+            if (Uri.TryCreate(uri, UriKind.Absolute, out var parsed)
+                && (parsed.Scheme == Uri.UriSchemeHttp || parsed.Scheme == Uri.UriSchemeHttps))
+            {
+                using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = parsed.AbsoluteUri,
+                    UseShellExecute = true,
+                });
+            }
+        }
+        catch (Exception)
+        {
+            // 没有默认浏览器：静默失败
+        }
+
+        return Task.CompletedTask;
+    }
 }
 
 

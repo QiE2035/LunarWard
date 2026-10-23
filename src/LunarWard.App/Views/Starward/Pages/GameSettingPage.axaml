@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Pages.GameSettingPage"
+             x:DataType="vm:GameSettingPageViewModel">
+
+  <!-- 占位：结构照 Starward GameSettingPage（左列基础 / 右列高级 / 底部 60px 应用条）。T1 负责实现。 -->
+  <Grid RowDefinitions="*,60">
+    <TextBlock Classes="section" Margin="24,20" Text="{Binding GameName}" />
+    <Border Grid.Row="1" CornerRadius="8,0,0,0" Background="{StaticResource StarOverlayAcrylicBrush}" />
+  </Grid>
+</UserControl>

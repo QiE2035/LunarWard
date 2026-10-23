@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             xmlns:local="using:LunarWard.App.Views.Starward"
+             x:Class="LunarWard.App.Views.Starward.StarwardShell"
+             x:DataType="vm:ShellViewModel"
+             KeyDown="OnKeyDown">
+
+  <!--
+    Starward MainView 结构（Features/ViewHost/MainView.xaml）：
+      背景层（全窗，含标题栏） → 左栏 56px → NavigationView 内容（Frame，上边距 48）
+      → GameSelector（全屏层，在最上）。
+    标题栏是 Window 自己的 48px 层，见 MainWindow.axaml。
+  -->
+  <Grid ClipToBounds="True">
+
+    <!-- ── 背景层 ─────────────────────────────────────────────── -->
+    <Grid>
+      <!-- 没有素材时的底色（Starward 用 Placeholder + 模糊图） -->
+      <Border Background="#FF1E1E1E" IsVisible="{Binding !HasBackgroundImage}" />
+      <Image Source="{Binding BackgroundImage}"
+             Stretch="UniformToFill"
+             IsVisible="{Binding HasBackgroundImage}" />
+      <ContentPresenter x:Name="VideoBackgroundHost" IsHitTestVisible="False" />
+
+      <!-- Starward AppBackground：右上有两片 400×400 的暗角渐变 -->
+      <Panel HorizontalAlignment="Right" VerticalAlignment="Top" Width="400" Height="400" IsHitTestVisible="False">
+        <Rectangle>
+          <Rectangle.Fill>
+            <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+              <GradientStop Offset="0.5" Color="#00000000" />
+              <GradientStop Offset="1" Color="#50000000" />
+            </LinearGradientBrush>
+          </Rectangle.Fill>
+        </Rectangle>
+      </Panel>
+      <Panel HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="400" Height="400" IsHitTestVisible="False">
+        <Rectangle>
+          <Rectangle.Fill>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+              <GradientStop Offset="0.5" Color="#00000000" />
+              <GradientStop Offset="1" Color="#50000000" />
+            </LinearGradientBrush>
+          </Rectangle.Fill>
+        </Rectangle>
+      </Panel>
+      <Panel HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="200" IsHitTestVisible="False">
+        <Rectangle>
+          <Rectangle.Fill>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+              <GradientStop Offset="0" Color="#00000000" />
+              <GradientStop Offset="1" Color="#30000000" />
+            </LinearGradientBrush>
+          </Rectangle.Fill>
+        </Rectangle>
+      </Panel>
+
+    </Grid>
+
+    <!-- ── 左栏 56px（Starward 是一个独立的 CustomAcrylic 竖条） ── -->
+    <Border Width="56" HorizontalAlignment="Left" Background="{StaticResource StarAcrylicBrush}" />
+    <local:NavigationRail HorizontalAlignment="Left" VerticalAlignment="Stretch" />
+
+    <!-- ── 页面宿主（Starward MainView_Frame，Margin="0,48,0,0"） ── -->
+    <ContentPresenter x:Name="PageHost" Margin="56,48,0,0" />
+
+
+    <!-- ── 游戏选择层（Starward GameSelector：全屏 #80000000 + 卡片网格） ── -->
+    <Grid x:Name="GameSelectorOverlayCard" IsVisible="{Binding IsGameSelectorOpen}">
+      <Border Background="{StaticResource StarScrimBrush}" PointerPressed="OnGameSelectorScrimPressed" />
+
+      <ScrollViewer Margin="56,48,0,0" Padding="68,32,24,24" VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding GameChoices}" HorizontalAlignment="Left">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" ItemWidth="208" ItemHeight="124" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:GameChoiceViewModel">
+              <Border Width="192" Height="108" CornerRadius="8" ClipToBounds="True" Cursor="Hand"
+                      Background="#40000000"
+                      Tapped="OnGameChoiceTapped">
+                <Panel>
+                <TextBlock Text="{Binding Title}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="16" FontWeight="Bold"
+                           TextWrapping="Wrap" TextAlignment="Center" />
+                <Border VerticalAlignment="Bottom" Background="#99000000" Padding="8,4">
+                  <TextBlock FontSize="12"
+                             HorizontalAlignment="Center"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding Edition}" />
+                </Border>
+                </Panel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+        xmlns:sw="using:LunarWard.App.Views.Starward"
+        x:Class="LunarWard.App.Views.Starward.MainWindow"
+        x:DataType="vm:ShellViewModel"
+        Title="LunarWard"
+        Width="1200" Height="676"
+        CanResize="False"
+        CanMaximize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="#FF1E1E1E"
+        ExtendClientAreaToDecorationsHint="False"
+        FontFamily="{StaticResource StarFontFamily}">
+
+  <!--
+    复刻 Starward MainWindow：
+      · 1200×676，不可缩放/最大化（Starward MainWindow.xaml.cs 的 OverlappedPresenter 设置）
+      · 48px 高标题栏（TitleBarHeightOption.Tall），拖拽区铺满整幅宽度
+      · 窗口右上角是三个 46×32 的标题栏按钮（最小化 / 最大化-禁用 / 关闭）
+      · 背景图与内容都画到 y=0，标题栏压在背景上
+  -->
+  <Grid RowDefinitions="48,*">
+
+    <!-- 内容层：从 y=0 开始，被标题栏覆盖（背景铺满整窗，和 Starward 一致） -->
+    <sw:StarwardShell Grid.Row="0" Grid.RowSpan="2" />
+
+    <!-- 标题栏 -->
+    <Grid Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Top" Height="48"
+          Background="Transparent"
+          PointerPressed="OnTitleBarPointerPressed">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+        <Button Classes="caption-button" Click="OnMinimizeClick" ToolTip.Tip="最小化">
+          <TextBlock Classes="icon" FontSize="10" Text="&#xE921;" />
+        </Button>
+        <Button Classes="caption-button" IsEnabled="False" ToolTip.Tip="最大化">
+          <TextBlock Classes="icon" FontSize="10" Text="&#xE922;" />
+        </Button>
+        <Button Classes="caption-close" Click="OnCloseClick" ToolTip.Tip="关闭">
+          <TextBlock Classes="icon" FontSize="10" Text="&#xE8BB;" />
+        </Button>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

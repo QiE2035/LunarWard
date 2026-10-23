@@ -12,14 +12,14 @@ namespace LunarWard.App.ViewModels;
 /// 环境 shell：<b>复用</b> <see cref="LaunchPlan.Env"/>，绝不另写一套环境构建逻辑。
 /// </summary>
 /// <remarks>见 <c>docs/04-FEATURES.md</c> §6.2 / §6.3。</remarks>
-public sealed partial class ShellViewModel : ObservableObject
+public sealed partial class EnvironmentShellViewModel : ObservableObject
 {
     private readonly LaunchPlan _plan;
 
     private readonly IXdgPaths _paths;
 
 
-    public ShellViewModel(LaunchPlan plan, IXdgPaths paths)
+    public EnvironmentShellViewModel(LaunchPlan plan, IXdgPaths paths)
     {
         _plan = plan;
         _paths = paths;

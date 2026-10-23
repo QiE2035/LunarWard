@@ -1,0 +1,126 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:starward="using:LunarWard.App.Views.Starward"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:DataType="vm:ShellViewModel"
+             x:Class="LunarWard.App.Views.Starward.NavigationRail">
+
+  <!--
+    Starward MainView 的左栏（PaneDisplayMode=LeftCompact，CompactPaneLength=56）：
+    顶部 52px 放当前游戏图标；菜单项 40×40；设置固定在底部。
+    选中态：14% 白底 + 左侧 3×16 强调色圆角竖条。
+  -->
+
+  <UserControl.Styles>
+    <Style Selector="Button.rail">
+      <Setter Property="Width" Value="40" />
+      <Setter Property="Height" Value="40" />
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="8,2" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="Button.rail:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+    </Style>
+
+    <Style Selector="Button.rail.is-selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarSelectionBrush}" />
+    </Style>
+
+    <Style Selector="Border.rail-indicator">
+      <Setter Property="Width" Value="3" />
+      <Setter Property="Height" Value="16" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="2,0,0,0" />
+      <Setter Property="CornerRadius" Value="2" />
+      <Setter Property="Background" Value="{StaticResource StarAccentBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="52,*,Auto">
+
+    <!-- 当前游戏图标（点击 = 打开全屏游戏选择层，Starward GameSelector） -->
+    <Button Grid.Row="0"
+            Classes="rail"
+            Margin="8,10,8,2"
+            Background="Transparent"
+            Command="{Binding OpenGameSelectorCommand}"
+            ToolTip.Tip="{Binding Strings[Shell.SelectGame]}">
+      <Panel Width="40" Height="40">
+        <Border CornerRadius="8" ClipToBounds="True" Background="#33FFFFFF" />
+        <Image Width="40" Height="40" Source="{Binding CurrentGameIcon}" Stretch="UniformToFill" />
+        <TextBlock Classes="icon" FontSize="20" Text="&#xE8A9;" IsVisible="{Binding !HasGameIcon}" />
+      </Panel>
+    </Button>
+
+    <!-- 菜单项：顺序与 Starward MainView 一致 -->
+    <StackPanel Grid.Row="1" Margin="0,8,0,0" Spacing="2">
+
+      <Button Classes="rail" Tag="launcher" Classes.is-selected="{Binding IsLauncherSelected}"
+              ToolTip.Tip="{Binding Strings[Shell.Launcher]}"
+              Command="{Binding SelectPageCommand}"
+              CommandParameter="{x:Static starward:ShellPage.Launcher}">
+        <Panel>
+          <Border Classes="rail-indicator" IsVisible="{Binding IsLauncherSelected}" />
+          <TextBlock Classes="icon" Text="&#xE80F;" />
+        </Panel>
+      </Button>
+
+      <Button Classes="rail" Tag="game-setting" Classes.is-selected="{Binding IsGameSettingSelected}"
+              ToolTip.Tip="{Binding Strings[Shell.GameSetting]}"
+              Command="{Binding SelectPageCommand}"
+              CommandParameter="{x:Static starward:ShellPage.GameSetting}">
+        <Panel>
+          <Border Classes="rail-indicator" IsVisible="{Binding IsGameSettingSelected}" />
+          <TextBlock Classes="icon" Text="&#xE7FC;" />
+        </Panel>
+      </Button>
+
+      <Button Classes="rail" Tag="screenshot" Classes.is-selected="{Binding IsScreenshotSelected}"
+              ToolTip.Tip="{Binding Strings[Shell.Screenshot]}"
+              Command="{Binding SelectPageCommand}"
+              CommandParameter="{x:Static starward:ShellPage.Screenshot}">
+        <Panel>
+          <Border Classes="rail-indicator" IsVisible="{Binding IsScreenshotSelected}" />
+          <TextBlock Classes="icon" Text="&#xE91B;" />
+        </Panel>
+      </Button>
+
+      <Button Classes="rail" Tag="gacha" Classes.is-selected="{Binding IsGachaSelected}"
+              ToolTip.Tip="{Binding Strings[Shell.Gacha]}"
+              Command="{Binding SelectPageCommand}"
+              CommandParameter="{x:Static starward:ShellPage.Gacha}">
+        <Panel>
+          <Border Classes="rail-indicator" IsVisible="{Binding IsGachaSelected}" />
+          <TextBlock Classes="icon" Text="&#xE9D2;" />
+        </Panel>
+      </Button>
+
+      <Button Classes="rail" Tag="toolbox" Classes.is-selected="{Binding IsToolboxSelected}"
+              ToolTip.Tip="{Binding Strings[Shell.Toolbox]}"
+              Command="{Binding SelectPageCommand}"
+              CommandParameter="{x:Static starward:ShellPage.Toolbox}">
+        <Panel>
+          <Border Classes="rail-indicator" IsVisible="{Binding IsToolboxSelected}" />
+          <TextBlock Classes="icon" Text="&#xF133;" />
+        </Panel>
+      </Button>
+
+    </StackPanel>
+
+    <Button Grid.Row="2" Classes="rail" Margin="8,2,8,10" Tag="settings"
+            Classes.is-selected="{Binding IsSettingsSelected}"
+            ToolTip.Tip="{Binding Strings[Shell.Settings]}"
+            Command="{Binding SelectPageCommand}"
+            CommandParameter="{x:Static starward:ShellPage.Settings}">
+      <Panel>
+        <Border Classes="rail-indicator" IsVisible="{Binding IsSettingsSelected}" />
+        <TextBlock Classes="icon" Text="&#xE713;" />
+      </Panel>
+    </Button>
+  </Grid>
+</UserControl>

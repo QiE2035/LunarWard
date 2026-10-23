@@ -1,0 +1,445 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="using:System">
+
+  <!--
+    Starward 视觉系统（docs/07-UI-REPLICA.md §3）。
+
+    取值全部来自 Starward 源码：
+      - Accent  #CBAD8E            Starward/App.xaml SystemAccentColor
+      - Acrylic Fallback #F52C2C2C Starward/App.xaml CustomAcrylicBrush
+      - 字体 Segoe UI / Segoe Fluent Icons
+      - 圆角 4（控件）/ 8（卡片）/ 22（胶囊）
+    Acrylic 真模糊在 Linux 上不存在，统一用 Starward 自己的 Fallback 纯色——
+    这不是"另设计"，是 Starward 在硬件不支持时的同一套降级值。
+  -->
+
+  <Styles.Resources>
+    <ResourceDictionary>
+
+      <!-- Fluent 的强调色（Starward App.xaml SystemAccentColor = #CBAD8E） -->
+      <Color x:Key="SystemAccentColor">#CBAD8E</Color>
+      <Color x:Key="SystemAccentColorLight1">#D7C0A8</Color>
+      <Color x:Key="SystemAccentColorLight2">#E3D0BF</Color>
+      <Color x:Key="SystemAccentColorLight3">#EFE0D6</Color>
+      <Color x:Key="SystemAccentColorDark1">#B99C7E</Color>
+      <Color x:Key="SystemAccentColorDark2">#A58B6E</Color>
+      <Color x:Key="SystemAccentColorDark3">#917A5E</Color>
+
+      <!-- ── 颜色 token ───────────────────────────────────────────── -->
+      <Color x:Key="StarAccentColor">#FFCBAD8E</Color>
+      <Color x:Key="StarAccentColorLight1">#FFD7C0A8</Color>
+      <Color x:Key="StarAccentColorDark1">#FFB99C7E</Color>
+      <SolidColorBrush x:Key="StarAccentBrush" Color="{StaticResource StarAccentColor}" />
+      <SolidColorBrush x:Key="StarAccentHoverBrush" Color="#FFD7C0A8" />
+      <SolidColorBrush x:Key="StarAccentPressedBrush" Color="#FFB99C7E" />
+      <SolidColorBrush x:Key="StarAccentForegroundBrush" Color="#FF1A1A1A" />
+      <SolidColorBrush x:Key="StarAccentDimBrush" Color="#33CBAD8E" />
+
+      <!-- 文本 -->
+      <SolidColorBrush x:Key="StarTextPrimary" Color="#FFFFFFFF" />
+      <SolidColorBrush x:Key="StarTextSecondary" Color="#C5FFFFFF" />
+      <SolidColorBrush x:Key="StarTextTertiary" Color="#87FFFFFF" />
+      <SolidColorBrush x:Key="StarTextDisabled" Color="#5DFFFFFF" />
+
+      <!-- 表面 -->
+      <SolidColorBrush x:Key="StarAcrylicBrush" Color="#F52C2C2C" />
+      <SolidColorBrush x:Key="StarOverlayAcrylicBrush" Color="#B32C2C2C" />
+      <SolidColorBrush x:Key="StarOverlayAcrylicHoverBrush" Color="#C72C2C2C" />
+      <SolidColorBrush x:Key="StarControlOnImageBrush" Color="#0FFFFFFF" />
+      <SolidColorBrush x:Key="StarControlOnImageHoverBrush" Color="#1FFFFFFF" />
+      <SolidColorBrush x:Key="StarControlOnImagePressedBrush" Color="#08FFFFFF" />
+      <SolidColorBrush x:Key="StarCardBackgroundBrush" Color="#66000000" />
+      <SolidColorBrush x:Key="StarCardStrokeBrush" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="StarControlFillBrush" Color="#0FFFFFFF" />
+      <SolidColorBrush x:Key="StarControlFillHoverBrush" Color="#17FFFFFF" />
+      <SolidColorBrush x:Key="StarControlFillPressedBrush" Color="#0BFFFFFF" />
+      <SolidColorBrush x:Key="StarDividerBrush" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="StarSelectionBrush" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="StarScrimBrush" Color="#80000000" />
+
+      <!-- 语义 -->
+      <SolidColorBrush x:Key="StarCautionBrush" Color="#FFFFB900" />
+      <SolidColorBrush x:Key="StarSuccessBrush" Color="#FF6CCB5F" />
+      <SolidColorBrush x:Key="StarErrorBrush" Color="#FFFF99A4" />
+      <SolidColorBrush x:Key="StarInfoBrush" Color="#FF60CDFF" />
+
+      <!-- ── 字体 ─────────────────────────────────────────────────── -->
+      <FontFamily x:Key="StarFontFamily">Segoe UI, Microsoft YaHei UI, Noto Sans CJK SC, Source Han Sans SC, sans-serif</FontFamily>
+      <FontFamily x:Key="StarIconFontFamily">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+      <FontFamily x:Key="StarMonoFontFamily">Cascadia Mono, JetBrains Mono, DejaVu Sans Mono, monospace</FontFamily>
+
+      <!-- ── 尺寸 ─────────────────────────────────────────────────── -->
+      <CornerRadius x:Key="StarControlCornerRadius">4</CornerRadius>
+      <CornerRadius x:Key="StarOverlayCornerRadius">8</CornerRadius>
+      <CornerRadius x:Key="StarCardCornerRadius">8</CornerRadius>
+      <x:Double x:Key="StarTitleBarHeight">48</x:Double>
+      <x:Double x:Key="StarNavigationWidth">56</x:Double>
+      <x:Double x:Key="StarWindowWidth">1200</x:Double>
+      <x:Double x:Key="StarWindowHeight">676</x:Double>
+
+    </ResourceDictionary>
+  </Styles.Resources>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       文本层级（Starward 页面里只用这五档）
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <Style Selector="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource StarFontFamily}" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="TextWrapping" Value="NoWrap" />
+  </Style>
+
+  <!-- 区块标题：Starward 用 20px + 默认字重（不是 Bold） -->
+  <Style Selector="TextBlock.section">
+    <Setter Property="FontSize" Value="20" />
+  </Style>
+
+  <Style Selector="TextBlock.secondary">
+    <Setter Property="Foreground" Value="{StaticResource StarTextSecondary}" />
+  </Style>
+
+  <Style Selector="TextBlock.tertiary">
+    <Setter Property="Foreground" Value="{StaticResource StarTextTertiary}" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+
+  <Style Selector="TextBlock.description">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextSecondary}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <Style Selector="TextBlock.pivot-header">
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontWeight" Value="Bold" />
+  </Style>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       图标（FontIcon 用 Segoe Fluent Icons，缺失时自动回落到 MDL2）
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <Style Selector="TextBlock.icon">
+    <Setter Property="FontFamily" Value="{StaticResource StarIconFontFamily}" />
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="TextAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="TextBlock.icon.large">
+    <Setter Property="FontSize" Value="20" />
+  </Style>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       Button：图片上的标准按钮 = 半透明白底、无边框、4px 圆角
+       （Starward 的 DateTimePickerFlyoutButtonStyle 等价物）
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <Style Selector="Button">
+    <Setter Property="FontFamily" Value="{StaticResource StarFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="{StaticResource StarControlFillBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+    <Setter Property="Padding" Value="11,5" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{StaticResource StarTextPrimary}" />
+  </Style>
+
+  <Style Selector="Button:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarControlFillPressedBrush}" />
+  </Style>
+
+  <Style Selector="Button:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarControlFillBrush}" />
+    <Setter Property="Opacity" Value="0.35" />
+  </Style>
+
+  <!-- 被主题自己覆盖背景的按钮（Fluent 的模板把 Background 画在 ContentPresenter 上） -->
+  <Style Selector="Button:pointerover">
+    <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+  </Style>
+
+  <!-- 强调按钮（对应 Starward AccentButtonStyle）：胶囊 8,20,20,8 或 18 -->
+  <Style Selector="Button.accent">
+    <Setter Property="Background" Value="{StaticResource StarAccentBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource StarAccentForegroundBrush}" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="16,0" />
+  </Style>
+
+  <Style Selector="Button.accent /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarAccentBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{StaticResource StarAccentForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarAccentHoverBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{StaticResource StarAccentForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button.accent:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarAccentPressedBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{StaticResource StarAccentForegroundBrush}" />
+  </Style>
+
+  <!-- 纯图标按钮（40×40，导航栏/右上角工具按钮） -->
+  <Style Selector="Button.icon-button">
+    <Setter Property="Width" Value="40" />
+    <Setter Property="Height" Value="40" />
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Button.icon-button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+  </Style>
+
+  <!-- 图片上的浮层按钮（背景切换条、铃铛）：40 高、22 圆角 -->
+  <Style Selector="Button.overlay">
+    <Setter Property="Background" Value="{StaticResource StarOverlayAcrylicBrush}" />
+    <Setter Property="CornerRadius" Value="18" />
+    <Setter Property="Height" Value="36" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="Padding" Value="8,0" />
+  </Style>
+
+  <Style Selector="Button.overlay /template/ ContentPresenter">
+    <Setter Property="CornerRadius" Value="18" />
+    <Setter Property="Background" Value="{StaticResource StarOverlayAcrylicBrush}" />
+  </Style>
+
+  <Style Selector="Button.overlay:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarOverlayAcrylicHoverBrush}" />
+  </Style>
+
+  <!-- 文字链接按钮 -->
+  <Style Selector="Button.link">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Padding" Value="4,0" />
+    <Setter Property="MinHeight" Value="24" />
+    <Setter Property="Foreground" Value="{StaticResource StarAccentBrush}" />
+  </Style>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TextBox / ComboBox / ToggleSwitch：暗色、4 圆角、白 10% 底
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <Style Selector="TextBox">
+    <Setter Property="FontFamily" Value="{StaticResource StarFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="{StaticResource StarControlFillBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource StarCardStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+    <Setter Property="SelectionBrush" Value="{StaticResource StarAccentDimBrush}" />
+  </Style>
+
+  <Style Selector="TextBox:pointerover">
+    <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+  </Style>
+
+  <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{StaticResource StarAccentBrush}" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="FontFamily" Value="{StaticResource StarFontFamily}" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="{StaticResource StarControlFillBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource StarCardStrokeBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+  </Style>
+
+  <Style Selector="ComboBox /template/ Border#Background">
+    <Setter Property="Background" Value="{StaticResource StarControlFillBrush}" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+
+  <Style Selector="ComboBox:pointerover /template/ Border#Background">
+    <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+  </Style>
+
+  <Style Selector="ComboBoxItem">
+    <Setter Property="FontFamily" Value="{StaticResource StarFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Padding" Value="11,5" />
+  </Style>
+
+  <Style Selector="CheckBox">
+    <Setter Property="FontFamily" Value="{StaticResource StarFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <Style Selector="RadioButton">
+    <Setter Property="FontFamily" Value="{StaticResource StarFontFamily}" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       卡片 / 分区 / 列表
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{StaticResource StarCardBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource StarCardStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="16" />
+  </Style>
+
+  <Style Selector="Border.panel">
+    <Setter Property="Background" Value="{StaticResource StarControlOnImageBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource StarCardStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="16" />
+  </Style>
+
+  <Style Selector="Border.divider">
+    <Setter Property="Height" Value="1" />
+    <Setter Property="Background" Value="{StaticResource StarDividerBrush}" />
+  </Style>
+
+  <Style Selector="ListBox">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="FontFamily" Value="{StaticResource StarFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+  </Style>
+
+  <Style Selector="ListBoxItem">
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="Padding" Value="11,5" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+
+  <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarSelectionBrush}" />
+  </Style>
+
+  <Style Selector="ProgressBar">
+    <Setter Property="MinHeight" Value="3" />
+    <Setter Property="Foreground" Value="{StaticResource StarAccentBrush}" />
+    <Setter Property="Background" Value="{StaticResource StarCardStrokeBrush}" />
+  </Style>
+
+  <Style Selector="ProgressBar.height-10">
+    <Setter Property="Height" Value="10" />
+    <Setter Property="CornerRadius" Value="5" />
+  </Style>
+
+  <Style Selector="ToolTip">
+    <Setter Property="FontFamily" Value="{StaticResource StarFontFamily}" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Background" Value="{StaticResource StarOverlayAcrylicBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+    <Setter Property="Padding" Value="8,4" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       状态条（InfoBar 等价物）
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       标题栏按钮（WinUI 的 46×32，悬停 10% 白，关闭悬停 #C42B1C）
+       ══════════════════════════════════════════════════════════════════ -->
+
+  <Style Selector="Button.caption-button">
+    <Setter Property="Width" Value="46" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+  </Style>
+
+  <Style Selector="Button.caption-button /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Button.caption-button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#1AFFFFFF" />
+  </Style>
+
+  <Style Selector="Button.caption-button:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="#0DFFFFFF" />
+  </Style>
+
+  <Style Selector="Button.caption-button:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Opacity" Value="0.3" />
+  </Style>
+
+  <Style Selector="Button.caption-close">
+    <Setter Property="Width" Value="46" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+  </Style>
+
+  <Style Selector="Button.caption-close /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Button.caption-close:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#FFC42B1C" />
+  </Style>
+
+  <Style Selector="Button.caption-close:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="#FFF1707A" />
+  </Style>
+
+  <Style Selector="Border.infobar">
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="16,9" />
+    <Setter Property="Background" Value="{StaticResource StarControlOnImageBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource StarCardStrokeBrush}" />
+  </Style>
+
+  <Style Selector="Border.infobar.warning">
+    <Setter Property="Background" Value="#33FFB900" />
+    <Setter Property="BorderBrush" Value="#55FFB900" />
+  </Style>
+
+  <Style Selector="Border.infobar.error">
+    <Setter Property="Background" Value="#33FF99A4" />
+    <Setter Property="BorderBrush" Value="#55FF99A4" />
+  </Style>
+
+  <Style Selector="Border.infobar.success">
+    <Setter Property="Background" Value="#336CCB5F" />
+    <Setter Property="BorderBrush" Value="#556CCB5F" />
+  </Style>
+
+</Styles>
