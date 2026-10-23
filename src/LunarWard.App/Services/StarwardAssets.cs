@@ -208,8 +208,12 @@ public sealed class StarwardAssets : IDisposable
                 extension = ".png";
             }
 
+            // 注意：扩展名来自 URL，但服务端有时返回 WebP/AVIF 而 URL 没有后缀。
+            // 解码交给 Avalonia 的 Bitmap（按魔数嗅探），扩展名只用于缓存文件名。
+
             var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
                 System.Text.Encoding.UTF8.GetBytes(url)))[..16];
+            // 每类素材一个前缀，便于人工排查缓存目录
             var path = Path.Join(_cacheRoot, $"{kind}-{hash}{extension}");
             if (File.Exists(path) && new FileInfo(path).Length > 0)
             {

@@ -29,7 +29,7 @@
     <Grid Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Top" Height="48"
           Background="Transparent"
           PointerPressed="OnTitleBarPointerPressed">
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
         <Button Classes="caption-button" Click="OnMinimizeClick" ToolTip.Tip="最小化">
           <TextBlock Classes="icon" FontSize="10" Text="&#xE921;" />
         </Button>

@@ -64,6 +64,15 @@
       <SolidColorBrush x:Key="StarErrorBrush" Color="#FFFF99A4" />
       <SolidColorBrush x:Key="StarInfoBrush" Color="#FF60CDFF" />
 
+      <!--
+        抽卡记录的稀有度强调色。取自 Starward
+        Features/Gacha/GachaStatsCard.xaml 的 Rarity5ForegroundBrush = #FFA500，
+        这里按 UI 契约收敛到 #FFD700 一系（金色系，在 #2C2C2C 底上对比度更好）；
+        4★ 沿用 Starward 的 Rarity4ForegroundBrush = #C864E0。
+      -->
+      <SolidColorBrush x:Key="StarRecordGoldBrush" Color="#FFFFD700" />
+      <SolidColorBrush x:Key="StarRecordPurpleBrush" Color="#FFC864E0" />
+
       <!-- ── 字体 ─────────────────────────────────────────────────── -->
       <FontFamily x:Key="StarFontFamily">Segoe UI, Microsoft YaHei UI, Noto Sans CJK SC, Source Han Sans SC, sans-serif</FontFamily>
       <FontFamily x:Key="StarIconFontFamily">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>

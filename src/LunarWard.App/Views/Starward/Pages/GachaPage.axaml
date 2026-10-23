@@ -1,9 +1,359 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="LunarWard.App.Views.Starward.Pages.GachaPage">
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             xmlns:rootvm="using:LunarWard.App.ViewModels"
+             xmlns:pages="using:LunarWard.App.Views.Starward.Pages"
+             x:Class="LunarWard.App.Views.Starward.Pages.GachaPage"
+             x:DataType="vm:GachaPageViewModel">
 
-  <!-- 占位：结构照 docs/07-UI-REPLICA.md §5 的映射表。由页面负责人实现。 -->
-  <Grid>
-    <TextBlock Classes="section" Margin="24,20" Text="Gacha" />
+  <!--
+    复刻 Starward Features/Gacha/GachaLogPage.xaml。
+      Row 40   ← 页头工具条：左侧 20px 标题 + 链接输入框（占满剩余宽度）+ 按钮组
+      Row Auto ← 12px 次要色状态行 + 错误 InfoBar
+      Row *    ← 卡池统计卡流（GachaStatsCard：圆角 8、CustomOverlayAcrylic 底）
+                 + 记录列表（Starward 记录收在统计卡的 Pivot 里，这里按 UI 契约提为整页虚拟化列表）
+      Row Auto ← 12px 说明（抽卡链接来源）
+    颜色 / 字号 / 圆角只用 Styles/Starward.axaml 的资源键与类，页面里不写裸色值。
+  -->
+
+  <UserControl.Resources>
+    <!-- 星级配色：刷子全部来自 Styles/Starward.axaml，页面内不写裸色值 -->
+    <pages:GachaRarityBrushConverter x:Key="RarityBrushConverter"
+                                     Gold="{StaticResource StarRecordGoldBrush}"
+                                     Purple="{StaticResource StarRecordPurpleBrush}"
+                                     Other="{StaticResource StarTextSecondary}" />
+  </UserControl.Resources>
+
+  <!-- 页面底：Starward 对非启动器页会盖一层 CustomAcrylic（MainView 的 Border_OverlayMask），
+       否则页面直接压在背景插画上，文字读不清。这里用同一个 Fallback 色。 -->
+  <Border Background="{StaticResource StarAcrylicBrush}">
+  <Grid Margin="24,0,24,0" RowDefinitions="Auto,Auto,*,Auto">
+
+    <!-- ══ 页头工具条（高 40） ═════════════════════════════════════ -->
+    <Grid Grid.Row="0" Height="40" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+
+      <TextBlock Grid.Column="0"
+                 VerticalAlignment="Center"
+                 FontSize="20"
+                 FontWeight="Bold"
+                 Text="{Binding Strings[Gacha.Title]}" />
+
+      <!-- 抽卡链接：占满剩余宽度（Starward 放在设置 Flyout 里，这里按契约提到工具条） -->
+      <TextBox Grid.Column="1"
+               Height="32"
+               VerticalAlignment="Center"
+               Text="{Binding GachaUrl}"
+               PlaceholderText="{Binding Strings[Gacha.UrlPlaceholder]}" />
+
+      <StackPanel Grid.Column="2"
+                  Orientation="Horizontal"
+                  VerticalAlignment="Center"
+                  Spacing="8">
+
+        <Button Height="32" Padding="12,0"
+                Command="{Binding RelocateCommand}"
+                Content="{Binding Strings[Gacha.Relocate]}" />
+
+        <!-- 主操作（Starward 的 SplitButton 更新记录） -->
+        <Button Height="32" Classes="accent"
+                Command="{Binding FetchCommand}"
+                Content="{Binding Strings[Gacha.Fetch]}" />
+
+        <Button Height="32" Padding="12,0"
+                Command="{Binding ExportJsonCommand}"
+                Content="{Binding Strings[Gacha.Export]}" />
+
+        <!-- UIGF 4：Core 还没有读写实现 → 禁用并注明"待接"，不伪造功能 -->
+        <Button Height="32" Padding="12,0"
+                IsEnabled="{Binding IsUigfAvailable}"
+                ToolTip.Tip="{Binding UigfHint}"
+                Content="{Binding Strings[Gacha.Uigf]}" />
+      </StackPanel>
+    </Grid>
+
+    <!-- ══ 状态行（12px 次要色）+ 错误条 ═══════════════════════════ -->
+    <StackPanel Grid.Row="1" Margin="0,2,0,0" Spacing="8">
+
+      <TextBlock FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding StatusText}"
+                 TextWrapping="Wrap" />
+
+      <Border Classes="infobar error" IsVisible="{Binding HasError}">
+        <TextBlock FontSize="12"
+                   Foreground="{StaticResource StarErrorBrush}"
+                   Text="{Binding ErrorText}"
+                   TextWrapping="Wrap" />
+      </Border>
+    </StackPanel>
+
+    <!-- ══ 卡片流 + 记录列表 ═══════════════════════════════════════ -->
+    <Grid Grid.Row="2" Margin="0,8,0,0" RowDefinitions="Auto,Auto,*">
+
+      <!-- 卡池统计卡（ItemsControl + WrapPanel；卡 220×148，圆角 8，半透明白底） -->
+      <ScrollViewer Grid.Row="0"
+                    MaxHeight="332"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto"
+                    IsVisible="{Binding HasPools}">
+        <ItemsControl ItemsSource="{Binding Pools}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" ItemWidth="228" ItemHeight="156" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:GachaPoolCardViewModel">
+              <Border Width="220" Height="148"
+                      CornerRadius="8"
+                      Background="{StaticResource StarOverlayAcrylicBrush}"
+                      BorderBrush="{StaticResource StarCardStrokeBrush}"
+                      BorderThickness="1"
+                      Padding="12,8">
+
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="2">
+
+                  <!-- 卡池名 + 抽数（Starward 首行：卡池名 + 右对齐计数） -->
+                  <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBlock Grid.Column="0"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="1"
+                               Classes="secondary"
+                               Text="{Binding PullsText}" />
+                  </Grid>
+
+                  <!-- 5★ 数 + 出率 -->
+                  <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                    <TextBlock Grid.Column="0"
+                               Foreground="{StaticResource StarRecordGoldBrush}"
+                               Text="{Binding FiveStarsText}" />
+                    <TextBlock Grid.Column="1"
+                               Classes="secondary"
+                               Text="{Binding FiveStarRateText}" />
+                  </Grid>
+
+                  <!-- 距离保底：一行强调色 -->
+                  <TextBlock Grid.Row="2"
+                             Foreground="{StaticResource StarAccentBrush}"
+                             Text="{Binding PityText}" />
+
+                  <TextBlock Grid.Row="3"
+                             FontSize="12"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding AverageText}" />
+
+                  <Border Grid.Row="4" Height="1" Margin="0,4"
+                          Background="{StaticResource StarDividerBrush}" />
+
+                  <!-- 出金历史（12px 次要色，可换行） -->
+                  <TextBlock Grid.Row="5"
+                             FontSize="12"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding PityHistoryText}"
+                             TextWrapping="Wrap"
+                             VerticalAlignment="Top" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <!-- 列表头：左侧汇总，右侧总数 + 「只看 5 星」 -->
+      <Grid Grid.Row="1"
+            Margin="0,8,0,0"
+            ColumnDefinitions="*,Auto,Auto"
+            ColumnSpacing="12"
+            IsVisible="{Binding HasData}">
+
+        <TextBlock Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Classes="secondary"
+                   Text="{Binding SummaryText}" />
+
+        <TextBlock Grid.Column="1"
+                   VerticalAlignment="Center"
+                   FontSize="12"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   Text="{Binding RecordCountText}" />
+
+        <CheckBox Grid.Column="2"
+                  MinHeight="32"
+                  IsChecked="{Binding FiveStarsOnly}"
+                  Content="{Binding Strings[Gacha.FiveStarsOnly]}" />
+      </Grid>
+
+      <!-- 记录列表：虚拟化 ListBox，行高 32，悬停高亮 -->
+      <Border Grid.Row="2"
+              Margin="0,8,0,0"
+              CornerRadius="8"
+              Background="{StaticResource StarControlOnImageBrush}"
+              BorderBrush="{StaticResource StarCardStrokeBrush}"
+              BorderThickness="1"
+              ClipToBounds="True"
+              IsVisible="{Binding HasRecords}">
+
+        <Grid RowDefinitions="Auto,*">
+
+          <!-- 列头（列宽与行模板一致） -->
+          <Grid Grid.Row="0" Height="32" Margin="12,0"
+                ColumnDefinitions="44,80,*,220,160" ColumnSpacing="8">
+            <TextBlock Grid.Column="0" Classes="tertiary" VerticalAlignment="Center" Text="{Binding Strings[Gacha.ColumnStars]}" />
+            <TextBlock Grid.Column="1" Classes="tertiary" VerticalAlignment="Center" Text="{Binding Strings[Gacha.ColumnType]}" />
+            <TextBlock Grid.Column="2" Classes="tertiary" VerticalAlignment="Center" Text="{Binding Strings[Gacha.ColumnName]}" />
+            <TextBlock Grid.Column="3" Classes="tertiary" VerticalAlignment="Center" Text="{Binding Strings[Gacha.ColumnPool]}" />
+            <TextBlock Grid.Column="4" Classes="tertiary" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{Binding Strings[Gacha.ColumnTime]}" />
+          </Grid>
+
+          <Border Grid.Row="0" Height="1" VerticalAlignment="Bottom"
+                  Background="{StaticResource StarDividerBrush}" />
+
+          <ListBox Grid.Row="1"
+                   ItemsSource="{Binding Records}"
+                   SelectionMode="Single"
+                   Padding="0,4"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <VirtualizingStackPanel />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.Styles>
+              <Style Selector="ListBoxItem">
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="Padding" Value="12,0" />
+                <Setter Property="CornerRadius" Value="4" />
+              </Style>
+              <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+              </Style>
+            </ListBox.Styles>
+
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="rootvm:GachaRecordViewModel">
+                <Grid ColumnDefinitions="44,80,*,220,160" ColumnSpacing="8"
+                      VerticalAlignment="Center">
+
+                  <!-- 星级：5★ 金、4★ 紫、其余三级色（Starward 的 RarityN Foreground） -->
+                  <TextBlock Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Text="{Binding Stars}"
+                             TextTrimming="CharacterEllipsis"
+                             Foreground="{Binding Record.RankType, Converter={StaticResource RarityBrushConverter}}" />
+
+                  <TextBlock Grid.Column="1"
+                             VerticalAlignment="Center"
+                             Classes="secondary"
+                             Text="{Binding ItemType}"
+                             TextTrimming="CharacterEllipsis" />
+
+                  <TextBlock Grid.Column="2"
+                             VerticalAlignment="Center"
+                             Text="{Binding Name}"
+                             TextTrimming="CharacterEllipsis" />
+
+                  <TextBlock Grid.Column="3"
+                             VerticalAlignment="Center"
+                             Classes="secondary"
+                             Text="{Binding Pool}"
+                             TextTrimming="CharacterEllipsis" />
+
+                  <TextBlock Grid.Column="4"
+                             VerticalAlignment="Center"
+                             HorizontalAlignment="Right"
+                             FontSize="12"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding Time}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Border>
+
+      <!-- 有记录、但「只看 5 星」过滤空了：列表区内的小提示（不是整页空态） -->
+      <Border Grid.Row="2"
+              Margin="0,8,0,0"
+              Padding="16"
+              CornerRadius="8"
+              Background="{StaticResource StarControlOnImageBrush}"
+              BorderBrush="{StaticResource StarCardStrokeBrush}"
+              BorderThickness="1"
+              IsVisible="{Binding ShowFilteredEmpty}">
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   TextAlignment="Center"
+                   Classes="description"
+                   Text="{Binding Strings[Gacha.FilteredEmpty]}" />
+      </Border>
+
+      <!-- ══ 空态：居中图标 + 「还没有记录」+ 操作提示（覆盖整个内容区） ══ -->
+      <Border Grid.Row="0"
+              Grid.RowSpan="3"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              MaxWidth="520"
+              Padding="32,28"
+              CornerRadius="8"
+              Background="{StaticResource StarControlOnImageBrush}"
+              BorderBrush="{StaticResource StarCardStrokeBrush}"
+              BorderThickness="1"
+              IsVisible="{Binding ShowEmptyState}">
+
+        <StackPanel Spacing="12">
+
+          <Border Width="88" Height="88"
+                  CornerRadius="44"
+                  HorizontalAlignment="Center"
+                  Background="{StaticResource StarControlFillBrush}"
+                  BorderBrush="{StaticResource StarCardStrokeBrush}"
+                  BorderThickness="1">
+            <TextBlock Classes="icon"
+                       FontSize="36"
+                       Foreground="{StaticResource StarTextTertiary}"
+                       Text="&#xE734;" />
+          </Border>
+
+          <TextBlock HorizontalAlignment="Center"
+                     FontSize="16"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{Binding Strings[Gacha.EmptyTitle]}" />
+
+          <TextBlock HorizontalAlignment="Center"
+                     TextAlignment="Center"
+                     Classes="description"
+                     Text="{Binding EmptyDetail}" />
+
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Center"
+                      Margin="0,4,0,0"
+                      Spacing="8">
+            <Button Classes="accent"
+                    Height="32"
+                    Command="{Binding FetchCommand}"
+                    Content="{Binding Strings[Gacha.EmptyFetch]}" />
+
+            <Button Height="32"
+                    Padding="12,0"
+                    Command="{Binding RelocateCommand}"
+                    Content="{Binding Strings[Gacha.Relocate]}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- ══ 底部说明（12px 次要色） ═════════════════════════════════ -->
+    <TextBlock Grid.Row="3"
+               Margin="0,10"
+               FontSize="12"
+               Foreground="{StaticResource StarTextSecondary}"
+               Text="{Binding Strings[Gacha.Location]}"
+               TextWrapping="Wrap" />
   </Grid>
+  </Border>
 </UserControl>

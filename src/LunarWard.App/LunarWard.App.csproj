@@ -7,7 +7,11 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>Assets/lunarward.ico</ApplicationIcon>
-    <NoWarn>$(NoWarn);CS8618</NoWarn>
+    <!--
+      AVLN3001：XAML 资源「找不到公共无参构造函数」，因为页面 ctor 接收 PageContext
+      （docs/07-UI-REPLICA.md §6 的契约）。这些页面只由代码创建，不走 XAML runtime loader。
+    -->
+    <NoWarn>$(NoWarn);CS8618;AVLN3001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

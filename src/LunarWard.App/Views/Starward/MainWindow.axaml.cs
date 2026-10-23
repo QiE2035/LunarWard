@@ -20,10 +20,18 @@ public partial class MainWindow : Window
 
     private void OnOpened(object? sender, EventArgs e)
     {
-        if (CaptureMode.Enabled)
+        if (!CaptureMode.Enabled)
         {
-            CaptureMode.Capture(this);
+            return;
         }
+
+        // 自检：--open-selector 直接把游戏选择层打开
+        if (CaptureMode.OpenSelector && DataContext is ShellViewModel shell)
+        {
+            shell.OpenGameSelectorCommand.Execute(null);
+        }
+
+        CaptureMode.Capture(this);
     }
 
 

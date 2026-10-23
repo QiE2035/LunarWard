@@ -61,43 +61,75 @@
     <Border Width="56" HorizontalAlignment="Left" Background="{StaticResource StarAcrylicBrush}" />
     <local:NavigationRail HorizontalAlignment="Left" VerticalAlignment="Stretch" />
 
+    <!--
+      Starward Border_OverlayMask：除启动器页外，所有页面都被一层 CustomAcrylic 盖住
+      （MainView.NavigateTo 里按页名切 Opacity）。没有它，设置/抽卡/截图页的文字会直接
+      压在插画上，读不清。
+    -->
+    <Border Margin="56,48,0,0"
+            Background="{StaticResource StarAcrylicBrush}"
+            IsVisible="{Binding !IsLauncherSelected}"
+            IsHitTestVisible="False" />
+
     <!-- ── 页面宿主（Starward MainView_Frame，Margin="0,48,0,0"） ── -->
     <ContentPresenter x:Name="PageHost" Margin="56,48,0,0" />
 
 
-    <!-- ── 游戏选择层（Starward GameSelector：全屏 #80000000 + 卡片网格） ── -->
+    <!-- ── 游戏选择层（Starward GameSelector：全屏 #80000000 + 192×108 卡片） ── -->
     <Grid x:Name="GameSelectorOverlayCard" IsVisible="{Binding IsGameSelectorOpen}">
       <Border Background="{StaticResource StarScrimBrush}" PointerPressed="OnGameSelectorScrimPressed" />
 
-      <ScrollViewer Margin="56,48,0,0" Padding="68,32,24,24" VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding GameChoices}" HorizontalAlignment="Left">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel Orientation="Horizontal" ItemWidth="208" ItemHeight="124" />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:GameChoiceViewModel">
-              <Border Width="192" Height="108" CornerRadius="8" ClipToBounds="True" Cursor="Hand"
-                      Background="#40000000"
-                      Tapped="OnGameChoiceTapped">
-                <Panel>
-                <TextBlock Text="{Binding Title}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           FontSize="16" FontWeight="Bold"
-                           TextWrapping="Wrap" TextAlignment="Center" />
-                <Border VerticalAlignment="Bottom" Background="#99000000" Padding="8,4">
-                  <TextBlock FontSize="12"
-                             HorizontalAlignment="Center"
-                             Foreground="{StaticResource StarTextSecondary}"
-                             Text="{Binding Edition}" />
+      <!-- Starward Border_FullBackground Padding="68,80,0,0" -->
+      <ScrollViewer Padding="68,80,24,24"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalContentAlignment="Top">
+        <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left" VerticalAlignment="Top">
+          <ItemsControl ItemsSource="{Binding GameChoices}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="16" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:GameChoiceViewModel">
+                <Border Width="192" Height="108" CornerRadius="8" ClipToBounds="True" Cursor="Hand"
+                        Background="#40000000"
+                        Tapped="OnGameChoiceTapped">
+                  <Panel>
+                    <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" IsVisible="{Binding HasThumbnail}" />
+                    <!-- Logo（Starward 中央 Logo，带 #60000000 底） -->
+                    <Border Margin="24" Background="#60000000" IsVisible="{Binding HasLogo}">
+                      <Image Source="{Binding Logo}" Stretch="Uniform" />
+                    </Border>
+                    <!-- 没有 Logo 时用名字兜底 -->
+                    <TextBlock Text="{Binding Title}"
+                               Margin="12"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="16" FontWeight="Bold"
+                               TextWrapping="Wrap" TextAlignment="Center"
+                               IsVisible="{Binding !HasLogo}" />
+                    <!-- 已安装标记 -->
+                    <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Margin="6" Padding="6,2" CornerRadius="4"
+                            Background="#99000000"
+                            IsVisible="{Binding IsInstalled}">
+                      <TextBlock FontSize="11" Foreground="{StaticResource StarTextSecondary}" Text="已安装" />
+                    </Border>
+                  </Panel>
                 </Border>
-                </Panel>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
       </ScrollViewer>
+
+      <!-- 关闭提示（Starward 用 TeachingTip / 点空白关闭） -->
+      <Button Classes="overlay"
+              Margin="0,0,24,24"
+              HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              Content="关闭"
+              Command="{Binding CloseGameSelectorCommand}" />
     </Grid>
   </Grid>
 </UserControl>

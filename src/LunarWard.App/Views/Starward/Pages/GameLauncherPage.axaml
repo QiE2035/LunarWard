@@ -24,7 +24,7 @@
           Background="{StaticResource StarAcrylicBrush}"
           ClipToBounds="True"
           IsVisible="{Binding HasContent}">
-      <Grid RowDefinitions="176,*">
+      <Grid RowDefinitions="176,*" RowSpacing="4">
 
       <!-- Banner（FlipView 等价物：单张 Image + PipsPager） -->
       <Grid x:Name="BannerHost"
@@ -57,10 +57,11 @@
                       BorderThickness="0"
                       Command="{Binding $parent[UserControl].((vm:GameLauncherPageViewModel)DataContext).SelectPivotCommand}"
                       CommandParameter="{Binding}">
-                <Panel>
-                  <TextBlock Classes="pivot-header" Margin="12,0" Text="{Binding Header}" />
-                  <Border x:Name="PivotUnderline"
-                          Height="3" CornerRadius="1.5" Margin="12,0"
+                <Panel Height="36">
+                  <TextBlock Classes="pivot-header" Margin="12,0"
+                             VerticalAlignment="Center"
+                             Text="{Binding Header}" />
+                  <Border Height="3" CornerRadius="1.5" Margin="12,0"
                           VerticalAlignment="Bottom"
                           Background="{StaticResource StarAccentBrush}"
                           IsVisible="{Binding IsSelected}" />
@@ -87,7 +88,7 @@
           </Panel>
         </Button>
 
-        <ScrollViewer Grid.Row="1" Margin="12,0,0,0" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" Margin="12,2,0,0" VerticalScrollBarVisibility="Auto">
           <ItemsControl ItemsSource="{Binding CurrentPosts}" Margin="0,0,16,8">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:PostItemViewModel">
@@ -133,11 +134,12 @@
         </Button>
       </Border>
 
+      <!-- Starward StartGameButton：44 高胶囊，可用时强调色底 -->
       <Grid Grid.Column="1" Height="44" MinWidth="180">
         <Border CornerRadius="22" Background="{StaticResource StarAcrylicBrush}" />
-
-        <!-- 运行中：强调色底（Starward Rect_AccentBackground） -->
-        <Border CornerRadius="22" Background="{StaticResource StarAccentBrush}" IsVisible="{Binding IsRunning}" />
+        <Border CornerRadius="22"
+                Background="{StaticResource StarAccentBrush}"
+                IsVisible="{Binding IsAccentBackground}" />
 
         <Button Padding="0"
                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -148,47 +150,74 @@
                 IsEnabled="{Binding IsStartButtonEnabled}">
           <Grid>
             <Border Width="20" Height="20" Margin="14,0,0,0"
-                          HorizontalAlignment="Left"
-                          CornerRadius="10"
-                          IsVisible="{Binding IsBusy}">
+                    HorizontalAlignment="Left"
+                    CornerRadius="10"
+                    IsVisible="{Binding IsBusy}">
               <Arc Width="18" Height="18" Stroke="{StaticResource StarTextSecondary}" StrokeThickness="2" StartAngle="0" SweepAngle="270" />
             </Border>
             <TextBlock Margin="41,0,53,0"
                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{Binding StartButtonForeground}"
                        Text="{Binding StartButtonText}" />
           </Grid>
         </Button>
 
-        <!-- 游戏设置齿轮（Starward Button_Setting） -->
+        <!-- 游戏设置齿轮（Starward Button_Setting，前景跟随强调色底） -->
         <Button Width="44" Height="44" Padding="0"
                 HorizontalAlignment="Right"
                 Background="Transparent" BorderThickness="0" CornerRadius="22"
                 Command="{Binding OpenGameSettingsCommand}"
                 ToolTip.Tip="{Binding Strings[Shell.GameSetting]}">
-          <TextBlock Classes="icon" FontSize="16" Text="&#xE713;" />
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE713;" Foreground="{Binding SettingButtonForeground}" />
         </Button>
       </Grid>
     </Grid>
 
-    <!-- 定位游戏 / 未安装（Starward 在按钮正下方一行小字） -->
+    <!-- 定位游戏 / 未配置（Starward 在按钮正下方一行 12px 小字） -->
     <Button Classes="link"
             Margin="0,0,44,18"
             HorizontalAlignment="Right" VerticalAlignment="Bottom"
-            Content="{Binding Strings[Launcher.LocateGame]}"
+            Foreground="{StaticResource StarCautionBrush}"
             IsVisible="{Binding ShowLocateGame}"
-            Command="{Binding OpenGameSettingsCommand}" />
+            Command="{Binding OpenGameSettingsCommand}">
+      <TextBlock FontSize="12" Foreground="{StaticResource StarCautionBrush}">
+        <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[Launcher.Installed]}" />
+        <Run Text=" " />
+        <Run Text="{Binding Strings[Launcher.LocateGame]}" />
+      </TextBlock>
+    </Button>
 
-    <!-- ── 右上：便笺 / 账号 ─────────────────────────────────────── -->
-    <StackPanel Margin="4" HorizontalAlignment="Right" VerticalAlignment="Top" Spacing="4">
-      <Button Classes="icon-button"
-              Command="{Binding OpenDailyNoteCommand}"
-              ToolTip.Tip="{Binding Strings[Main.DailyNote]}">
-        <Panel Width="40" Height="40">
-          <Border CornerRadius="8" Background="{StaticResource StarOverlayAcrylicBrush}" />
-          <TextBlock Classes="icon" FontSize="20" Text="&#xE823;" />
-        </Panel>
-      </Button>
-    </StackPanel>
+    <Button Classes="link"
+            Margin="0,0,44,18"
+            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+            IsVisible="{Binding ShowNotConfigured}"
+            Command="{Binding OpenGameSettingsCommand}">
+      <TextBlock FontSize="12" Foreground="{StaticResource StarCautionBrush}" Text="{Binding Strings[Launcher.ConfigureGame]}" />
+    </Button>
+
+    <!-- ── 右上：便笺（Starward DailyNoteButton，40×40 圆角 8 浮层） ── -->
+    <Button Classes="icon-button"
+            Margin="4"
+            HorizontalAlignment="Right" VerticalAlignment="Top"
+            Command="{Binding OpenDailyNoteCommand}"
+            ToolTip.Tip="{Binding Strings[Main.DailyNote]}">
+      <Panel Width="40" Height="40">
+        <Border CornerRadius="8" Background="{StaticResource StarOverlayAcrylicBrush}" />
+        <TextBlock Classes="icon" FontSize="20" Text="&#xE823;" />
+      </Panel>
+    </Button>
+
+    <!-- ── 右下：账号切换（Starward GameAccountSwitcher，开始按钮上方 100px） ── -->
+    <Button Classes="icon-button"
+            Margin="0,0,44,100"
+            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+            Command="{Binding OpenAccountsCommand}"
+            ToolTip.Tip="{Binding Strings[Main.Accounts]}">
+      <Panel Width="40" Height="40">
+        <Border CornerRadius="20" Background="{StaticResource StarOverlayAcrylicBrush}" />
+        <TextBlock Classes="icon" FontSize="20" Text="&#xE77B;" />
+      </Panel>
+    </Button>
 
     <!-- ── 底部背景切换条（悬停 60px 区域出现） ─────────────────── -->
     <Panel x:Name="BackgroundBarHost"

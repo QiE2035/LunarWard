@@ -251,11 +251,48 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     private bool _isBusy;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAccentBackground), nameof(StartButtonForeground), nameof(SettingButtonForeground))]
     private bool _isRunning;
 
+    /// <summary>
+    /// Starward <c>StartGameButton</c>：可点且不是安装中 → 强调色底 + 强调色上的文字
+    /// （见 <c>IsAccentColorBackgroundVisible</c> / <c>ActionButtonForeground</c>）。
+    /// </summary>
+    public bool IsAccentBackground => IsStartButtonEnabled && !IsRunning && !IsBusy;
 
-    /// <summary>游戏目录不存在时，开始按钮下方显示「定位游戏」（Starward 同款）。</summary>
-    public bool ShowLocateGame => !Directory.Exists(ProfileConfig.ExpandPath(_context.Profile.Profile.Path));
+    public Avalonia.Media.IBrush StartButtonForeground => IsAccentBackground
+        ? Avalonia.Media.Brushes.Black
+        : Avalonia.Media.Brush.Parse("#FFFFFFFF");
+
+    public Avalonia.Media.IBrush SettingButtonForeground => IsAccentBackground
+        ? Avalonia.Media.Brushes.Black
+        : Avalonia.Media.Brush.Parse("#FFFFFFFF");
+
+
+    /// <summary>
+    /// Starward 只在 <c>GameState.InstallGame</c> 时显示「已安装 · 定位游戏」。
+    /// 我们对应的是"目录配了但找不到游戏 exe"——目录完全没配时显示另一句提示。
+    /// （<c>GameLauncherPage.xaml.cs</c> 的 <c>InstalledLocateGameEnabled</c>）
+    /// </summary>
+    public bool ShowLocateGame
+    {
+        get
+        {
+            var path = ProfileConfig.ExpandPath(_context.Profile.Profile.Path);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            var definition = Games.GameCatalog.Detect(path);
+            return definition is null || !File.Exists(Path.Join(path, definition.Executable));
+        }
+    }
+
+
+    /// <summary>目录完全没配：按钮下方给一句"去游戏设置里指定目录"的小字。</summary>
+    public bool ShowNotConfigured => string.IsNullOrWhiteSpace(
+        ProfileConfig.ExpandPath(_context.Profile.Profile.Path));
 
 
     /// <summary>公告铃铛红点：Starward 需要拉 GameNotice，这里用"有公告即亮"的近似。</summary>
@@ -464,6 +501,17 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         window.Show();
         await Task.CompletedTask;
     }
+
+    [RelayCommand]
+    private void OpenAccounts()
+    {
+        var window = new Views.AccountWindow
+        {
+            DataContext = new AccountViewModel(_services, _context.Profile),
+        };
+        window.Show();
+    }
+
 
     [RelayCommand]
     private void OpenInGameNotices()

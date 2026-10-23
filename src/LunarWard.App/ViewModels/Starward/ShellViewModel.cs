@@ -122,10 +122,21 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     });
 
 
+    /// <summary>
+    /// 左栏展开态（Starward NavigationView 的 <c>PaneDisplayMode="LeftCompact"</c>：
+    /// 平时 56px 只显示图标，鼠标移入后展开显示文字）。
+    /// </summary>
+    [ObservableProperty]
+    private bool _isRailExpanded;
+
+
     // ── 游戏选择层 ────────────────────────────────────────────────────
 
     [ObservableProperty]
     private bool isGameSelectorOpen;
+
+    [ObservableProperty]
+    private bool _isGameSelectorLoading;
 
     partial void OnIsGameSelectorOpenChanged(bool value) => GameSelectorVisibilityChanged?.Invoke(this, EventArgs.Empty);
 
@@ -135,6 +146,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     {
         BuildGameChoices();
         IsGameSelectorOpen = true;
+        _ = LoadChoiceArtAsync();
     }
 
 
@@ -270,6 +282,9 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             {
                 BackgroundImage = background;
             }
+
+            // 游戏选择层的缩略图提前预热，避免第一次点开是空卡
+            await LoadChoiceArtAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -360,8 +375,44 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         GameChoices.Clear();
         foreach (var profile in Profiles)
         {
-            var definition = Games.GameCatalog.Detect(ProfileConfig.ExpandPath(profile.Profile.Path));
+            var definition = Games.GameCatalog.Detect(ProfileConfig.ExpandPath(profile.Profile.Path))
+                             ?? Games.GameCatalog.Get(profile.Profile.Game,
+                                 string.Equals(profile.Profile.Edition, "Global", StringComparison.OrdinalIgnoreCase)
+                                     ? Games.GameEdition.Global
+                                     : Games.GameEdition.China);
             GameChoices.Add(new GameChoiceViewModel(profile, definition));
+        }
+
+        _ = LoadChoiceArtAsync();
+    }
+
+
+    /// <summary>游戏选择层的缩略图/Logo（Starward GameSelector 的 192×108 卡片）。</summary>
+    private async Task LoadChoiceArtAsync()
+    {
+        try
+        {
+            IsGameSelectorLoading = true;
+            foreach (var choice in GameChoices)
+            {
+                var art = Assets.AllArt.FirstOrDefault(x =>
+                    string.Equals(x.GameBiz, choice.GameBiz, StringComparison.OrdinalIgnoreCase));
+                if (art is null)
+                {
+                    continue;
+                }
+
+                choice.Thumbnail = await Assets.BitmapAsync(art.Thumbnail ?? art.Background).ConfigureAwait(true);
+                choice.Logo = await Assets.BitmapAsync(art.Logo).ConfigureAwait(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"游戏选择层素材加载失败：{ex.Message}");
+        }
+        finally
+        {
+            IsGameSelectorLoading = false;
         }
     }
 
@@ -429,7 +480,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
 
 /// <summary>游戏选择层的一格（Starward GameSelector 的 192×108 卡片）。</summary>
-public sealed class GameChoiceViewModel
+public sealed partial class GameChoiceViewModel : ObservableObject
 {
     public GameChoiceViewModel(ProfileItemViewModel profile, Games.GameDefinition? definition)
     {
@@ -453,6 +504,23 @@ public sealed class GameChoiceViewModel
     public bool IsInstalled { get; }
 
     public bool IsCurrent { get; set; }
+
+    /// <summary>Starward 卡片背景（缩略图 192×108）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasThumbnail))]
+    private Bitmap? _thumbnail;
+
+    /// <summary>Starward 卡片中央的 Logo（悬停时换成图标 + 「选择服务器」）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasLogo))]
+    private Bitmap? _logo;
+
+    public bool HasThumbnail => Thumbnail is not null;
+
+    public bool HasLogo => Logo is not null;
+
+    /// <summary>游戏 biz（<c>hk4e_cn</c>），用来匹配素材。</summary>
+    public string GameBiz => Definition?.GameBiz ?? "";
 
     public string Title => $"{Name} · {Edition}";
 }

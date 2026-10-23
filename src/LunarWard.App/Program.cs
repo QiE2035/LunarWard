@@ -26,6 +26,7 @@ internal static class Program
             CaptureMode.TargetWindow = ReadArgument(args, "--window") ?? "main";
             CaptureMode.Page = ReadArgument(args, "--page");
             CaptureMode.ProfileId = ReadArgument(args, "--profile");
+            CaptureMode.OpenSelector = args.Contains("--open-selector");
             if (int.TryParse(ReadArgument(args, "--wait"), out var wait) && wait >= 0)
             {
                 CaptureMode.WaitMilliseconds = wait;
@@ -76,6 +77,9 @@ internal static class CaptureMode
 
     /// <summary>指定档案 id。</summary>
     public static string? ProfileId { get; set; }
+
+    /// <summary>截图前打开游戏选择层。</summary>
+    public static bool OpenSelector { get; set; }
 
     /// <summary>渲染前等待时间（毫秒）。</summary>
     public static int WaitMilliseconds { get; set; } = 1600;

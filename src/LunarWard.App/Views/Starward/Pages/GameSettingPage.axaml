@@ -1,12 +1,624 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             xmlns:svc="using:LunarWard.App.Services"
              x:Class="LunarWard.App.Views.Starward.Pages.GameSettingPage"
              x:DataType="vm:GameSettingPageViewModel">
 
-  <!-- 占位：结构照 Starward GameSettingPage（左列基础 / 右列高级 / 底部 60px 应用条）。T1 负责实现。 -->
+  <!--
+    复刻 Starward Features/GameSetting/GameSettingPage.xaml 的骨架：
+      Grid RowDefinitions="*,60"
+      ScrollViewer › Grid Margin="24,20,24,24" ColumnSpacing="24"（左右两列）
+      底部 60px OverlayAcrylic 应用条（CornerRadius="8,0,0,0"）
+
+    左列 = Starward 的「基础设置」位置，内容是 LunarWard 真正拥有的设置
+    （目录 / 渠道 / 运行时 / wine 选项）；右列 = 追加区（十层 env / 外部程序 / 诊断）。
+    Starward 的分辨率 / HDR / 语音语言 / 帧率在 Linux 上没有对应值，按契约不伪造。
+
+    颜色与字号只用 Styles/Starward.axaml 的资源键与类；页面内不写裸色值。
+  -->
+
+  <UserControl.Styles>
+    <!-- 警告文字用 Caution 色（Starward 的 SystemFillColorCaution），由 IsErrorWarning 切换 -->
+    <Style Selector="TextBlock.caution">
+      <Setter Property="Foreground" Value="{StaticResource StarCautionBrush}" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style Selector="TextBlock.mono">
+      <Setter Property="FontFamily" Value="{StaticResource StarMonoFontFamily}" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <!-- 表格/展开行的极简按钮（Starward 的 ListViewItem 内部按钮） -->
+    <Style Selector="Button.flat">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{StaticResource StarTextSecondary}" />
+    </Style>
+
+    <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+    </Style>
+
+    <!-- 小节内的小标题（Starward GameSettingPage 的 FontWeight="Bold" 小标题） -->
+    <Style Selector="TextBlock.subhead">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+  </UserControl.Styles>
+
   <Grid RowDefinitions="*,60">
-    <TextBlock Classes="section" Margin="24,20" Text="{Binding GameName}" />
-    <Border Grid.Row="1" CornerRadius="8,0,0,0" Background="{StaticResource StarOverlayAcrylicBrush}" />
+
+    <!-- ══ 内容区 ═══════════════════════════════════════════════════════ -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <Grid Margin="24,20,24,24" ColumnDefinitions="*,*" ColumnSpacing="24">
+
+        <!-- ══════════════════════════════════════════════════════════
+             左列：基础设置（Starward 左列位置）
+             ══════════════════════════════════════════════════════════ -->
+        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+
+          <!-- ── 游戏目录 ─────────────────────────────────────────── -->
+          <TextBlock Classes="section" Text="{Binding Strings[Settings.GameDirectory]}" />
+          <TextBlock Classes="description"
+                     Margin="0,8,0,0"
+                     Text="{Binding Strings[GameSetting.DirectoryHint]}" />
+
+          <Grid Margin="0,8,0,0" ColumnDefinitions="*,8,Auto">
+            <TextBox Grid.Column="0"
+                     Height="32"
+                     Text="{Binding GamePath, Mode=TwoWay}" />
+            <Button Grid.Column="2"
+                    Height="32"
+                    MinWidth="72"
+                    Content="{Binding Strings[Settings.Scan]}"
+                    Command="{Binding ScanGamesCommand}" />
+          </Grid>
+
+          <TextBlock Margin="0,8,0,0"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Text="{Binding GameDirectoryName}"
+                     IsVisible="{Binding HasGameDirectory}"
+                     Foreground="{StaticResource StarTextSecondary}" />
+
+          <TextBlock Classes="caution"
+                     Margin="0,8,0,0"
+                     Text="{Binding GameDirectoryName}"
+                     IsVisible="{Binding !HasGameDirectory}" />
+
+          <TextBlock Classes="tertiary"
+                     Margin="0,4,0,0"
+                     TextWrapping="Wrap"
+                     Text="{Binding DirectoryStatus}" />
+
+          <ItemsControl ItemsSource="{Binding DetectedGames}" Margin="0,8,0,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:DetectedGameRow">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
+                  <TextBlock Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Classes="tertiary"
+                             TextTrimming="CharacterEllipsis"
+                             ToolTip.Tip="{Binding Directory}"
+                             Text="{Binding Display}" />
+                  <Button Grid.Column="1"
+                          Classes="flat"
+                          Content="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ScanUse]}"
+                          Command="{Binding UseCommand}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- ── 区服渠道 ─────────────────────────────────────────── -->
+          <TextBlock Classes="section"
+                     Margin="0,20,0,0"
+                     Text="{Binding Strings[Settings.Channel]}" />
+
+          <ComboBox Width="220"
+                    Height="32"
+                    HorizontalAlignment="Left"
+                    Margin="0,8,0,0"
+                    ItemsSource="{Binding ChannelOptions}"
+                    SelectedItem="{Binding SelectedChannel, Mode=TwoWay}" />
+
+          <TextBlock Classes="description"
+                     Margin="0,8,0,0"
+                     Text="{Binding Strings[GameSetting.ChannelDescription]}" />
+
+          <Border Classes="infobar warning"
+                  Margin="0,8,0,0"
+                  IsVisible="{Binding ChannelBlocked}">
+            <StackPanel Spacing="8">
+              <TextBlock TextWrapping="Wrap"
+                         Foreground="{StaticResource StarCautionBrush}"
+                         Text="{Binding ChannelMessage}" />
+              <Button Classes="flat"
+                      HorizontalAlignment="Left"
+                      Content="{Binding Strings[GameSetting.PluginDownload]}"
+                      Command="{Binding DownloadBilibiliPluginCommand}"
+                      IsVisible="{Binding ChannelNeedsPlugin}" />
+            </StackPanel>
+          </Border>
+
+          <TextBlock Classes="tertiary"
+                     Margin="0,8,0,0"
+                     TextWrapping="Wrap"
+                     Text="{Binding ChannelMessage}"
+                     IsVisible="{Binding !ChannelBlocked}" />
+
+          <TextBlock Classes="tertiary"
+                     Margin="0,4,0,0"
+                     TextWrapping="Wrap"
+                     Text="{Binding PluginStatus}" />
+
+          <!-- ── wine 运行时 ──────────────────────────────────────── -->
+          <TextBlock Classes="section"
+                     Margin="0,20,0,0"
+                     Text="{Binding Strings[Settings.Runtime]}" />
+
+          <Grid Margin="0,8,0,0" ColumnDefinitions="*,8,Auto">
+            <ComboBox Grid.Column="0"
+                      Height="52"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Runtimes}"
+                      SelectedItem="{Binding SelectedRuntime, Mode=TwoWay}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="svc:AvailableRuntime">
+                  <StackPanel Spacing="0" Margin="0,2">
+                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="tertiary" Text="{Binding Path}" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Grid.Column="2"
+                    Height="32"
+                    VerticalAlignment="Center"
+                    MinWidth="88"
+                    Content="{Binding Strings[Settings.Rescan]}"
+                    Command="{Binding ScanRuntimesCommand}" />
+          </Grid>
+
+          <TextBlock Classes="tertiary"
+                     Margin="0,8,0,0"
+                     TextWrapping="Wrap"
+                     Text="{Binding RuntimeExplain}" />
+
+          <TextBlock Classes="tertiary"
+                     Margin="0,4,0,0"
+                     TextWrapping="Wrap"
+                     Text="{Binding Strings[GameSetting.RuntimeHint]}" />
+
+          <!-- ── wine 与增强 ──────────────────────────────────────── -->
+          <TextBlock Classes="section"
+                     Margin="0,20,0,0"
+                     Text="{Binding Strings[Settings.WineOptions]}" />
+
+          <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,12,Auto">
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="{Binding Strings[Settings.Sync]}" />
+            <ComboBox Grid.Column="2"
+                      Width="140"
+                      Height="32"
+                      ItemsSource="{Binding SyncOptions}"
+                      SelectedItem="{Binding SelectedSync, Mode=TwoWay}" />
+          </Grid>
+
+          <CheckBox Margin="0,8,0,0"
+                    Content="{Binding Strings[Settings.Borderless]}"
+                    IsChecked="{Binding Borderless, Mode=TwoWay}" />
+          <CheckBox Margin="0,8,0,0"
+                    Content="{Binding Strings[Settings.WineWayland]}"
+                    IsChecked="{Binding WineWayland, Mode=TwoWay}" />
+          <CheckBox Margin="0,8,0,0"
+                    Content="{Binding Strings[Settings.TimeoutFix]}"
+                    IsChecked="{Binding TimeoutFix, Mode=TwoWay}" />
+          <CheckBox Margin="0,8,0,0"
+                    Content="{Binding Strings[Settings.Fsr]}"
+                    IsChecked="{Binding Fsr, Mode=TwoWay}" />
+          <CheckBox Margin="0,8,0,0"
+                    Content="{Binding Strings[Settings.Dx12]}"
+                    IsChecked="{Binding Dx12, Mode=TwoWay}"
+                    IsVisible="{Binding IsZzz}" />
+
+          <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,12,Auto">
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="{Binding Strings[Settings.Hud]}" />
+            <ComboBox Grid.Column="2"
+                      Width="220"
+                      Height="32"
+                      ItemsSource="{Binding HudOptions}"
+                      SelectedItem="{Binding SelectedHud, Mode=TwoWay}" />
+          </Grid>
+
+          <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,12,Auto">
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="{Binding Strings[Settings.ReadyGrace]}" />
+            <NumericUpDown Grid.Column="2"
+                           Width="160"
+                           Height="32"
+                           Minimum="0"
+                           Maximum="600000"
+                           Increment="500"
+                           FormatString="0"
+                           Value="{Binding ReadyGraceMsValue, Mode=TwoWay}" />
+          </Grid>
+
+          <TextBlock Classes="description"
+                     Margin="0,8,0,0"
+                     Text="{Binding Strings[GameSetting.WineHint]}" />
+
+        </StackPanel>
+
+        <!-- ══════════════════════════════════════════════════════════
+             右列：追加区（环境变量 / 外部程序 / 诊断）
+             ══════════════════════════════════════════════════════════ -->
+        <StackPanel Grid.Column="1" Spacing="0">
+
+          <!-- ── 环境变量（十层合并）──────────────────────────────── -->
+          <TextBlock Classes="section" Text="{Binding Strings[GameSetting.EnvTable]}" />
+          <TextBlock Classes="description"
+                     Margin="0,8,0,0"
+                     Text="{Binding Strings[GameSetting.EnvDescription]}" />
+
+          <Border Classes="infobar error"
+                  Margin="0,8,0,0"
+                  IsVisible="{Binding HasPlanError}">
+            <TextBlock TextWrapping="Wrap" Text="{Binding PlanError}" />
+          </Border>
+
+          <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0"
+                       Classes="tertiary"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Text="{Binding RuntimeExplain}" />
+            <Button Grid.Column="1"
+                    Classes="flat"
+                    Content="{Binding Strings[GameSetting.RefreshPlan]}"
+                    Command="{Binding RefreshPlanCommand}" />
+          </Grid>
+
+          <!-- 表头（Starward 的表格即视感：无外框、分隔线 + 次要色表头） -->
+          <Border Classes="panel"
+                  Margin="0,8,0,0"
+                  Padding="12,8"
+                  IsVisible="{Binding !HasPlanError}">
+            <Grid RowDefinitions="Auto,1,Auto">
+              <Grid Grid.Row="0" ColumnDefinitions="140,*,100" Margin="0,0,0,8">
+                <TextBlock Grid.Column="0" Classes="tertiary" Text="{Binding Strings[GameSetting.Key]}" />
+                <TextBlock Grid.Column="1" Classes="tertiary" Text="{Binding Strings[GameSetting.Value]}" />
+                <TextBlock Grid.Column="2" Classes="tertiary" Text="{Binding Strings[GameSetting.Source]}" />
+              </Grid>
+
+              <Border Grid.Row="1" Classes="divider" />
+
+              <ScrollViewer Grid.Row="2" MaxHeight="248" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0">
+                <ItemsControl ItemsSource="{Binding EnvRows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:GameSettingEnvRow">
+                      <Grid ColumnDefinitions="140,*,100" Margin="0,3">
+                        <TextBlock Grid.Column="0"
+                                   Classes="mono"
+                                   Foreground="{StaticResource StarTextPrimary}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding Key}" />
+                        <TextBlock Grid.Column="1"
+                                   Classes="mono"
+                                   Margin="0,0,12,0"
+                                   Foreground="{StaticResource StarTextPrimary}"
+                                   TextTrimming="CharacterEllipsis"
+                                   ToolTip.Tip="{Binding Value}"
+                                   Text="{Binding DisplayValue}" />
+                        <TextBlock Grid.Column="2"
+                                   Classes="mono"
+                                   Foreground="{StaticResource StarTextSecondary}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding Source}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Grid>
+          </Border>
+
+          <Grid Margin="0,8,0,0" ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Classes="tertiary" Text="{Binding EnvSummary}" />
+            <TextBlock Grid.Column="1" Classes="tertiary" Text="{Binding PrefixText}"
+                       TextTrimming="CharacterEllipsis" MaxWidth="300" ToolTip.Tip="{Binding PrefixText}" />
+          </Grid>
+
+          <!-- ── 外部程序 ─────────────────────────────────────────── -->
+          <TextBlock Classes="section"
+                     Margin="0,20,0,0"
+                     Text="{Binding Strings[GameSetting.ProgramsTitle]}" />
+          <TextBlock Classes="description"
+                     Margin="0,8,0,0"
+                     Text="{Binding Strings[GameSetting.ProgramsDescription]}" />
+
+          <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,*">
+            <Button Grid.Column="0"
+                    Height="32"
+                    Content="{Binding Strings[GameSetting.AddFromFile]}"
+                    Click="OnAddProgramClick" />
+            <TextBlock Grid.Column="1"
+                       Classes="tertiary"
+                       Margin="12,0,0,0"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Text="{Binding ProgramStatus}" />
+          </Grid>
+
+          <TextBlock Classes="tertiary"
+                     Margin="0,8,0,0"
+                     TextWrapping="Wrap"
+                     Text="{Binding Strings[GameSetting.ProgramsEmpty]}"
+                     IsVisible="{Binding !HasPrograms}" />
+
+          <ItemsControl ItemsSource="{Binding Programs}" Margin="0,8,0,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:GameSettingProgramViewModel">
+                <Border Classes="panel" Padding="12" Margin="0,0,0,8">
+                  <StackPanel Spacing="8">
+
+                    <!-- 折叠行：启用 / 名称 / 触发摘要 / 展开 -->
+                    <Grid ColumnDefinitions="Auto,8,*,Auto">
+                      <CheckBox Grid.Column="0"
+                                Margin="0,0,0,0"
+                                MinHeight="24"
+                                IsChecked="{Binding Enabled, Mode=TwoWay}"
+                                ToolTip.Tip="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramEnabled]}" />
+                      <TextBlock Grid.Column="2"
+                                 Classes="subhead"
+                                 VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis"
+                                 Text="{Binding Header}" />
+                      <Button Grid.Column="3"
+                              Classes="flat"
+                              Padding="8,2"
+                              Command="{Binding ToggleExpandedCommand}"
+                              ToolTip.Tip="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramExpand]}">
+                        <TextBlock Classes="icon" FontSize="12" Text="&#xE70D;" />
+                      </Button>
+                    </Grid>
+
+                    <TextBlock Classes="tertiary"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding ResolvedPath}"
+                               Text="{Binding ResolvedPath}" />
+
+                    <!-- 展开区 -->
+                    <StackPanel Spacing="8" IsVisible="{Binding IsExpanded}">
+
+                      <TextBlock Classes="tertiary"
+                                 Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramPath]}"
+                                 Margin="0,4,0,0" />
+
+                      <Grid ColumnDefinitions="*,8,Auto">
+                        <TextBox Grid.Column="0"
+                                 Height="32"
+                                 FontSize="12"
+                                 Text="{Binding Path, Mode=TwoWay}" />
+                        <Button Grid.Column="2"
+                                Height="32"
+                                Content="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramBrowse]}"
+                                Click="OnBrowseProgramClick" />
+                      </Grid>
+
+                      <TextBlock Classes="tertiary"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramPathHint]}" />
+
+                      <Grid ColumnDefinitions="*,8,*">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                          <TextBlock Classes="tertiary"
+                                     Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramTrigger]}" />
+                          <ComboBox Height="32"
+                                    HorizontalAlignment="Stretch"
+                                    ItemsSource="{Binding TriggerOptions}"
+                                    SelectedItem="{Binding SelectedTrigger, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="4">
+                          <TextBlock Classes="tertiary"
+                                     Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramExitPolicy]}" />
+                          <ComboBox Height="32"
+                                    HorizontalAlignment="Stretch"
+                                    ItemsSource="{Binding ExitOptions}"
+                                    SelectedItem="{Binding SelectedExitPolicy, Mode=TwoWay}" />
+                        </StackPanel>
+                      </Grid>
+
+                      <StackPanel Spacing="4">
+                        <TextBlock Classes="tertiary"
+                                   Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramArgs]}" />
+                        <TextBox Height="32"
+                                 FontFamily="{StaticResource StarMonoFontFamily}"
+                                 FontSize="12"
+                                 Text="{Binding Arguments, Mode=TwoWay}" />
+                      </StackPanel>
+
+                      <StackPanel Spacing="4">
+                        <TextBlock Classes="tertiary"
+                                   Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramWorkingDirectory]}" />
+                        <TextBox Height="32"
+                                 FontSize="12"
+                                 Text="{Binding WorkingDirectory, Mode=TwoWay}" />
+                      </StackPanel>
+
+                      <CheckBox MinHeight="24"
+                                Content="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramWait]}"
+                                IsChecked="{Binding Wait, Mode=TwoWay}" />
+
+                      <!-- 三态 env -->
+                      <TextBlock Classes="subhead"
+                                 Margin="0,4,0,0"
+                                 Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramEnvTitle]}" />
+                      <TextBlock Classes="tertiary"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramEnvHint]}" />
+
+                      <ItemsControl ItemsSource="{Binding EnvEntries}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:GameSettingEnvEntryViewModel">
+                            <StackPanel Margin="0,2" Spacing="2">
+                              <Grid ColumnDefinitions="110,8,90,8,*,Auto">
+                                <TextBox Grid.Column="0"
+                                         Height="28"
+                                         FontSize="12"
+                                         FontFamily="{StaticResource StarMonoFontFamily}"
+                                         PlaceholderText="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.EnvKeyPlaceholder]}"
+                                         Text="{Binding Key, Mode=TwoWay}" />
+                                <ComboBox Grid.Column="2"
+                                          Height="28"
+                                          HorizontalAlignment="Stretch"
+                                          ItemsSource="{Binding Kinds}"
+                                          SelectedItem="{Binding SelectedKind, Mode=TwoWay}" />
+                                <TextBox Grid.Column="4"
+                                         Height="28"
+                                         FontSize="12"
+                                         FontFamily="{StaticResource StarMonoFontFamily}"
+                                         IsEnabled="{Binding IsEditable}"
+                                         PlaceholderText="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.EnvValuePlaceholder]}"
+                                         Text="{Binding Value, Mode=TwoWay}" />
+                                <Button Grid.Column="5"
+                                        Width="28" Height="28"
+                                        Padding="0"
+                                        Margin="4,0,0,0"
+                                        Classes="flat"
+                                        Command="{Binding RemoveCommand}"
+                                        ToolTip.Tip="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramRemove]}">
+                                  <TextBlock Classes="icon" FontSize="12" Text="&#xE711;" />
+                                </Button>
+                              </Grid>
+                              <CheckBox MinHeight="20"
+                                        Margin="0,0,0,0"
+                                        Padding="8,0,0,0"
+                                        FontSize="12"
+                                        IsVisible="{Binding IsEditable}"
+                                        Content="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.EnvSetEmpty]}"
+                                        IsChecked="{Binding SetEmptyValue, Mode=TwoWay}" />
+                            </StackPanel>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+
+                      <Button Classes="flat"
+                              HorizontalAlignment="Left"
+                              Content="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramEnvAdd]}"
+                              Command="{Binding AddEnvCommand}" />
+
+                      <!-- 警告 / 建议 -->
+                      <TextBlock Classes="caution"
+                                 Text="{Binding Warnings}"
+                                 IsVisible="{Binding HasWarnings}" />
+                      <TextBlock Classes="tertiary"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding Suggestion}"
+                                 IsVisible="{Binding HasSuggestion}" />
+
+                      <!-- 立即启动 / 删除 -->
+                      <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                        <Button Height="32"
+                                Content="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramStartNow]}"
+                                Command="{Binding StartNowCommand}"
+                                IsEnabled="{Binding CanStartNow}"
+                                ToolTip.Tip="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramNeedRunning]}" />
+                        <Button Height="32"
+                                Classes="flat"
+                                Content="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramRemove]}"
+                                Command="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).RemoveProgramCommand}"
+                                CommandParameter="{Binding}"
+                                ToolTip.Tip="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramRemoveTooltip]}" />
+                      </StackPanel>
+
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- ── 诊断 ─────────────────────────────────────────────── -->
+          <TextBlock Classes="section"
+                     Margin="0,20,0,0"
+                     Text="{Binding Strings[GameSetting.DiagnosticTitle]}" />
+          <TextBlock Classes="description"
+                     Margin="0,8,0,0"
+                     Text="{Binding Strings[GameSetting.DiagnosticDescription]}" />
+
+          <Border Classes="panel" Margin="0,8,0,0" Padding="12">
+            <StackPanel Spacing="8">
+              <TextBlock TextWrapping="Wrap" Text="{Binding ReportSummary}" />
+              <Grid ColumnDefinitions="Auto,*">
+                <TextBlock Grid.Column="0" Classes="tertiary" Text="{Binding Strings[GameSetting.DiagnosticReportPath]}" />
+                <TextBlock Grid.Column="1"
+                           Classes="tertiary mono"
+                           Margin="8,0,0,0"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip.Tip="{Binding DiagnosticReportPath}"
+                           Text="{Binding DiagnosticReportPath}" />
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Height="32"
+                        Content="{Binding Strings[GameSetting.DiagnosticOpen]}"
+                        Command="{Binding OpenDiagnosticWindowCommand}"
+                        IsEnabled="{Binding HasReport}" />
+                <Button Height="32"
+                        Content="{Binding Strings[GameSetting.DiagnosticShell]}"
+                        Command="{Binding OpenEnvironmentShellCommand}" />
+                <Button Height="32"
+                        Content="{Binding Strings[GameSetting.DiagnosticPaste]}"
+                        Click="OnPasteReportClick" />
+              </StackPanel>
+              <TextBlock Classes="tertiary"
+                         TextWrapping="Wrap"
+                         Text="{Binding DiagnosticStatus}" />
+            </StackPanel>
+          </Border>
+
+
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+
+    <!-- ══ 底部应用条（Starward Grid_ApplyBackground，60px，8,0,0,0）══ -->
+    <Border Grid.Row="1"
+            Background="{StaticResource StarOverlayAcrylicBrush}"
+            CornerRadius="8,0,0,0">
+      <StackPanel Margin="24,0,24,0"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  Orientation="Horizontal">
+        <Button Height="36"
+                CornerRadius="18"
+                Classes="accent"
+                Command="{Binding ApplyCommand}">
+          <StackPanel Margin="12,0,12,0" Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon"
+                       FontSize="16"
+                       VerticalAlignment="Center"
+                       Text="&#xE8FB;" />
+            <TextBlock VerticalAlignment="Center" Text="{Binding Strings[GameSetting.Apply]}" />
+          </StackPanel>
+        </Button>
+        <TextBlock Margin="24,0,0,0"
+                   VerticalAlignment="Center"
+                   MaxWidth="640"
+                   TextTrimming="WordEllipsis"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   Text="{Binding ApplyHint}" />
+      </StackPanel>
+    </Border>
+
   </Grid>
 </UserControl>
