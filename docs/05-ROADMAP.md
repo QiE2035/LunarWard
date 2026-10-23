@@ -7,7 +7,7 @@
 M0 是**唯一的前置门禁**——它验证四个未证实的技术点，任何一项失败都需要回到
 设计阶段。M0 通过后，M1–M5 可并行推进。
 
-> **状态（2026-10-23）**：M0–M8 已完成，M9/M10 部分完成。
+> **状态（2026-10-23）**：M0–M9 已完成，M10 部分完成（i18n 与文档已完成，导入向导/崩溃上报按 Q10 不做）。
 > 详细证据见 `M0-RESULTS.md`、`acceptance-2026-10-23.md` 与本文件 §四的交付清单。
 
 | # | 内容 | 产出 | 依赖 | 状态 |
@@ -223,13 +223,13 @@ cd src/LunarWard.Core && dotnet build
 
 | 功能 | 原实现 | 新实现 | 优先级 |
 |---|---|---|---|
-| 账号切换 | registry 操作 | 切 Wine `user.reg` 的 `[Software\miHoYo\...]` 段 | P0 |
-| 动态背景 | `Features/Background`（Win2D） | `LibVLCSharp.Avalonia` 的 `VideoView` | P0 |
+| 账号切换 | registry 操作 | ✅ 只读部分（`Games/WineRegistryInstallPathProvider.cs` 解析 `user.reg`）；写入未实现 | P0 |
+| 动态背景 | `Features/Background`（Win2D） | ✅ `LibVLCSharp.Avalonia` 的 `VideoView` + 静态图回退（`Services/BackgroundService.cs`） | P0 |
 | 游戏时长 | `Features/PlayTime` | 复用相位引擎的起止时间 → ✅ 已实现（`LunarWard.Launch/PlayTimeService.cs`） | P1 |
 | 截图管理 | `Features/Screenshot`（WIC） | ✅ 目录发现 + 预览 + 导出（`ScreenshotService` + `Views/ScreenshotWindow.axaml`） | P1 |
-| 画质设置 | `Features/GameSetting`（registry blob） | Wine `user.reg` 的 hex（**先只读**） | P1 |
+| 画质设置 | `Features/GameSetting`（registry blob） | ⏳ 未实现（Wine `user.reg` 的 hex，只读也不简单；见风险表） | P1 |
 | URL Protocol | `Features/UrlProtocol`（注册表） | ✅ `.desktop` + `MimeType`（`LunarWard.Launch/UrlProtocol.cs`） | P1 |
-| 设置页 | `Features/Setting`（WinUI） | `Adw.PreferencesPage` | P1 |
+| 设置页 | `Features/Setting`（WinUI） | ✅ Avalonia 设置窗口（`Views/SettingsWindow.axaml`） | P1 |
 | Discord RPC | `Features/RPC` | IPC socket | P2 |
 | 通知 | `H.NotifyIcon` | `notify-rust` 等价物（D-Bus） | P2 |
 | 自更新 | `Features/Update` | AppImage/Flatpak 外部处理 | P2 |
