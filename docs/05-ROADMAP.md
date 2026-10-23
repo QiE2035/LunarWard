@@ -13,7 +13,7 @@ M0 是**唯一的前置门禁**——它验证四个未证实的技术点，任�
 | # | 内容 | 产出 | 依赖 | 状态 |
 |---|---|---|---|---|
 | **M0** | **技术验证**（见 §1.1） | 一个能跑的最小验证工程 + 结论记录 | — | ✅ `M0-RESULTS.md` |
-| **M1** | `LunarWard.Platform` + `LunarWard.Wine` | 进程发现、runner/prefix/dxvk 解析与安装、sandbox | M0 | ✅ 除"托管组件下载器"与 sandbox 隔离 |
+| **M1** | `LunarWard.Platform` + `LunarWard.Wine` | 进程发现、runner/prefix/dxvk 解析与安装、sandbox | M0 | ✅ 组件下载器已实现（`ComponentInstaller`）；sandbox 隔离首期不做 |
 | **M2** | `LunarWard.Launch` 相位引擎 | 七相位实现 + `launch-report.json` + dry-run | M1 | ✅ |
 | **M3** | `LunarWard.Games` 区服切换 | `config.ini`（Ini Binder）+ PCGameSDK 下载 | M2 | ✅ |
 | **M4** | `LunarWard.Games` 外部程序 | 三态 env 合并 + Auto/Manual + PreWrites | M2 | ✅ |

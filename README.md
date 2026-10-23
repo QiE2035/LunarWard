@@ -145,7 +145,7 @@ B 站三条件（国服 + `PCGameSDK.dll` 存在且非空 + `config.ini` 正确�
 | 差量补丁 | `Snap.HPatch` | 外部 `hpatchz` | 同上（nupkg 只有 `runtimes/win-x64/native`） |
 | gRPC | 进度服务端流 | 进程内 `IProgress<T>` + 100ms ticker | 不需要跨进程 |
 | 视频背景 | `LibVLCSharp` 真机播放 | 已实现，但本机 `libvlc_new` 返回 NULL（缺 VLC 插件包）→ **回退静态图** | Arch 上 `libvlc` 与 `vlc` 是分开的包 |
-| 托管组件下载 | an-anime-team 索引 + git 同步 | **未实现**（只做 System/Managed 本地/Borrowed/Proton） | M1 范围 |
+| 托管组件下载 | an-anime-team 索引 + git 同步 | ✅ 已实现，但**不引 git**：直接下载 `components.json` 与分组 JSON（`ComponentInstaller`） | 少一个外部依赖 |
 | 沙箱 | namespace 隔离 | 只记录配置 | 首期不做 |
 
 ---
