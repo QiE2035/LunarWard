@@ -449,6 +449,22 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
 
     [RelayCommand]
+    private void OpenAccounts()
+    {
+        if (SelectedProfile is null)
+        {
+            return;
+        }
+
+        var window = new Views.AccountWindow
+        {
+            DataContext = new AccountViewModel(_services, SelectedProfile),
+        };
+        window.Show();
+    }
+
+
+    [RelayCommand]
     private void Diagnose()
     {
         try

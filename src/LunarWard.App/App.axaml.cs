@@ -59,6 +59,21 @@ public partial class App : Application
                 viewModel.ApplyUrlCommand(command);
             }
 
+            // 自检：--screenshot <png> --window account
+            if (CaptureMode.Enabled && CaptureMode.TargetWindow == "account")
+            {
+                var mainWindowAcc = new MainWindow { DataContext = viewModel };
+                desktop.MainWindow = mainWindowAcc;
+                var account = new AccountWindow
+                {
+                    DataContext = new AccountViewModel(AppServices.Current, viewModel.Profiles[0]),
+                };
+                account.Opened += (_, _) => CaptureMode.Capture(account);
+                account.Show();
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
+
             // 自检：--screenshot <png> --window dailynote
             if (CaptureMode.Enabled && CaptureMode.TargetWindow == "dailynote")
             {

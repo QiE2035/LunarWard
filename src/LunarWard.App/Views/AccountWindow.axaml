@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LunarWard.App.ViewModels"
+        x:Class="LunarWard.App.Views.AccountWindow"
+        x:DataType="vm:AccountViewModel"
+        Title="{Binding Title}"
+        Width="760" Height="560"
+        Background="#101418">
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="16" RowSpacing="10">
+
+    <StackPanel Grid.Row="0" Spacing="4">
+      <TextBlock Text="{Binding Title}" Classes="title" />
+      <TextBlock Text="{Binding CurrentAccountText}" Classes="status" TextWrapping="Wrap" />
+      <TextBlock Text="{Binding Prefix}" Classes="status" FontSize="11" TextWrapping="Wrap" />
+      <TextBlock Text="{Binding StatusText}" Classes="status" TextWrapping="Wrap" />
+      <TextBlock Text="{Binding ErrorText}" Classes="error" TextWrapping="Wrap"
+                 IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+    </StackPanel>
+
+    <Border Grid.Row="1" Classes="card">
+      <Grid RowDefinitions="Auto,*" RowSpacing="8">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+          <Button Classes="toolbar" Content="保存当前账号" Command="{Binding SaveCurrentCommand}" />
+          <Button Classes="toolbar" Content="切换到选中" Command="{Binding SwitchCommand}" />
+          <Button Classes="toolbar" Content="重命名" Command="{Binding RenameCommand}" />
+          <Button Classes="toolbar" Content="删除" Command="{Binding DeleteCommand}" />
+          <Button Classes="toolbar" Content="刷新" Command="{Binding ReloadCommand}" />
+        </StackPanel>
+
+        <ListBox Grid.Row="1" ItemsSource="{Binding Accounts}" SelectedItem="{Binding Selected}"
+                 Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:SavedAccountViewModel">
+              <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                <StackPanel Grid.Column="0" Spacing="1">
+                  <TextBlock Text="{Binding Name}" />
+                  <TextBlock Text="{Binding Detail}" Classes="status" FontSize="11" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{Binding SavedAt}" Classes="status" FontSize="11" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </Border>
+
+    <TextBlock Grid.Row="2" Classes="status" TextWrapping="Wrap"
+               Text="账号数据里含 cookie 明文，只保存在本机 ~/.local/share/lunarward/accounts.json（权限 0600），不会上传、不写日志。切换前请先退出游戏：游戏会在退出时把当前登录态写回，覆盖掉你的切换。" />
+  </Grid>
+</Window>
