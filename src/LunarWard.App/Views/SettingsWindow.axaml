@@ -72,6 +72,16 @@
               </ComboBox.ItemTemplate>
             </ComboBox>
             <TextBlock Text="{Binding Message}" Classes="status" TextWrapping="Wrap" />
+
+            <Separator />
+            <TextBlock Text="下载托管组件（an-anime-team 索引）" Classes="status" />
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+              <Button Grid.Column="0" Classes="toolbar" Content="更新索引" Command="{Binding RefreshComponentsCommand}" Margin="0,0,8,0" />
+              <ComboBox Grid.Column="1" ItemsSource="{Binding DownloadableWines}"
+                        SelectedItem="{Binding SelectedDownloadableWine}" HorizontalAlignment="Stretch" />
+              <Button Grid.Column="2" Classes="toolbar" Content="下载" Command="{Binding DownloadComponentCommand}" Margin="8,0,0,0" />
+            </Grid>
+            <TextBlock Text="{Binding ComponentStatus}" Classes="status" TextWrapping="Wrap" />
           </StackPanel>
         </Border>
 

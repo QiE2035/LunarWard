@@ -33,6 +33,7 @@ public sealed class AppServices
         Announcements = new Services.AnnouncementService(paths);
         Scanner = new Services.GameScanner(paths);
         PlayTime = new Launch.PlayTimeService(paths);
+        ComponentInstaller = new Wine.ComponentInstaller(paths);
         Localization.AppStrings.Instance.Language = Localization.AppStrings.Normalize(Config.Launcher.Language);
     }
 
@@ -66,6 +67,8 @@ public sealed class AppServices
     public Services.GameScanner Scanner { get; }
 
     public Launch.PlayTimeService PlayTime { get; }
+
+    public Wine.ComponentInstaller ComponentInstaller { get; }
 
 
     public static void Initialize(IXdgPaths paths)

@@ -48,6 +48,74 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public IReadOnlyList<string> Languages { get; } = Localization.AppStrings.Instance.SupportedLanguages;
 
+    /// <summary>托管组件索引里可下载的 wine 组件。</summary>
+    public ObservableCollection<string> DownloadableWines { get; } = [];
+
+
+    [ObservableProperty]
+    private string? selectedDownloadableWine;
+
+
+    [ObservableProperty]
+    private string componentStatus = "";
+
+
+    [RelayCommand]
+    private async Task RefreshComponentsAsync()
+    {
+        ComponentStatus = "正在更新组件索引…";
+        try
+        {
+            var result = await _services.ComponentInstaller.UpdateIndexAsync();
+            DownloadableWines.Clear();
+            var index = _services.ComponentInstaller.Repository.ReadIndex();
+            foreach (var group in index.Wine)
+            {
+                foreach (var entry in _services.ComponentInstaller.Repository.ReadGroup("wine", group.Name))
+                {
+                    DownloadableWines.Add(entry.Name);
+                }
+            }
+
+            ComponentStatus = result.Success
+                ? $"索引已更新（{result.UpdatedFiles} 个文件），{DownloadableWines.Count} 个 wine 组件"
+                : $"索引部分失败：{string.Join("; ", result.Errors)}";
+        }
+        catch (Exception ex)
+        {
+            ComponentStatus = $"更新失败：{ex.Message}";
+        }
+    }
+
+
+    [RelayCommand]
+    private async Task DownloadComponentAsync()
+    {
+        if (string.IsNullOrEmpty(SelectedDownloadableWine))
+        {
+            ComponentStatus = "先选一个组件";
+            return;
+        }
+
+        ComponentStatus = $"正在下载 {SelectedDownloadableWine}…";
+        try
+        {
+            var progress = new Progress<LunarWard.Wine.ComponentProgress>(p =>
+            {
+                ComponentStatus = p.Percent is { } percent
+                    ? $"{p.Name}  {percent:P0}  ({p.ReceivedBytes / 1048576.0:0.0} / {(p.TotalBytes ?? 0) / 1048576.0:0.0} MiB)"
+                    : $"{p.Name}  {p.ReceivedBytes / 1048576.0:0.0} MiB";
+            });
+            var dir = await _services.ComponentInstaller.InstallWineAsync(SelectedDownloadableWine, progress);
+            ComponentStatus = $"已安装到 {dir}";
+            ScanRuntimes();
+        }
+        catch (Exception ex)
+        {
+            ComponentStatus = $"下载失败：{ex.Message}";
+        }
+    }
+
 
     [ObservableProperty]
     private string language = Localization.AppStrings.Instance.Language;
