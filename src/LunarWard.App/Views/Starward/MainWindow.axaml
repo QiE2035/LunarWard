@@ -23,7 +23,7 @@
   <Grid RowDefinitions="48,*">
 
     <!-- 内容层：从 y=0 开始，被标题栏覆盖（背景铺满整窗，和 Starward 一致） -->
-    <sw:StarwardShell Grid.Row="0" Grid.RowSpan="2" />
+    <sw:StarwardShell x:Name="Shell" Grid.Row="0" Grid.RowSpan="2" />
 
     <!-- 标题栏 -->
     <Grid Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Top" Height="48"

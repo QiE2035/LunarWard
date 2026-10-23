@@ -145,6 +145,16 @@ public partial class StarwardShell : UserControl
     }
 
 
+    /// <summary>自检辅助：把工具箱切到指定 Tab（0 = 每日便笺，1 = 账号记录）。</summary>
+    public void SelectToolboxTab(int index)
+    {
+        if (_current is Pages.ToolboxPage toolbox)
+        {
+            toolbox.SelectTab(index);
+        }
+    }
+
+
     private static StarwardPage CreatePage(ShellPage page, PageContext context) => page switch
     {
         ShellPage.Launcher => new Pages.GameLauncherPage(context),

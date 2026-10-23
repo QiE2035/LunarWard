@@ -18,10 +18,11 @@
               CornerRadius="24"
               Background="{StaticResource StarAccentBrush}"
               Margin="0,4,0,0">
+        <!-- Starward 这里是 Assets/logo.png；LunarWard 没有独立 logo，用「月亮」图标代替 -->
         <TextBlock Classes="icon"
                    FontSize="80"
                    Foreground="{StaticResource StarAccentForegroundBrush}"
-                   Text="&#xE81E;" />
+                   Text="&#xE708;" />
       </Border>
 
       <TextBlock Margin="0,12,0,0"

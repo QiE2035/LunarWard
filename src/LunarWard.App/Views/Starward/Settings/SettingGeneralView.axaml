@@ -22,8 +22,14 @@
                 Width="260"
                 Margin="0,12,0,0"
                 HorizontalAlignment="Left"
-                ItemsSource="{Binding Languages}"
-                SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}" />
+                ItemsSource="{Binding LanguageOptions}"
+                SelectedItem="{Binding SelectedLanguageOption, Mode=TwoWay}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:SettingLanguageOption">
+              <TextBlock Text="{Binding Display}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
 
       <TextBlock Margin="0,12,0,0"
                  Classes="description"

@@ -33,8 +33,10 @@
 
         <Button Grid.Column="1"
                 Height="40"
-                Padding="16,0"
+                MinWidth="260"
+                Padding="20,0"
                 HorizontalContentAlignment="Left"
+                IsVisible="{Binding HasGameDirectory}"
                 Command="{Binding CopyPathCommand}"
                 ToolTip.Tip="{Binding DirectoryPath}">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">

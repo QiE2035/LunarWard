@@ -64,7 +64,7 @@
       <!-- ── 桌面入口内容（只读展示）────────────────────────────── -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.Hotkey.DesktopEntry]}" />
+                 Text="{Binding Strings[Settings.Hotkey.DesktopEntryContent]}" />
 
       <Border Classes="card" Margin="0,12,0,0">
         <TextBox Classes="mono"

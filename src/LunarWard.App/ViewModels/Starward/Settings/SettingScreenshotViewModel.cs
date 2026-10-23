@@ -31,10 +31,17 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
     {
         _gameDirectory = ProfileConfig.ExpandPath(context.Profile.Profile.Path);
         _gameKind = context.Profile.Profile.Game;
-        DirectoryPath = ScreenshotService.GetDirectory(_gameDirectory, _gameKind);
+        // 没配游戏目录时不能调 GetDirectory：它会拼出相对路径 "ScreenShot"，看起来像工作目录
+        HasGameDirectory = !string.IsNullOrEmpty(_gameDirectory);
+        DirectoryPath = HasGameDirectory
+            ? ScreenshotService.GetDirectory(_gameDirectory, _gameKind)
+            : "";
         Reload();
     }
 
+
+    /// <summary>档案里是否已经指定游戏目录。</summary>
+    public bool HasGameDirectory { get; }
 
     public string DirectoryPath { get; }
 
@@ -54,6 +61,13 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
     /// <summary>重新统计截图数量与占用（进入页面时调用）。</summary>
     public void Reload()
     {
+        if (!HasGameDirectory)
+        {
+            IsEmpty = true;
+            CountText = Strings["Settings.Screenshot.NoGameDirectory"];
+            return;
+        }
+
         try
         {
             var (count, bytes) = _service.Summarize(_gameDirectory, _gameKind);
@@ -78,6 +92,12 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
     [RelayCommand]
     private void OpenDirectory()
     {
+        if (!HasGameDirectory)
+        {
+            Status = Strings["Settings.Screenshot.NoGameDirectory"];
+            return;
+        }
+
         var target = DirectoryPath;
         if (!Directory.Exists(target))
         {

@@ -22,6 +22,20 @@ public partial class ToolboxPage : StarwardPage
     }
 
 
+    /// <summary>自检辅助：切到指定 Tab（0 = 每日便笺，1 = 账号记录）。</summary>
+    public void SelectTab(int index)
+    {
+        if (index == 1)
+        {
+            _viewModel?.ShowAccountsCommand.Execute(null);
+        }
+        else
+        {
+            _viewModel?.ShowDailyNoteCommand.Execute(null);
+        }
+    }
+
+
     protected override void DisposeViewModel(PageContext context)
     {
         _viewModel?.Dispose();

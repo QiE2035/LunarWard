@@ -16,42 +16,60 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     public SettingGeneralViewModel(PageContext context, bool showDivider = false)
         : base(context, SettingSectionKind.General, "Settings.General", "\uE81E", showDivider)
     {
-        Languages = Strings.SupportedLanguages.ToList();
-        SelectedLanguage = Localization.AppStrings.Normalize(Services.Config.Launcher.Language);
-        OnPropertyChanged(nameof(LanguageDisplay));
+        LanguageOptions =
+        [
+            new SettingLanguageOption("zh-CN", "简体中文 (zh-CN)"),
+            new SettingLanguageOption("en-US", "English (en-US)"),
+        ];
+        _selectedLanguageOption = LanguageOptions.First(o =>
+            string.Equals(o.Code, Localization.AppStrings.Normalize(Services.Config.Launcher.Language), StringComparison.Ordinal));
         Announcements = true;
         VideoBackground = Services.Config.Launcher.VideoBackground;
         _initializing = false;
     }
 
 
-    /// <summary>可选语言（zh-CN / en-US）。</summary>
-    public IReadOnlyList<string> Languages { get; }
+    /// <summary>可选语言（Starward 的 ComboBox 显示语言名而不是代码）。</summary>
+    public IReadOnlyList<SettingLanguageOption> LanguageOptions { get; }
 
 
     [ObservableProperty]
-    private string _selectedLanguage;
+    private SettingLanguageOption _selectedLanguageOption;
 
 
-    partial void OnSelectedLanguageChanged(string value)
+    public string SelectedLanguage => SelectedLanguageOption?.Code ?? Strings.Language;
+
+
+    partial void OnSelectedLanguageOptionChanged(SettingLanguageOption value)
     {
-        var normalized = Localization.AppStrings.Normalize(value);
+        if (value is null)
+        {
+            return;
+        }
+
+        ApplyLanguage(value.Code);
+        OnPropertyChanged(nameof(SelectedLanguage));
+    }
+
+
+    /// <summary>切换语言：立即生效并落盘（Starward 也是即时切换 + SaveConfiguration）。</summary>
+    public void ApplyLanguage(string code)
+    {
+        var normalized = Localization.AppStrings.Normalize(code);
         Strings.Language = normalized;
         Services.Config.Launcher.Language = normalized;
-        if (!_initializing)
+        if (_initializing)
         {
-            SaveConfig();
+            return;
         }
-        Status = _initializing ? null : string.Format(Strings["Settings.General.LanguageChanged"], normalized);
+
+        SaveConfig();
+        Status = string.Format(Strings["Settings.General.LanguageChanged"], normalized);
         OnPropertyChanged(nameof(IsEnglish));
     }
 
 
-    /// <summary>语言显示名（ComboBox 里显示 "简体中文 (zh-CN)"）。</summary>
     public bool IsEnglish => SelectedLanguage == "en-US";
-
-
-    public string LanguageDisplay => IsEnglish ? "English (en-US)" : "简体中文 (zh-CN)";
 
 
     [ObservableProperty]

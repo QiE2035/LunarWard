@@ -49,24 +49,28 @@
                   VerticalAlignment="Center"
                   Spacing="8">
 
+        <!-- 强调色只给当前可用的那一个：有链接 → 读取记录；没链接 → 重新定位 -->
         <Button Height="32" Padding="12,0"
+                Classes.accent="{Binding IsRelocatePrimary}"
                 Command="{Binding RelocateCommand}"
                 Content="{Binding Strings[Gacha.Relocate]}" />
 
-        <!-- 主操作（Starward 的 SplitButton 更新记录） -->
-        <Button Height="32" Classes="accent"
+        <Button Height="32" Padding="12,0"
+                Classes.accent="{Binding IsFetchPrimary}"
                 Command="{Binding FetchCommand}"
+                IsEnabled="{Binding !IsBusy}"
                 Content="{Binding Strings[Gacha.Fetch]}" />
 
         <Button Height="32" Padding="12,0"
                 Command="{Binding ExportJsonCommand}"
                 Content="{Binding Strings[Gacha.Export]}" />
 
-        <!-- UIGF 4：Core 还没有读写实现 → 禁用并注明"待接"，不伪造功能 -->
+        <!-- UIGF 4：Core 还没有读写实现 → 禁用并在按钮文字上注明"待接"，不伪造功能
+             （禁用的控件不弹 Tooltip，所以状态必须写在可见文字里） -->
         <Button Height="32" Padding="12,0"
                 IsEnabled="{Binding IsUigfAvailable}"
                 ToolTip.Tip="{Binding UigfHint}"
-                Content="{Binding Strings[Gacha.Uigf]}" />
+                Content="{Binding Strings[Gacha.UigfButton]}" />
       </StackPanel>
     </Grid>
 
@@ -76,7 +80,8 @@
       <TextBlock FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  Text="{Binding StatusText}"
-                 TextWrapping="Wrap" />
+                 TextWrapping="Wrap"
+                 IsVisible="{Binding HasStatus}" />
 
       <Border Classes="infobar error" IsVisible="{Binding HasError}">
         <TextBlock FontSize="12"
@@ -332,13 +337,15 @@
                       HorizontalAlignment="Center"
                       Margin="0,4,0,0"
                       Spacing="8">
-            <Button Classes="accent"
-                    Height="32"
+            <Button Height="32"
+                    Padding="12,0"
+                    Classes.accent="{Binding IsFetchPrimary}"
                     Command="{Binding FetchCommand}"
                     Content="{Binding Strings[Gacha.EmptyFetch]}" />
 
             <Button Height="32"
                     Padding="12,0"
+                    Classes.accent="{Binding IsRelocatePrimary}"
                     Command="{Binding RelocateCommand}"
                     Content="{Binding Strings[Gacha.Relocate]}" />
           </StackPanel>

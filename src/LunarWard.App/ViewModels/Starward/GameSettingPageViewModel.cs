@@ -65,6 +65,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         Fsr = profile.Enhancements.Fsr;
         Dx12 = profile.Enhancements.Dx12;
         ReadyGraceMsValue = Math.Clamp(profile.ReadyGraceMs, 0, 600_000);
+        StartArguments = string.Join(' ', profile.Args);
         _loading = false;
 
         ScanRuntimes();
@@ -402,9 +403,10 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         }
 
         _loading = true;
+        // 只在"确实等于当前默认运行时"时回填；否则留空，避免 UI 假装已经选了某个运行时
+        // （profile 的 Runtime 仍是 Default 引用时，选一个只是视觉效果，不落盘也不生效）。
         SelectedRuntime = Runtimes.FirstOrDefault(x => x.Name == previous)
-                          ?? Runtimes.FirstOrDefault(x => x.Name == Services.Config.Launcher.DefaultRuntime)
-                          ?? Runtimes.FirstOrDefault();
+                          ?? Runtimes.FirstOrDefault(x => x.Name == Services.Config.Launcher.DefaultRuntime);
         _loading = false;
     }
 
@@ -535,6 +537,24 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
     }
 
 
+    /// <summary>游戏启动参数（追加在默认参数之后，支持 <c>%keywords%</c>）。</summary>
+    [ObservableProperty]
+    private string _startArguments = "";
+
+
+    partial void OnStartArgumentsChanged(string value)
+    {
+        if (_loading)
+        {
+            return;
+        }
+
+        Profile.Profile.Args = CommandLineSplitter.Split(value);
+        SetDirty(true);
+        RefreshPlan();
+    }
+
+
     /// <summary><see cref="NumericUpDown.Value"/> 是 <c>decimal?</c>，这里做一次边界收敛。</summary>
     [ObservableProperty]
     private decimal? _readyGraceMsValue = 6000;
@@ -645,7 +665,9 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         var profile = Profile.Profile;
         foreach (var program in profile.ExternalPrograms)
         {
-            Programs.Add(CreateProgramItem(program, keywords));
+            var item = CreateProgramItem(program, keywords);
+            item.IsExpanded = Environment.GetEnvironmentVariable("LW_EXPAND") is "1";
+            Programs.Add(item);
         }
 
         HasPrograms = Programs.Count > 0;
@@ -663,7 +685,6 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         var item = new GameSettingProgramViewModel(program, keywords, MergeExeKeyword, OnProgramChanged);
         item.StartRequested += OnProgramStartRequested;
         item.CanStartNow = _launcher.State == LaunchPhaseState.Running;
-        item.IsExpanded = item.HasWarnings;
         return item;
     }
 
@@ -1023,7 +1044,17 @@ public sealed partial class DetectedGameRow : ObservableObject
 
     public string DisplayName => $"{Definition.DisplayName} · {(Definition.Edition == GameEdition.Global ? "国际服" : "国服")}";
 
-    public string Display => $"{DisplayName}  {Directory}";
+    /// <summary>只显示最后两级目录，长路径交给 ToolTip（避免行内省略号截掉关键信息）。</summary>
+    public string ShortDirectory
+    {
+        get
+        {
+            var parts = Directory.TrimEnd('/').Split('/');
+            return parts.Length <= 2
+                ? Directory
+                : "…/" + string.Join('/', parts[^2..]);
+        }
+    }
 
 
     [ObservableProperty]
@@ -1044,7 +1075,7 @@ public sealed partial class DetectedGameRow : ObservableObject
                            && Definition.Edition == (string.Equals(currentEdition, "Global", StringComparison.OrdinalIgnoreCase)
                                ? GameEdition.Global
                                : GameEdition.China);
-        OnPropertyChanged(nameof(Display));
+        OnPropertyChanged(nameof(ShortDirectory));
     }
 
 

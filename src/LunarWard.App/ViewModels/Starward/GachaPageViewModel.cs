@@ -57,7 +57,9 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         // 打开页面只定位链接，不自动拉取（避免一进页面就打网络，与旧窗口行为一致）
         var url = GachaService.FindGachaUrl(_gameDirectory, new LunarWard.Core.GameBiz(_gameBiz), out var error);
         GachaUrl = url ?? "";
-        StatusText = url is null ? Strings["Gacha.NoUrl"] : Strings["Gacha.UrlFound"];
+
+        // 定位失败时只说一次：错误条已经写清原因与下一步，状态行留空，避免两行说同一件事。
+        StatusText = url is null ? "" : Strings["Gacha.UrlFound"];
         ErrorText = url is null ? NormalizeError(error) : null;
     }
 
@@ -90,7 +92,11 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
 
     /// <summary>次要色状态行（读取进度 / 已定位 / 导出结果）。</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatus))]
     private string _statusText = "";
+
+    /// <summary>状态行是否有内容（空时不占高度）。</summary>
+    public bool HasStatus => !string.IsNullOrWhiteSpace(StatusText);
 
 
     [ObservableProperty]
@@ -137,10 +143,14 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     /// <summary>有记录，但被「只看 5 星」过滤空了 → 列表区内的小提示，而不是整页空态。</summary>
     public bool ShowFilteredEmpty => HasData && !HasRecords;
 
-    /// <summary>空态副标题：没设游戏目录时给不同的指引。</summary>
-    public string EmptyDetail => string.IsNullOrWhiteSpace(_gameDirectory) || !Directory.Exists(_gameDirectory)
-        ? Strings["Gacha.EmptyDetailNoDir"]
-        : Strings["Gacha.EmptyDetail"];
+    /// <summary>
+    /// 空态副标题：固定讲"怎么把记录弄出来"。
+    /// </summary>
+    /// <remarks>
+    /// 具体失败原因（没设游戏目录、缓存里没链接）由上面的错误条负责，
+    /// 这里不重复说同一件事，否则两行文字打架。
+    /// </remarks>
+    public string EmptyDetail => Strings["Gacha.EmptyDetail"];
 
     public string RecordCountText => string.Format(Strings["Gacha.RecordCount"], Records.Count);
 
@@ -162,6 +172,25 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     public string UigfHint => Strings["Gacha.UigfPending"];
 
 
+    // ── 主操作 ────────────────────────────────────────────────────────
+
+    /// <summary>有链接才能读取记录；没有时强调色给「重新定位」。</summary>
+    public bool IsFetchPrimary => !string.IsNullOrWhiteSpace(GachaUrl) && !IsBusy;
+
+    /// <summary>没有链接时的主操作是「重新定位」。</summary>
+    public bool IsRelocatePrimary => !IsFetchPrimary;
+
+    partial void OnGachaUrlChanged(string value) => RaisePrimaryChanged();
+
+    partial void OnIsBusyChanged(bool value) => RaisePrimaryChanged();
+
+    private void RaisePrimaryChanged()
+    {
+        OnPropertyChanged(nameof(IsFetchPrimary));
+        OnPropertyChanged(nameof(IsRelocatePrimary));
+    }
+
+
     // ── 命令 ──────────────────────────────────────────────────────────
 
     [RelayCommand]
@@ -170,6 +199,8 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         var url = GachaService.FindGachaUrl(_gameDirectory, new LunarWard.Core.GameBiz(_gameBiz), out var error);
         if (url is null)
         {
+            // 清掉上一轮的"已找到"状态，避免成功提示和错误条同时出现
+            StatusText = "";
             ErrorText = NormalizeError(error);
             return;
         }

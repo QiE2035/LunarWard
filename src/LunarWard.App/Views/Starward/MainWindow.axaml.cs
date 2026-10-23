@@ -31,6 +31,16 @@ public partial class MainWindow : Window
             shell.OpenGameSelectorCommand.Execute(null);
         }
 
+        // 自检：--tab accounts 切到工具箱的账号 Tab
+        if (CaptureMode.Tab is { Length: > 0 } tab && DataContext is ShellViewModel shellVm)
+        {
+            shellVm.Navigate(ShellPage.Toolbox);
+            if (shellVm.CurrentPage == ShellPage.Toolbox)
+            {
+                _ = ApplyToolboxTabAsync(tab);
+            }
+        }
+
         CaptureMode.Capture(this);
     }
 
@@ -46,6 +56,20 @@ public partial class MainWindow : Window
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             BeginMoveDrag(e);
+        }
+    }
+
+
+    private async Task ApplyToolboxTabAsync(string tab)
+    {
+        try
+        {
+            await Task.Delay(800);
+            Shell?.SelectToolboxTab(tab.Equals("accounts", StringComparison.OrdinalIgnoreCase) ? 1 : 0);
+        }
+        catch (Exception)
+        {
+            // 自检辅助，失败不影响截图
         }
     }
 
