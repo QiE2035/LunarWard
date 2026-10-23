@@ -32,6 +32,7 @@ public sealed class AppServices
         Background = new Services.BackgroundService(paths);
         Announcements = new Services.AnnouncementService(paths);
         Scanner = new Services.GameScanner(paths);
+        PlayTime = new Launch.PlayTimeService(paths);
     }
 
 
@@ -62,6 +63,8 @@ public sealed class AppServices
     public Services.AnnouncementService Announcements { get; }
 
     public Services.GameScanner Scanner { get; }
+
+    public Launch.PlayTimeService PlayTime { get; }
 
 
     public static void Initialize(IXdgPaths paths)

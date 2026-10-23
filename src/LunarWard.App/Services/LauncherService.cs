@@ -199,6 +199,13 @@ public sealed class LauncherService : IDisposable
             }
 
             LastResult = result;
+
+            // 时长统计：复用相位引擎的起止时间（docs/05-ROADMAP.md §3.3）
+            if (result.Success)
+            {
+                _services.PlayTime.Record(profileId, result);
+            }
+
             SetState(result.Success ? LaunchPhaseState.Idle : LaunchPhaseState.Error);
             Completed?.Invoke(this, result);
             return result;

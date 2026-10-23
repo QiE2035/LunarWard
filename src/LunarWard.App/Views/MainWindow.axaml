@@ -72,6 +72,8 @@
 
             <TextBlock Text="{Binding StatusText}" Classes="status" HorizontalAlignment="Center" />
 
+            <TextBlock Text="{Binding PlayTimeText}" Classes="status" HorizontalAlignment="Center" FontSize="12" />
+
             <TextBlock Text="{Binding ErrorText}" Classes="error"
                        IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}"
                        TextWrapping="Wrap" MaxWidth="640" HorizontalAlignment="Center" />

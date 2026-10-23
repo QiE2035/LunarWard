@@ -111,6 +111,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private bool hasGameRunning;
 
 
+    /// <summary>当前档案的累计时长文案（如 "12 小时 34 分"）。</summary>
+    [ObservableProperty]
+    private string playTimeText = "尚未启动过";
+
+
     public IReadOnlyList<string> Themes { get; } = ["Modern", "Classic"];
 
 
@@ -244,6 +249,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     private void RefreshProfileDetails(ProfileItemViewModel item)
     {
+        UpdatePlayTime(item.Id);
         RefreshExternalPrograms(item);
         RefreshEnvironment(item);
     }
@@ -520,6 +526,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     private void ShowResult(LaunchResult result)
     {
+        if (SelectedProfile is { } profile)
+        {
+            UpdatePlayTime(profile.Id);
+        }
+
         if (result.Success)
         {
             StatusText = result.Signal is { } signal
@@ -530,6 +541,20 @@ public sealed partial class MainWindowViewModel : ObservableObject
         {
             ErrorText = result.Error?.Message;
         }
+    }
+
+
+    /// <summary>刷新时长文案。</summary>
+    public void UpdatePlayTime(string profileId)
+    {
+        var total = _services.PlayTime.TotalFor(profileId);
+        PlayTimeText = total <= TimeSpan.Zero
+            ? "尚未启动过"
+            : $"累计 {FormatDuration(total)}";
+
+        static string FormatDuration(TimeSpan span) => span.TotalHours >= 1
+            ? $"{(int)span.TotalHours} 小时 {span.Minutes} 分"
+            : $"{span.Minutes} 分 {span.Seconds} 秒";
     }
 
 
