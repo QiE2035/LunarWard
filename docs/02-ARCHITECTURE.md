@@ -10,7 +10,7 @@
 | MVVM | `CommunityToolkit.Mvvm` | 8.4.2 | 与 Starward 一致，ViewModel 可搬 |
 | 日志 | `Serilog.Extensions.Logging` + `Sinks.File` | 10.0.0 / 7.0.0 | 沿用 Starward |
 | INI | `Microsoft.Extensions.Configuration.Ini` | 10.0.11 | Starward 已在用 |
-| HTTP | `System.Net.Http` + `Polly` | 内建 / 8.7.0 | 沿用 Starward 的重试策略 |
+| HTTP | `System.Net.Http` + `Polly` | 内建 / 8.8.0 | 沿用 Starward 的重试策略 |
 | 解压 | `ZstdSharp.Port` | 0.8.8 | 沿用 Starward |
 | 视频背景 | **`LibVLCSharp.Avalonia`** | 3.10.2 | 见 `04-FEATURES.md` §5.4 |
 | 终端 | `Iciclecreek.Avalonia.Terminal` | 4.1.0 | M0 实测选定（Q3） |
@@ -429,7 +429,7 @@ UI 层按类型给出不同的可交互提示：
 
 ## 八、日志
 
-- 位置：`$XDG_CACHE_HOME/lunarward/logs/lunarward-<date>.log`
+- 位置：`$XDG_CACHE_HOME/lunarward/logs/lunarward-yyyyMMdd.log`
 - 游戏 stdout/stderr：`$XDG_CACHE_HOME/lunarward/logs/game.log`（上限 8 MiB）
 - **启动报告**：`$XDG_DATA_HOME/lunarward/launch-report.json`
 

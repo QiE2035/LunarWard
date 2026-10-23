@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using LunarWard.Platform;
+using Serilog;
+using Serilog.Events;
 
 namespace LunarWard.App.Services;
 
@@ -237,46 +239,60 @@ public sealed class BackgroundService : IDisposable
 
 
 /// <summary>
-/// 极简日志（<c>Serilog.Sinks.File</c>，按天滚动）。
+/// 日志：<c>Serilog</c> 文件 sink，按天滚动，单文件上限 8 MiB，保留 14 个。
 /// </summary>
+/// <remarks>
+/// 与 <c>docs/02-ARCHITECTURE.md</c> §八 一致：位置
+/// <c>$XDG_CACHE_HOME/lunarward/logs/lunarward-&lt;date&gt;.log</c>。
+/// 日志写入失败<b>绝不影响主流程</b>——所有方法都吞异常。
+/// </remarks>
 public sealed class LogService : IDisposable
 {
-    private readonly SemaphoreSlim _gate = new(1, 1);
+    /// <summary>单个日志文件上限（与 <c>GAME_LOG_FILE_LIMIT</c> 同量级）。</summary>
+    public const long FileSizeLimitBytes = 8 * 1024 * 1024;
+
 
     private readonly string _directory;
+
+    private readonly Serilog.Core.Logger _logger;
 
 
     public LogService(IXdgPaths paths)
     {
         _directory = paths.LogDirectory;
         Directory.CreateDirectory(_directory);
+
+        _logger = new Serilog.LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.File(
+                Path.Join(_directory, "lunarward-.log"),  // Serilog 在 "-" 与扩展名之间插入日期
+                rollingInterval: Serilog.RollingInterval.Day,
+                fileSizeLimitBytes: FileSizeLimitBytes,
+                rollOnFileSizeLimit: true,
+                retainedFileCountLimit: 14,
+                shared: true,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
     }
 
 
+    /// <summary>当前滚动文件路径（供 UI 展示/打开）。</summary>
     public string LogFile => Path.Join(_directory, $"lunarward-{DateTime.Now:yyyy-MM-dd}.log");
 
 
-    public void Info(string message) => Write("INFO", message);
+    public void Info(string message) => Write(() => _logger.Information("{Message}", message));
 
-    public void Warn(string message) => Write("WARN", message);
+    public void Warn(string message) => Write(() => _logger.Warning("{Message}", message));
 
     public void Error(string message, Exception? ex = null)
-        => Write("ERROR", ex is null ? message : $"{message}: {ex}");
+        => Write(() => _logger.Error(ex, "{Message}", message));
 
 
-    private void Write(string level, string message)
+    private static void Write(Action action)
     {
         try
         {
-            _gate.Wait(200);
-            try
-            {
-                File.AppendAllText(LogFile, $"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff} [{level}] {message}\n");
-            }
-            finally
-            {
-                _gate.Release();
-            }
+            action();
         }
         catch (Exception)
         {
@@ -285,5 +301,15 @@ public sealed class LogService : IDisposable
     }
 
 
-    public void Dispose() => _gate.Dispose();
+    public void Dispose()
+    {
+        try
+        {
+            _logger.Dispose();
+        }
+        catch (Exception)
+        {
+            // ignore
+        }
+    }
 }

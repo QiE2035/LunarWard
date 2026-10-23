@@ -418,7 +418,7 @@ UI 的「诊断」按钮直接渲染这个文件，并附 `game.log` 的路径�
 
 | 文件 | 内容 | 上限 |
 |---|---|---|
-| `~/.cache/lunarward/logs/lunarward-<date>.log` | 启动器自身日志，按天滚动 | — |
+| `~/.cache/lunarward/logs/lunarward-yyyyMMdd.log` | 启动器自身日志，按天滚动 | — |
 | `~/.cache/lunarward/logs/game.log` | 游戏 stdout/stderr | **8 MiB**（防 wine 灌爆磁盘） |
 | `<游戏目录>/Player.log` | Unity 自己的日志（wine 下在 prefix 里，见 §9） | 游戏自管 |
 | `<游戏目录>/driverError.log` | 驱动初始化错误 | 游戏自管 |
@@ -439,7 +439,7 @@ UI 的「诊断」按钮直接渲染这个文件，并附 `game.log` 的路径�
 | `~/.local/share/lunarward/prefixes/` | 本启动器自管的 wine prefix |
 | `~/.local/share/lunarward/components/` | an-anime-team 组件索引（`components.json`、`wine/*.json`、`dxvk/*.json`） |
 | `~/.local/share/lunarward/launch-report.json` | **启动报告**（见 §8.1） |
-| `~/.cache/lunarward/logs/` | `lunarward-<date>.log`、`game.log` |
+| `~/.cache/lunarward/logs/` | `lunarward-yyyyMMdd.log`、`game.log` |
 | `~/.cache/lunarward/background/` | 背景媒体缓存（`.mp4` / `.webm` / `.mkv` / `.jpg` / `.png` / `.webp`） |
 | `~/.cache/lunarward/bilibili/` | `PCGameSDK5.1.0.zip` |
 | `~/.cache/lunarward/env.sh` | 环境 shell 导出的脚本 |
