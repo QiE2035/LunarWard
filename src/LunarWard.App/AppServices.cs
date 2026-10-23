@@ -33,6 +33,7 @@ public sealed class AppServices
         Announcements = new Services.AnnouncementService(paths);
         Scanner = new Services.GameScanner(paths);
         PlayTime = new Launch.PlayTimeService(paths);
+        Localization.AppStrings.Instance.Language = Localization.AppStrings.Normalize(Config.Launcher.Language);
     }
 
 

@@ -46,6 +46,19 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public IReadOnlyList<string> Kinds { get; } = [GameCatalog.Genshin, GameCatalog.Zzz];
 
+    public IReadOnlyList<string> Languages { get; } = Localization.AppStrings.Instance.SupportedLanguages;
+
+
+    [ObservableProperty]
+    private string language = Localization.AppStrings.Instance.Language;
+
+
+    partial void OnLanguageChanged(string value)
+    {
+        Localization.AppStrings.Instance.Language = Localization.AppStrings.Normalize(value);
+        _services.Config.Launcher.Language = Localization.AppStrings.Instance.Language;
+    }
+
 
     [ObservableProperty]
     private string gamePath = "";

@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:LunarWard.App.ViewModels"
+        xmlns:loc="using:LunarWard.App.Localization"
         x:Class="LunarWard.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="LunarWard"
@@ -25,10 +26,10 @@
         </StackPanel>
 
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-          <Button Classes="toolbar" Content="设置" Command="{Binding OpenSettingsCommand}" />
-          <Button Classes="toolbar" Content="环境 shell" Command="{Binding OpenEnvironmentShellCommand}" />
-          <Button Classes="toolbar" Content="诊断" Command="{Binding DiagnoseCommand}" />
-          <Button Classes="toolbar" Content="环境变量" Command="{Binding ToggleEnvironmentPanelCommand}" />
+          <Button Classes="toolbar" Content="{Binding [Main.Settings], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding OpenSettingsCommand}" />
+          <Button Classes="toolbar" Content="{Binding [Main.Shell], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding OpenEnvironmentShellCommand}" />
+          <Button Classes="toolbar" Content="{Binding [Main.Diagnose], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding DiagnoseCommand}" />
+          <Button Classes="toolbar" Content="{Binding [Main.Environment], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding ToggleEnvironmentPanelCommand}" />
           <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" MinWidth="110" />
         </StackPanel>
       </Grid>
@@ -48,7 +49,7 @@
           <!-- 版本亮点 / 公告卡片 -->
           <Border Grid.Row="0" Classes="card" MaxWidth="900" HorizontalAlignment="Center">
             <StackPanel Spacing="8">
-              <TextBlock Text="公告与版本亮点" Classes="title" />
+              <TextBlock Text="{Binding [Main.Announcements], Source={x:Static loc:AppStrings.Instance}}" Classes="title" />
               <ItemsControl ItemsSource="{Binding Announcements}" MaxHeight="120">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:AnnouncementViewModel">
@@ -56,7 +57,7 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
-              <TextBlock Text="暂无公告（离线或接口不可用）" Classes="status"
+              <TextBlock Text="{Binding [Main.NoAnnouncements], Source={x:Static loc:AppStrings.Instance}}" Classes="status"
                          IsVisible="{Binding HasNoAnnouncements}" />
               <TextBlock Text="{Binding RuntimeExplain}" Classes="status" TextWrapping="Wrap" />
             </StackPanel>
@@ -87,12 +88,12 @@
           <Border Grid.Row="2" Classes="card" MaxWidth="900" HorizontalAlignment="Stretch">
             <StackPanel Spacing="8">
               <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Grid.Column="0" Text="外部程序（后启动 / 补丁）" Classes="title" />
-                <Button Grid.Column="1" Classes="toolbar" Content="+ 添加" Command="{Binding AddExternalProgramCommand}" />
+                <TextBlock Grid.Column="0" Text="{Binding [Main.ExternalPrograms], Source={x:Static loc:AppStrings.Instance}}" Classes="title" />
+                <Button Grid.Column="1" Classes="toolbar" Content="{Binding [Main.Add], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding AddExternalProgramCommand}" />
               </Grid>
 
               <TextBlock Classes="status" TextWrapping="Wrap"
-                         Text="后启动与补丁注入是同一个概念：『伴随启动』= 补丁（游戏就绪后拉起），『手动』= 后启动。伴随启动会成为该 wine prefix 的第二个客户端。" />
+                         Text="{Binding [Main.ExternalProgramsHint], Source={x:Static loc:AppStrings.Instance}}" />
 
               <ItemsControl ItemsSource="{Binding ExternalPrograms}" MaxHeight="220">
                 <ItemsControl.ItemTemplate>
@@ -127,7 +128,7 @@
               IsVisible="{Binding ShowEnvironmentPanel}"
               Background="#E6101418" Padding="24" Margin="0" VerticalAlignment="Stretch">
         <Grid RowDefinitions="Auto,*">
-          <TextBlock Grid.Row="0" Text="环境变量（十层合并结果与来源）" Classes="title" Margin="0,0,0,12" />
+          <TextBlock Grid.Row="0" Text="{Binding [Main.EnvironmentTable], Source={x:Static loc:AppStrings.Instance}}" Classes="title" Margin="0,0,0,12" />
           <ListBox Grid.Row="1" ItemsSource="{Binding EnvironmentRows}" Background="Transparent">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:EnvironmentRowViewModel">

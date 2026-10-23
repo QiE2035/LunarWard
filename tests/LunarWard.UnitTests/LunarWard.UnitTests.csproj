@@ -14,5 +14,6 @@
     <ProjectReference Include="..\..\src\LunarWard.Wine\LunarWard.Wine.csproj" />
     <ProjectReference Include="..\..\src\LunarWard.Launch\LunarWard.Launch.csproj" />
     <ProjectReference Include="..\..\src\LunarWard.Games\LunarWard.Games.csproj" />
+    <ProjectReference Include="..\..\src\LunarWard.App\LunarWard.App.csproj" />
   </ItemGroup>
 </Project>

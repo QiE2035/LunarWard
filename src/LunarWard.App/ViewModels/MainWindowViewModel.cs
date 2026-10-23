@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LunarWard.App.Localization;
 using LunarWard.App.Services;
 using LunarWard.Launch;
 using LunarWard.Wine;
@@ -35,6 +36,23 @@ public sealed partial class MainWindowViewModel : ObservableObject
         ReloadProfiles();
 
         ApplyState(LaunchPhaseState.Idle);
+
+        Localization.AppStrings.Instance.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == "Item[]")
+            {
+                // 语言切换后，代码里缓存过文案的属性要重算
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    ApplyState(_services.LauncherService.State);
+                    if (SelectedProfile is { } p)
+                    {
+                        UpdatePlayTime(p.Id);
+                    }
+                });
+            }
+        };
+
         BackgroundAvailable = services.Background.IsVlcAvailable;
         BackgroundError = services.Background.ProbeError;
     }
@@ -60,7 +78,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
 
     [ObservableProperty]
-    private string launchButtonText = "启动";
+    private string launchButtonText = "";
 
 
     [ObservableProperty]
@@ -68,7 +86,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
 
     [ObservableProperty]
-    private string statusText = "就绪";
+    private string statusText = "";
 
 
     [ObservableProperty]
@@ -113,7 +131,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     /// <summary>当前档案的累计时长文案（如 "12 小时 34 分"）。</summary>
     [ObservableProperty]
-    private string playTimeText = "尚未启动过";
+    private string playTimeText = "";
 
 
     public IReadOnlyList<string> Themes { get; } = ["Modern", "Classic"];
@@ -494,17 +512,18 @@ public sealed partial class MainWindowViewModel : ObservableObject
         LaunchButtonEnabled = enabled;
         HasGameRunning = state == LaunchPhaseState.Running;
 
+        var strings = AppStrings.Instance;
         StatusText = state switch
         {
-            LaunchPhaseState.Idle => "就绪",
-            LaunchPhaseState.Prepare => "准备中…",
-            LaunchPhaseState.Launch => "启动中…",
-            LaunchPhaseState.AwaitImage => "等待游戏…",
-            LaunchPhaseState.AwaitReady => "等待就绪…",
-            LaunchPhaseState.PostLaunch => "启动辅助程序…",
-            LaunchPhaseState.Running => "游戏运行中",
-            LaunchPhaseState.Cleanup => "收尾中…",
-            LaunchPhaseState.Error => "出错了",
+            LaunchPhaseState.Idle => strings["Main.StatusIdle"],
+            LaunchPhaseState.Prepare => strings["Main.Preparing"],
+            LaunchPhaseState.Launch => strings["Main.Starting"],
+            LaunchPhaseState.AwaitImage => strings["Main.WaitingGame"],
+            LaunchPhaseState.AwaitReady => strings["Main.WaitingReady"],
+            LaunchPhaseState.PostLaunch => strings["Main.StartingHelpers"],
+            LaunchPhaseState.Running => strings["Main.StatusRunning"],
+            LaunchPhaseState.Cleanup => strings["Main.Finishing"],
+            LaunchPhaseState.Error => strings["Main.StatusError"],
             _ => StatusText,
         };
 
@@ -548,9 +567,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public void UpdatePlayTime(string profileId)
     {
         var total = _services.PlayTime.TotalFor(profileId);
+        var strings = AppStrings.Instance;
         PlayTimeText = total <= TimeSpan.Zero
-            ? "尚未启动过"
-            : $"累计 {FormatDuration(total)}";
+            ? strings["Main.NeverLaunched"]
+            : $"{strings["Main.Accumulated"]} {FormatDuration(total)}";
 
         static string FormatDuration(TimeSpan span) => span.TotalHours >= 1
             ? $"{(int)span.TotalHours} 小时 {span.Minutes} 分"

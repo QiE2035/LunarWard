@@ -222,7 +222,7 @@ cd src/LunarWard.Core && dotnet build
 |---|---|---|---|
 | 账号切换 | registry 操作 | 切 Wine `user.reg` 的 `[Software\miHoYo\...]` 段 | P0 |
 | 动态背景 | `Features/Background`（Win2D） | `LibVLCSharp.Avalonia` 的 `VideoView` | P0 |
-| 游戏时长 | `Features/PlayTime` | 复用相位引擎的起止时间 | P1 |
+| 游戏时长 | `Features/PlayTime` | 复用相位引擎的起止时间 → ✅ 已实现（`LunarWard.Launch/PlayTimeService.cs`） | P1 |
 | 截图管理 | `Features/Screenshot`（WIC） | 监视目录 + 文件操作 | P1 |
 | 画质设置 | `Features/GameSetting`（registry blob） | Wine `user.reg` 的 hex（**先只读**） | P1 |
 | URL Protocol | `Features/UrlProtocol`（注册表） | `.desktop` + `MimeType` | P1 |
@@ -246,19 +246,25 @@ cd src/LunarWard.Core && dotnet build
 
 ## 四、交付前检查清单
 
-- [ ] `dotnet build` 无警告（或警告已明确豁免）
-- [ ] 全部单元测试通过
-- [ ] 集成测试 I1–I13 通过（CI 环境需有 wine）
-- [ ] 真机清单 R1–R15 全部记录
-- [ ] `launch-report.json` 能正确输出
-- [ ] 配置损坏时能恢复
-- [ ] 崩溃时不留下 wine 进程残留
-- [ ] i18n：至少 zh-CN + en-US
-- [ ] 文档：README、用户手册、排障指南
-- [ ] 许可文件与第三方声明
-- [ ] **不包含**任何补丁二进制（`00-DECISIONS.md` D11）
-- [ ] `.desktop` 文件 + 图标
-- [ ] Flatpak 或 AppImage 打包（若发布）
+> 状态更新（2026-10-23）。✅ = 已完成并有证据；⏳ = 待真机/后续。
+
+| 检查项 | 状态 | 证据 |
+|---|---|---|
+| `dotnet build` 无警告 | ✅ | `dotnet build LunarWard.slnx` → 0 warning / 0 error |
+| 全部单元测试通过 | ✅ | 145（Unit）+ 31（Installer） |
+| 集成测试 I1–I13 通过 | ✅ | 25 个集成测试通过（合成游戏 + 真 `/proc`，不需要真 wine） |
+| 真机清单 R1–R15 全部记录 | ⚠️ | 已记录，但仅 R9/R12 ✅、R13/R15 ⚠️、其余 ⏳ → `acceptance-2026-10-23.md` |
+| `launch-report.json` 能正确输出 | ✅ | `I13` / `Report_HasSevenPhasesAndFullChain` |
+| 配置损坏时能恢复 | ✅ | `U13` / `PlayTimeTests.CorruptStore_IsBackedUpAndReset` |
+| 崩溃时不留下 wine 进程残留 | ✅ | `I10` / `R12_NoResidualWineClientsAfterExit` / `R15_...AreCleanedOnNextLaunch` |
+| i18n：至少 zh-CN + en-US | ⚠️ | `LunarWard.Core/Localization` 有 13 种语言资源；**App 自身 UI 尚未接 i18n** |
+| 文档：README、用户手册、排障指南 | ✅ | `README.md` / `docs/USER-GUIDE.md` / `docs/TROUBLESHOOTING.md` |
+| 许可文件与第三方声明 | ✅ | `LICENSE` / `THIRD-PARTY-NOTICES.md` |
+| **不包含**任何补丁二进制 | ✅ | 仓库内无 `.exe`/`.dll` 补丁；`git ls-files` 可核 |
+| `.desktop` 文件 + 图标 | ✅ | `packaging/lunarward.desktop`（`desktop-file-validate` 通过）+ `Assets/lunarward.ico` |
+| Flatpak 或 AppImage 打包 | ⏳ | 首期只做源码 + Arch（`packaging/PKGBUILD`），Flatpak 后续（Q8） |
+
+未关闭的 3 项：R1–R8/R10/R11/R14 需游戏本体；App UI 的 i18n；Flatpak。
 
 ---
 

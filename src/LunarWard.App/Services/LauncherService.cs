@@ -380,17 +380,21 @@ public sealed class LauncherService : IDisposable
 /// <remarks>见 <c>docs/04-FEATURES.md</c> §5.2。</remarks>
 public static class LaunchButtonState
 {
-    public static (string Text, bool Enabled) For(LaunchPhaseState state) => state switch
+    public static (string Text, bool Enabled) For(LaunchPhaseState state)
     {
-        LaunchPhaseState.Idle => ("启动", true),
-        LaunchPhaseState.Prepare => ("准备中…", false),
-        LaunchPhaseState.Launch => ("启动中…", false),
-        LaunchPhaseState.AwaitImage => ("等待游戏…", false),
-        LaunchPhaseState.AwaitReady => ("等待就绪…", false),
-        LaunchPhaseState.PostLaunch => ("启动辅助…", false),
-        LaunchPhaseState.Running => ("停止游戏", true),
-        LaunchPhaseState.Cleanup => ("收尾中…", false),
-        LaunchPhaseState.Error => ("重试", true),
-        _ => ("启动", true),
-    };
+        var strings = Localization.AppStrings.Instance;
+        return state switch
+        {
+            LaunchPhaseState.Idle => (strings["Main.Launch"], true),
+            LaunchPhaseState.Prepare => (strings["Main.Preparing"], false),
+            LaunchPhaseState.Launch => (strings["Main.Starting"], false),
+            LaunchPhaseState.AwaitImage => (strings["Main.WaitingGame"], false),
+            LaunchPhaseState.AwaitReady => (strings["Main.WaitingReady"], false),
+            LaunchPhaseState.PostLaunch => (strings["Main.StartingHelpers"], false),
+            LaunchPhaseState.Running => (strings["Main.Stop"], true),
+            LaunchPhaseState.Cleanup => (strings["Main.Finishing"], false),
+            LaunchPhaseState.Error => (strings["Main.Retry"], true),
+            _ => (strings["Main.Launch"], true),
+        };
+    }
 }
