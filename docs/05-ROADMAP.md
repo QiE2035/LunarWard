@@ -21,7 +21,7 @@ M0 是**唯一的前置门禁**——它验证四个未证实的技术点，任�
 | **M6** | `LunarWard.App` UI 骨架 | 窗口、游戏切换、启动按钮状态机 | M2 | ✅ |
 | **M7** | Starward 风格 UI | 公告三源 + 动态背景 + 双主题 | M6 | ✅（动态背景本机回退静态图） |
 | **M8** | `LunarWard.Installer` | 移植 `Starward.RPC/GameInstall`，去 gRPC/Vanara | M2 | ✅ 移植完成；UI 入口待接、真机下载未验证 |
-| **M9** | Starward P0/P1 功能 | 抽卡、便笺、时长、截图、URL 协议 | M7, M8 | ✅ 抽卡 / 便笺 / 时长 / URL 已接 UI；截图仅服务层（无浏览界面） |
+| **M9** | Starward P0/P1 功能 | 抽卡、便笺、时长、截图、URL 协议 | M7, M8 | ✅ 全部完成（抽卡 / 便笺 / 时长 / 截图 / URL 协议） |
 | **M10** | 打磨 | i18n、崩溃上报、导入向导、文档 | M9 | ⚠️ i18n ✅、文档 ✅；导入向导与崩溃上报按 Q10 不做 |
 
 ### 1.1 M0 的三个验证项
@@ -226,7 +226,7 @@ cd src/LunarWard.Core && dotnet build
 | 账号切换 | registry 操作 | 切 Wine `user.reg` 的 `[Software\miHoYo\...]` 段 | P0 |
 | 动态背景 | `Features/Background`（Win2D） | `LibVLCSharp.Avalonia` 的 `VideoView` | P0 |
 | 游戏时长 | `Features/PlayTime` | 复用相位引擎的起止时间 → ✅ 已实现（`LunarWard.Launch/PlayTimeService.cs`） | P1 |
-| 截图管理 | `Features/Screenshot`（WIC） | ✅ 目录发现 + 文件操作（`LunarWard.Launch/ScreenshotService.cs`），不做图像解码 | P1 |
+| 截图管理 | `Features/Screenshot`（WIC） | ✅ 目录发现 + 预览 + 导出（`ScreenshotService` + `Views/ScreenshotWindow.axaml`） | P1 |
 | 画质设置 | `Features/GameSetting`（registry blob） | Wine `user.reg` 的 hex（**先只读**） | P1 |
 | URL Protocol | `Features/UrlProtocol`（注册表） | ✅ `.desktop` + `MimeType`（`LunarWard.Launch/UrlProtocol.cs`） | P1 |
 | 设置页 | `Features/Setting`（WinUI） | `Adw.PreferencesPage` | P1 |
