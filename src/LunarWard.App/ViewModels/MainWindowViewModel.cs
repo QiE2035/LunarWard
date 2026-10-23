@@ -401,6 +401,22 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
 
     [RelayCommand]
+    private void OpenGacha()
+    {
+        if (SelectedProfile is null)
+        {
+            return;
+        }
+
+        var window = new Views.GachaWindow
+        {
+            DataContext = new GachaViewModel(_services, SelectedProfile),
+        };
+        window.Show();
+    }
+
+
+    [RelayCommand]
     private void Diagnose()
     {
         try
@@ -459,7 +475,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 OpenEnvironmentShell();
                 break;
             case "gacha":
-                ErrorText = "抽卡记录页面尚未实现（Core 侧客户端已就绪）";
+                OpenGacha();
                 break;
             default:
                 break;

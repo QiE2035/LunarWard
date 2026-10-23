@@ -4,5 +4,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\LunarWard.Wine\LunarWard.Wine.csproj" />
+    <ProjectReference Include="..\LunarWard.Core\LunarWard.Core.csproj" />
   </ItemGroup>
 </Project>

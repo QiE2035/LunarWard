@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using LunarWard.App.ViewModels;
+using LunarWard.App.ViewModels;
 using LunarWard.App.Views;
 using LunarWard.Platform;
 
@@ -57,6 +58,21 @@ public partial class App : Application
             {
                 _log.Info($"URL 协议：{Launch.UrlProtocol.Describe(command)}");
                 viewModel.ApplyUrlCommand(command);
+            }
+
+            // 自检：--screenshot <png> --window gacha
+            if (CaptureMode.Enabled && CaptureMode.TargetWindow == "gacha")
+            {
+                var mainWindowGacha = new MainWindow { DataContext = viewModel };
+                desktop.MainWindow = mainWindowGacha;
+                var gacha = new GachaWindow
+                {
+                    DataContext = new GachaViewModel(AppServices.Current, viewModel.Profiles[0]),
+                };
+                gacha.Opened += (_, _) => CaptureMode.Capture(gacha);
+                gacha.Show();
+                base.OnFrameworkInitializationCompleted();
+                return;
             }
 
             var window = new MainWindow { DataContext = viewModel };

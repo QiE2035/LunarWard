@@ -41,7 +41,7 @@ internal static class CaptureMode
 {
     public static string? Path { get; set; }
 
-    /// <summary>要截图的窗口：<c>main</c>（默认）/ <c>settings</c>。</summary>
+    /// <summary>要截图的窗口：<c>main</c>（默认）/ <c>settings</c> / <c>gacha</c>。</summary>
     public static string TargetWindow { get; set; } = "main";
 
     public static bool Enabled => Path is not null;
