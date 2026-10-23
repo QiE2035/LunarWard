@@ -228,7 +228,7 @@ cd src/LunarWard.Core && dotnet build
 | 游戏时长 | `Features/PlayTime` | 复用相位引擎的起止时间 → ✅ 已实现（`LunarWard.Launch/PlayTimeService.cs`） | P1 |
 | 截图管理 | `Features/Screenshot`（WIC） | ✅ 目录发现 + 文件操作（`LunarWard.Launch/ScreenshotService.cs`），不做图像解码 | P1 |
 | 画质设置 | `Features/GameSetting`（registry blob） | Wine `user.reg` 的 hex（**先只读**） | P1 |
-| URL Protocol | `Features/UrlProtocol`（注册表） | `.desktop` + `MimeType` | P1 |
+| URL Protocol | `Features/UrlProtocol`（注册表） | ✅ `.desktop` + `MimeType`（`LunarWard.Launch/UrlProtocol.cs`） | P1 |
 | 设置页 | `Features/Setting`（WinUI） | `Adw.PreferencesPage` | P1 |
 | Discord RPC | `Features/RPC` | IPC socket | P2 |
 | 通知 | `H.NotifyIcon` | `notify-rust` 等价物（D-Bus） | P2 |
