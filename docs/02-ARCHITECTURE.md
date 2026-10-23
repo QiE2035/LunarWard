@@ -79,7 +79,8 @@ lunarward/
 │   └── LunarWard.App/             # Avalonia 视图层
 ├── tests/
 │   ├── LunarWard.UnitTests/
-│   └── LunarWard.IntegrationTests/   # 合成游戏 + 临时 prefix，无需游戏本体
+│   ├── LunarWard.Installer.UnitTests/
+│   └── LunarWard.IntegrationTests/   # 合成游戏 + 临时 prefix + 真 wine（可选）
 └── third_party/
     └── README.md                  # 说明：按 §3.1 用 subtree，不建 submodule
 ```
