@@ -26,6 +26,22 @@
       <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
+    <Style Selector="TextBlock.warning-glyph">
+      <Setter Property="Foreground" Value="{StaticResource StarCautionBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.warning-text">
+      <Setter Property="Foreground" Value="{StaticResource StarCautionBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.warning-glyph.error">
+      <Setter Property="Foreground" Value="{StaticResource StarErrorBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.warning-text.error">
+      <Setter Property="Foreground" Value="{StaticResource StarErrorBrush}" />
+    </Style>
+
     <Style Selector="TextBlock.mono">
       <Setter Property="FontFamily" Value="{StaticResource StarMonoFontFamily}" />
       <Setter Property="FontSize" Value="12" />
@@ -54,7 +70,7 @@
   <Grid RowDefinitions="*,60">
 
     <!-- ══ 内容区 ═══════════════════════════════════════════════════════ -->
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer x:Name="DbgScroll" VerticalScrollBarVisibility="Auto">
       <Grid Margin="24,20,24,24" ColumnDefinitions="*,*" ColumnSpacing="24">
 
         <!-- ══════════════════════════════════════════════════════════
@@ -202,8 +218,13 @@
           <TextBlock Classes="tertiary"
                      Margin="0,8,0,0"
                      TextWrapping="Wrap"
-                     ToolTip.Tip="{Binding Strings[GameSetting.RuntimeHint]}"
+                     ToolTip.Tip="{Binding RuntimeExplainRaw}"
                      Text="{Binding RuntimeExplain}" />
+
+          <TextBlock Classes="tertiary"
+                     Margin="0,2,0,0"
+                     TextWrapping="Wrap"
+                     Text="{Binding RuntimeExplainNote}" />
 
           <!-- ── wine 与增强 ──────────────────────────────────────── -->
           <TextBlock Classes="section"
@@ -308,7 +329,7 @@
                        Classes="tertiary"
                        VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis"
-                       ToolTip.Tip="{Binding RuntimeExplain}"
+                       ToolTip.Tip="{Binding RuntimeExplainRaw}"
                        Text="{Binding RuntimeExplain}" />
             <Button Grid.Column="1"
                     Classes="flat"
@@ -413,10 +434,11 @@
                                  Text="{Binding Header}" />
                       <TextBlock Grid.Column="3"
                                  Margin="8,0"
-                                 VerticalAlignment="Center"
+                                 Classes="icon"
                                  FontSize="12"
                                  IsVisible="{Binding HasWarnings}"
                                  Foreground="{StaticResource StarCautionBrush}"
+                                 ToolTip.Tip="{Binding WarningBadgeTip}"
                                  Text="{Binding WarningBadge}" />
                       <Button Grid.Column="4"
                               Classes="flat"
@@ -569,14 +591,16 @@
                           <DataTemplate x:DataType="vm:GameSettingWarningRow">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" Margin="0,1">
                               <TextBlock Grid.Column="0"
+                                         Classes="warning-glyph"
+                                         Classes.error="{Binding IsError}"
                                          FontSize="12"
                                          VerticalAlignment="Top"
-                                         Foreground="{StaticResource StarCautionBrush}"
                                          Text="&#xE7BA;" />
                               <TextBlock Grid.Column="1"
+                                         Classes="warning-text"
+                                         Classes.error="{Binding IsError}"
                                          FontSize="12"
                                          TextWrapping="Wrap"
-                                         Foreground="{StaticResource StarCautionBrush}"
                                          Text="{Binding Message}" />
                             </Grid>
                           </DataTemplate>

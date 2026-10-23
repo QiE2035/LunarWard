@@ -83,6 +83,12 @@ public partial class StarwardShell : UserControl
         _current = view;
         PageHost.Content = view;
         view.OnNavigatedTo();
+
+        if (view is Pages.ToolboxPage toolboxPage && context.Shell.PendingToolboxTab >= 0)
+        {
+            toolboxPage.SelectTab(context.Shell.PendingToolboxTab);
+            context.Shell.PendingToolboxTab = -1;
+        }
     }
 
 

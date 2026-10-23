@@ -80,10 +80,10 @@ public partial class App : Application
         var profile = _shell.Profile;
         Window? window = target switch
         {
+            // 只保留仍是独立窗口的两个：账号/便笺已并入工具箱页
             "settings" => new SettingsWindow { DataContext = new SettingsViewModel(AppServices.Current, profile) },
             "account" => new AccountWindow { DataContext = new AccountViewModel(AppServices.Current, profile) },
             "dailynote" => new DailyNoteWindow { DataContext = new DailyNoteViewModel(AppServices.Current, profile) },
-            "gacha" => new GachaWindow { DataContext = new GachaViewModel(AppServices.Current, profile) },
             _ => null,
         };
 

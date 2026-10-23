@@ -101,13 +101,13 @@
                     <Border Margin="24" Background="#60000000" IsVisible="{Binding HasLogo}">
                       <Image Source="{Binding Logo}" Stretch="Uniform" />
                     </Border>
-                    <!-- 没有 Logo 时用名字兜底 -->
+                    <!-- 既没 Logo 也没缩略图时才用名字兜底（有缩略图时缩略图里已含主视觉） -->
                     <TextBlock Text="{Binding Title}"
                                Margin="12"
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                FontSize="16" FontWeight="Bold"
                                TextWrapping="Wrap" TextAlignment="Center"
-                               IsVisible="{Binding !HasLogo}" />
+                               IsVisible="{Binding ShowFallbackTitle}" />
                     <!-- 已安装标记 -->
                     <Border HorizontalAlignment="Right" VerticalAlignment="Top"
                             Margin="6" Padding="6,2" CornerRadius="4"
@@ -123,11 +123,11 @@
         </StackPanel>
       </ScrollViewer>
 
-      <!-- 关闭提示（Starward 用 TeachingTip / 点空白关闭） -->
+      <!-- 关闭（Starward 用点空白 / ESC 关闭；这里补一个显式按钮，放在右上不挡启动按钮） -->
       <Button Classes="overlay"
-              Margin="0,0,24,24"
-              HorizontalAlignment="Right" VerticalAlignment="Bottom"
-              Content="关闭"
+              Margin="0,60,24,0"
+              HorizontalAlignment="Right" VerticalAlignment="Top"
+              Content="{Binding Strings[Shell.Close]}"
               Command="{Binding CloseGameSelectorCommand}" />
     </Grid>
   </Grid>

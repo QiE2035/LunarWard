@@ -491,26 +491,16 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     [RelayCommand]
     private void OpenGameSettings() => _context.Shell.Navigate(ShellPage.GameSetting);
 
+    /// <summary>
+    /// Starward 的便笺按钮是浮层；这里统一跳到工具箱的「每日便笺」Tab——
+    /// 同一份功能只保留一个界面，避免两套视图各改一半。
+    /// </summary>
     [RelayCommand]
-    private async Task OpenDailyNoteAsync()
-    {
-        var window = new Views.DailyNoteWindow
-        {
-            DataContext = new DailyNoteViewModel(_services, _context.Profile),
-        };
-        window.Show();
-        await Task.CompletedTask;
-    }
+    private void OpenDailyNote() => _context.Shell.NavigateToToolbox(0);
 
+    /// <summary>账号切换同样落到工具箱的「账号记录」Tab。</summary>
     [RelayCommand]
-    private void OpenAccounts()
-    {
-        var window = new Views.AccountWindow
-        {
-            DataContext = new AccountViewModel(_services, _context.Profile),
-        };
-        window.Show();
-    }
+    private void OpenAccounts() => _context.Shell.NavigateToToolbox(1);
 
 
     [RelayCommand]

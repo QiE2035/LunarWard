@@ -26,7 +26,25 @@ public partial class GameSettingPage : StarwardPage
     }
 
 
-    public override void OnNavigatedTo() => _viewModel?.OnNavigatedTo();
+    public override void OnNavigatedTo()
+    {
+        // Shell 在切页时会对上一个页面调 OnNavigatedFrom（本页 VM 因此被释放），
+        // 但页面实例仍留在它的缓存里——回到本页时重建一次 VM，避免绑定到已释放的对象。
+        if (_viewModel is null)
+        {
+            _viewModel = new GameSettingPageViewModel(Context);
+            DataContext = _viewModel;
+        }
+
+        _viewModel.OnNavigatedTo();
+
+        // TEMP-VERIFY: 截图验证用滚动，验证完删除
+        if (double.TryParse(Environment.GetEnvironmentVariable("LW_SCROLL_OFFSET"), out var offset))
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => DbgScroll.Offset = new Avalonia.Vector(0, offset),
+                Avalonia.Threading.DispatcherPriority.Background);
+        }
+    }
 
 
     protected override void DisposeViewModel(PageContext context)

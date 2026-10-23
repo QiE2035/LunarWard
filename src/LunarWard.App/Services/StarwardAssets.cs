@@ -41,6 +41,9 @@ public sealed class StarwardAssets : IDisposable
 
     private readonly ConcurrentDictionary<string, DateTimeOffset> _contentFetchedAt = new(StringComparer.Ordinal);
 
+    /// <summary>同一个 URL 的下载只跑一次（页面与外壳会并发请求同一张图）。</summary>
+    private readonly ConcurrentDictionary<string, Task<string?>> _downloadTasks = new(StringComparer.Ordinal);
+
     private readonly HoYoPlayClient _client;
 
     private readonly string _cacheRoot;
@@ -75,13 +78,24 @@ public sealed class StarwardAssets : IDisposable
     public GameContent? Content { get; private set; }
 
 
-    /// <summary>拉取某个游戏组合的全部素材（图标、背景、轮播图、资讯）。</summary>
+    /// <summary>已经拉过 <c>getGames</c> 的 launcher id（避免重复请求）。</summary>
+    private readonly ConcurrentDictionary<string, bool> _loadedLaunchers = new(StringComparer.Ordinal);
+
+
+    /// <summary>
+    /// 拉取某个游戏组合的全部素材（图标、背景、轮播图、资讯）。
+    /// </summary>
+    /// <remarks>
+    /// Starward 每个游戏用自己的 launcher id（国服 / 国际服 / B 站各一条），
+    /// 所以游戏选择层要看到全部游戏的卡片就必须把用到的 launcher id 都拉一遍。
+    /// </remarks>
     public async Task LoadAsync(string launcherId, string gameBiz, CancellationToken cancellationToken = default)
     {
         try
         {
             _language = PickLanguage();
             var infos = await _client.GetGameInfoAsync(launcherId, _language, cancellationToken).ConfigureAwait(false);
+            _loadedLaunchers[launcherId] = true;
             foreach (var info in infos)
             {
                 if (info is not null && info.GameBiz.Value is { Length: > 0 } biz)
@@ -164,6 +178,56 @@ public sealed class StarwardAssets : IDisposable
     }
 
 
+    /// <summary>
+    /// 把游戏选择层要用到的 launcher id 全部拉一遍（国服 + 国际服 + B 站），
+    /// 这样未安装的游戏也有图标/缩略图。已拉过的 launcher id 不会重复请求。
+    /// </summary>
+    public async Task LoadAllLaunchersAsync(IEnumerable<string> launcherIds, CancellationToken cancellationToken = default)
+    {
+        foreach (var launcherId in launcherIds.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct())
+        {
+            if (_loadedLaunchers.ContainsKey(launcherId))
+            {
+                continue;
+            }
+
+            try
+            {
+                _language = PickLanguage();
+                var infos = await _client.GetGameInfoAsync(launcherId, _language, cancellationToken).ConfigureAwait(false);
+                _loadedLaunchers[launcherId] = true;
+                foreach (var info in infos)
+                {
+                    if (info is not null && info.GameBiz.Value is { Length: > 0 } biz)
+                    {
+                        _gameInfos[biz] = info;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Warn($"素材：launcher {launcherId} 拉取失败（{ex.Message}）");
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// 游戏选择层用的卡片素材：只下载缩略图与 Logo（不碰几 MB 的大背景图）。
+    /// </summary>
+    public async Task<(Bitmap? Thumbnail, Bitmap? Logo)?> CardArtAsync(string gameBiz, CancellationToken cancellationToken = default)
+    {
+        if (!_gameInfos.TryGetValue(gameBiz, out var info))
+        {
+            return null;
+        }
+
+        var thumbnail = await BitmapAsync(info.Display?.Thumbnail?.Url, cancellationToken).ConfigureAwait(false);
+        var logo = await BitmapAsync(info.Display?.Logo?.Url, cancellationToken).ConfigureAwait(false);
+        return (thumbnail, logo);
+    }
+
+
     /// <summary>取当前游戏（或指定 biz）的素材。</summary>
     public GameArt? For(string? gameBiz = null)
     {
@@ -188,12 +252,33 @@ public sealed class StarwardAssets : IDisposable
 
 
     /// <summary>把 URL 下载到缓存；已是本地路径就直接返回。失败返回 null。</summary>
-    public async Task<string?> CacheAsync(string? url, string kind, CancellationToken cancellationToken = default)
+    /// <remarks>并发调用同一个 URL 时共用一次下载（否则两个 <c>.tmp</c> 会互相踩）。</remarks>
+    public Task<string?> CacheAsync(string? url, string kind, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(url))
         {
-            return null;
+            return Task.FromResult<string?>(null);
         }
+
+        return _downloadTasks.GetOrAdd(url, key => DownloadAsync(key, kind, cancellationToken));
+    }
+
+
+    private async Task<string?> DownloadAsync(string url, string kind, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await DownloadCoreAsync(url, kind, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _downloadTasks.TryRemove(url, out _);
+        }
+    }
+
+
+    private async Task<string?> DownloadCoreAsync(string url, string kind, CancellationToken cancellationToken)
+    {
 
         if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
         {

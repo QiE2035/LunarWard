@@ -42,7 +42,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         ReloadProfiles();
 
         CurrentPage = ShellPage.Launcher;
-        _ = InitializeAsync();
+        InitializationTask = InitializeAsync();
     }
 
 
@@ -51,6 +51,9 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     public AppServices Services => _services;
 
     public StarwardAssets Assets { get; }
+
+    /// <summary>首次素材加载（自检截图与"等首屏就绪"用）。</summary>
+    public Task InitializationTask { get; private set; } = Task.CompletedTask;
 
     public LogService Log => _log;
 
@@ -111,6 +114,21 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
     /// <summary>由页面主动请求跳转（例如设置页里的"诊断"跳到工具箱）。</summary>
     public void Navigate(ShellPage page) => SelectPageCommand.Execute(page);
+
+
+    /// <summary>
+    /// 跳到工具箱的指定 Tab（0 = 每日便笺，1 = 账号记录）。
+    /// Starward 的便笺/账号切换是浮层，这里统一落到工具箱页，避免再开独立窗口。
+    /// </summary>
+    public void NavigateToToolbox(int tab)
+    {
+        PendingToolboxTab = tab;
+        Navigate(ShellPage.Toolbox);
+    }
+
+
+    /// <summary>页面创建后要切到的工具箱 Tab（-1 = 不切）。</summary>
+    public int PendingToolboxTab { get; set; } = -1;
 
 
     public void RebuildPage() => PageChanged?.Invoke(this, new PageContext
@@ -250,6 +268,18 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             : Games.GameEdition.China)?.GameBiz ?? "hk4e_cn";
 
 
+    /// <summary>某个档案对应的 launcher id（国服官方 / 国际服官方 / B 站）。</summary>
+    public static string LauncherIdFor(ProfileItemViewModel profile)
+    {
+        var biz = Games.GameCatalog.Get(
+            profile.Profile.Game,
+            string.Equals(profile.Profile.Edition, "Global", StringComparison.OrdinalIgnoreCase)
+                ? Games.GameEdition.Global
+                : Games.GameEdition.China)?.GameBiz ?? "hk4e_cn";
+        return Core.HoYoPlay.LauncherId.FromGameBiz(new Core.GameBiz(biz)) ?? Core.HoYoPlay.LauncherId.ChinaOfficial;
+    }
+
+
     /// <summary>当前游戏的 launcher id（官方/ B 站）。</summary>
     public string CurrentLauncherId => Core.HoYoPlay.LauncherId.FromGameBiz(new Core.GameBiz(CurrentGameBiz))
                                        ?? Core.HoYoPlay.LauncherId.ChinaOfficial;
@@ -283,7 +313,9 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
                 BackgroundImage = background;
             }
 
-            // 游戏选择层的缩略图提前预热，避免第一次点开是空卡
+            // 游戏选择层要看到全部游戏的卡片：先把各 launcher 的 getGames 拉齐，
+            // 再只下载缩略图/Logo（大背景图只给当前游戏）。
+            await Assets.LoadAllLaunchersAsync(Profiles.Select(LauncherIdFor).Distinct()).ConfigureAwait(true);
             await LoadChoiceArtAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
@@ -393,17 +425,16 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         try
         {
             IsGameSelectorLoading = true;
+            await Assets.LoadAllLaunchersAsync(Profiles.Select(LauncherIdFor).Distinct()).ConfigureAwait(true);
             foreach (var choice in GameChoices)
             {
-                var art = Assets.AllArt.FirstOrDefault(x =>
-                    string.Equals(x.GameBiz, choice.GameBiz, StringComparison.OrdinalIgnoreCase));
-                if (art is null)
+                if (await Assets.CardArtAsync(choice.GameBiz).ConfigureAwait(true) is not { } art)
                 {
                     continue;
                 }
 
-                choice.Thumbnail = await Assets.BitmapAsync(art.Thumbnail ?? art.Background).ConfigureAwait(true);
-                choice.Logo = await Assets.BitmapAsync(art.Logo).ConfigureAwait(true);
+                choice.Thumbnail = art.Thumbnail;
+                choice.Logo = art.Logo;
             }
         }
         catch (Exception ex)
@@ -507,17 +538,20 @@ public sealed partial class GameChoiceViewModel : ObservableObject
 
     /// <summary>Starward 卡片背景（缩略图 192×108）。</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasThumbnail))]
+    [NotifyPropertyChangedFor(nameof(HasThumbnail), nameof(ShowFallbackTitle))]
     private Bitmap? _thumbnail;
 
     /// <summary>Starward 卡片中央的 Logo（悬停时换成图标 + 「选择服务器」）。</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasLogo))]
+    [NotifyPropertyChangedFor(nameof(HasLogo), nameof(ShowFallbackTitle))]
     private Bitmap? _logo;
 
     public bool HasThumbnail => Thumbnail is not null;
 
     public bool HasLogo => Logo is not null;
+
+    /// <summary>既没有 Logo 也没有缩略图时，卡片中央显示游戏名。</summary>
+    public bool ShowFallbackTitle => !HasThumbnail && !HasLogo;
 
     /// <summary>游戏 biz（<c>hk4e_cn</c>），用来匹配素材。</summary>
     public string GameBiz => Definition?.GameBiz ?? "";

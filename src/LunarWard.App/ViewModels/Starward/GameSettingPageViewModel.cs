@@ -102,6 +102,12 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
 
     partial void OnGamePathChanged(string value)
     {
+        if (_loading)
+        {
+            // 构造时回填输入框，不应把页面标成"有改动"（应用按钮只在用户真的改了东西时可用）
+            return;
+        }
+
         Profile.Profile.Path = value;
         SetDirty(true);
         RefreshDetectedGameFlags();
@@ -227,7 +233,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
 
     partial void OnSelectedChannelChanged(GameSettingChannelOption value)
     {
-        if (value is null)
+        if (value is null || _loading)
         {
             return;
         }
@@ -347,9 +353,38 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
     private AvailableRuntime? _selectedRuntime;
 
 
-    /// <summary>当前生效运行时的解释串（"生效：… › …"），直接来自解析结果。</summary>
+    /// <summary>当前生效运行时的解释串（本地化：作用域 › runner 类型 + 二进制路径）。</summary>
     [ObservableProperty]
     private string _runtimeExplain = "";
+
+
+    /// <summary>
+    /// 从 <c>&lt;runner&gt;/bin/wine</c> 反推 runner 目录名（自定义/独占运行时用）。
+    /// </summary>
+    private static string RuntimeFolderName(string wineBinary)
+    {
+        var directory = Path.GetDirectoryName(wineBinary);
+        if (string.IsNullOrEmpty(directory))
+        {
+            return Path.GetFileName(wineBinary);
+        }
+
+        // wine 一般在 <runner>/bin/wine；bin 的上一级才是 runner 根
+        var parent = Path.GetDirectoryName(directory);
+        return string.Equals(Path.GetFileName(directory), "bin", StringComparison.Ordinal) && !string.IsNullOrEmpty(parent)
+            ? Path.GetFileName(parent)
+            : Path.GetFileName(directory);
+    }
+
+
+    /// <summary>"为什么是这个运行时"（一行小字）。</summary>
+    [ObservableProperty]
+    private string _runtimeExplainNote = "";
+
+
+    /// <summary>领域层原始解释串（ToolTip 用，含解析链细节与二进制路径）。</summary>
+    [ObservableProperty]
+    private string _runtimeExplainRaw = "";
 
 
     partial void OnSelectedRuntimeChanged(AvailableRuntime? value)
@@ -596,6 +631,57 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
 
 
     /// <summary>
+    /// 一行"生效：&lt;作用域&gt; › &lt;运行时&gt;"，加一行"为什么"。
+    /// </summary>
+    /// <remarks>
+    /// 不直接显示 <see cref="ResolvedRuntime.Explain"/>：那是领域层的中文固定串
+    /// （<c>profile → 默认运行时 › 自定义 /path</c>），en-US 下会半句中文。
+    /// 完整解析链与二进制路径放 <see cref="RuntimeExplainRaw"/> 做 ToolTip，排障不丢信息。
+    /// 格式照 <c>docs/04-FEATURES.md</c> §3.1 的"结果必须可解释"。
+    /// </remarks>
+    private (string Headline, string Note) BuildRuntimeExplain(LaunchPlan plan)
+    {
+        var (scope, note) = Profile.Profile.Runtime.ToDomain() switch
+        {
+            Scoped<RuntimeConfig>.Shared shared => (
+                string.Format(Strings["GameSetting.ScopeShared"], shared.Name),
+                Strings["GameSetting.ScopeSharedNote"]),
+            Scoped<RuntimeConfig>.PerGame => (
+                Strings["GameSetting.ScopePerGame"],
+                Strings["GameSetting.ScopePerGameNote"]),
+            Scoped<RuntimeConfig>.Custom => (
+                Strings["GameSetting.ScopeCustom"],
+                Strings["GameSetting.ScopeCustomNote"]),
+            _ => (
+                Strings["GameSetting.ScopeDefault"],
+                Strings["GameSetting.ScopeDefaultNote"]),
+        };
+
+        // 第二部分用"看得懂的运行时名"：具名运行时用自己的名字，否则用默认运行时名，
+        // 再退到 wine 二进制所在目录名——不直接显示 Wine 层的 default/shared 内部标记。
+        var runtimeName = Profile.Profile.Runtime.ToDomain() switch
+        {
+            Scoped<RuntimeConfig>.Shared shared => shared.Name,
+            Scoped<RuntimeConfig>.Default => Services.Config.Launcher.DefaultRuntime,
+            Scoped<RuntimeConfig>.PerGame or Scoped<RuntimeConfig>.Custom =>
+                RuntimeFolderName(plan.WineBinary),
+            _ => plan.Runtime.Name,
+        };
+
+        if (string.IsNullOrWhiteSpace(runtimeName))
+        {
+            runtimeName = Path.GetFileName(plan.Runtime.WineBinary) is { Length: > 0 } binary ? binary : plan.Runtime.Name;
+        }
+
+        var headline = string.Format(
+            Strings["GameSetting.RuntimeResolved"],
+            $"{scope} › {runtimeName}");
+
+        return (headline, note);
+    }
+
+
+    /// <summary>
     /// 构建计划（不启动）并刷新 env 表——与启动时用的是<b>同一份</b>解析结果。
     /// </summary>
     [RelayCommand]
@@ -635,7 +721,10 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
             EnvRows.Add(new GameSettingEnvRow(key, value, _plan.EnvSources.GetValueOrDefault(key, "?")));
         }
 
-        RuntimeExplain = _plan.Runtime.Explain;
+        var (headline, note) = BuildRuntimeExplain(_plan);
+        RuntimeExplain = headline;
+        RuntimeExplainNote = note;
+        RuntimeExplainRaw = _plan.Runtime.Explain;
         PrefixText = _plan.Prefix;
         EnvSummary = string.Format(Strings["GameSetting.EnvCount"], EnvRows.Count);
     }
@@ -665,7 +754,9 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         var profile = Profile.Profile;
         foreach (var program in profile.ExternalPrograms)
         {
-            Programs.Add(CreateProgramItem(program, keywords));
+            var item = CreateProgramItem(program, keywords);
+            item.IsExpanded = Environment.GetEnvironmentVariable("LW_EXPAND") is "1";
+            Programs.Add(item);
         }
 
         HasPrograms = Programs.Count > 0;

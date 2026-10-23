@@ -56,9 +56,13 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     public void ApplyLanguage(string code)
     {
         var normalized = Localization.AppStrings.Normalize(code);
+        var current = Localization.AppStrings.Normalize(Services.Config.Launcher.Language);
         Strings.Language = normalized;
         Services.Config.Launcher.Language = normalized;
-        if (_initializing)
+
+        // ComboBox 首次绑定会把 SelectedItem 推回来一次；与当前配置相同就不当作"用户切换"，
+        // 既不写盘也不弹状态（否则每次打开设置页都会白写一次 config.json）。
+        if (_initializing || string.Equals(normalized, current, StringComparison.Ordinal))
         {
             return;
         }

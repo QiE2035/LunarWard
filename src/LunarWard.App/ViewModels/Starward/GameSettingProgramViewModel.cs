@@ -253,13 +253,16 @@ public sealed partial class GameSettingProgramViewModel : ObservableObject
     public ObservableCollection<GameSettingWarningRow> WarningRows { get; } = [];
 
 
-    /// <summary>折叠行上的警告角标（不给文字，Starward 风格是行内小图标 + 计数）。</summary>
-    public string WarningBadge => WarningRows.Count switch
-    {
-        0 => "",
-        1 => "!",
-        _ => $"!{WarningRows.Count}",
-    };
+    /// <summary>
+    /// 折叠行上的警告角标：这是 Starward 的 <c>InfoBar</c> 图标位（E7BA），
+    /// 有警告就亮 Caution 色，具体条数在 ToolTip 里。
+    /// </summary>
+    public string WarningBadge => WarningRows.Count == 0 ? "" : "\uE7BA";
+
+
+    public string WarningBadgeTip => string.Format(
+        AppStrings.Instance["GameSetting.ProgramWarnings"],
+        WarningRows.Count);
 
 
 
@@ -309,6 +312,7 @@ public sealed partial class GameSettingProgramViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(WarningBadge));
+        OnPropertyChanged(nameof(WarningBadgeTip));
 
         Suggestion = _program.GetSuggestion() ?? "";
         HasSuggestion = Suggestion.Length > 0;

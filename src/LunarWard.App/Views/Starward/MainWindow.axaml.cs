@@ -25,20 +25,15 @@ public partial class MainWindow : Window
             return;
         }
 
-        // 自检：--open-selector 直接把游戏选择层打开
-        if (CaptureMode.OpenSelector && DataContext is ShellViewModel shell)
+        if (DataContext is ShellViewModel shell)
         {
-            shell.OpenGameSelectorCommand.Execute(null);
-        }
-
-        // 自检：--tab accounts 切到工具箱的账号 Tab
-        if (CaptureMode.Tab is { Length: > 0 } tab && DataContext is ShellViewModel shellVm)
-        {
-            shellVm.Navigate(ShellPage.Toolbox);
-            if (shellVm.CurrentPage == ShellPage.Toolbox)
+            if (CaptureMode.OpenSelector)
             {
-                _ = ApplyToolboxTabAsync(tab);
+                shell.OpenGameSelectorCommand.Execute(null);
             }
+
+            _ = AwaitReadyThenCaptureAsync(shell);
+            return;
         }
 
         CaptureMode.Capture(this);
@@ -57,6 +52,40 @@ public partial class MainWindow : Window
         {
             BeginMoveDrag(e);
         }
+    }
+
+
+    /// <summary>
+    /// 自检截图：先等外壳的素材加载完成（背景/公告/图标都可能走网络），
+    /// 之后再多等 <see cref="CaptureMode.WaitMilliseconds"/> 让绑定与图片解码落地。
+    /// </summary>
+    private async Task AwaitReadyThenCaptureAsync(ShellViewModel shell)
+    {
+        try
+        {
+            await Task.WhenAny(shell.InitializationTask, Task.Delay(15000));
+        }
+        catch (Exception)
+        {
+            // 素材失败不影响截图
+        }
+
+        // 工具箱 Tab：等页面挂好后再切
+        if (CaptureMode.Tab is { Length: > 0 } tab)
+        {
+            try
+            {
+                await Task.Delay(500);
+                Shell?.SelectToolboxTab(tab.Equals("accounts", StringComparison.OrdinalIgnoreCase) ? 1 : 0);
+            }
+            catch (Exception)
+            {
+                // 自检辅助
+            }
+        }
+
+        await Task.Delay(CaptureMode.WaitMilliseconds);
+        CaptureMode.Capture(this);
     }
 
 
