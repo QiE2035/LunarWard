@@ -17,9 +17,14 @@ namespace LunarWard.App.ViewModels.Starward;
 /// </summary>
 /// <remarks>
 /// <para>
-/// 排版骨架来自 <c>Starward/Features/GameSetting/GameSettingPage.xaml</c>；Starward 原页里的
-/// Windows 专属项（分辨率 / HDR / 语音语言 / 帧率）在 Linux 上没有对应值，
-/// <b>不伪造</b>——左列换成 LunarWard 真正拥有的基础设置（目录 / 渠道 / 运行时 / wine 选项）。
+/// 排版骨架来自 <c>Starward/Features/GameSetting/GameSettingPage.xaml</c>：
+/// 左列分辨率/全屏/语音语言、右列图形设置、底部 60px 应用条。
+/// 这些值在 Linux 上不是"没有对应值"——它们就在游戏自己的 Wine prefix 注册表里，
+/// 通过 <see cref="WineRegistry"/>（<c>wine reg query/add</c>）按 Starward 的键名读写。
+/// </para>
+/// <para>
+/// LunarWard 的目录 / 渠道 / 运行时 / env / 外部程序 / 诊断是<b>追加区</b>，排在
+/// Starward 基础设置之后（docs/08-UI-PARITY.md §1）。
 /// </para>
 /// <para>
 /// 右列是 <c>docs/04-FEATURES.md</c> 要求的追加区：十层合并 env 表（§4.3）、
@@ -32,7 +37,12 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
 {
     private readonly LauncherService _launcher;
 
+    private readonly WineRegistry _registry;
+
     private LaunchPlan? _plan;
+
+    /// <summary>基础设置回填/应用期间抑制 dirty 标记。</summary>
+    private bool _baseSettingLoading;
 
     private bool _disposed;
 
@@ -42,6 +52,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
     public GameSettingPageViewModel(PageContext context) : base(context)
     {
         _launcher = Services.LauncherService;
+        _registry = new WineRegistry(Services.Launcher, context.Log);
 
         var profile = Profile.Profile;
 
@@ -80,6 +91,8 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         _launcher.StateChanged += OnLauncherStateChanged;
         ApplyLauncherState(_launcher.State);
         SetDirty(false);
+
+        _ = LoadBaseSettingsAsync();
     }
 
 
@@ -92,6 +105,276 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
 
     /// <summary>DX12 只对绝区零有意义（原神的 DX12 不走 DXVK，见 GameAdapter）。</summary>
     public bool IsZzz => string.Equals(Profile.Profile.Game, GameCatalog.Zzz, StringComparison.OrdinalIgnoreCase);
+
+    // ── 左列：Starward 基础设置（分辨率 / 全屏 / 语音语言） ────────────
+    //
+    // 对应 Starward GameSettingPage.xaml 的左列（:28-94）。数据来自游戏 Wine prefix 的
+    // 注册表（GameSettingRegistry），不是 LunarWard 自己的配置。
+
+    /// <summary>游戏目录里能找到可执行文件：Starward 的 <c>IsBaseSettingEnable</c>。</summary>
+    [ObservableProperty]
+    private bool _isGameInstalled;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsGraphicsSettingEnabled))]
+    private bool _isBaseSettingEnabled;
+
+    /// <summary>分辨率下拉框的条目（Starward <c>ComboBox_Resolution</c>）。</summary>
+    public ObservableCollection<ResolutionOption> ResolutionOptions { get; } = [];
+
+    [ObservableProperty]
+    private bool _enableFullScreen;
+
+    /// <summary>勾选后手填宽高，下拉框禁用（Starward <c>EnableCustomResolution</c>）。</summary>
+    [ObservableProperty]
+    private bool _enableCustomResolution;
+
+    [ObservableProperty]
+    private int _resolutionWidth = 1920;
+
+    [ObservableProperty]
+    private int _resolutionHeight = 1080;
+
+    [ObservableProperty]
+    private ResolutionOption? _selectedResolution;
+
+    partial void OnSelectedResolutionChanged(ResolutionOption? value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        ResolutionWidth = value.Width;
+        ResolutionHeight = value.Height;
+        if (!_baseSettingLoading)
+        {
+            SetDirty(true);
+        }
+    }
+
+    partial void OnEnableFullScreenChanged(bool value)
+    {
+        if (!_baseSettingLoading)
+        {
+            SetDirty(true);
+        }
+    }
+
+    partial void OnEnableCustomResolutionChanged(bool value)
+    {
+        if (!_baseSettingLoading)
+        {
+            SetDirty(true);
+        }
+    }
+
+    partial void OnResolutionWidthChanged(int value)
+    {
+        if (!_baseSettingLoading)
+        {
+            SetDirty(true);
+        }
+    }
+
+    partial void OnResolutionHeightChanged(int value)
+    {
+        if (!_baseSettingLoading)
+        {
+            SetDirty(true);
+        }
+    }
+
+    /// <summary>语音语言（0 汉 / 1 英 / 2 日 / 3 韩）；仅原神。</summary>
+    [ObservableProperty]
+    private int _voiceLanguageIndex;
+
+    partial void OnVoiceLanguageIndexChanged(int value)
+    {
+        if (!_baseSettingLoading)
+        {
+            SetDirty(true);
+        }
+    }
+
+    /// <summary>Starward <c>IsLanguageSettingEnable</c>：原神/星铁有语音语言，绝区零没有。</summary>
+    [ObservableProperty]
+    private bool _isLanguageSettingEnabled;
+
+    /// <summary>Starward <c>IsGraphicsSettingEnable</c>：原神显示 HDR 分区；绝区零没有图形设置。</summary>
+    public bool IsGraphicsSettingEnabled => IsBaseSettingEnabled && !IsZzz;
+
+    /// <summary>HDR 在 Linux/Wine 下没有等价物：控件保留位置但禁用，不伪造开关。</summary>
+    [ObservableProperty]
+    private bool _enableGenshinHdr;
+
+    [ObservableProperty]
+    private bool _isBaseSettingBusy;
+
+    [ObservableProperty]
+    private string _baseSettingStatus = "";
+
+    [ObservableProperty]
+    private bool _hasBaseSettingStatus;
+
+
+    /// <summary>
+    /// 从游戏 prefix 的注册表回填基础设置（Starward <c>InitializeGameSettingAsync</c>）。
+    /// </summary>
+    private async Task LoadBaseSettingsAsync()
+    {
+        try
+        {
+            BuildResolutionOptions();
+            if (!IsGameInstalled)
+            {
+                IsBaseSettingEnabled = false;
+                IsLanguageSettingEnabled = false;
+                return;
+            }
+
+            IsBaseSettingEnabled = true;
+            var profile = Profile.Profile;
+            IsLanguageSettingEnabled = GameSettingRegistry.SupportsVoiceLanguage(profile.Game);
+
+            if (_plan is not { } plan || string.IsNullOrWhiteSpace(plan.Prefix))
+            {
+                BaseSettingStatus = Strings["GameSetting.BaseSettingsNoPlan"];
+                HasBaseSettingStatus = true;
+                return;
+            }
+
+            // prefix 还没被 wineboot 初始化时不要读：wine reg 会顺手把 prefix 建出来。
+            if (!File.Exists(Path.Join(plan.Prefix, "system.reg")))
+            {
+                BaseSettingStatus = Strings["GameSetting.BaseSettingsNoPrefix"];
+                HasBaseSettingStatus = true;
+                return;
+            }
+
+            IsBaseSettingBusy = true;
+            var resolution = await GameSettingRegistry.ReadResolutionAsync(
+                _registry, plan.WineBinary, plan.Prefix, profile.Game, profile.Edition).ConfigureAwait(true);
+
+            _baseSettingLoading = true;
+            if (resolution is { } value)
+            {
+                EnableFullScreen = value.IsFullScreen;
+                ResolutionWidth = value.Width;
+                ResolutionHeight = value.Height;
+            }
+
+            var match = ResolutionOptions.FirstOrDefault(x => x.Width == ResolutionWidth && x.Height == ResolutionHeight);
+            if (match is null)
+            {
+                match = new ResolutionOption(ResolutionWidth, ResolutionHeight,
+                    GameSettingRegistry.FormatResolution(ResolutionWidth, ResolutionHeight));
+                ResolutionOptions.Add(match);
+                EnableCustomResolution = true;
+            }
+            else
+            {
+                EnableCustomResolution = false;
+            }
+
+            SelectedResolution = match;
+
+            if (IsLanguageSettingEnabled
+                && await GameSettingRegistry.ReadVoiceLanguageAsync(
+                    _registry, plan.WineBinary, plan.Prefix, profile.Game, profile.Edition).ConfigureAwait(true) is { } language)
+            {
+                VoiceLanguageIndex = Math.Clamp(language, 0, 3);
+            }
+
+            _baseSettingLoading = false;
+        }
+        catch (Exception ex)
+        {
+            _baseSettingLoading = false;
+            BaseSettingStatus = string.Format(Strings["GameSetting.BaseSettingsReadFailed"], ex.Message);
+            HasBaseSettingStatus = true;
+            Log.Warn($"读取游戏基础设置失败：{ex.Message}");
+        }
+        finally
+        {
+            IsBaseSettingBusy = false;
+        }
+    }
+
+
+    /// <summary>分辨率下拉条目：Starward 的 <c>Resolutions</c> 列表 + 当前值。</summary>
+    private void BuildResolutionOptions()
+    {
+        if (ResolutionOptions.Count > 0)
+        {
+            return;
+        }
+
+        foreach (var (width, height) in GameSettingRegistry.CommonResolutions)
+        {
+            ResolutionOptions.Add(new ResolutionOption(width, height, GameSettingRegistry.FormatResolution(width, height)));
+        }
+    }
+
+
+    /// <summary>把基础设置写回游戏 prefix 的注册表（Starward <c>ApplySetting</c> 的前半段）。</summary>
+    private async Task ApplyBaseSettingsAsync()
+    {
+        if (!IsBaseSettingEnabled)
+        {
+            return;
+        }
+
+        if (ResolutionWidth <= 0 || ResolutionHeight <= 0)
+        {
+            PlanError = Strings["GameSetting.ResolutionMustBeGreaterThan0"];
+            HasPlanError = true;
+            return;
+        }
+
+        if (_plan is not { } plan || string.IsNullOrWhiteSpace(plan.Prefix))
+        {
+            PlanError = Strings["GameSetting.BaseSettingsNoPlan"];
+            HasPlanError = true;
+            return;
+        }
+
+        if (!File.Exists(Path.Join(plan.Prefix, "system.reg")))
+        {
+            PlanError = Strings["GameSetting.BaseSettingsNoPrefix"];
+            HasPlanError = true;
+            return;
+        }
+
+        IsBaseSettingBusy = true;
+        try
+        {
+            var profile = Profile.Profile;
+            var ok = await GameSettingRegistry.WriteResolutionAsync(
+                _registry, plan.WineBinary, plan.Prefix, profile.Game, profile.Edition,
+                EnableFullScreen, ResolutionWidth, ResolutionHeight).ConfigureAwait(true);
+
+            if (IsLanguageSettingEnabled)
+            {
+                ok &= await GameSettingRegistry.WriteVoiceLanguageAsync(
+                    _registry, plan.WineBinary, plan.Prefix, profile.Game, profile.Edition,
+                    VoiceLanguageIndex).ConfigureAwait(true);
+            }
+
+            BaseSettingStatus = ok
+                ? Strings["GameSetting.BaseSettingsWritten"]
+                : Strings["GameSetting.BaseSettingsWriteFailed"];
+            HasBaseSettingStatus = true;
+            if (!ok)
+            {
+                Log.Warn("写入游戏基础设置失败（wine reg 返回非零）");
+            }
+        }
+        finally
+        {
+            IsBaseSettingBusy = false;
+        }
+    }
 
 
     // ── 左列：游戏目录 ────────────────────────────────────────────────
@@ -127,8 +410,10 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
             HasGameDirectory = false;
             DirectoryInvalid = false;
             IsGamePathEmpty = true;
+            IsGameInstalled = false;
             GameDirectoryName = Strings["GameSetting.DirectoryMissing"];
             OnPropertyChanged(nameof(ShowDirectoryPlaceholder));
+            OnPropertyChanged(nameof(IsGraphicsSettingEnabled));
             return;
         }
 
@@ -136,6 +421,8 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         HasGameDirectory = definition is not null;
         DirectoryInvalid = definition is null;
         IsGamePathEmpty = false;
+        IsGameInstalled = definition is not null && File.Exists(Path.Join(directory, definition.Executable));
+        OnPropertyChanged(nameof(IsGraphicsSettingEnabled));
         OnPropertyChanged(nameof(ShowDirectoryPlaceholder));
         GameDirectoryName = definition is not null
             ? $"{definition.DisplayName} · {definition.Executable}"
@@ -1049,7 +1336,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
 
 
     [RelayCommand]
-    private void Apply()
+    private async Task ApplyAsync()
     {
         try
         {
@@ -1062,6 +1349,8 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
 
             Services.Config.Profiles[Profile.Id] = profile;
             Services.Config.Save(Services.Paths.ConfigFile);
+
+            await ApplyBaseSettingsAsync().ConfigureAwait(true);
 
             SetDirty(false);
             PlanError = "";
@@ -1225,3 +1514,6 @@ internal static class GameSettingDiagnosticText
         return string.Join(" · ", parts);
     }
 }
+
+/// <summary>分辨率下拉框的一行（Starward <c>ComboBox_Resolution</c> 的 "宽 × 高"）。</summary>
+public sealed record ResolutionOption(int Width, int Height, string Label);

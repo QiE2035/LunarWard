@@ -71,7 +71,146 @@
 
     <!-- ══ 内容区 ═══════════════════════════════════════════════════════ -->
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <Grid Margin="24,20,24,24" ColumnDefinitions="*,*" ColumnSpacing="24">
+      <StackPanel Margin="24,20,24,24" Spacing="32">
+
+        <!--
+          ══ Starward 基础设置（GameSettingPage.xaml:28-147）══════════════
+          左列：分辨率 / 全屏 / 无边框窗口 / 自定义分辨率 / 语音语言；
+          右列：图形设置（原神 HDR）。底部 60px 应用条不变。
+          值与 Starward 写在 Windows 注册表的同一组键，Linux 下走游戏 prefix 的 wine reg。
+        -->
+        <StackPanel Spacing="12" IsVisible="{Binding IsGameInstalled}">
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+
+            <!-- 左列（源码 :28-94） -->
+            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+
+              <TextBlock FontSize="20"
+                         FontWeight="Bold"
+                         Text="{Binding Strings[GameSetting.Resolution]}" />
+
+              <CheckBox Margin="0,8,0,0"
+                        IsChecked="{Binding EnableFullScreen, Mode=TwoWay}"
+                        Content="{Binding Strings[GameSetting.FullScreen]}" />
+
+              <!-- Starward :35-38 的 UsePopupWindow：LunarWard 用 wine 无边框实现，位置一致 -->
+              <CheckBox Margin="0,8,0,0"
+                        IsChecked="{Binding Borderless, Mode=TwoWay}"
+                        Content="{Binding Strings[GameSetting.UsePopupWindow]}" />
+
+              <CheckBox Margin="0,8,0,0"
+                        IsChecked="{Binding EnableCustomResolution, Mode=TwoWay}"
+                        Content="{Binding Strings[GameSetting.CustomResolution]}" />
+
+              <ComboBox Width="160"
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Left"
+                        IsEnabled="{Binding !EnableCustomResolution}"
+                        ItemsSource="{Binding ResolutionOptions}"
+                        SelectedItem="{Binding SelectedResolution, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ResolutionOption">
+                    <TextBlock Text="{Binding Label}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+
+              <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="12">
+                <NumericUpDown Width="120"
+                               Minimum="0"
+                               Maximum="16384"
+                               IsEnabled="{Binding EnableCustomResolution}"
+                               Value="{Binding ResolutionWidth, Mode=TwoWay}" />
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="20"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="×" />
+                <NumericUpDown Width="120"
+                               Minimum="0"
+                               Maximum="16384"
+                               IsEnabled="{Binding EnableCustomResolution}"
+                               Value="{Binding ResolutionHeight, Mode=TwoWay}" />
+              </StackPanel>
+
+              <!-- 语音语言（源码 :69-93） -->
+              <TextBlock Margin="0,20,0,0"
+                         FontSize="20"
+                         FontWeight="Bold"
+                         IsVisible="{Binding IsLanguageSettingEnabled}"
+                         Text="{Binding Strings[GameSetting.VoiceLanguage]}" />
+              <TextBlock Margin="0,12,0,0"
+                         TextWrapping="Wrap"
+                         IsVisible="{Binding IsLanguageSettingEnabled}"
+                         Text="{Binding Strings[GameSetting.VoiceLanguageDescription]}" />
+              <ComboBox Width="160"
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Left"
+                        IsVisible="{Binding IsLanguageSettingEnabled}"
+                        SelectedIndex="{Binding VoiceLanguageIndex, Mode=TwoWay}">
+                <ComboBoxItem Content="{Binding Strings[GameSetting.LanguageChinese]}" />
+                <ComboBoxItem Content="{Binding Strings[GameSetting.LanguageEnglish]}" />
+                <ComboBoxItem Content="{Binding Strings[GameSetting.LanguageJapanese]}" />
+                <ComboBoxItem Content="{Binding Strings[GameSetting.LanguageKorean]}" />
+              </ComboBox>
+            </StackPanel>
+
+            <!-- 右列：图形设置（源码 :97-147；LunarWard 只支持原神 HDR 的位置，开关禁用） -->
+            <StackPanel Grid.Column="1"
+                        Spacing="12"
+                        IsVisible="{Binding IsGraphicsSettingEnabled}">
+              <TextBlock FontSize="20"
+                         FontWeight="Bold"
+                         Text="{Binding Strings[GameSetting.GraphicsSetting]}" />
+              <StackPanel Spacing="8">
+                <TextBlock FontWeight="Bold" Text="HDR" />
+                <CheckBox IsEnabled="False"
+                          IsChecked="{Binding EnableGenshinHdr, Mode=TwoWay}"
+                          Content="{Binding Strings[GameSetting.EnableHDR]}" />
+                <TextBlock Foreground="{StaticResource StarTextSecondary}"
+                           TextWrapping="Wrap"
+                           Text="{Binding Strings[GameSetting.HdrUnsupported]}" />
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+
+          <TextBlock Classes="tertiary"
+                     TextWrapping="Wrap"
+                     Text="{Binding Strings[GameSetting.BaseSettingsHint]}" />
+          <TextBlock Classes="tertiary"
+                     TextWrapping="Wrap"
+                     IsVisible="{Binding HasBaseSettingStatus}"
+                     Text="{Binding BaseSettingStatus}" />
+        </StackPanel>
+
+        <!-- Starward：游戏未安装（StackPanel_Emoji，源码 :150-160） -->
+        <StackPanel HorizontalAlignment="Center"
+                    Spacing="16"
+                    IsVisible="{Binding !IsGameInstalled}">
+          <Border Width="160" Height="160">
+            <TextBlock Classes="icon"
+                       FontSize="72"
+                       Foreground="{StaticResource StarTextTertiary}"
+                       Text="&#xE7FC;" />
+          </Border>
+          <TextBlock HorizontalAlignment="Center"
+                     FontSize="16"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{Binding Strings[GameSetting.GameNotInstalled]}" />
+        </StackPanel>
+
+        <!--
+          ══ LunarWard 追加区（docs/08-UI-PARITY.md §1）════════════════════
+          目录 / 渠道 / wine 运行时 / env / 外部程序 / 诊断。按合同排在
+          Starward 基础设置之后，不替换原版内容。
+        -->
+        <StackPanel Spacing="8">
+          <TextBlock FontSize="20"
+                     FontWeight="Bold"
+                     Text="{Binding Strings[GameSetting.AdditionalTitle]}" />
+          <TextBlock Classes="description"
+                     Text="{Binding Strings[GameSetting.AdditionalDescription]}" />
+
+          <Grid Margin="0,12,0,0" ColumnDefinitions="*,*" ColumnSpacing="24">
 
         <!-- ══════════════════════════════════════════════════════════
              左列：基础设置（Starward 左列位置）
@@ -250,9 +389,7 @@
                       SelectedItem="{Binding SelectedSync, Mode=TwoWay}" />
           </Grid>
 
-          <CheckBox Margin="0,8,0,0"
-                    Content="{Binding Strings[Settings.Borderless]}"
-                    IsChecked="{Binding Borderless, Mode=TwoWay}" />
+          <!-- 「无边框窗口」已上移到 Starward 基础设置区（同一个 Borderless 属性），此处不再重复。 -->
           <CheckBox Margin="0,8,0,0"
                     Content="{Binding Strings[Settings.WineWayland]}"
                     IsChecked="{Binding WineWayland, Mode=TwoWay}" />
@@ -682,7 +819,9 @@
 
 
         </StackPanel>
-      </Grid>
+          </Grid>
+        </StackPanel>
+      </StackPanel>
     </ScrollViewer>
 
     <!-- ══ 底部应用条（Starward Grid_ApplyBackground，60px，8,0,0,0）══ -->

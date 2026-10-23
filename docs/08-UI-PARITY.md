@@ -27,7 +27,7 @@
 | 左栏 | `MainView.xaml` 的 NavigationView | `NavigationRail.axaml`(129) | ✅ | LeftCompact 56px、40×40、选中 3×16 强调条一致；图标条见下 |
 | 游戏选择 | `GameSelector.xaml`(572) + `.cs`(975) | 外壳内的全屏层 | 🟡 | **已补横排图标条**（悬停当前图标滑出、#60000000 遮罩、当前图标不压暗）；全屏层的服务器选择、固定、未安装游戏列表、拖放排序未移植 |
 | 启动器 | `GameLauncherPage.xaml`(684，其中 PipsPager 样式 ~330 行) | `Pages/GameLauncherPage.axaml`(281) | 🟡 | 公告卡/开始按钮/时长胶囊位置一致；预下载、安装进度态、DX12 选项、区服 ComboBox、拖放背景、账号切换器（Starward 是 40 高 ComboBox + 切换/编辑）、便笺 Flyout 未移植 |
-| 游戏设置 | `GameSettingPage.xaml`(199) | `Pages/GameSettingPage.axaml`(720) | 🔴 | Starward 左列=分辨率/全屏/语音，右列=图形（HDR/帧率），底部 60 应用条；当前页是目录/区服/wine/env/外部程序——**Starward 原版设置没有移植**，需按 07 §2 追加区的方式重排 |
+| 游戏设置 | `GameSettingPage.xaml`(199) + `GameSettingService.cs` | `Pages/GameSettingPage.axaml`(约 900) + `Services/WineRegistry.cs` / `GameSettingRegistry.cs` | 🟡 | 本轮已按源码恢复左列（分辨率/全屏/无边框/自定义分辨率/语音语言）+ 右列图形设置 + 60px 应用条；值通过 `wine reg` 读写游戏 prefix 的 `HKCU\Software\miHoYo\<游戏>`（与 Starward 同一组键）。LunarWard 目录/wine/env/外部程序/诊断移到下方追加区。未移植：HDR（Linux/Wine 无等价物，开关禁用+说明）、按显示器尺寸过滤分辨率列表、星铁帧率（LunarWard 不支持星铁）、游戏版本检测（用 exe 是否存在近似） |
 | 设置总览 | `SettingPage.xaml`(108) | `Pages/SettingPage.axaml`(160) | ✅ | 260 二级导航 + Frame Margin 24,24,0,0 一致 |
 | 关于 | `AboutSetting.xaml`(135) | `SettingAboutView.axaml`(110) | 🟡 | LunarWard 品牌内容替换（合理），链接区/日志目录已本地化 |
 | 通用 | `GeneralSetting.xaml`(87) | `SettingGeneralView.axaml`(119) | 🟡 | 追加了主题/启动行为；缺"帮助翻译"链接；Windows 系统效果段落省略（合理） |
@@ -64,7 +64,15 @@
   `GachaStatsCard` 结构；数据仍来自现有 `GachaPageViewModel`。构建 0 警告 0 错误。
 - **截图页重写**（t-screenshot）：按 `ScreenshotPage2.xaml` 44px 页头 + 磁贴墙；
   缩略图后台 412px 解码，列宽按 `floor((w+12)/(204+12))` 均摊。构建 0 警告 0 错误。
-- 全量测试 334 通过（276 单测 + 31 安装器 + 27 集成）。
+- **游戏设置页**（Lead）：按 `GameSettingPage.xaml` 恢复 Starward 基础设置两列 +
+  60px 应用条；新增 `Services/WineRegistry.cs`（`wine reg query/add`，含 REG_DWORD /
+  REG_BINARY 解析）与 `Services/GameSettingRegistry.cs`（键名/值名逐条照抄
+  `GameSettingService.cs`，原神分辨率/全屏/语音、绝区零分辨率/全屏）。
+  LunarWard 设置移到下方追加区（20px 标题 + 说明）。
+- 真 wine 往返：`LUNARWARD_REAL_WINE=1 LUNARWARD_TEST_WINE=<wine>` 跑
+  `WineRegistryRealWineTests`（wineboot 建 prefix → 写 DWORD → 读回），本机通过。
+- 全量测试 348 通过（290 单测 + 31 安装器 + 27 集成；其中 14 个是新增的注册表
+  解析/映射用例，真 wine 往返用例默认跳过）。
 
 ## 4. 下一步队列（按用户可见度排序）
 
