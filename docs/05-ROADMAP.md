@@ -226,7 +226,7 @@ cd src/LunarWard.Core && dotnet build
 | 账号切换 | registry 操作 | 切 Wine `user.reg` 的 `[Software\miHoYo\...]` 段 | P0 |
 | 动态背景 | `Features/Background`（Win2D） | `LibVLCSharp.Avalonia` 的 `VideoView` | P0 |
 | 游戏时长 | `Features/PlayTime` | 复用相位引擎的起止时间 → ✅ 已实现（`LunarWard.Launch/PlayTimeService.cs`） | P1 |
-| 截图管理 | `Features/Screenshot`（WIC） | 监视目录 + 文件操作 | P1 |
+| 截图管理 | `Features/Screenshot`（WIC） | ✅ 目录发现 + 文件操作（`LunarWard.Launch/ScreenshotService.cs`），不做图像解码 | P1 |
 | 画质设置 | `Features/GameSetting`（registry blob） | Wine `user.reg` 的 hex（**先只读**） | P1 |
 | URL Protocol | `Features/UrlProtocol`（注册表） | `.desktop` + `MimeType` | P1 |
 | 设置页 | `Features/Setting`（WinUI） | `Adw.PreferencesPage` | P1 |
