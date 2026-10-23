@@ -254,7 +254,13 @@ LunarWard.IntegrationTests.dll    — 通过:  25，失败: 0，跳过: 0
 | `KeywordTests.cs` | 19 | 关键字替换、命令模板 `%post%`、参数切分 |
 | `EnvAndTriggerTests.cs` | 11 | 三态 env 矩阵、`Trigger` 合法性、警告、启发式 |
 | `ProcSnapshotsTests.cs` | 8 | `/proc` 快照匹配（精确 prefix、排除僵尸/自身/他人 uid） |
-| — | 另有 6 个 `[Theory]` 展开成 31 组 `InlineData` | 已计入上述总数 |
+| `PlayTimeTests.cs` | 7 | 时长累计、持久化、非法时间戳、排序、损坏恢复、未知字段、原子写 |
+| `ScreenshotTests.cs` | 9 | 截图目录发现、排序、扩展名过滤、UID 提取、导出防覆盖、占用统计 |
+| `AppStringsTests.cs` | 16 | 英文覆盖、无空值、语言归一化、切换通知、未知键回显 |
+| `ComponentInstallerTests.cs` | 6 | 真实 `HttpListener` + 真实 `tar.gz`：安装/失败不留残骸/索引缺失 |
+| — | 另有多个 `[Theory]` 展开成 `InlineData` | 已计入上述总数 |
+
+（各文件之和会略少于 178，因为 `[Theory]` 的 `InlineData` 会展开成多组。）
 
 **安装器单元测试分布（31）**：
 
