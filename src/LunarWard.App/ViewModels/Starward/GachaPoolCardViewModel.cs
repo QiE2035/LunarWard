@@ -37,7 +37,7 @@ public sealed class GachaPoolCardViewModel
     /// <summary>5★ 出率（0 抽时 Starward 显示 —）。</summary>
     public string FiveStarRateText => Statistics.TotalPulls == 0
         ? "—"
-        : $"{(double)Statistics.FiveStarCount / Statistics.TotalPulls:P1}";
+        : string.Format(Strings["Gacha.Card.Rate"], (double)Statistics.FiveStarCount / Statistics.TotalPulls);
 
     /// <summary>距上一发 5★ 的抽数（保底进度，卡片里的强调色一行）。</summary>
     public string PityText => string.Format(Strings["Gacha.Card.Pity"], Statistics.CurrentPity);
@@ -49,7 +49,7 @@ public sealed class GachaPoolCardViewModel
     /// <summary>出金历史（每发 5★ 用了多少抽，从旧到新）。</summary>
     public string PityHistoryText => Statistics.FiveStarPities.Count == 0
         ? Strings["Gacha.Card.NoFiveStar"]
-        : string.Join(" · ", Statistics.FiveStarPities);
+        : Strings["Gacha.Card.History"] + string.Join(" · ", Statistics.FiveStarPities);
 
     public bool HasPityHistory => Statistics.FiveStarPities.Count > 0;
 

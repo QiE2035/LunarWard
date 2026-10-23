@@ -249,6 +249,20 @@ public sealed partial class GameSettingProgramViewModel : ObservableObject
     }
 
 
+    /// <summary>逐条警告（区分颜色：文件不存在这类是 Error，其余是 Caution）。</summary>
+    public ObservableCollection<GameSettingWarningRow> WarningRows { get; } = [];
+
+
+    /// <summary>折叠行上的警告角标（不给文字，Starward 风格是行内小图标 + 计数）。</summary>
+    public string WarningBadge => WarningRows.Count switch
+    {
+        0 => "",
+        1 => "!",
+        _ => $"!{WarningRows.Count}",
+    };
+
+
+
     public bool HasWarnings
     {
         get => _hasWarnings;
@@ -277,7 +291,7 @@ public sealed partial class GameSettingProgramViewModel : ObservableObject
     }
 
 
-    /// <summary>错误级警告用 Caution 色，其它用次要色。</summary>
+    /// <summary>有任一 Error 级警告（文件不存在等）。</summary>
     public bool HasErrorWarning { get; private set; }
 
 
@@ -287,6 +301,14 @@ public sealed partial class GameSettingProgramViewModel : ObservableObject
         Warnings = string.Join("\n", warnings.Select(x => x.Message));
         HasWarnings = warnings.Count > 0;
         HasErrorWarning = warnings.Any(x => x.Severity == WarningSeverity.Error);
+
+        WarningRows.Clear();
+        foreach (var warning in warnings)
+        {
+            WarningRows.Add(new GameSettingWarningRow(warning.Message, warning.Severity == WarningSeverity.Error));
+        }
+
+        OnPropertyChanged(nameof(WarningBadge));
 
         Suggestion = _program.GetSuggestion() ?? "";
         HasSuggestion = Suggestion.Length > 0;
@@ -553,3 +575,7 @@ public sealed partial class GameSettingEnvEntryViewModel : ObservableObject
     [RelayCommand]
     private void Remove() => _onRemove(this);
 }
+
+
+/// <summary>一条外部程序警告（Error 用错误色，其余用 Caution 色）。</summary>
+public sealed record GameSettingWarningRow(string Message, bool IsError);

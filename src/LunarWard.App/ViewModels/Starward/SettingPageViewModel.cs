@@ -57,6 +57,15 @@ public abstract partial class SettingSectionViewModel : StarwardPageViewModel
     public string Title => Strings[TitleKey];
 
 
+    /// <summary>子页底部的状态/错误文字（各子页共用同一个字段）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatus))]
+    private string? _status;
+
+
+    public bool HasStatus => !string.IsNullOrEmpty(Status);
+
+
     private void OnStringsChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         => OnPropertyChanged(nameof(Title));
 
@@ -103,7 +112,24 @@ public sealed partial class SettingPageViewModel : StarwardPageViewModel
             new SettingToolboxViewModel(context, showDivider: true),
         ];
 
-        _selectedSection = Sections[0];
+        _selectedSection = ResolveInitialSection() ?? Sections[0];
+    }
+
+
+    /// <summary>
+    /// 初始子页。默认「关于」（与 Starward <c>Frame_Setting.Navigate(typeof(AboutSetting))</c> 一致）；
+    /// 自检/截图时可用环境变量 <c>LUNARWARD_SETTINGS_SECTION</c>（如 <c>advanced</c>）直接落到某一页。
+    /// </summary>
+    private SettingSectionViewModel? ResolveInitialSection()
+    {
+        var requested = Environment.GetEnvironmentVariable("LUNARWARD_SETTINGS_SECTION");
+        if (string.IsNullOrWhiteSpace(requested))
+        {
+            return null;
+        }
+
+        return Sections.FirstOrDefault(s =>
+            string.Equals(s.Kind.ToString(), requested.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
 

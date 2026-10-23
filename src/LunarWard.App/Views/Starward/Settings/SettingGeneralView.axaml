@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Settings.SettingGeneralView"
+             x:DataType="vm:SettingGeneralViewModel">
+
+  <!--
+    复刻 Starward Features/Setting/GeneralSetting.xaml：
+      语言（20px 标题 + 12 间距的 ComboBox，260 宽 36 高）
+      → 关闭窗口选项（20px 标题 + 12 间距的 RadioButton 组，Spacing 24）
+      → 分隔线 → 次要色说明段落
+    主题与启动行为是 LunarWard 追加/替换项，节奏保持一致。
+  -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+
+      <!-- ── 语言 ─────────────────────────────────────────────── -->
+      <TextBlock Classes="section" Text="{Binding Strings[Settings.Language]}" />
+
+      <ComboBox Height="36"
+                MinWidth="260"
+                Width="260"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Left"
+                ItemsSource="{Binding Languages}"
+                SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}" />
+
+      <TextBlock Margin="0,12,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.General.LanguageDesc]}" />
+
+      <!-- ── 主题 ─────────────────────────────────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.General.Theme]}" />
+
+      <TextBlock Margin="0,12,0,0"
+                 Text="{Binding Strings[Settings.General.ThemeValue]}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.General.ThemeDesc]}" />
+
+      <!-- ── 启动时行为 ───────────────────────────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.General.LaunchBehavior]}" />
+
+      <TextBlock Margin="0,12,0,0"
+                 Text="{Binding Strings[Settings.General.LaunchBehaviorValue]}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.General.LaunchBehaviorDesc]}" />
+
+      <!-- ── 关闭窗口行为（Starward：两个 RadioButton，第一个禁用并说明）── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.General.CloseBehavior]}" />
+
+      <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="24">
+        <RadioButton GroupName="CloseWindowOption"
+                     IsChecked="True"
+                     Content="{Binding Strings[Settings.General.CloseExit]}" />
+        <RadioButton GroupName="CloseWindowOption"
+                     IsEnabled="False"
+                     Content="{Binding Strings[Settings.General.CloseMinimize]}" />
+      </StackPanel>
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.General.CloseDesc]}" />
+
+      <!-- Starward 在这里是 MenuFlyoutSeparator -->
+      <Border Height="1"
+              Margin="0,20,0,0"
+              Background="{StaticResource StarDividerBrush}" />
+
+      <!-- ── 公告卡 + 动态背景（Starward 的"体验"两个开关位）────── -->
+      <ToggleSwitch Margin="0,20,0,0"
+                    IsChecked="{Binding Announcements, Mode=TwoWay}"
+                    OffContent="{Binding Strings[Settings.General.Announcements]}"
+                    OnContent="{Binding Strings[Settings.General.Announcements]}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.General.AnnouncementsDesc]}" />
+
+      <ToggleSwitch Margin="0,12,0,0"
+                    IsChecked="{Binding VideoBackground, Mode=TwoWay}"
+                    OffContent="{Binding Strings[Settings.General.VideoBackground]}"
+                    OnContent="{Binding Strings[Settings.General.VideoBackground]}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.General.VideoBackgroundDesc]}" />
+
+      <!-- 如实标注：两个开关已落盘，但启动器页尚未读取 -->
+      <Border Classes="infobar warning" Margin="0,12,0,0">
+        <TextBlock FontSize="12"
+                   TextWrapping="Wrap"
+                   Text="{Binding Strings[Settings.General.PendingEffect]}" />
+      </Border>
+
+      <TextBlock Margin="0,12,0,0"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding HasStatus}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -57,19 +57,18 @@
 
     </Grid>
 
+    <!--
+      Starward Border_OverlayMask：全窗铺一层 CustomAcrylic，只有启动器页不盖
+      （MainView.NavigateTo 里 page is BlankPage or GameLauncherPage → Opacity 0）。
+      声明顺序也照 Starward：背景 → 56px 竖条 → mask → 导航 → 内容。
+    -->
+    <Border Background="{StaticResource StarAcrylicBrush}"
+            IsVisible="{Binding !IsLauncherSelected}"
+            IsHitTestVisible="False" />
+
     <!-- ── 左栏 56px（Starward 是一个独立的 CustomAcrylic 竖条） ── -->
     <Border Width="56" HorizontalAlignment="Left" Background="{StaticResource StarAcrylicBrush}" />
     <local:NavigationRail HorizontalAlignment="Left" VerticalAlignment="Stretch" />
-
-    <!--
-      Starward Border_OverlayMask：除启动器页外，所有页面都被一层 CustomAcrylic 盖住
-      （MainView.NavigateTo 里按页名切 Opacity）。没有它，设置/抽卡/截图页的文字会直接
-      压在插画上，读不清。
-    -->
-    <Border Margin="56,48,0,0"
-            Background="{StaticResource StarAcrylicBrush}"
-            IsVisible="{Binding !IsLauncherSelected}"
-            IsHitTestVisible="False" />
 
     <!-- ── 页面宿主（Starward MainView_Frame，Margin="0,48,0,0"） ── -->
     <ContentPresenter x:Name="PageHost" Margin="56,48,0,0" />

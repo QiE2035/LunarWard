@@ -150,12 +150,8 @@ public sealed partial class SettingAdvancedViewModel : SettingSectionViewModel
     public string SelfCheckCommand => "dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png --page settings --wait 2500";
 
 
-    [ObservableProperty]
-    private string? _status;
-
-
     [RelayCommand]
-    private async Task CopySelfCheckCommandAsync()
+    private async Task CopySelfCheckAsync()
     {
         Status = await SettingShellActions.TryCopyAsync(SelfCheckCommand).ConfigureAwait(true) is { } error
             ? error

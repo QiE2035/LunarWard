@@ -128,14 +128,15 @@
       <Border Grid.Column="0" Classes="card" Padding="8">
         <Grid RowDefinitions="Auto,*" RowSpacing="4">
 
-          <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="8,4,8,4">
+          <Grid Grid.Row="0" ColumnDefinitions="Auto,8,*" Margin="8,4,8,4">
             <TextBlock Grid.Column="0"
                        Classes="tertiary"
                        VerticalAlignment="Center"
                        Text="{Binding Strings[Screenshot.ListHeader]}" />
-            <TextBlock Grid.Column="1"
+            <TextBlock Grid.Column="2"
                        Classes="tertiary"
                        VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
                        Text="{Binding SummaryText}"
                        IsVisible="{Binding HasSummary}" />
           </Grid>

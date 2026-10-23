@@ -51,7 +51,10 @@ public sealed partial class SettingDownloadViewModel : SettingSectionViewModel
 
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasComponentCount))]
     private string _componentCount = "";
+
+    public bool HasComponentCount => !string.IsNullOrEmpty(ComponentCount);
 
 
     public ObservableCollection<string> WineGroups { get; } = [];
@@ -102,10 +105,6 @@ public sealed partial class SettingDownloadViewModel : SettingSectionViewModel
 
     [ObservableProperty]
     private bool _isUpdating;
-
-
-    [ObservableProperty]
-    private string? _status;
 
 
     [RelayCommand(CanExecute = nameof(CanUpdateIndex))]

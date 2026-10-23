@@ -31,10 +31,6 @@ public sealed partial class SettingHotkeyViewModel : SettingSectionViewModel
     public bool HasDesktopEntry => DesktopEntryPath is not null;
 
 
-    [ObservableProperty]
-    private string? _status;
-
-
     [RelayCommand]
     private void OpenDesktopEntry()
     {

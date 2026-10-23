@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Settings.SettingToolboxView"
+             x:DataType="vm:SettingToolboxViewModel">
+
+  <!--
+    复刻 Starward Features/Setting/ToolboxSetting.xaml：
+      GridView(SelectionMode=None) 里的 180×220 卡片（图标 40 → 名称 Bold → 12px 说明）
+    Starward 的卡片是「每日便笺 / 账号记录 / 抽奖记录」；LunarWard 这里是本项目的
+    工具箱入口（游戏设置 / 诊断 / 环境 shell / 截图），跳转统一走 Shell.Navigate。
+  -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24" Spacing="12">
+
+      <ItemsControl ItemsSource="{Binding Items}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:SettingToolboxItemViewModel">
+            <Button Width="180" Height="220"
+                    Margin="0,0,12,12"
+                    Padding="12"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    Command="{Binding $parent[UserControl].((vm:SettingToolboxViewModel)DataContext).InvokeCommand}"
+                    CommandParameter="{Binding}">
+              <Grid RowDefinitions="100,Auto,*" RowSpacing="8">
+                <TextBlock Grid.Row="0"
+                           Classes="icon"
+                           FontSize="40"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Text="{Binding Icon}" />
+
+                <TextBlock Grid.Row="1"
+                           FontWeight="Bold"
+                           TextWrapping="Wrap"
+                           Text="{Binding Name}" />
+
+                <TextBlock Grid.Row="2"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding Description}" />
+              </Grid>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <TextBlock Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding HasStatus}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

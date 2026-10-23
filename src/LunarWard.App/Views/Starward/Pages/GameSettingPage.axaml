@@ -54,7 +54,7 @@
   <Grid RowDefinitions="*,60">
 
     <!-- ══ 内容区 ═══════════════════════════════════════════════════════ -->
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer x:Name="ContentScroll" VerticalScrollBarVisibility="Auto">
       <Grid Margin="24,20,24,24" ColumnDefinitions="*,*" ColumnSpacing="24">
 
         <!-- ══════════════════════════════════════════════════════════
@@ -164,15 +164,19 @@
 
           <Grid Margin="0,8,0,0" ColumnDefinitions="*,8,Auto">
             <ComboBox Grid.Column="0"
-                      Height="52"
+                      Height="40"
+                      Padding="11,0"
                       HorizontalAlignment="Stretch"
                       ItemsSource="{Binding Runtimes}"
                       SelectedItem="{Binding SelectedRuntime, Mode=TwoWay}">
               <ComboBox.ItemTemplate>
                 <DataTemplate x:DataType="svc:AvailableRuntime">
-                  <StackPanel Spacing="0" Margin="0,2">
-                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                    <TextBlock Classes="tertiary" Text="{Binding Path}" TextTrimming="CharacterEllipsis" />
+                  <StackPanel Spacing="0" Margin="0,1">
+                    <TextBlock FontSize="12" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock FontSize="11"
+                               Foreground="{StaticResource StarTextSecondary}"
+                               Text="{Binding Path}"
+                               TextTrimming="CharacterEllipsis" />
                   </StackPanel>
                 </DataTemplate>
               </ComboBox.ItemTemplate>
@@ -188,6 +192,7 @@
           <TextBlock Classes="tertiary"
                      Margin="0,8,0,0"
                      TextWrapping="Wrap"
+                     ToolTip.Tip="{Binding RuntimeExplain}"
                      Text="{Binding RuntimeExplain}" />
 
           <TextBlock Classes="tertiary"
@@ -281,6 +286,7 @@
                        Classes="tertiary"
                        VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis"
+                       ToolTip.Tip="{Binding RuntimeExplain}"
                        Text="{Binding RuntimeExplain}" />
             <Button Grid.Column="1"
                     Classes="flat"
@@ -372,7 +378,7 @@
                   <StackPanel Spacing="8">
 
                     <!-- 折叠行：启用 / 名称 / 触发摘要 / 展开 -->
-                    <Grid ColumnDefinitions="Auto,8,*,Auto">
+                    <Grid ColumnDefinitions="Auto,8,*,Auto,Auto">
                       <CheckBox Grid.Column="0"
                                 Margin="0,0,0,0"
                                 MinHeight="24"
@@ -383,7 +389,14 @@
                                  VerticalAlignment="Center"
                                  TextTrimming="CharacterEllipsis"
                                  Text="{Binding Header}" />
-                      <Button Grid.Column="3"
+                      <TextBlock Grid.Column="3"
+                                 Margin="8,0"
+                                 VerticalAlignment="Center"
+                                 FontSize="12"
+                                 IsVisible="{Binding HasWarnings}"
+                                 Foreground="{StaticResource StarCautionBrush}"
+                                 Text="{Binding WarningBadge}" />
+                      <Button Grid.Column="4"
                               Classes="flat"
                               Padding="8,2"
                               Command="{Binding ToggleExpandedCommand}"
@@ -518,9 +531,24 @@
                               Command="{Binding AddEnvCommand}" />
 
                       <!-- 警告 / 建议 -->
-                      <TextBlock Classes="caution"
-                                 Text="{Binding Warnings}"
-                                 IsVisible="{Binding HasWarnings}" />
+                      <ItemsControl ItemsSource="{Binding WarningRows}" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:GameSettingWarningRow">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" Margin="0,1">
+                              <TextBlock Grid.Column="0"
+                                         FontSize="12"
+                                         VerticalAlignment="Top"
+                                         Foreground="{StaticResource StarCautionBrush}"
+                                         Text="&#xE7BA;" />
+                              <TextBlock Grid.Column="1"
+                                         FontSize="12"
+                                         TextWrapping="Wrap"
+                                         Foreground="{StaticResource StarCautionBrush}"
+                                         Text="{Binding Message}" />
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
                       <TextBlock Classes="tertiary"
                                  TextWrapping="Wrap"
                                  Text="{Binding Suggestion}"

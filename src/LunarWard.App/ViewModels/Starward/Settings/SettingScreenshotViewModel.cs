@@ -51,10 +51,6 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
     private bool _isEmpty = true;
 
 
-    [ObservableProperty]
-    private string? _status;
-
-
     /// <summary>重新统计截图数量与占用（进入页面时调用）。</summary>
     public void Reload()
     {

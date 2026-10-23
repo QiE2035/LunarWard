@@ -52,10 +52,6 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
 
 
     [ObservableProperty]
-    private string? _status;
-
-
-    [ObservableProperty]
     private bool _isClearing;
 
 

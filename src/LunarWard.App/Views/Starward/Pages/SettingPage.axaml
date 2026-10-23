@@ -1,9 +1,160 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="LunarWard.App.Views.Starward.Pages.SettingPage">
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Pages.SettingPage"
+             x:DataType="vm:SettingPageViewModel">
 
-  <!-- 占位：结构照 docs/07-UI-REPLICA.md §5 的映射表。由页面负责人实现。 -->
-  <Grid>
-    <TextBlock Classes="section" Margin="24,20" Text="Setting" />
+  <!--
+    复刻 Starward Features/Setting/SettingPage.xaml：
+      NavigationView(PaneDisplayMode=Left, OpenPaneLength=260, IsSettingsVisible=False,
+                     IsBackButtonVisible=Collapsed)
+      · PaneHeader   Margin 16,12,0,8 · 20px Bold 「应用设置」
+      · MenuItems    每项 40 高、图标 16、文字 14；选中态 = 左侧 3×16 强调条 + 14% 白底
+      · Frame        Margin 24,24,0,0
+
+    Avalonia 没有 NavigationView，用 Grid(260,*) + ListBox 复刻。左侧不铺底色：
+    外壳已有 Border_OverlayMask（StarAcrylicBrush），再铺一层会变成实心黑。
+    选中指示条贴在 260px 栏的最左边（WinUI 的 NavigationViewSelectionIndicator 位置），
+    悬停/选中底色则是内缩 4px 的圆角块。
+  -->
+    <UserControl.Styles>
+      <Style Selector="ListBox#SectionList ListBoxItem">
+        <Setter Property="Height" Value="40" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="0" />
+      </Style>
+
+      <!-- 悬停/选中底色画在条目内部（内缩 4，圆角 4） -->
+      <Style Selector="ListBox#SectionList ListBoxItem Border.nav-bg">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:pointerover Border.nav-bg">
+        <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:selected Border.nav-bg">
+        <Setter Property="Background" Value="{StaticResource StarSelectionBrush}" />
+      </Style>
+
+      <!-- 选中态左侧强调条 -->
+      <Style Selector="ListBox#SectionList ListBoxItem Border.nav-indicator">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:selected Border.nav-indicator">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+
+      <!-- Starward 的 PaneHeader：Margin 16,12,0,8 · 20px Bold -->
+      <Style Selector="TextBlock.pane-header">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Margin" Value="16,12,0,8" />
+      </Style>
+    </UserControl.Styles>
+
+  <Grid ColumnDefinitions="260,*">
+
+
+    <!-- ── 左：260px 二级导航 ───────────────────────────────────── -->
+    <Grid Grid.Column="0" RowDefinitions="Auto,*">
+
+      <TextBlock Grid.Row="0"
+                 Classes="pane-header"
+                 Text="{Binding Strings[Settings.AppSettings]}" />
+
+      <ListBox Grid.Row="1"
+               x:Name="SectionList"
+               Background="Transparent"
+               Padding="0,0,0,12"
+               SelectionMode="Single"
+               ItemsSource="{Binding Sections}"
+               SelectedItem="{Binding SelectedSection, Mode=TwoWay}">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel />
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:SettingSectionViewModel">
+            <Grid RowDefinitions="Auto,*">
+
+              <!-- Starward 的 NavigationViewItemSeparator（工具箱前那一根） -->
+              <Border Grid.Row="0"
+                      Height="1"
+                      Margin="12,8,12,8"
+                      Background="{StaticResource StarDividerBrush}"
+                      IsVisible="{Binding ShowDivider}" />
+
+              <Panel Grid.Row="1" Height="40">
+                <Border Classes="nav-bg"
+                        Margin="4,0"
+                        CornerRadius="4" />
+
+                <Border Classes="nav-indicator"
+                        Width="3" Height="16"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        CornerRadius="2"
+                        Background="{StaticResource StarAccentBrush}" />
+
+                <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+                  <TextBlock Grid.Column="0"
+                             Classes="icon"
+                             FontSize="16"
+                             Text="{Binding Icon}" />
+                  <TextBlock Grid.Column="1"
+                             Margin="12,0,0,0"
+                             VerticalAlignment="Center"
+                             FontSize="14"
+                             TextTrimming="CharacterEllipsis"
+                             Text="{Binding Title}" />
+                </Grid>
+              </Panel>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Grid>
+
+    <!-- ── 右：子页宿主（Starward 的 Frame_Setting Margin=24,24,0,0）── -->
+    <ContentControl Grid.Column="1"
+                    x:Name="SectionHost"
+                    Margin="24,24,0,0" />
+
+    <!-- ── 页内二次确认（等价 ContentDialog，覆盖整个设置页）────────── -->
+    <Grid Grid.Column="0" Grid.ColumnSpan="2"
+          IsVisible="{Binding Confirmation.IsOpen}"
+          Background="{StaticResource StarScrimBrush}">
+      <Border Classes="card"
+              Width="380"
+              Padding="20"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Background="{StaticResource StarAcrylicBrush}">
+        <StackPanel Spacing="12">
+          <TextBlock FontSize="20" Text="{Binding Confirmation.Title}" />
+          <TextBlock Classes="description" Text="{Binding Confirmation.Body}" />
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Content="{Binding Confirmation.CancelText}"
+                    Command="{Binding Confirmation.CancelCommand}" />
+            <Button Classes="accent"
+                    Content="{Binding Confirmation.ConfirmText}"
+                    Command="{Binding Confirmation.ConfirmCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
   </Grid>
 </UserControl>

@@ -47,6 +47,36 @@ public sealed class GachaRarityBrushConverter : IValueConverter
 }
 
 
+/// <summary>
+/// 星级文案：把 <c>RankType</c> 渲染成紧凑的 <c>5★</c> / <c>4★</c> / <c>3★</c>。
+/// </summary>
+/// <remarks>
+/// 直接用 <c>GachaRecordViewModel.Stars</c>（<c>"★★★★★"</c>）在 44px 的星级列里会被截断，
+/// 契约允许「★ 或 5★」两种写法，这里取后者。
+/// </remarks>
+public sealed class GachaRarityTextConverter : IValueConverter
+{
+    public static GachaRarityTextConverter Instance { get; } = new();
+
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        var rank = value switch
+        {
+            int number => number,
+            long number => (int)number,
+            _ => 0,
+        };
+
+        return rank is >= 1 and <= 5 ? $"{rank}★" : "";
+    }
+
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+
 public partial class GachaPage : StarwardPage
 {
     private GachaPageViewModel? _viewModel;

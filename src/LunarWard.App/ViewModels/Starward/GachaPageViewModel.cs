@@ -59,49 +59,6 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         GachaUrl = url ?? "";
         StatusText = url is null ? Strings["Gacha.NoUrl"] : Strings["Gacha.UrlFound"];
         ErrorText = url is null ? NormalizeError(error) : null;
-        SeedDemoRecordsForScreenshot();
-    }
-
-
-    // TEMP-SCREENSHOT-SEED: 仅用于本地截图自查（本机没有抽卡缓存），验收后删除。
-    private void SeedDemoRecordsForScreenshot()
-    {
-        var t = new DateTime(2026, 9, 1, 12, 0, 0);
-        var demo = new List<GachaRecord>();
-        long id = 1;
-        int[] pools = [100, 200, 301, 302];
-        string[] names5 = ["迪希雅", "纳西妲", "芙宁娜", "玛薇卡"];
-        string[] names4 = ["早柚", "行秋", "香菱", "菲谢尔"];
-        var k = 0;
-        foreach (var pool in pools)
-        {
-            var count = pool == 301 ? 74 : pool == 100 ? 20 : 43;
-            for (var i = 0; i < count; i++)
-            {
-                var rank = (i + 1) % (pool == 301 ? 74 : 61) == 0 ? 5 : (i % 9 == 0 ? 4 : 3);
-                var name = rank == 5
-                    ? names5[k++ % names5.Length]
-                    : rank == 4
-                        ? names4[i % names4.Length]
-                        : $"武器{i % 7}";
-                demo.Add(new GachaRecord
-                {
-                    Id = id++,
-                    Name = name,
-                    ItemType = rank == 5 ? "角色" : "武器",
-                    RankType = rank,
-                    GachaType = pool,
-                    GachaTypeName = GachaService.GetPoolName(_gameKind, pool),
-                    Time = t.AddMinutes(i * 37 + id),
-                    Uid = 100000000,
-                });
-            }
-        }
-
-        _allRecords = demo;
-        Rebuild();
-        ErrorText = null;
-        StatusText = string.Format(Strings["Gacha.FetchDone"], _allRecords.Count);
     }
 
 

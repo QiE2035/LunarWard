@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Settings.SettingAboutView"
+             x:DataType="vm:SettingAboutViewModel">
+
+  <!--
+    复刻 Starward Features/Setting/AboutSetting.xaml：
+      Logo 160×160 → 24px Bold 应用名 → 副标题 → 当前版本 → 相关链接（20px 标题 + 8 间距的粗体链接）
+    LunarWard 追加：许可说明、致谢、日志目录（Starward 有「检查更新」，LunarWard 走发行包，不内置更新器）。
+  -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+
+      <!-- ── Logo：Starward 用 Assets/logo.png；LunarWard 没有独立 logo，用强调色底 + 图标 ── -->
+      <Border Width="160" Height="160"
+              HorizontalAlignment="Left"
+              CornerRadius="24"
+              Background="{StaticResource StarAccentBrush}"
+              Margin="0,4,0,0">
+        <TextBlock Classes="icon"
+                   FontSize="80"
+                   Foreground="{StaticResource StarAccentForegroundBrush}"
+                   Text="&#xE81E;" />
+      </Border>
+
+      <TextBlock Margin="0,12,0,0"
+                 FontSize="24"
+                 FontWeight="Bold"
+                 Text="{Binding AppName}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.About.Tagline]}" />
+
+      <!-- ── 当前版本 ──────────────────────────────────────────── -->
+      <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="4">
+        <TextBlock Text="{Binding Strings[Settings.About.Version]}" />
+        <TextBlock FontWeight="SemiBold"
+                   Foreground="{StaticResource StarAccentBrush}"
+                   Text="{Binding Version}" />
+      </StackPanel>
+
+      <!-- ── 复刻声明（如实写明来源）──────────────────────────── -->
+      <TextBlock Margin="0,12,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.About.ReplicaNote]}" />
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.About.License]}" />
+
+      <!-- ── 相关链接（Starward：20px 标题 + 8 间距的粗体链接）──── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.About.Links]}" />
+
+      <ItemsControl ItemsSource="{Binding Links}" Margin="0,8,0,0">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:SettingLinkViewModel">
+            <Button Classes="link"
+                    HorizontalAlignment="Left"
+                    MinHeight="24"
+                    Padding="0"
+                    FontWeight="Bold"
+                    Content="{Binding Label}"
+                    Command="{Binding $parent[UserControl].((vm:SettingAboutViewModel)DataContext).OpenLinkCommand}"
+                    CommandParameter="{Binding}" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <!-- ── 致谢 ─────────────────────────────────────────────── -->
+      <TextBlock Margin="0,12,0,0"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.About.Thanks]}" />
+
+      <!-- ── 日志目录（LunarWard 追加，Starward 放在文件管理页）──── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.About.LogFolder]}" />
+
+      <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+        <Button Grid.Column="0"
+                Height="32"
+                Command="{Binding OpenLogFolderCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE838;" />
+            <TextBlock Text="{Binding Strings[Settings.About.OpenLogFolder]}" />
+          </StackPanel>
+        </Button>
+        <TextBlock Grid.Column="1"
+                   VerticalAlignment="Center"
+                   Classes="tertiary"
+                   TextTrimming="CharacterEllipsis"
+                   ToolTip.Tip="{Binding LogDirectory}"
+                   Text="{Binding LogDirectory}" />
+      </Grid>
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding HasStatus}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

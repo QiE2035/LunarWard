@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Settings.SettingScreenshotView"
+             x:DataType="vm:SettingScreenshotViewModel">
+
+  <!--
+    复刻 Starward Features/Setting/ScreenshotSetting.xaml 的骨架：
+      20px 标题 → 说明 → 「改文件夹」强调按钮 + 右侧当前文件夹按钮
+      → 20px「其他选项」→ 格式行 → 次要色小字说明。
+    LunarWard 不改写游戏截图，所以这里是只读展示 + 打开目录。
+  -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+
+      <TextBlock Classes="section" Text="{Binding Strings[Settings.Screenshot.Directory]}" />
+
+      <TextBlock Margin="0,12,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Screenshot.Desc]}" />
+
+      <Grid Margin="0,12,0,0" ColumnDefinitions="Auto,*" ColumnSpacing="16">
+        <Button Grid.Column="0"
+                Height="40"
+                Padding="16,0"
+                Classes="accent"
+                Command="{Binding OpenDirectoryCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE8DE;" />
+            <TextBlock Text="{Binding Strings[Screenshot.OpenDirectory]}" />
+          </StackPanel>
+        </Button>
+
+        <Button Grid.Column="1"
+                Height="40"
+                Padding="16,0"
+                HorizontalContentAlignment="Left"
+                Command="{Binding CopyPathCommand}"
+                ToolTip.Tip="{Binding DirectoryPath}">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Classes="tertiary"
+                       TextTrimming="CharacterEllipsis"
+                       Text="{Binding DirectoryPath}" />
+            <TextBlock Grid.Column="1"
+                       Classes="icon"
+                       FontSize="14"
+                       Foreground="{StaticResource StarTextTertiary}"
+                       Text="&#xE8C8;" />
+          </Grid>
+        </Button>
+      </Grid>
+
+      <TextBlock Margin="0,12,0,0" Text="{Binding CountText}" />
+
+      <!-- ── 其他选项（Starward：格式 + 质量分段控件）────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Screenshot.Format]}" />
+
+      <TextBlock Margin="0,12,0,0" Text="{Binding FormatValue}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Screenshot.FormatDesc]}" />
+
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Screenshot.Sort]}" />
+
+      <TextBlock Margin="0,12,0,0" Text="{Binding SortValue}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Screenshot.SortDesc]}" />
+
+      <Border Height="1" Margin="0,20,0,12" Background="{StaticResource StarDividerBrush}" />
+
+      <!-- Starward 这一段的 12px 次要色说明 -->
+      <TextBlock FontSize="12"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Screenshot.WicNote]}" />
+
+      <TextBlock Margin="0,12,0,0"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding HasStatus}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -1,0 +1,89 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Settings.SettingHotkeyView"
+             x:DataType="vm:SettingHotkeyViewModel">
+
+  <!--
+    复刻 Starward Features/Setting/HotkeySetting.xaml：
+      20px 标题 → 12 间距的说明 → 每行「TextBlock MinWidth=200 + 控件」
+    Starward 的行里是 HotkeyInput；Linux 没有全局热键，改成一个信息块
+    （桌面入口文件位置 + 合成器绑定说明），不伪造输入框。
+  -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+
+      <TextBlock Classes="section" Text="{Binding Strings[Settings.KeyboardShortcuts]}" />
+
+      <TextBlock Margin="0,12,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Hotkey.Desc]}" />
+
+      <Border Classes="infobar warning" Margin="0,12,0,0">
+        <TextBlock FontSize="14"
+                   TextWrapping="Wrap"
+                   Text="{Binding Strings[Settings.Hotkey.LinuxWay]}" />
+      </Border>
+
+      <!-- ── 桌面入口文件（替代 Starward 的「显示主窗口」热键行）──── -->
+      <Grid Margin="0,20,0,0" ColumnDefinitions="200,*" ColumnSpacing="12">
+        <TextBlock Grid.Column="0"
+                   MinWidth="200"
+                   VerticalAlignment="Center"
+                   Text="{Binding Strings[Settings.Hotkey.DesktopEntry]}" />
+
+        <StackPanel Grid.Column="1" Spacing="6">
+          <TextBlock Classes="tertiary"
+                     FontFamily="{StaticResource StarMonoFontFamily}"
+                     TextWrapping="Wrap"
+                     Text="{Binding DesktopEntryPath}"
+                     IsVisible="{Binding HasDesktopEntry}" />
+          <TextBlock Classes="tertiary"
+                     TextWrapping="Wrap"
+                     Text="{Binding Strings[Settings.Hotkey.DesktopEntryMissing]}"
+                     IsVisible="{Binding !HasDesktopEntry}" />
+          <Button Height="32"
+                  HorizontalAlignment="Left"
+                  IsEnabled="{Binding HasDesktopEntry}"
+                  Command="{Binding OpenDesktopEntryCommand}"
+                  Content="{Binding Strings[Settings.Hotkey.OpenDesktopEntry]}" />
+        </StackPanel>
+      </Grid>
+
+      <!-- ── 游戏内截图（Starward 的第二个热键行）────────────────── -->
+      <Grid Margin="0,8,0,0" ColumnDefinitions="200,*" ColumnSpacing="12">
+        <TextBlock Grid.Column="0"
+                   MinWidth="200"
+                   VerticalAlignment="Center"
+                   Text="{Binding Strings[Settings.Hotkey.ScreenshotKey]}" />
+        <TextBlock Grid.Column="1"
+                   VerticalAlignment="Center"
+                   Text="{Binding Strings[Settings.Hotkey.ScreenshotKeyDesc]}" />
+      </Grid>
+
+      <!-- ── 桌面入口内容（只读展示）────────────────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Hotkey.DesktopEntry]}" />
+
+      <Border Classes="card" Margin="0,12,0,0">
+        <TextBox Classes="mono"
+                 IsReadOnly="True"
+                 AcceptsReturn="True"
+                 TextWrapping="NoWrap"
+                 FontFamily="{StaticResource StarMonoFontFamily}"
+                 FontSize="12"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Text="{Binding DesktopEntryPreview}" />
+      </Border>
+
+      <TextBlock Margin="0,12,0,0"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding HasStatus}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

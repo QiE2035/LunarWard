@@ -26,7 +26,19 @@ public partial class GameSettingPage : StarwardPage
     }
 
 
-    public override void OnNavigatedTo() => _viewModel?.OnNavigatedTo();
+    public override void OnNavigatedTo()
+    {
+        _viewModel?.OnNavigatedTo();
+
+        // 自检辅助（--screenshot 时配合环境变量滚动截图，仅调试用）
+        if (Environment.GetEnvironmentVariable("LW_SCROLL_OFFSET") is { Length: > 0 } offsetText
+            && double.TryParse(offsetText, out var offset))
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(
+                () => ContentScroll.Offset = new Avalonia.Vector(0, offset),
+                Avalonia.Threading.DispatcherPriority.Background);
+        }
+    }
 
 
     protected override void DisposeViewModel(PageContext context)

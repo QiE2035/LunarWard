@@ -88,10 +88,6 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     }
 
 
-    [ObservableProperty]
-    private string? _status;
-
-
     private void SaveConfig()
     {
         try

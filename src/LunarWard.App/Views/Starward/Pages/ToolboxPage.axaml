@@ -112,7 +112,7 @@
 
         <!-- ── 左：cookie 配置卡 ───────────────────────────────── -->
         <Border Grid.Column="0" Classes="card">
-          <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8">
+          <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
 
             <StackPanel Grid.Row="0" Spacing="2">
               <TextBlock Text="{Binding Strings[Toolbox.CookieCard]}" />
@@ -121,7 +121,7 @@
             </StackPanel>
 
             <TextBox Grid.Row="1"
-                     Height="120"
+                     MinHeight="120"
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
                      VerticalContentAlignment="Top"
@@ -168,6 +168,20 @@
               <Border Classes="infobar error" IsVisible="{Binding HasDailyNoteError}">
                 <TextBlock FontSize="12" TextWrapping="Wrap" Text="{Binding DailyNote.ErrorText}" />
               </Border>
+            </StackPanel>
+
+            <!-- 底部：凭据安全说明 -->
+            <StackPanel Grid.Row="6" Spacing="6">
+              <Border Classes="divider" />
+              <!-- 用 Grid 而不是水平 StackPanel：StackPanel 会给子项无限宽，TextWrapping 就不生效 -->
+              <Grid ColumnDefinitions="Auto,8,*">
+                <TextBlock Grid.Column="0" Classes="icon" FontSize="12" VerticalAlignment="Top"
+                           Foreground="{StaticResource StarCautionBrush}"
+                           Text="&#xE7BA;" />
+                <TextBlock Grid.Column="2" Classes="tertiary" TextWrapping="Wrap"
+                           Foreground="{StaticResource StarCautionBrush}"
+                           Text="{Binding Strings[Toolbox.CookieSafety]}" />
+              </Grid>
             </StackPanel>
           </Grid>
         </Border>
@@ -380,14 +394,14 @@
 
         <!-- 安全提示（12px Caution） -->
         <Border Grid.Row="4" Classes="infobar warning">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="icon" FontSize="14" VerticalAlignment="Top"
+          <Grid ColumnDefinitions="Auto,8,*">
+            <TextBlock Grid.Column="0" Classes="icon" FontSize="14" VerticalAlignment="Top"
                        Foreground="{StaticResource StarCautionBrush}"
                        Text="&#xE7BA;" />
-            <TextBlock FontSize="12" TextWrapping="Wrap"
+            <TextBlock Grid.Column="2" FontSize="12" TextWrapping="Wrap"
                        Foreground="{StaticResource StarCautionBrush}"
                        Text="{Binding Strings[Toolbox.AccountSafety]}" />
-          </StackPanel>
+          </Grid>
         </Border>
       </Grid>
     </Panel>

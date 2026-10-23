@@ -47,10 +47,6 @@ public sealed partial class SettingToolboxViewModel : SettingSectionViewModel
     public IReadOnlyList<SettingToolboxItemViewModel> Items { get; }
 
 
-    [ObservableProperty]
-    private string? _status;
-
-
     [RelayCommand]
     private void Invoke(SettingToolboxItemViewModel? item) => item?.Invoke();
 

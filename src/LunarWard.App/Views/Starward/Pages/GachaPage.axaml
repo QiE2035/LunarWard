@@ -24,9 +24,8 @@
                                      Other="{StaticResource StarTextSecondary}" />
   </UserControl.Resources>
 
-  <!-- 页面底：Starward 对非启动器页会盖一层 CustomAcrylic（MainView 的 Border_OverlayMask），
-       否则页面直接压在背景插画上，文字读不清。这里用同一个 Fallback 色。 -->
-  <Border Background="{StaticResource StarAcrylicBrush}">
+  <!-- 不铺底色：外壳的 Border_OverlayMask（StarAcrylicBrush）已经盖住非启动器页，
+       再铺一层会和 Starward 一样变成实心黑。Starward GachaLogPage 自身也是透明的。 -->
   <Grid Margin="24,0,24,0" RowDefinitions="Auto,Auto,*,Auto">
 
     <!-- ══ 页头工具条（高 40） ═════════════════════════════════════ -->
@@ -155,6 +154,7 @@
                              Text="{Binding PityHistoryText}"
                              TextWrapping="Wrap"
                              VerticalAlignment="Top" />
+
                 </Grid>
               </Border>
             </DataTemplate>
@@ -200,7 +200,7 @@
 
           <!-- 列头（列宽与行模板一致） -->
           <Grid Grid.Row="0" Height="32" Margin="12,0"
-                ColumnDefinitions="44,80,*,220,160" ColumnSpacing="8">
+                ColumnDefinitions="52,80,*,220,160" ColumnSpacing="8">
             <TextBlock Grid.Column="0" Classes="tertiary" VerticalAlignment="Center" Text="{Binding Strings[Gacha.ColumnStars]}" />
             <TextBlock Grid.Column="1" Classes="tertiary" VerticalAlignment="Center" Text="{Binding Strings[Gacha.ColumnType]}" />
             <TextBlock Grid.Column="2" Classes="tertiary" VerticalAlignment="Center" Text="{Binding Strings[Gacha.ColumnName]}" />
@@ -236,14 +236,13 @@
 
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="rootvm:GachaRecordViewModel">
-                <Grid ColumnDefinitions="44,80,*,220,160" ColumnSpacing="8"
+                <Grid ColumnDefinitions="52,80,*,220,160" ColumnSpacing="8"
                       VerticalAlignment="Center">
 
                   <!-- 星级：5★ 金、4★ 紫、其余三级色（Starward 的 RarityN Foreground） -->
                   <TextBlock Grid.Column="0"
                              VerticalAlignment="Center"
-                             Text="{Binding Stars}"
-                             TextTrimming="CharacterEllipsis"
+                             Text="{Binding Record.RankType, Converter={x:Static pages:GachaRarityTextConverter.Instance}}"
                              Foreground="{Binding Record.RankType, Converter={StaticResource RarityBrushConverter}}" />
 
                   <TextBlock Grid.Column="1"
@@ -355,5 +354,4 @@
                Text="{Binding Strings[Gacha.Location]}"
                TextWrapping="Wrap" />
   </Grid>
-  </Border>
 </UserControl>

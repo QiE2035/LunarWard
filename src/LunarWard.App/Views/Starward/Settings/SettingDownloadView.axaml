@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Settings.SettingDownloadView"
+             x:DataType="vm:SettingDownloadViewModel">
+
+  <!--
+    复刻 Starward Features/Setting/DownloadSetting.xaml 的节奏：
+      20px 标题 → 12 间距的说明（次要色）→ 控件/按钮
+    Starward 的三块（默认安装路径 / 硬链接 / 限速）在 LunarWard.Installer 里是常量，
+    这里如实展示默认值；真正可操作的是「托管组件源 → 更新索引」。
+  -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+
+      <!-- ── 只读默认值 ───────────────────────────────────────── -->
+      <TextBlock Classes="section" Text="{Binding Strings[Settings.Download.Concurrency]}" />
+      <TextBlock Margin="0,12,0,0" Text="{Binding ConcurrencyValue}" />
+
+      <TextBlock Margin="0,20,0,0" Classes="section" Text="{Binding Strings[Settings.Download.Timeout]}" />
+      <TextBlock Margin="0,12,0,0" Text="{Binding TimeoutValue}" />
+
+      <TextBlock Margin="0,20,0,0" Classes="section" Text="{Binding Strings[Settings.Download.Retries]}" />
+      <TextBlock Margin="0,12,0,0" Text="{Binding RetriesValue}" />
+
+      <Border Classes="infobar warning" Margin="0,16,0,0">
+        <TextBlock FontSize="14"
+                   TextWrapping="Wrap"
+                   Text="{Binding Strings[Settings.Download.ReadOnlyNote]}" />
+      </Border>
+
+      <!-- ── 托管组件源 ───────────────────────────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Download.ComponentSource]}" />
+
+      <TextBlock Margin="0,12,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Download.ComponentSourceDesc]}" />
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="tertiary"
+                 FontFamily="{StaticResource StarMonoFontFamily}"
+                 TextTrimming="CharacterEllipsis"
+                 ToolTip.Tip="{Binding ComponentSource}"
+                 Text="{Binding ComponentSource}" />
+
+      <TextBlock Margin="0,8,0,0" Text="{Binding IndexState}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="tertiary"
+                 Text="{Binding ComponentCount}"
+                 IsVisible="{Binding HasComponentCount}" />
+
+      <!-- 「更新索引」按钮（Starward 的 AccentButtonStyle：胶囊 8,20,20,8） -->
+      <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="16">
+        <Button Height="40"
+                Padding="16,0"
+                Classes="accent"
+                IsEnabled="{Binding !IsUpdating}"
+                Command="{Binding UpdateIndexCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE896;" />
+            <TextBlock Text="{Binding Strings[Settings.Download.UpdateIndex]}" />
+          </StackPanel>
+        </Button>
+        <ProgressBar Width="160"
+                     VerticalAlignment="Center"
+                     IsIndeterminate="True"
+                     IsVisible="{Binding IsUpdating}" />
+      </StackPanel>
+
+      <!-- 索引分组（Starward 在这个位置显示"已选择文件夹"） -->
+      <ItemsControl ItemsSource="{Binding WineGroups}" Margin="0,12,0,0">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="x:String">
+            <Border Margin="0,0,8,8"
+                    Padding="10,3"
+                    CornerRadius="4"
+                    Background="{StaticResource StarControlFillBrush}"
+                    BorderBrush="{StaticResource StarCardStrokeBrush}"
+                    BorderThickness="1">
+              <TextBlock Classes="tertiary" Text="{Binding}" />
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding HasStatus}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

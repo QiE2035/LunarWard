@@ -1,0 +1,167 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Settings.SettingAdvancedView"
+             x:DataType="vm:SettingAdvancedViewModel">
+
+  <!--
+    复刻 Starward Features/Setting/AdvancedSetting.xaml：
+      20px 标题「URL 协议」→ 8 间距 14px 次要色说明 → ToggleSwitch / 强调按钮
+      → 20px 标题「RPC 服务」→ 说明 → 状态行
+    LunarWard 没有 RPC 服务；第二块换成「日志级别」+「高级环境变量默认值」+「自检命令」，
+    节奏（标题 20 / 说明 14 次要色 / 控件 8-12 间距）保持一致。
+  -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+
+      <!-- ── URL 协议 ─────────────────────────────────────────── -->
+      <TextBlock Classes="section" Text="{Binding Strings[Settings.Advanced.UrlProtocol]}" />
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Advanced.UrlProtocolDesc]}" />
+
+      <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="8">
+        <Border Width="8" Height="8" CornerRadius="4" VerticalAlignment="Center"
+                Background="{StaticResource StarSuccessBrush}"
+                IsVisible="{Binding IsUrlRegistered}" />
+        <Border Width="8" Height="8" CornerRadius="4" VerticalAlignment="Center"
+                Background="{StaticResource StarCautionBrush}"
+                IsVisible="{Binding !IsUrlRegistered}" />
+        <TextBlock VerticalAlignment="Center" Text="{Binding UrlProtocolStatus}" />
+      </StackPanel>
+
+      <Button Height="40"
+              Margin="0,12,0,0"
+              Padding="16,0"
+              HorizontalAlignment="Left"
+              Classes="accent"
+              Command="{Binding TestUrlProtocolCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE76E;" />
+          <TextBlock Text="{Binding Strings[Settings.Advanced.TestUrl]}" />
+        </StackPanel>
+      </Button>
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Text="{Binding TestResult}"
+                 IsVisible="{Binding !!TestResult}" />
+
+      <!-- ── 日志级别 ─────────────────────────────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Advanced.LogLevel]}" />
+
+      <TextBlock Margin="0,8,0,0" Text="{Binding LogLevelValue}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Advanced.LogLevelDesc]}" />
+
+      <Grid Margin="0,8,0,0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <TextBlock Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Classes="tertiary"
+                   FontFamily="{StaticResource StarMonoFontFamily}"
+                   TextTrimming="CharacterEllipsis"
+                   ToolTip.Tip="{Binding LogDirectory}"
+                   Text="{Binding LogDirectory}" />
+        <Button Grid.Column="1"
+                Height="32"
+                Command="{Binding OpenLogFolderCommand}"
+                Content="{Binding Strings[Settings.Common.Open]}" />
+      </Grid>
+
+      <!-- ── 高级环境变量默认值（LunarWard 独有）────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Advanced.EnvDefaults]}" />
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Advanced.EnvDefaultsDesc]}" />
+
+      <Border Classes="panel" Margin="0,12,0,0" Padding="0" IsVisible="{Binding HasEnv}">
+        <Grid RowDefinitions="Auto,*">
+          <Grid Grid.Row="0" ColumnDefinitions="220,*,100" Margin="12,8">
+            <TextBlock Grid.Column="0" Classes="tertiary" Text="{Binding Strings[Main.Key]}" />
+            <TextBlock Grid.Column="1" Classes="tertiary" Text="{Binding Strings[Main.Value]}" />
+            <TextBlock Grid.Column="2" Classes="tertiary" Text="{Binding Strings[Main.Source]}" />
+          </Grid>
+          <Border Grid.Row="0" Height="1" VerticalAlignment="Bottom"
+                  Background="{StaticResource StarDividerBrush}" />
+
+          <ScrollViewer Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding EnvRows}" Margin="12,4">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:SettingEnvRowViewModel">
+                  <Grid ColumnDefinitions="220,*,100" Margin="0,2">
+                    <TextBlock Grid.Column="0"
+                               FontFamily="{StaticResource StarMonoFontFamily}"
+                               FontSize="12"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding Key}"
+                               Text="{Binding Key}" />
+                    <TextBlock Grid.Column="1"
+                               FontFamily="{StaticResource StarMonoFontFamily}"
+                               FontSize="12"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding Value}"
+                               Text="{Binding Value}" />
+                    <TextBlock Grid.Column="2"
+                               Classes="tertiary"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Source}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <TextBlock Margin="0,12,0,0"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Text="{Binding EnvStatus}"
+                 IsVisible="{Binding !HasEnv}" />
+
+      <!-- ── 自检截图命令（LunarWard 独有）──────────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Advanced.SelfCheck]}" />
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Advanced.SelfCheckDesc]}" />
+
+      <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <Border Grid.Column="0"
+                Padding="10,8"
+                CornerRadius="4"
+                Background="{StaticResource StarControlFillBrush}"
+                BorderBrush="{StaticResource StarCardStrokeBrush}"
+                BorderThickness="1">
+          <TextBlock FontFamily="{StaticResource StarMonoFontFamily}"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Text="{Binding SelfCheckCommand}" />
+        </Border>
+        <Button Grid.Column="1"
+                Height="32"
+                VerticalAlignment="Center"
+                Command="{Binding CopySelfCheckCommand}"
+                Content="{Binding Strings[Settings.Common.CopyPath]}" />
+      </Grid>
+
+      <TextBlock Margin="0,12,0,0"
+                 Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding HasStatus}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

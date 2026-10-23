@@ -38,10 +38,6 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
     public List<SettingLinkViewModel> Links { get; }
 
 
-    [ObservableProperty]
-    private string? _status;
-
-
     [RelayCommand]
     private async Task OpenLinkAsync(SettingLinkViewModel? link)
     {

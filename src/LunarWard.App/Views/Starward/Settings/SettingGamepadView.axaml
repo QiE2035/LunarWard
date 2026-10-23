@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Settings.SettingGamepadView"
+             x:DataType="vm:SettingGamepadViewModel">
+
+  <!--
+    Starward Features/Setting/GamepadControlSetting.xaml 的第一屏：
+      20px 标题 + 右侧 ToggleSwitch → 说明 → 分隔线 → 后续分区
+    LunarWard 不支持（依赖 Windows GameInput / XInput 模拟），因此没有 ToggleSwitch，
+    只按同样的节奏留标题 + 说明。菜单项保留是为了排版一致。
+  -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+
+      <TextBlock Classes="section" Text="{Binding Strings[Settings.ControllerEnhancement]}" />
+
+      <Border Classes="infobar warning" Margin="0,12,0,0">
+        <StackPanel Spacing="6">
+          <TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Strings[Settings.Gamepad.Unsupported]}" />
+          <TextBlock FontSize="14"
+                     TextWrapping="Wrap"
+                     Text="{Binding Strings[Settings.Gamepad.Desc]}" />
+        </StackPanel>
+      </Border>
+
+      <TextBlock Margin="0,16,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Gamepad.SteamInput]}" />
+
+      <Border Height="1" Margin="0,20,0,12" Background="{StaticResource StarDividerBrush}" />
+
+      <TextBlock Classes="tertiary"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Gamepad.KeptForParity]}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

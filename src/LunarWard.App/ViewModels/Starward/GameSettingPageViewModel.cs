@@ -663,6 +663,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         var item = new GameSettingProgramViewModel(program, keywords, MergeExeKeyword, OnProgramChanged);
         item.StartRequested += OnProgramStartRequested;
         item.CanStartNow = _launcher.State == LaunchPhaseState.Running;
+        item.IsExpanded = item.HasWarnings;
         return item;
     }
 
