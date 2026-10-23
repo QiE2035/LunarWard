@@ -21,7 +21,7 @@ M0 是**唯一的前置门禁**——它验证四个未证实的技术点，任�
 | **M6** | `LunarWard.App` UI 骨架 | 窗口、游戏切换、启动按钮状态机 | M2 | ✅ |
 | **M7** | Starward 风格 UI | 公告三源 + 动态背景 + 双主题 | M6 | ✅（动态背景本机回退静态图） |
 | **M8** | `LunarWard.Installer` | 移植 `Starward.RPC/GameInstall`，去 gRPC/Vanara | M2 | ✅ 移植完成；UI 入口待接、真机下载未验证 |
-| **M9** | Starward P0/P1 功能 | 抽卡、便笺、时长、截图、URL 协议 | M7, M8 | ⚠️ 抽卡 ✅、时长 ✅、截图 ✅（服务层）、URL ✅；便笺未接 UI |
+| **M9** | Starward P0/P1 功能 | 抽卡、便笺、时长、截图、URL 协议 | M7, M8 | ✅ 抽卡 / 便笺 / 时长 / URL 已接 UI；截图仅服务层（无浏览界面） |
 | **M10** | 打磨 | i18n、崩溃上报、导入向导、文档 | M9 | ⚠️ i18n ✅、文档 ✅；导入向导与崩溃上报按 Q10 不做 |
 
 ### 1.1 M0 的三个验证项
@@ -204,7 +204,7 @@ cd src/LunarWard.Core && dotnet build
 |---|---|---|---|---|
 | 抽卡记录 | `Core/Gacha` | 28 | P0 | ✅ 已实现（`Launch/GachaService.cs` + `Views/GachaWindow.axaml`；列表 + 卡池统计） |
 | UIGF 4.x 导入导出 | `Core/Gacha/UIGF` | — | P0 | 小（文件选择 + 进度） |
-| 便笺 DailyNote | `Core/GameRecord` | 154 | P0 | 中（卡片布局） |
+| 便笺 DailyNote | `Core/GameRecord` | 154 | P0 | ✅ 已实现（`Launch/DailyNoteService.cs` + `Views/DailyNoteWindow.axaml`；cookie 由用户粘贴） |
 | 深渊/虚构/危局等战绩 | `Core/GameRecord/*` | — | P1 | 中 |
 | 公告 | `Core/GameNotice` | 3 | P0 | 小 |
 | 版本亮点/背景 | `Core/HoYoPlay` | 18 | P0 | 中（轮播） |
