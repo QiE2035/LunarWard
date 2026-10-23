@@ -53,6 +53,8 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
         ApplyState(_services.LauncherService.State);
         UpdatePlayTime();
+        DailyNote = new DailyNoteButtonViewModel(context);
+
         _ = LoadContentAsync();
         RefreshBackgroundImages();
     }
@@ -490,21 +492,16 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     public event EventHandler<string>? BackgroundRequested;
 
 
+    // ── 每日便笺 Flyout（Starward DailyNoteButton） ────────────────────
+
+    /// <summary>右下便笺按钮的 Flyout VM（按钮打开时刷新一次）。</summary>
+    public DailyNoteButtonViewModel DailyNote { get; }
+
+
     // ── 其他入口 ──────────────────────────────────────────────────────
 
     [RelayCommand]
     private void OpenGameSettings() => _context.Shell.Navigate(ShellPage.GameSetting);
-
-    /// <summary>
-    /// Starward 的便笺按钮是浮层；这里统一跳到工具箱的「每日便笺」Tab——
-    /// 同一份功能只保留一个界面，避免两套视图各改一半。
-    /// </summary>
-    [RelayCommand]
-    private void OpenDailyNote() => _context.Shell.NavigateToToolbox(0);
-
-    /// <summary>账号切换同样落到工具箱的「账号记录」Tab。</summary>
-    [RelayCommand]
-    private void OpenAccounts() => _context.Shell.NavigateToToolbox(1);
 
 
     [RelayCommand]

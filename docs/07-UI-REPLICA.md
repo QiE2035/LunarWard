@@ -64,7 +64,7 @@
 | 时长胶囊 | 右下，底 40，高 44，圆角 22，`CustomOverlayAcrylic`；时钟图标 20 + `635h 16m` |
 | 开始游戏 | 右下，底 40，最小宽 180、高 44，圆角 22，`CustomAcrylic`；文本居中，右侧 44×44 设置齿轮（E713） |
 | 开始游戏状态 | 空闲「开始游戏」；运行中「游戏正在运行」+ 已运行时长；忙时左侧 ProgressRing 20 |
-| 便笺按钮 | 右上角纵向栈，40×40，圆角 8，`CustomOverlayAcrylic`，图标 E823？→ 用 Starward DailyNote 图标 |
+| 便笺按钮 | 右上角 40×40、圆角 8、`CustomOverlayAcrylic`；点击打开 `DailyNoteButton` 的 Flyout（刷新/角色行/原神或绝区零分区），不是跳页 |
 | 账号切换 | 右下，开始按钮上方 100px，右侧 40px；头像 40×40 圆角 4 + 悬停列表 |
 | 背景切换条 | 悬停底部 60px 高渐变区时出现：PipsPager 圆点 + 图库/复制/另存为/播放按钮 |
 | 公告/Update Toast | 底部居中，宽 ≤600，距底 72 |
@@ -103,12 +103,14 @@
 4. **公告卡**：Banner 5s 自动轮播（Starward `GameBannerAndPost.xaml.cs` 的
    `DispatcherQueueTimer`），悬停暂停并显示 `1/N` 计数，移出恢复；Pivot 页签点击
    切换列表；公告铃铛打开公告窗口。（本行旧文写"无 timer"是错的，见 08 §2。）
-5. **背景**：默认使用当前游戏的官方背景图（HoYoPlay `getGames` 的
+5. **便笺**：启动器右上按钮打开 Flyout（Starward `DailyNoteButton`）：刷新、角色行、
+   错误行，然后按游戏显示树脂/电量等分区；没有 cookie 时给"去工具箱保存"入口。
+6. **背景**：默认使用当前游戏的官方背景图（HoYoPlay `getGames` 的
    `background`/`backgrounds`），本地自定义背景优先；悬停底部出现切换条；视频背景
    用 LibVLCSharp（已实现），启动游戏时暂停、退出恢复。
-6. **窗口关闭**：Starward 可配置"隐藏到托盘/退出"；LunarWard 首期直接退出（不伪造
+7. **窗口关闭**：Starward 可配置"隐藏到托盘/退出"；LunarWard 首期直接退出（不伪造
    托盘），但关闭按钮行为集中在 Shell 一处，后续可追加。
-7. **动效**：页面切换 167ms 淡入；选择层 167ms 淡入；悬停背景 83ms；不做夸张动画。
+8. **动效**：页面切换 167ms 淡入；选择层 167ms 淡入；悬停背景 83ms；不做夸张动画。
 
 ## 5. 页面映射（LunarWard 功能 → Starward 页面）
 

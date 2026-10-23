@@ -26,7 +26,7 @@
 | 主视图 | `MainView.xaml`(152) | `StarwardShell.axaml`(135) | 🟡 | 导航项 5 vs 7（缺 SelfQuery / GenshinBeyondGacha，账号记录被并进工具箱）；无 BlankPage 状态；`Border_OverlayMask` 的淡入淡出用了 IsVisible 切换 |
 | 左栏 | `MainView.xaml` 的 NavigationView | `NavigationRail.axaml`(129) | ✅ | LeftCompact 56px、40×40、选中 3×16 强调条一致；图标条见下 |
 | 游戏选择 | `GameSelector.xaml`(572) + `.cs`(975) | 外壳内的全屏层 | 🟡 | **已补横排图标条**（悬停当前图标滑出、#60000000 遮罩、当前图标不压暗）；全屏层的服务器选择、固定、未安装游戏列表、拖放排序未移植 |
-| 启动器 | `GameLauncherPage.xaml`(684，其中 PipsPager 样式 ~330 行) | `Pages/GameLauncherPage.axaml`(281) | 🟡 | 公告卡/开始按钮/时长胶囊位置一致；预下载、安装进度态、DX12 选项、区服 ComboBox、拖放背景、账号切换器（Starward 是 40 高 ComboBox + 切换/编辑）、便笺 Flyout 未移植 |
+| 启动器 | `GameLauncherPage.xaml`(684，其中 PipsPager 样式 ~330 行) | `Pages/GameLauncherPage.axaml`(约 560) | 🟡 | 公告卡/开始按钮/时长胶囊位置一致；**便笺已改为 `DailyNoteButton.xaml` 的 Flyout**（刷新/角色行/原神树脂+委托+宝钱+派遣/绝区零电量+会员+任务+活跃度+刮刮卡+录像店+悬赏+周纪）；Starward 默认隐藏账号切换器，已移除自创的圆形账号按钮。未移植：预下载、安装进度态、DX12 选项、区服 ComboBox、拖放背景、`GameAuthLoginButton` |
 | 游戏设置 | `GameSettingPage.xaml`(199) + `GameSettingService.cs` | `Pages/GameSettingPage.axaml`(约 900) + `Services/WineRegistry.cs` / `GameSettingRegistry.cs` | 🟡 | 本轮已按源码恢复左列（分辨率/全屏/无边框/自定义分辨率/语音语言）+ 右列图形设置 + 60px 应用条；值通过 `wine reg` 读写游戏 prefix 的 `HKCU\Software\miHoYo\<游戏>`（与 Starward 同一组键）。LunarWard 目录/wine/env/外部程序/诊断移到下方追加区。未移植：HDR（Linux/Wine 无等价物，开关禁用+说明）、按显示器尺寸过滤分辨率列表、星铁帧率（LunarWard 不支持星铁）、游戏版本检测（用 exe 是否存在近似） |
 | 设置总览 | `SettingPage.xaml`(108) | `Pages/SettingPage.axaml`(160) | ✅ | 260 二级导航 + Frame Margin 24,24,0,0 一致 |
 | 关于 | `AboutSetting.xaml`(135) | `SettingAboutView.axaml`(约 190) | 🟡 | 本轮已按源码重排：Logo 160 / 24px Bold / 版本行 / 预览版 Toggle / 检查更新按钮 / 相关链接；Windows 更新器与预览通道如实禁用 |
@@ -71,6 +71,11 @@
   LunarWard 设置移到下方追加区（20px 标题 + 说明）。
 - 真 wine 往返：`LUNARWARD_REAL_WINE=1 LUNARWARD_TEST_WINE=<wine>` 跑
   `WineRegistryRealWineTests`（wineboot 建 prefix → 写 DWORD → 读回），本机通过。
+- **每日便笺 Flyout**（Lead）：按 `DailyNoteButton.xaml` 把启动器右下便笺按钮从
+  「跳到工具箱」改为真正的 Flyout；`DailyNoteService` 增加原神/绝区零结构化字段
+  （`GenshinDailyNoteExtra` / `ZzzDailyNoteExtra`），角色行/刷新/错误/无 cookie 引导
+  照源码；移除 Starward 默认隐藏的账号切换圆形按钮。新增 `--open-daily-note`
+  自检开关（Flyout 是独立 Popup，主窗口截图拍不到，自检时单独渲染 `PopupRoot`）。
 - **设置页 9 个子页**（t-settings）：按 `Features/Setting/*.xaml` 逐段重排，
   每个 XAML 头部注释标源码行号；Windows 专有项保留结构位置并禁用/说明，不伪造。
   新增 `--settings-section <tag>` 自检开关（about/general/download/files/screenshot/

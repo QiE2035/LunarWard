@@ -41,6 +41,12 @@ public sealed record DailyNoteSummary
     /// <summary>全部每日任务是否完成。</summary>
     public bool? DailyTasksDone { get; init; }
 
+    /// <summary>原神便笺的结构化字段（对应 Starward <c>DailyNoteButton.xaml</c> 的 Genshin 区）。</summary>
+    public GenshinDailyNoteExtra? Genshin { get; init; }
+
+    /// <summary>绝区零便笺的结构化字段（对应 Starward <c>DailyNoteButton.xaml</c> 的 ZZZ 区）。</summary>
+    public ZzzDailyNoteExtra? Zzz { get; init; }
+
     public DateTimeOffset FetchedAt { get; init; } = DateTimeOffset.Now;
 
 
@@ -49,6 +55,78 @@ public sealed record DailyNoteSummary
 
 
 public sealed record DailyNoteItem(string Name, string Value, bool? Done = null);
+
+
+/// <summary>
+/// 原神便笺的结构化字段（Starward <c>DailyNoteButton.xaml</c> 的 Genshin 区直接绑这些）。
+/// </summary>
+public sealed record GenshinDailyNoteExtra
+{
+    public required int FinishedTaskNum { get; init; }
+
+    public required int TotalTaskNum { get; init; }
+
+    public required bool IsExtraTaskRewardReceived { get; init; }
+
+    public required int CurrentHomeCoin { get; init; }
+
+    public required int MaxHomeCoin { get; init; }
+
+    public required int CurrentExpeditionNum { get; init; }
+
+    public required int MaxExpeditionNum { get; init; }
+
+    public required int RemainResinDiscountNum { get; init; }
+
+    public required int ResinDiscountNumLimit { get; init; }
+}
+
+
+/// <summary>
+/// 绝区零便笺的结构化字段（Starward <c>DailyNoteButton.xaml</c> 的 ZZZ 区直接绑这些）。
+/// </summary>
+public sealed record ZzzDailyNoteExtra
+{
+    public required int VitalityCurrent { get; init; }
+
+    public required int VitalityMax { get; init; }
+
+    public required bool IsCardSignDone { get; init; }
+
+    /// <summary>录像店营业状态：<c>No</c> / <c>Doing</c> / <c>Done</c>。</summary>
+    public required string VhsSaleState { get; init; }
+
+    public required bool MemberCardOpen { get; init; }
+
+    public required int MemberCardRemainingDays { get; init; }
+
+    public required bool PolychromesClaimed { get; init; }
+
+    public int? BountyCommissionNum { get; init; }
+
+    public int? BountyCommissionTotal { get; init; }
+
+    public TimeSpan? BountyRefresh { get; init; }
+
+    public int? WeeklyTaskCur { get; init; }
+
+    public int? WeeklyTaskMax { get; init; }
+
+    public TimeSpan? WeeklyRefresh { get; init; }
+
+    public required bool IsDailyMissionComplete { get; init; }
+
+
+    public bool IsVideoStoreOperating => VhsSaleState == "Doing";
+
+    public bool IsVideoStoreIdle => VhsSaleState == "No";
+
+    public bool IsVideoStoreDone => VhsSaleState == "Done";
+
+    public bool HasBounty => BountyCommissionNum is not null;
+
+    public bool HasWeeklyTask => WeeklyTaskCur is not null;
+}
 
 
 /// <summary>
@@ -176,6 +254,18 @@ public sealed class DailyNoteService
             new DailyNoteItem("洞天宝钱", $"{note.CurrentHomeCoin}/{note.MaxHomeCoin}"),
             new DailyNoteItem("周本减半", $"{note.RemainResinDiscountNum}/{note.ResinDiscountNumLimit}"),
         ],
+        Genshin = new GenshinDailyNoteExtra
+        {
+            FinishedTaskNum = note.FinishedTaskNum,
+            TotalTaskNum = note.TotalTaskNum,
+            IsExtraTaskRewardReceived = note.IsExtraTaskRewardReceived,
+            CurrentHomeCoin = note.CurrentHomeCoin,
+            MaxHomeCoin = note.MaxHomeCoin,
+            CurrentExpeditionNum = note.CurrentExpeditionNum,
+            MaxExpeditionNum = note.MaxExpeditionNum,
+            RemainResinDiscountNum = note.RemainResinDiscountNum,
+            ResinDiscountNumLimit = note.ResinDiscountNumLimit,
+        },
     };
 
 
@@ -202,6 +292,27 @@ public sealed class DailyNoteService
             new DailyNoteItem("录像店营业", note.VhsSale?.IsSaleStateDoing == true ? "营业中" : "未营业"),
             new DailyNoteItem("刮刮卡", note.IsCardSignDone ? "已完成" : "未完成"),
         ],
+        Zzz = new ZzzDailyNoteExtra
+        {
+            VitalityCurrent = note.Vitality?.Current ?? 0,
+            VitalityMax = note.Vitality?.Max ?? 0,
+            IsCardSignDone = note.IsCardSignDone,
+            VhsSaleState = note.VhsSale?.IsSaleStateDone == true ? "Done"
+                : note.VhsSale?.IsSaleStateDoing == true ? "Doing" : "No",
+            MemberCardOpen = note.MemberCard?.IsOpen == true,
+            MemberCardRemainingDays = note.MemberCard?.RemainingDays ?? 0,
+            PolychromesClaimed = note.MemberCard?.PolychromesClaimed == true,
+            BountyCommissionNum = note.BountyCommission?.Num,
+            BountyCommissionTotal = note.BountyCommission?.Total,
+            BountyRefresh = note.BountyCommission?.RefreshTime,
+            WeeklyTaskCur = note.WeeklyTask?.CurPoint,
+            WeeklyTaskMax = note.WeeklyTask?.MaxPoint,
+            WeeklyRefresh = note.WeeklyTask?.RefreshTime,
+            IsDailyMissionComplete = note.Vitality is { } v
+                                     && note.VhsSale is { IsSaleStateDoing: true }
+                                     && note.IsCardSignDone
+                                     && v.Current >= v.Max,
+        },
     };
 
 

@@ -195,28 +195,317 @@
       <TextBlock FontSize="12" Foreground="{StaticResource StarCautionBrush}" Text="{Binding Strings[Launcher.ConfigureGame]}" />
     </Button>
 
-    <!-- ── 右上：便笺（Starward DailyNoteButton，40×40 圆角 8 浮层） ── -->
-    <Button Classes="icon-button"
+    <!--
+      ── 右上：每日便笺（Starward DailyNoteButton.xaml：40×40、圆角 8、Flyout 左对齐）──
+      结构照源码：刷新 → 角色行 → 分隔线 → 错误行 → 原神/绝区零分区。
+      BH3/星铁分区不出现（LunarWard 不支持；Starward 也按 IsXxxEnabled 隐藏）。
+    -->
+    <Button x:Name="Button_DailyNote"
+            Classes="icon-button"
             Margin="4"
             HorizontalAlignment="Right" VerticalAlignment="Top"
-            Command="{Binding OpenDailyNoteCommand}"
             ToolTip.Tip="{Binding Strings[Main.DailyNote]}">
       <Panel Width="40" Height="40">
         <Border CornerRadius="8" Background="{StaticResource StarOverlayAcrylicBrush}" />
         <TextBlock Classes="icon" FontSize="20" Text="&#xE823;" />
       </Panel>
-    </Button>
+      <Button.Flyout>
+        <Flyout Placement="LeftEdgeAlignedTop" Opened="OnDailyNoteFlyoutOpened">
+          <Grid x:Name="DailyNoteFlyoutRoot"
+                x:DataType="vm:DailyNoteButtonViewModel"
+                MinWidth="180"
+                MaxWidth="340"
+                RowDefinitions="Auto,Auto,Auto,*">
 
-    <!-- ── 右下：账号切换（Starward GameAccountSwitcher，开始按钮上方 100px） ── -->
-    <Button Classes="icon-button"
-            Margin="0,0,44,100"
-            HorizontalAlignment="Right" VerticalAlignment="Bottom"
-            Command="{Binding OpenAccountsCommand}"
-            ToolTip.Tip="{Binding Strings[Main.Accounts]}">
-      <Panel Width="40" Height="40">
-        <Border CornerRadius="20" Background="{StaticResource StarOverlayAcrylicBrush}" />
-        <TextBlock Classes="icon" FontSize="20" Text="&#xE77B;" />
-      </Panel>
+            <!-- 刷新（DailyNoteButton.xaml:53-65） -->
+            <Button Grid.Row="0"
+                    Margin="-8,0,0,0"
+                    Padding="4"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    CornerRadius="4"
+                    Command="{Binding RefreshCommand}"
+                    ToolTip.Tip="{Binding Strings[DailyNote.Refresh]}">
+              <TextBlock Classes="icon"
+                         FontSize="14"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         Text="&#xE72C;" />
+            </Button>
+
+            <!-- 角色信息（DailyNoteButton.xaml:68-84） -->
+            <StackPanel Grid.Row="0"
+                        Margin="0,0,28,0"
+                        Orientation="Horizontal"
+                        Spacing="12">
+              <Border Width="40" Height="40"
+                      CornerRadius="20"
+                      Background="{StaticResource StarControlFillBrush}">
+                <TextBlock Classes="icon"
+                           FontSize="20"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="&#xE77B;" />
+              </Border>
+              <StackPanel VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="{Binding Nickname}" TextTrimming="CharacterEllipsis" />
+                <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}">
+                  <Run Text="{Binding RegionText}" />
+                </TextBlock>
+              </StackPanel>
+            </StackPanel>
+
+            <!-- 分隔线（DailyNoteButton.xaml:87 MenuFlyoutSeparator Margin 0,8） -->
+            <Border Grid.Row="1" Height="1" Margin="0,8" Background="{StaticResource StarDividerBrush}" />
+
+            <!-- 错误 / 无凭据（DailyNoteButton.xaml:90-95） -->
+            <StackPanel Grid.Row="2" Spacing="8">
+              <TextBlock HorizontalAlignment="Center"
+                         FontSize="12"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         TextWrapping="Wrap"
+                         Text="{Binding StatusText}"
+                         IsVisible="{Binding !HasCredentials}" />
+              <Button HorizontalAlignment="Center"
+                      Height="28"
+                      Padding="10,0"
+                      Content="{Binding Strings[DailyNote.OpenToolbox]}"
+                      Command="{Binding OpenToolboxCommand}"
+                      IsVisible="{Binding !HasCredentials}" />
+              <TextBlock HorizontalAlignment="Center"
+                         FontSize="12"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         TextWrapping="Wrap"
+                         Text="{Binding ErrorText}"
+                         IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+
+            <!-- ══ 原神（DailyNoteButton.xaml:100-260） ══ -->
+            <Grid Grid.Row="3"
+                  Margin="0,8,0,0"
+                  RowDefinitions="Auto,Auto,Auto,Auto"
+                  ColumnDefinitions="Auto,Auto,Auto"
+                  ColumnSpacing="12"
+                  RowSpacing="4"
+                  IsVisible="{Binding ShowGenshin}">
+
+              <!-- 树脂 60×60（:105-115） -->
+              <StackPanel Grid.RowSpan="4">
+                <Border Width="60" Height="60"
+                        CornerRadius="30"
+                        Background="{StaticResource StarControlFillBrush}">
+                  <TextBlock Classes="icon"
+                             FontSize="28"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="&#xE823;" />
+                </Border>
+                <TextBlock HorizontalAlignment="Center" FontSize="16" FontWeight="SemiBold">
+                  <Run Text="{Binding PrimaryCurrent}" /><Run Text="/" /><Run Text="{Binding PrimaryMax}" />
+                </TextBlock>
+              </StackPanel>
+
+              <!-- 每日委托奖励（:118-138） -->
+              <TextBlock Grid.Row="0" Grid.Column="1"
+                         Margin="0,0,0,0"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.Commission]}" />
+              <TextBlock Grid.Row="0" Grid.Column="2"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         IsVisible="{Binding !Genshin.IsExtraTaskRewardReceived}">
+                <Run Text="{Binding Genshin.FinishedTaskNum}" /><Run Text="/" /><Run Text="{Binding Genshin.TotalTaskNum}" />
+              </TextBlock>
+              <TextBlock Grid.Row="0" Grid.Column="2"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="14"
+                         Foreground="{StaticResource StarSuccessBrush}"
+                         Text="&#xE930;"
+                         IsVisible="{Binding Genshin.IsExtraTaskRewardReceived}" />
+
+              <!-- 洞天宝钱（:196-210） -->
+              <TextBlock Grid.Row="1" Grid.Column="1"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.HomeCoin]}" />
+              <TextBlock Grid.Row="1" Grid.Column="2"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12">
+                <Run Text="{Binding Genshin.CurrentHomeCoin}" /><Run Text="/" /><Run Text="{Binding Genshin.MaxHomeCoin}" />
+              </TextBlock>
+
+              <!-- 探索派遣（:214-228） -->
+              <TextBlock Grid.Row="2" Grid.Column="1"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.Expedition]}" />
+              <TextBlock Grid.Row="2" Grid.Column="2"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12">
+                <Run Text="{Binding Genshin.CurrentExpeditionNum}" /><Run Text="/" /><Run Text="{Binding Genshin.MaxExpeditionNum}" />
+              </TextBlock>
+
+              <!-- 周本减半（LunarWard 的便笺汇总里有；Starward 只在札记里） -->
+              <TextBlock Grid.Row="3" Grid.Column="1"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.ResinDiscount]}" />
+              <TextBlock Grid.Row="3" Grid.Column="2"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12">
+                <Run Text="{Binding Genshin.RemainResinDiscountNum}" /><Run Text="/" /><Run Text="{Binding Genshin.ResinDiscountNumLimit}" />
+              </TextBlock>
+            </Grid>
+
+            <!-- ══ 绝区零（DailyNoteButton.xaml:262-700） ══ -->
+            <Grid Grid.Row="3"
+                  Margin="0,8,0,0"
+                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                  ColumnDefinitions="Auto,Auto"
+                  ColumnSpacing="12"
+                  RowSpacing="4"
+                  IsVisible="{Binding ShowZzz}">
+
+              <!-- 电量（:270-300） -->
+              <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8">
+                <Border Width="40" Height="40"
+                        CornerRadius="20"
+                        Background="{StaticResource StarControlFillBrush}">
+                  <TextBlock Classes="icon"
+                             FontSize="20"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="&#xE823;" />
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                  <TextBlock FontSize="15">
+                    <Run Text="{Binding PrimaryCurrent}" /><Run Text="/" /><Run Text="{Binding PrimaryMax}" />
+                  </TextBlock>
+                  <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding RecoveryText}" />
+                </StackPanel>
+              </StackPanel>
+
+              <!-- 绳网会员（:302-322） -->
+              <TextBlock Grid.Row="1" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.MemberCard]}"
+                         IsVisible="{Binding Zzz.MemberCardOpen}" />
+              <TextBlock Grid.Row="1" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         IsVisible="{Binding Zzz.MemberCardOpen}">
+                <Run Text="{Binding Zzz.MemberCardRemainingDays}" /><Run Text="d" />
+              </TextBlock>
+
+              <!-- 每日任务（:324-340） -->
+              <TextBlock Grid.Row="2" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.DailyMissions]}" />
+              <TextBlock Grid.Row="2" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="14"
+                         Foreground="{StaticResource StarSuccessBrush}"
+                         Text="&#xE930;"
+                         IsVisible="{Binding Zzz.IsDailyMissionComplete}" />
+
+              <!-- 今日活跃度（:342-356） -->
+              <TextBlock Grid.Row="3" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.Vitality]}" />
+              <TextBlock Grid.Row="3" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12">
+                <Run Text="{Binding Zzz.VitalityCurrent}" /><Run Text="/" /><Run Text="{Binding Zzz.VitalityMax}" />
+              </TextBlock>
+
+              <!-- 刮刮卡（:358-374） -->
+              <TextBlock Grid.Row="4" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.ScratchCard]}" />
+              <TextBlock Grid.Row="4" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Foreground="{StaticResource StarSuccessBrush}"
+                         Text="{Binding Strings[DailyNote.Completed]}"
+                         IsVisible="{Binding Zzz.IsCardSignDone}" />
+              <TextBlock Grid.Row="4" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Foreground="{StaticResource StarCautionBrush}"
+                         Text="{Binding Strings[DailyNote.Incomplete]}"
+                         IsVisible="{Binding !Zzz.IsCardSignDone}" />
+
+              <!-- 录像店经营（:376-398） -->
+              <TextBlock Grid.Row="5" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.VideoStore]}" />
+              <TextBlock Grid.Row="5" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.Operating]}"
+                         IsVisible="{Binding Zzz.IsVideoStoreOperating}" />
+              <TextBlock Grid.Row="5" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.NotOperating]}"
+                         IsVisible="{Binding Zzz.IsVideoStoreIdle}" />
+              <TextBlock Grid.Row="5" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.Completed]}"
+                         IsVisible="{Binding Zzz.IsVideoStoreDone}" />
+
+              <!-- 悬赏委托（:400-430） -->
+              <TextBlock Grid.Row="6" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.Bounty]}"
+                         IsVisible="{Binding Zzz.HasBounty}" />
+              <TextBlock Grid.Row="6" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         IsVisible="{Binding Zzz.HasBounty}">
+                <Run Text="{Binding Zzz.BountyCommissionNum}" /><Run Text="/" /><Run Text="{Binding Zzz.BountyCommissionTotal}" />
+              </TextBlock>
+
+              <!-- 丽都周纪（:432-465） -->
+              <TextBlock Grid.Row="7" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         Text="{Binding Strings[DailyNote.WeeklyTask]}"
+                         IsVisible="{Binding Zzz.HasWeeklyTask}" />
+              <TextBlock Grid.Row="7" Grid.Column="1"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         FontSize="12"
+                         IsVisible="{Binding Zzz.HasWeeklyTask}">
+                <Run Text="{Binding Zzz.WeeklyTaskCur}" /><Run Text="/" /><Run Text="{Binding Zzz.WeeklyTaskMax}" />
+              </TextBlock>
+            </Grid>
+          </Grid>
+        </Flyout>
+      </Button.Flyout>
     </Button>
 
     <!-- ── 底部背景切换条（悬停 60px 区域出现） ─────────────────── -->
