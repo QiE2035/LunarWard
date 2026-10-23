@@ -103,7 +103,7 @@ internal static class CaptureMode
     /// <summary>截图前打开启动器页的每日便笺 Flyout。</summary>
     public static bool OpenDailyNote { get; set; }
 
-    /// <summary>工具箱页的 Tab：<c>note</c>（默认）/ <c>accounts</c>。</summary>
+    /// <summary>工具箱战绩菜单索引（0 起），用于截取选中态/占位版式。</summary>
     public static string? Tab { get; set; }
 
     /// <summary>自检时的界面语言（<c>zh-CN</c> / <c>en-US</c>）。</summary>

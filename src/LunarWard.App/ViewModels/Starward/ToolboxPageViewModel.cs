@@ -1,190 +1,367 @@
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Globalization;
+using System.Collections.ObjectModel;
+using System.Net.Http;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LunarWard.App.ViewModels;
 using LunarWard.App.Views.Starward;
+using LunarWard.Core;
+using LunarWard.Core.GameRecord;
 using LunarWard.Launch;
 
 namespace LunarWard.App.ViewModels.Starward;
 
 /// <summary>
-/// 工具箱页（对应 Starward <c>GameRecordPage</c> 的容器结构：顶部 Tab + 卡片流）。
+/// 工具箱页：复刻 Starward <c>Features/GameRecord/GameRecordPage.xaml</c> 的容器。
 /// </summary>
 /// <remarks>
 /// <para>
-/// 两个 Tab 直接复用既有 VM：<see cref="DailyNoteViewModel"/>（便笺）与
-/// <see cref="AccountViewModel"/>（账号记录）。本类只做容器：Tab 状态、空态判定、
-/// 以及把两个 VM 的 <c>PropertyChanged</c> 转成页面级派生属性。
+/// Starward 的工具箱是 <c>NavigationView</c>：248px 左栏（头像 / 登录 / 角色列表 +
+/// 战绩菜单 + 底部「更新设备指纹」）+ 右侧 <c>Frame</c>。LunarWard 没有 SQLite 角色库，
+/// 凭据复用便笺的 <see cref="DailyNoteService"/>（同一份米游社 / HoYoLAB cookie），
+/// 角色通过 <see cref="GameRecordClient.GetGameRolesAsync"/> 实时拉取。
 /// </para>
-/// <para>Starward 的工具箱用 NavigationView 左侧列表；这里按 UI 合同改成顶部 Pivot。</para>
+/// <para>
+/// 战绩子页（深境螺旋 / 式舆防卫战…）尚未移植：点菜单项只显示"尚未移植"的占位，
+/// 不伪造数据；未选中时与 Starward 一样是空白 Frame。
+/// </para>
+/// <para>
+/// LunarWard 追加：左栏底部「本机游戏账号」打开既有的 wine 账号快照窗口
+/// （Starward 对应能力是启动器的 GameAccountSwitcher，默认隐藏）。
+/// </para>
 /// </remarks>
 public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
 {
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
+
+    private readonly DailyNoteService _credentials;
+
+    private readonly string _gameKind;
+
+    private readonly string _gameBiz;
+
+    private readonly string _server;
+
+    private string _cookie = "";
+
+
     public ToolboxPageViewModel(PageContext context) : base(context)
     {
-        DailyNote = new DailyNoteViewModel(context.Services, context.Profile);
-        Accounts = new AccountViewModel(context.Services, context.Profile);
+        _credentials = new DailyNoteService(context.Services.Paths);
+        _gameKind = Profile.Profile.Game;
+        _gameBiz = Shell.CurrentGameBiz;
+        _server = _gameBiz.EndsWith("_global", StringComparison.Ordinal) ? "global" : "cn";
 
-        DailyNote.PropertyChanged += OnDailyNoteChanged;
-        Accounts.PropertyChanged += OnAccountsChanged;
-        Accounts.Accounts.CollectionChanged += OnAccountsCollectionChanged;
-        DailyNote.Items.CollectionChanged += OnNoteItemsChanged;
-
-        SelectedTab = 0;
-        RefreshDerived();
+        BuildMenuItems();
+        _ = LoadRoleAsync();
     }
 
 
-    // ── Tab ───────────────────────────────────────────────────────────
+    /// <summary>左栏战绩菜单（Starward 的 NavigationView.MenuItems，按游戏显示）。</summary>
+    public ObservableCollection<ToolboxMenuItem> MenuItems { get; } = [];
 
-    /// <summary>0 = 每日便笺，1 = 账号记录（Starward Pivot 的 SelectedIndex）。</summary>
+
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsDailyNoteTab), nameof(IsAccountTab))]
-    private int selectedTab;
+    private ToolboxMenuItem? _selectedItem;
 
 
-    public bool IsDailyNoteTab => SelectedTab == 0;
+    partial void OnSelectedItemChanged(ToolboxMenuItem? value)
+    {
+        foreach (var item in MenuItems)
+        {
+            item.IsSelected = ReferenceEquals(item, value);
+        }
 
-    public bool IsAccountTab => SelectedTab == 1;
+        OnPropertyChanged(nameof(ShowPlaceholder));
+        OnPropertyChanged(nameof(PlaceholderTitle));
+    }
+
+
+    /// <summary>选中战绩页 → 显示"尚未移植"占位；未选中时 Starward 是空白 Frame。</summary>
+    public bool ShowPlaceholder => SelectedItem is not null;
+
+    public string PlaceholderTitle => SelectedItem?.Title ?? "";
 
 
     [RelayCommand]
-    private void ShowDailyNote() => SelectedTab = 0;
+    private void SelectMenu(ToolboxMenuItem? item) => SelectedItem = item;
 
+
+    // ── 角色 / 登录 ──────────────────────────────────────────────────
+
+    [ObservableProperty]
+    private bool _hasRole;
+
+    [ObservableProperty]
+    private string _nickname = "";
+
+    [ObservableProperty]
+    private string _regionText = "";
+
+    [ObservableProperty]
+    private string _levelText = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAvatar))]
+    private Bitmap? _avatar;
+
+    public bool HasAvatar => Avatar is not null;
+
+    [ObservableProperty]
+    private bool _isBusy;
+
+    [ObservableProperty]
+    private string? _errorText;
+
+    [ObservableProperty]
+    private string _statusText = "";
+
+    /// <summary>登录 Flyout 的 cookie 输入框。</summary>
+    [ObservableProperty]
+    private string _cookieInput = "";
+
+    /// <summary>角色列表 Flyout（Starward <c>Flyout_GameRoles</c>）里展示的已保存角色。</summary>
+    public ObservableCollection<ToolboxRoleItem> Roles { get; } = [];
+
+
+    /// <summary>页面重新进入时：还没读到角色就再读一次（便笺 Flyout 可能刚保存了 cookie）。</summary>
+    public void ReloadRoleIfNeeded()
+    {
+        if (!HasRole)
+        {
+            _ = LoadRoleAsync();
+        }
+    }
+
+
+    private async Task LoadRoleAsync()
+    {
+        var saved = _credentials.GetCredentials(_server);
+        if (saved is null || string.IsNullOrWhiteSpace(saved.Cookie))
+        {
+            return;
+        }
+
+        _cookie = saved.Cookie;
+        IsBusy = true;
+        try
+        {
+            var role = await FetchRoleAsync(_cookie).ConfigureAwait(true);
+            if (role is not null)
+            {
+                ApplyRole(role);
+            }
+            else
+            {
+                ErrorText = Strings["Toolbox.CookieInvalid"];
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorText = string.Format(Strings["Toolbox.LoadRoleFailed"], ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
+    private async Task<GameRecordRole?> FetchRoleAsync(string cookie)
+    {
+        GameRecordClient client = _server == "global"
+            ? new HoyolabClient(Http)
+            : new HyperionClient(Http);
+
+        var roles = await client.GetGameRolesAsync(cookie, new GameBiz(_gameBiz)).ConfigureAwait(false);
+        return roles.FirstOrDefault();
+    }
+
+
+    private void ApplyRole(GameRecordRole role)
+    {
+        HasRole = true;
+        Nickname = role.Nickname ?? "";
+        RegionText = string.IsNullOrWhiteSpace(role.RegionName) ? role.Region : role.RegionName;
+        LevelText = role.Level > 0 ? $"Lv.{role.Level}" : "";
+        StatusText = "";
+        ErrorText = null;
+
+        Roles.Clear();
+        Roles.Add(new ToolboxRoleItem(role, _cookie, _server));
+    }
+
+
+    /// <summary>登录 Flyout 的「保存」：校验 cookie、拉角色、落盘。</summary>
+    [RelayCommand]
+    private async Task SaveCookieAsync()
+    {
+        var cookie = CookieInput.Trim();
+        if (string.IsNullOrWhiteSpace(cookie))
+        {
+            ErrorText = Strings["Toolbox.CookieRequired"];
+            return;
+        }
+
+        IsBusy = true;
+        ErrorText = null;
+        try
+        {
+            var role = await FetchRoleAsync(cookie).ConfigureAwait(true);
+            if (role is null)
+            {
+                ErrorText = Strings["Toolbox.CookieInvalid"];
+                return;
+            }
+
+            _cookie = cookie;
+            _credentials.SaveCredentials(_server, cookie, role.Uid.ToString(System.Globalization.CultureInfo.InvariantCulture), role.Region);
+            ApplyRole(role);
+            StatusText = Strings["Toolbox.CookieSaved"];
+            CookieInput = "";
+        }
+        catch (Exception ex)
+        {
+            ErrorText = string.Format(Strings["Toolbox.LoadRoleFailed"], ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
+    /// <summary>角色列表里的「刷新信息」。</summary>
+    [RelayCommand]
+    private async Task RefreshRoleAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_cookie))
+        {
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var role = await FetchRoleAsync(_cookie).ConfigureAwait(true);
+            if (role is not null)
+            {
+                ApplyRole(role);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorText = string.Format(Strings["Toolbox.LoadRoleFailed"], ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
+    /// <summary>角色列表里的「删除角色」：清掉本机保存的 cookie。</summary>
+    [RelayCommand]
+    private void DeleteRole(ToolboxRoleItem? item)
+    {
+        if (item is null)
+        {
+            return;
+        }
+
+        _credentials.ClearCredentials(item.Server);
+        _cookie = "";
+        HasRole = false;
+        Nickname = "";
+        RegionText = "";
+        LevelText = "";
+        Avatar = null;
+        Roles.Clear();
+        StatusText = "";
+    }
+
+
+    /// <summary>「更新设备指纹」在 Starward 用于战绩 API 风控；LunarWard 暂未接，保留位置但禁用。</summary>
+    public bool CanUpdateDeviceFingerprint => false;
+
+
+    // ── 本机游戏账号（LunarWard 追加） ────────────────────────────────
+
+    /// <summary>请求页面打开 wine 账号快照窗口（视图层负责 new Window）。</summary>
+    public event EventHandler? LocalAccountsRequested;
 
     [RelayCommand]
-    private void ShowAccounts() => SelectedTab = 1;
+    private void OpenLocalAccounts() => LocalAccountsRequested?.Invoke(this, EventArgs.Empty);
 
 
-    // ── 子 VM ─────────────────────────────────────────────────────────
-
-    public DailyNoteViewModel DailyNote { get; }
-
-    public AccountViewModel Accounts { get; }
-
-
-    // ── 每日便笺派生状态 ──────────────────────────────────────────────
-
-    public string DailyNoteHeader => Strings["Toolbox.DailyNote"];
-
-    public string AccountHeader => Strings["Toolbox.Accounts"];
-
-    /// <summary>没有保存 cookie：左卡显示"还没有凭据"，右卡显示空态。</summary>
-    public bool HasCookie => !string.IsNullOrWhiteSpace(DailyNote.Cookie);
-
-    /// <summary>右侧便笺卡是否有内容。</summary>
-    public bool HasNote => !string.IsNullOrEmpty(DailyNote.PrimaryName) || DailyNote.Items.Count > 0;
-
-    /// <summary>有 cookie 但还没拉过：右侧显示"点刷新"提示（无 cookie 时走另一个空态）。</summary>
-    public bool ShowNotePlaceholder => HasCookie && !HasNote;
-
-    public bool IsNotBusy => !DailyNote.IsBusy;
-
-    /// <summary>每日任务完成图标的 Source 文本（✓ / ✗ / 未拉取时为空）。</summary>
-    public string DailyTasksGlyph => DailyNote.DailyTasksDone switch
+    private void BuildMenuItems()
     {
-        true => "\uE930",   // Segoe MDL2 CheckMark
-        false => "\uE711",  // Cancel
-        _ => "",
-    };
+        MenuItems.Clear();
 
-    public string DailyTasksText => DailyNote.DailyTasksDone switch
-    {
-        true => Strings["Toolbox.TasksDone"],
-        false => Strings["Toolbox.TasksUndone"],
-        _ => "",
-    };
-
-    /// <summary>完成状态的颜色（成功绿 / 错误红），XAML 里按字符串绑定不到画刷，改用两段可见性。</summary>
-    public bool DailyTasksOk => DailyNote.DailyTasksDone == true;
-
-    public bool DailyTasksFailed => DailyNote.DailyTasksDone == false;
-
-    public bool HasDailyTasks => DailyNote.DailyTasksDone is not null;
-
-    public bool HasStatusText => !string.IsNullOrWhiteSpace(DailyNote.StatusText);
-
-    public bool HasDailyNoteError => !string.IsNullOrWhiteSpace(DailyNote.ErrorText);
-
-    public bool HasNoteItems => DailyNote.Items.Count > 0;
+        if (string.Equals(_gameKind, "genshin", StringComparison.OrdinalIgnoreCase))
+        {
+            Add("BattleChronicle", "\uE9D9", "Toolbox.BattleChronicle");
+            Add("TravelersDiary", "\uE787", "Toolbox.TravelersDiary");
+            Add("SpiralAbyss", "\uE8A1", "Toolbox.SpiralAbyss");
+            Add("ImaginariumTheater", "\uE7FC", "Toolbox.ImaginariumTheater");
+            Add("StygianOnslaught", "\uE9D2", "Toolbox.StygianOnslaught");
+        }
+        else
+        {
+            Add("InterKnotMonthlyReport", "\uE9D2", "Toolbox.InterKnotMonthly");
+            Add("ShiyuDefense", "\uE8A1", "Toolbox.ShiyuDefense");
+            Add("DeadlyAssault", "\uE7FC", "Toolbox.DeadlyAssault");
+        }
+    }
 
 
-    // ── 账号记录派生状态 ──────────────────────────────────────────────
+    private void Add(string tag, string icon, string titleKey)
+        => MenuItems.Add(new ToolboxMenuItem(tag, icon, Strings[titleKey]));
 
-    public bool HasAccounts => Accounts.Accounts.Count > 0;
-
-    public bool IsAccountsEmpty => Accounts.Accounts.Count == 0;
-
-    public bool HasSelectedAccount => Accounts.Selected is not null;
-
-    public bool HasAccountStatus => !string.IsNullOrWhiteSpace(Accounts.StatusText);
-
-    public bool HasAccountError => !string.IsNullOrWhiteSpace(Accounts.ErrorText);
-
-    public string AccountCountText => string.Format(
-        CultureInfo.CurrentCulture, Strings["Toolbox.AccountCount"], Accounts.Accounts.Count);
-
-
-    // ── 页面生命周期 ─────────────────────────────────────────────────
 
     public override void Dispose()
     {
-        DailyNote.PropertyChanged -= OnDailyNoteChanged;
-        Accounts.PropertyChanged -= OnAccountsChanged;
-        Accounts.Accounts.CollectionChanged -= OnAccountsCollectionChanged;
-        DailyNote.Items.CollectionChanged -= OnNoteItemsChanged;
+        LocalAccountsRequested = null;
         base.Dispose();
     }
+}
 
 
-    private void RefreshDerived()
+/// <summary>工具箱左栏的一条战绩菜单（Starward <c>NavigationViewItem</c>）。</summary>
+public sealed partial class ToolboxMenuItem(string tag, string icon, string title) : ObservableObject
+{
+    public string Tag { get; } = tag;
+
+    public string Icon { get; } = icon;
+
+    public string Title { get; } = title;
+
+    [ObservableProperty]
+    private bool _isSelected;
+}
+
+
+/// <summary>角色列表 Flyout 的一行（Starward <c>ListView_GameRoles</c>）。</summary>
+public sealed class ToolboxRoleItem
+{
+    public ToolboxRoleItem(GameRecordRole role, string cookie, string server)
     {
-        OnPropertyChanged(nameof(HasCookie));
-        OnPropertyChanged(nameof(HasNote));
-        OnPropertyChanged(nameof(ShowNotePlaceholder));
-        OnPropertyChanged(nameof(IsNotBusy));
-        OnPropertyChanged(nameof(DailyTasksGlyph));
-        OnPropertyChanged(nameof(DailyTasksText));
-        OnPropertyChanged(nameof(DailyTasksOk));
-        OnPropertyChanged(nameof(DailyTasksFailed));
-        OnPropertyChanged(nameof(HasDailyTasks));
-        OnPropertyChanged(nameof(HasStatusText));
-        OnPropertyChanged(nameof(HasDailyNoteError));
-        OnPropertyChanged(nameof(HasNoteItems));
-        OnPropertyChanged(nameof(HasAccounts));
-        OnPropertyChanged(nameof(IsAccountsEmpty));
-        OnPropertyChanged(nameof(HasSelectedAccount));
-        OnPropertyChanged(nameof(HasAccountStatus));
-        OnPropertyChanged(nameof(HasAccountError));
-        OnPropertyChanged(nameof(AccountCountText));
+        Role = role;
+        Cookie = cookie;
+        Server = server;
     }
 
+    public GameRecordRole Role { get; }
 
-    private void OnDailyNoteChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is nameof(DailyNoteViewModel.Cookie) or nameof(DailyNoteViewModel.PrimaryName)
-            or nameof(DailyNoteViewModel.DailyTasksDone) or nameof(DailyNoteViewModel.StatusText)
-            or nameof(DailyNoteViewModel.ErrorText) or nameof(DailyNoteViewModel.IsBusy))
-        {
-            RefreshDerived();
-        }
-    }
+    public string Cookie { get; }
 
+    public string Server { get; }
 
-    private void OnAccountsChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is nameof(AccountViewModel.Selected) or nameof(AccountViewModel.StatusText)
-            or nameof(AccountViewModel.ErrorText) or nameof(AccountViewModel.CurrentAccountText))
-        {
-            RefreshDerived();
-        }
-    }
+    public string Nickname => Role.Nickname ?? "";
 
+    public string Detail => string.IsNullOrWhiteSpace(Role.RegionName)
+        ? $"{Role.Region} Lv.{Role.Level}"
+        : $"{Role.RegionName} Lv.{Role.Level}";
 
-    private void OnAccountsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshDerived();
-
-
-    private void OnNoteItemsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshDerived();
+    /// <summary>XAML 文案索引器（DeleteRole 的 ToolTip）。</summary>
+    public Localization.AppStrings Strings => Localization.AppStrings.Instance;
 }

@@ -37,7 +37,7 @@
 | 快捷键 | `HotkeySetting.xaml`(62) | `SettingHotkeyView.axaml`(约 130) | 🟡 | 本轮已对齐标题/行高/宽度；`HotkeyInput` 用同边框/圆角的禁用占位（Linux 无全局热键） |
 | 手柄增强 | `GamepadControlSetting.xaml`(207) | `SettingGamepadView.axaml`(约 200) | 🟡 | 本轮已按源码重排标题/Toggle/说明/模拟输入/按键映射/三段说明；GameInput 不存在 → 控件禁用 + Linux 替代方案（Steam Input）追加在后 |
 | 高级 | `AdvancedSetting.xaml`(125) | `SettingAdvancedView.axaml`(约 230) | 🟡 | 本轮已对齐 URL 协议 / RPC 服务 / 日志级别三段；RPC 在 LunarWard 不存在 → 保留状态行、去掉伪造按钮；日志/env 追加在后 |
-| 工具箱 | `GameRecordPage`（GameRecord/*）+ `DailyNoteButton.xaml`(722) | `Pages/ToolboxPage.axaml`(409) | 🔴 | Starward 工具箱是游戏记录总览；每日便笺是**启动器右下按钮的 Flyout**。当前页把便笺/账号做成两个 Tab，且便笺 Tab 显示 cookie 输入框——版式自创，需重写 |
+| 工具箱 | `GameRecordPage.xaml`(527) + `.cs` + 各战绩子页 | `Pages/ToolboxPage.axaml`(约 430) + `.cs`/VM | 🟡 | 容器已按源码重写：248px 左栏（头像/角色/登录 Flyout/角色列表）、战绩菜单（原神 战绩/旅行者札记/深境螺旋/幻想真境剧诗/幽境危战；绝区零 绳网月报/式舆防卫战/危局强袭战）、底部「更新设备指纹」、右侧空白 Frame；角色通过 cookie 调 `GetGameRolesAsync` 实时拉取。**战绩子页本身未移植**（点击显示"尚未移植"占位，不伪造数据）；登录用 cookie 代替 WebView；头像暂用通用图标（未拉 HeadIcon） |
 | 截图页 | `ScreenshotPage2.xaml`(319)（+`ImageViewWindow2.xaml` 731） | `Pages/ScreenshotPage.axaml`(263) | 🟡 | 本轮已按源码重写：44px 页头 + 磁贴墙（列宽按 UniformGridLayout 公式均摊）+ 空态。未移植：ItemsView 容器虚拟化、AnnotatedScrollBar、悬停 1.2× 放大、`ImageViewWindow2`（点击走系统查看器）、截图文件夹管理对话框（Flyout 三行代替） |
 | 抽卡页 | `GachaLogPage.xaml`(475) + `GachaStatsCard.xaml`(293) + `ZZZGachaStatsCard`(294) | `Pages/GachaPage.axaml`(451) + `Controls/GachaStatsCard.axaml`(306) | 🟡 | 本轮已按源码重写：44px 页头（UID/更新 SplitButton/设置 Flyout/强调色 Pane 按钮）+ SplitView + 统计卡（行序、字号、稀有度色照抄）+ 5★/4★ 列表 + 空态。未移植：ZZZ 统计卡、材料图标与卡池底图（无素材，占位）、按时间段删除、UIGF v4、虚拟化 |
 | 游戏公告窗 | `GameNoticeWindow.xaml`(273) | 无 | 🔴 | 未移植 |
@@ -71,6 +71,11 @@
   LunarWard 设置移到下方追加区（20px 标题 + 说明）。
 - 真 wine 往返：`LUNARWARD_REAL_WINE=1 LUNARWARD_TEST_WINE=<wine>` 跑
   `WineRegistryRealWineTests`（wineboot 建 prefix → 写 DWORD → 读回），本机通过。
+- **工具箱容器重写**（Lead）：按 `GameRecordPage.xaml` 把自创的"每日便笺/账号记录"
+  双 Tab 换成 Starward 的 248px 左栏 + 战绩菜单 + 空白 Frame；登录 Flyout 用 cookie
+  调 `GameRecordClient.GetGameRolesAsync` 拉角色（昵称/区服/Lv），凭据复用便笺存储；
+  「更新设备指纹」保留位置但禁用；「本机游戏账号」是 LunarWard 追加入口（wine 快照）。
+  战绩子页未移植处显示占位并如实标注。
 - **每日便笺 Flyout**（Lead）：按 `DailyNoteButton.xaml` 把启动器右下便笺按钮从
   「跳到工具箱」改为真正的 Flyout；`DailyNoteService` 增加原神/绝区零结构化字段
   （`GenshinDailyNoteExtra` / `ZzzDailyNoteExtra`），角色行/刷新/错误/无 cookie 引导
@@ -88,8 +93,9 @@
 
 ## 4. 下一步队列（按用户可见度排序）
 
-1. 游戏设置页：把 Starward 的分辨率/语音/图形设置按原版两列 + 60px 应用条恢复，
-   LunarWard 的目录/区服/wine/env/外部程序/诊断作为**下方追加区**。
+1. 工具箱战绩子页：按 Starward `Features/GameRecord/{Genshin,ZZZ}/*Page.xaml`
+   逐个移植（深境螺旋/幻想真境剧诗/幽境危战、绳网月报/式舆防卫战/危局强袭战），
+   数据用 `GameRecordClient` 的对应 API；再补 `SelfQueryPage`（账号记录独立页）。
 2. 工具箱：按 `GameRecordPage` 结构重写；每日便笺改成启动器右下按钮的 Flyout
    （`DailyNoteButton.xaml` 1:1），账号记录恢复独立导航页（`SelfQueryPage.xaml`）。
 3. 启动器剩余控件：`GameAccountSwitcher`（40 高 ComboBox + 切换/编辑）、

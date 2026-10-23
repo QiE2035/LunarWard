@@ -184,7 +184,7 @@ public sealed partial class DailyNoteButtonViewModel : ObservableObject
     }
 
 
-    /// <summary>没有 cookie / 想改 cookie：跳到工具箱的每日便笺 Tab（那里有凭据表单）。</summary>
+    /// <summary>没有 cookie / 想改 cookie：跳到工具箱（GameRecordPage 的登录入口）。</summary>
     [RelayCommand]
-    private void OpenToolbox() => _context.Shell.NavigateToToolbox(0);
+    private void OpenToolbox() => _context.Shell.Navigate(ShellPage.Toolbox);
 }

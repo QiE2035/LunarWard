@@ -1,7 +1,12 @@
+using LunarWard.App.ViewModels;
 using LunarWard.App.ViewModels.Starward;
 
 namespace LunarWard.App.Views.Starward.Pages;
 
+/// <summary>
+/// 工具箱页（Starward <c>GameRecordPage</c> 的容器）：视图层只负责打开
+/// LunarWard 独有的 wine 账号快照窗口；其余逻辑在 <see cref="ToolboxPageViewModel"/>。
+/// </summary>
 public partial class ToolboxPage : StarwardPage
 {
     private readonly ToolboxPageViewModel? _viewModel;
@@ -12,32 +17,45 @@ public partial class ToolboxPage : StarwardPage
         InitializeComponent();
         _viewModel = new ToolboxPageViewModel(context);
         DataContext = _viewModel;
+        _viewModel.LocalAccountsRequested += OnLocalAccountsRequested;
+    }
+
+
+    private void OnLocalAccountsRequested(object? sender, EventArgs e)
+    {
+        var window = new Views.AccountWindow
+        {
+            DataContext = new AccountViewModel(Context.Services, Context.Profile),
+        };
+        window.Show();
     }
 
 
     public override void OnNavigatedTo()
     {
-        // 账号列表可能被别的入口改过（保存/切换），进入页面时重新读一次
-        _viewModel?.Accounts.ReloadCommand.Execute(null);
+        base.OnNavigatedTo();
+        _viewModel?.ReloadRoleIfNeeded();
     }
 
 
-    /// <summary>自检辅助：切到指定 Tab（0 = 每日便笺，1 = 账号记录）。</summary>
+    /// <summary>
+    /// 自检辅助（旧 <c>--tab</c> 开关）：0/1 选中对应战绩菜单，便于截取占位版式。
+    /// </summary>
     public void SelectTab(int index)
     {
-        if (index == 1)
+        if (_viewModel is { } vm && index >= 0 && index < vm.MenuItems.Count)
         {
-            _viewModel?.ShowAccountsCommand.Execute(null);
-        }
-        else
-        {
-            _viewModel?.ShowDailyNoteCommand.Execute(null);
+            vm.SelectedItem = vm.MenuItems[index];
         }
     }
 
 
     protected override void DisposeViewModel(PageContext context)
     {
-        _viewModel?.Dispose();
+        if (_viewModel is not null)
+        {
+            _viewModel.LocalAccountsRequested -= OnLocalAccountsRequested;
+            _viewModel.Dispose();
+        }
     }
 }
