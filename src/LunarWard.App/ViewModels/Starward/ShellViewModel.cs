@@ -144,6 +144,10 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     /// 左栏展开态（Starward NavigationView 的 <c>PaneDisplayMode="LeftCompact"</c>：
     /// 平时 56px 只显示图标，鼠标移入后展开显示文字）。
     /// </summary>
+    /// <summary>
+    /// 左栏是否展开。Starward 实际不展开（<c>LeftCompact</c> + 隐藏汉堡键），
+    /// 保留该属性只为自检与将来可选的展开模式。
+    /// </summary>
     [ObservableProperty]
     private bool _isRailExpanded;
 

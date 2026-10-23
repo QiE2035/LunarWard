@@ -128,6 +128,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
             DirectoryInvalid = false;
             IsGamePathEmpty = true;
             GameDirectoryName = Strings["GameSetting.DirectoryMissing"];
+            OnPropertyChanged(nameof(ShowDirectoryPlaceholder));
             return;
         }
 
@@ -135,6 +136,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         HasGameDirectory = definition is not null;
         DirectoryInvalid = definition is null;
         IsGamePathEmpty = false;
+        OnPropertyChanged(nameof(ShowDirectoryPlaceholder));
         GameDirectoryName = definition is not null
             ? $"{definition.DisplayName} · {definition.Executable}"
             : Strings["GameSetting.DirectoryUnrecognized"];
@@ -149,6 +151,10 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
     /// <summary>输入框为空：显示"还没选目录"的占位小字（不用警告色）。</summary>
     [ObservableProperty]
     private bool _isGamePathEmpty = true;
+
+
+    /// <summary>占位只在"没路径可选"时显示；扫描出候选目录后交给列表，避免两行重复文案。</summary>
+    public bool ShowDirectoryPlaceholder => IsGamePathEmpty && DetectedGames.Count == 0;
 
 
     [ObservableProperty]
@@ -187,6 +193,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         }
 
         RefreshDetectedGameFlags();
+        OnPropertyChanged(nameof(ShowDirectoryPlaceholder));
         DirectoryStatus = found.Count == 0
             ? Strings["GameSetting.ScanEmpty"]
             : string.Format(Strings["GameSetting.ScanFound"], found.Count);

@@ -27,6 +27,11 @@ public partial class MainWindow : Window
 
         if (DataContext is ShellViewModel shell)
         {
+            if (CaptureMode.ExpandRail)
+            {
+                shell.IsRailExpanded = true;
+            }
+
             if (CaptureMode.OpenSelector)
             {
                 shell.OpenGameSelectorCommand.Execute(null);

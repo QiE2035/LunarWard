@@ -91,7 +91,6 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
     [RelayCommand]
     private async Task ClearCacheAsync()
     {
-        Log.Info($"TEMP ClearCache 进入 IsClearing={IsClearing}");
         if (IsClearing)
         {
             return;
@@ -101,7 +100,6 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
             Strings["Settings.Files.ClearCacheTitle"],
             string.Format(CultureInfo.CurrentCulture, Strings["Settings.Files.ClearCacheBody"], CacheHome)).ConfigureAwait(true);
 
-        Log.Info($"TEMP ClearCache confirmed={confirmed}");
         if (!confirmed)
         {
             return;
@@ -182,8 +180,7 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
             {
                 var name = Path.GetFileName(file);
                 if (name.StartsWith(dashed, StringComparison.Ordinal)
-                    || name.StartsWith(plain, StringComparison.Ordinal)
-                    || File.GetLastWriteTime(file).Date == now.Date)
+                    || name.StartsWith(plain, StringComparison.Ordinal))
                 {
                     continue;
                 }

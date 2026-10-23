@@ -112,7 +112,7 @@
           <TextBlock Classes="tertiary"
                      Margin="0,8,0,0"
                      TextWrapping="Wrap"
-                     IsVisible="{Binding IsGamePathEmpty}"
+                     IsVisible="{Binding ShowDirectoryPlaceholder}"
                      Text="{Binding GameDirectoryName}" />
 
           <TextBlock Classes="tertiary"
@@ -351,7 +351,7 @@
                   Padding="12,8"
                   IsVisible="{Binding !HasPlanError}">
             <Grid RowDefinitions="Auto,1,Auto">
-              <Grid Grid.Row="0" ColumnDefinitions="140,*,100" Margin="0,0,0,8">
+              <Grid Grid.Row="0" ColumnDefinitions="202,*,92" Margin="0,0,0,8">
                 <TextBlock Grid.Column="0" Classes="tertiary" Text="{Binding Strings[GameSetting.Key]}" />
                 <TextBlock Grid.Column="1" Classes="tertiary" Text="{Binding Strings[GameSetting.Value]}" />
                 <TextBlock Grid.Column="2" Classes="tertiary" Text="{Binding Strings[GameSetting.Source]}" />
@@ -363,7 +363,7 @@
                 <ItemsControl ItemsSource="{Binding EnvRows}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:GameSettingEnvRow">
-                      <Grid ColumnDefinitions="140,*,100" Margin="0,3">
+                      <Grid ColumnDefinitions="202,*,92" Margin="0,3">
                         <TextBlock Grid.Column="0"
                                    Classes="mono"
                                    Foreground="{StaticResource StarTextPrimary}"

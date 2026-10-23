@@ -66,12 +66,13 @@
             IsVisible="{Binding !IsLauncherSelected}"
             IsHitTestVisible="False" />
 
-    <!-- ── 左栏 56px（Starward 是一个独立的 CustomAcrylic 竖条） ── -->
+    <!-- ── 左栏（Starward 是一个独立的 CustomAcrylic 竖条；悬停展开到 240px） ── -->
     <Border Width="56" HorizontalAlignment="Left" Background="{StaticResource StarAcrylicBrush}" />
     <local:NavigationRail HorizontalAlignment="Left" VerticalAlignment="Stretch" />
 
     <!-- ── 页面宿主（Starward MainView_Frame，Margin="0,48,0,0"） ── -->
     <ContentPresenter x:Name="PageHost" Margin="56,48,0,0" />
+
 
 
     <!-- ── 游戏选择层（Starward GameSelector：全屏 #80000000 + 192×108 卡片） ── -->
