@@ -417,6 +417,22 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
 
     [RelayCommand]
+    private void OpenDailyNote()
+    {
+        if (SelectedProfile is null)
+        {
+            return;
+        }
+
+        var window = new Views.DailyNoteWindow
+        {
+            DataContext = new DailyNoteViewModel(_services, SelectedProfile),
+        };
+        window.Show();
+    }
+
+
+    [RelayCommand]
     private void Diagnose()
     {
         try

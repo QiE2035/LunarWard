@@ -1,0 +1,72 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LunarWard.App.ViewModels"
+        x:Class="LunarWard.App.Views.DailyNoteWindow"
+        x:DataType="vm:DailyNoteViewModel"
+        Title="{Binding Title}"
+        Width="720" Height="560"
+        Background="#101418">
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16" RowSpacing="10">
+
+    <StackPanel Grid.Row="0" Spacing="6">
+      <TextBlock Text="{Binding Title}" Classes="title" />
+      <TextBlock Text="{Binding StatusText}" Classes="status" TextWrapping="Wrap" />
+      <TextBlock Text="{Binding ErrorText}" Classes="error" TextWrapping="Wrap"
+                 IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+    </StackPanel>
+
+    <Border Grid.Row="1" Classes="card">
+      <StackPanel Spacing="6">
+        <TextBlock Text="账号凭据（只存本地，权限 0600）" Classes="status" />
+        <TextBox Text="{Binding Cookie}" PlaceholderText="cookie（ltoken / ltuid / cookie_token …）" Height="60"
+                 AcceptsReturn="True" TextWrapping="Wrap" />
+        <Grid ColumnDefinitions="*,*,Auto,Auto,Auto" ColumnSpacing="8">
+          <TextBox Grid.Column="0" Text="{Binding Uid}" PlaceholderText="UID（可留空）" />
+          <TextBox Grid.Column="1" Text="{Binding Region}" PlaceholderText="区服，例如 cn_gf01" />
+          <Button Grid.Column="2" Classes="toolbar" Content="保存" Command="{Binding SaveCookieCommand}" />
+          <Button Grid.Column="3" Classes="toolbar" Content="刷新" Command="{Binding RefreshCommand}" IsEnabled="{Binding IsBusy, Converter={x:Static BoolConverters.Not}}" />
+          <Button Grid.Column="4" Classes="toolbar" Content="清除" Command="{Binding ClearCookieCommand}" />
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <Border Grid.Row="2" Classes="card">
+      <StackPanel Spacing="10">
+        <Grid ColumnDefinitions="Auto,*">
+          <TextBlock Grid.Column="0" Text="{Binding Nickname}" FontWeight="SemiBold" FontSize="16" />
+          <TextBlock Grid.Column="1" Text="{Binding Uid}" Classes="status" HorizontalAlignment="Right" />
+        </Grid>
+
+        <StackPanel Spacing="4">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="{Binding PrimaryName}" FontSize="14" />
+            <TextBlock Grid.Column="1" Classes="status">
+              <Run Text="{Binding PrimaryCurrent}" />
+              <Run Text="/" />
+              <Run Text="{Binding PrimaryMax}" />
+            </TextBlock>
+          </Grid>
+          <ProgressBar Value="{Binding PrimaryPercent}" Minimum="0" Maximum="1" Height="10" />
+          <TextBlock Text="{Binding RecoveryText}" Classes="status" />
+        </StackPanel>
+
+        <Separator />
+
+        <ItemsControl ItemsSource="{Binding Items}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:DailyNoteItemViewModel">
+              <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                <TextBlock Grid.Column="0" Text="{Binding Name}" Classes="status" />
+                <TextBlock Grid.Column="1" Text="{Binding Value}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+
+    <TextBlock Grid.Row="3" Classes="status" TextWrapping="Wrap"
+               Text="cookie 属于账号凭据：只保存在本机 ~/.local/share/lunarward/，不会上传，也不会写入日志。不要在他人设备上保存。" />
+  </Grid>
+</Window>

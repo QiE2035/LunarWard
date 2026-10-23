@@ -29,6 +29,7 @@
           <Button Classes="toolbar" Content="{Binding [Main.Settings], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding OpenSettingsCommand}" />
           <Button Classes="toolbar" Content="{Binding [Main.Shell], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding OpenEnvironmentShellCommand}" />
           <Button Classes="toolbar" Content="{Binding [Main.Gacha], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding OpenGachaCommand}" />
+          <Button Classes="toolbar" Content="{Binding [Main.DailyNote], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding OpenDailyNoteCommand}" />
           <Button Classes="toolbar" Content="{Binding [Main.Diagnose], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding DiagnoseCommand}" />
           <Button Classes="toolbar" Content="{Binding [Main.Environment], Source={x:Static loc:AppStrings.Instance}}" Command="{Binding ToggleEnvironmentPanelCommand}" />
           <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" MinWidth="110" />

@@ -60,6 +60,21 @@ public partial class App : Application
                 viewModel.ApplyUrlCommand(command);
             }
 
+            // 自检：--screenshot <png> --window dailynote
+            if (CaptureMode.Enabled && CaptureMode.TargetWindow == "dailynote")
+            {
+                var mainWindowNote = new MainWindow { DataContext = viewModel };
+                desktop.MainWindow = mainWindowNote;
+                var note = new DailyNoteWindow
+                {
+                    DataContext = new DailyNoteViewModel(AppServices.Current, viewModel.Profiles[0]),
+                };
+                note.Opened += (_, _) => CaptureMode.Capture(note);
+                note.Show();
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
+
             // 自检：--screenshot <png> --window gacha
             if (CaptureMode.Enabled && CaptureMode.TargetWindow == "gacha")
             {
