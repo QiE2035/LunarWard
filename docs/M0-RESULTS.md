@@ -225,6 +225,30 @@ M0 验证出四个**设计与现实不符**的点，全部已按下列方式修�
 | **测试** | `ComponentInstallerTests`（6 个，真实 `HttpListener` + 真实 `tar.gz`；HTTP 失败时断言不留残骸） |
 | **仍未覆盖** | 真实 an-anime-team 索引的端到端下载（需要几百 MB 与网络），留待真机验收 |
 
+### 3.5 实现期间发现的三个"只有真跑才会暴露"的缺陷
+
+这三条都不是设计错误，而是**M0 的小规模验证覆盖不到、只有在完整实现 + 测试时才浮现**的问题。
+记录在此，供后续类似项目参考。
+
+| # | 缺陷 | 表现 | 根因 | 定位方式 |
+|---|---|---|---|---|
+| 1 | 进程组信号被拒绝 | 环境 shell 关标签后子进程残留；**静默失败** | `Signal()` 里 `if (pid <= 0) return false` 把 `kill(2)` 的"负 pid = 进程组"语义挡掉了，且返回值无人检查 | 集成测试 `S4` 间歇失败 |
+| 2 | 启动按钮渲染为灰色 | 属性、绑定、命令状态**全部正确**，屏幕上是灰的 | Fluent 的 `ControlTheme` 自己管模板内 `ContentPresenter` 的背景，在 `Button` 上设 `Background` 不穿透 | **截图采样像素** |
+| 3 | 首次建 prefix 卡 2 分半 | 每个新用户首次启动都会超时；留下半成品 prefix | `wineboot -u` 在冷 prefix 上弹「下载 wine-mono」并**阻塞等待输入** | 真 wine 集成测试耗时异常（3m25s） |
+
+**共同点**：三条都不产生编译错误、不产生异常、日志里也没有"错误"字样。
+它们分别由**集成测试、像素采样、耗时异常**发现——这正是"必须有真跑验证"的理由。
+
+**修复与回归**：
+
+| # | 修复 | 回归测试 |
+|---|---|---|
+| 1 | `Signal` 守卫改 `pid == 0`；新增 `TerminateGroup`；`setsid -w` | `S4_KillingShellLeavesNoOrphan`（10s → 98ms） |
+| 2 | 改用 `/template/ ContentPresenter` 选择器 | `--screenshot` 自检 + 人工像素采样 |
+| 3 | 合并 `WINEDLLOVERRIDES=mscoree,mshtml=`；超时 2→3 分钟；超时删半成品 | `RealWine_PhaseEngine_...`（断言冷 prefix < 30 秒） |
+
+---
+
 **这四条偏差的共同特征**：三个是"Windows 专属 native 依赖在 Linux 上不可用"，
 一个是"跨进程 RPC 在单进程应用里是纯负担"。它们都不是设计错误，
 而是**只有真机编译才会暴露的实现细节**——M0 的价值正在于此。
