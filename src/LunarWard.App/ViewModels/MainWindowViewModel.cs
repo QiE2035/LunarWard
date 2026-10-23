@@ -103,6 +103,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private string? announcementHtml;
 
 
+    /// <summary>没有拉到任何公告时显示占位（离线 / 接口不可用）。</summary>
+    public bool HasNoAnnouncements => Announcements.Count == 0;
+
+
     [ObservableProperty]
     private bool hasGameRunning;
 
@@ -425,9 +429,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
                     Announcements.Add(new AnnouncementViewModel(item.Title, item.Body, item.Source.ToString(), item.IsRead));
                 }
 
-                AnnouncementHtml = items.Count == 0
-                    ? "暂无公告数据（离线或接口不可用）"
-                    : string.Join("\n", items.Take(4).Select(x => $"• {x.Title}"));
+                OnPropertyChanged(nameof(HasNoAnnouncements));
             });
         }
         catch (Exception ex)
@@ -589,7 +591,39 @@ public sealed partial class ProfileItemViewModel : ObservableObject
 public sealed record EnvironmentRowViewModel(string Key, string Value, string Source);
 
 
-public sealed record AnnouncementViewModel(string Title, string Body, string? Source, bool IsRead);
+/// <summary>
+/// 公告的展示模型。
+/// </summary>
+/// <remarks>
+/// 官方公告与版本亮点的 <c>Body</c> 是 Markdown（见 <c>docs/04-FEATURES.md</c> §5.5）。
+/// Avalonia 没有内建 HTML 控件，这里用 <c>Markdig</c> 转成纯文本显示——
+/// 而不是把 Markdown 标记原样丢给用户看。
+/// </remarks>
+public sealed record AnnouncementViewModel(string Title, string Body, string? Source, bool IsRead)
+{
+    /// <summary>渲染成可读纯文本（Markdown → plain text）。</summary>
+    public string PlainBody { get; } = ToPlainText(Body);
+
+
+    private static string ToPlainText(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+        {
+            return "";
+        }
+
+        try
+        {
+            // 只做"去标记"，不渲染 HTML；链接保留文字即可
+            var plain = Markdig.Markdown.ToPlainText(markdown);
+            return plain.Trim();
+        }
+        catch (Exception)
+        {
+            return markdown;
+        }
+    }
+}
 
 
 /// <summary>外部程序面板的一行。</summary>

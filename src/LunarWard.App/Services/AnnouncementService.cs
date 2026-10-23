@@ -94,8 +94,16 @@ public sealed class AnnouncementService
             if (launcherId is not null)
             {
                 var infos = await client.GetGameBackgroundAsync(launcherId, "zh-cn", ct).ConfigureAwait(false);
-                foreach (var info in infos ?? [])
+
+                // 只保留"当前游戏"的条目：launcher 返回的是该启动器下全部游戏
+                var wanted = LunarWard.Core.HoYoPlay.GameId.FromGameBiz(new LunarWard.Core.GameBiz(gameBiz));
+                foreach (var info in (infos ?? []).Where(x => wanted is null || x.GameId == wanted))
                 {
+                    if (info.GameId is null)
+                    {
+                        continue;
+                    }
+
                     foreach (var bg in info.Backgrounds ?? [])
                     {
                         var url = bg.Background?.Url;
@@ -136,7 +144,40 @@ public sealed class AnnouncementService
             result.Add(item with { IsRead = read.Contains(item.Id) });
         }
 
-        return result;
+        // 去重（同一 id 只留一次；同一来源同一游戏只留一条）并限制总量，避免首屏被刷屏
+        var seenIds = new HashSet<string>(StringComparer.Ordinal);
+        var seenKeys = new HashSet<string>(StringComparer.Ordinal);
+        var deduped = new List<Announcement>();
+        foreach (var item in result)
+        {
+            if (!seenIds.Add(item.Id))
+            {
+                continue;
+            }
+
+            var key = $"{item.Source}|{GameKey(item)}";
+            if (!seenKeys.Add(key))
+            {
+                continue;
+            }
+
+            deduped.Add(item);
+            if (deduped.Count >= 12)
+            {
+                break;
+            }
+        }
+
+        return deduped;
+    }
+
+
+    private static string GameKey(Announcement announcement)
+    {
+        // hl-<gameId>-<bgId> / hl-<gameId>-<bgId>-video → 同一个 key
+        var id = announcement.Id;
+        var dash = id.IndexOf('-', 3);
+        return dash > 0 ? id[..dash] : id;
     }
 
 

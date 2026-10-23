@@ -49,8 +49,15 @@
           <Border Grid.Row="0" Classes="card" MaxWidth="900" HorizontalAlignment="Center">
             <StackPanel Spacing="8">
               <TextBlock Text="公告与版本亮点" Classes="title" />
-              <TextBlock Text="{Binding AnnouncementHtml, FallbackValue='暂无公告数据（联网后自动拉取）'}"
-                         TextWrapping="Wrap" MaxHeight="120" />
+              <ItemsControl ItemsSource="{Binding Announcements}" MaxHeight="120">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:AnnouncementViewModel">
+                    <TextBlock Text="{Binding Title}" Classes="status" TextWrapping="Wrap" Margin="0,1" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Text="暂无公告（离线或接口不可用）" Classes="status"
+                         IsVisible="{Binding HasNoAnnouncements}" />
               <TextBlock Text="{Binding RuntimeExplain}" Classes="status" TextWrapping="Wrap" />
             </StackPanel>
           </Border>
