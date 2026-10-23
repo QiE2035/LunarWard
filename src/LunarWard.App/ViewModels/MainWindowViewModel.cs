@@ -429,6 +429,44 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private void ToggleEnvironmentPanel() => ShowEnvironmentPanel = !ShowEnvironmentPanel;
 
 
+    /// <summary>
+    /// 执行一条 <c>lunarward://</c> 命令（见 <see cref="LunarWard.Launch.UrlProtocol"/>）。
+    /// </summary>
+    public void ApplyUrlCommand(LunarWard.Launch.UrlProtocolCommand command)
+    {
+        var profileId = command.Get("profile");
+        if (profileId is not null)
+        {
+            var match = Profiles.FirstOrDefault(p => p.Id == profileId);
+            if (match is not null)
+            {
+                SelectedProfile = match;
+            }
+            else
+            {
+                ErrorText = $"找不到档案：{profileId}";
+                _log.Warn($"URL 协议引用了不存在的档案：{profileId}");
+                return;
+            }
+        }
+
+        switch (command.Verb)
+        {
+            case "launch":
+                _ = LaunchAsync();
+                break;
+            case "shell":
+                OpenEnvironmentShell();
+                break;
+            case "gacha":
+                ErrorText = "抽卡记录页面尚未实现（Core 侧客户端已就绪）";
+                break;
+            default:
+                break;
+        }
+    }
+
+
     /// <summary>异步拉取公告（离线时静默降级，不阻塞 UI）。</summary>
     public async Task LoadAnnouncementsAsync()
     {

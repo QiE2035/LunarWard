@@ -46,6 +46,19 @@ public partial class App : Application
                 return;
             }
 
+            // URL 协议：lunarward://launch?profile=… （由 .desktop 的 %U 传入）
+            var command = Launch.UrlProtocol.TryParse(Environment.GetCommandLineArgs().Skip(1), out var protocolError);
+            if (protocolError is not null)
+            {
+                _log.Warn($"URL 协议：{protocolError}");
+            }
+
+            if (command is not null)
+            {
+                _log.Info($"URL 协议：{Launch.UrlProtocol.Describe(command)}");
+                viewModel.ApplyUrlCommand(command);
+            }
+
             var window = new MainWindow { DataContext = viewModel };
             desktop.MainWindow = window;
             desktop.Exit += (_, _) =>
