@@ -94,7 +94,7 @@ public class AppStringsTests
         }
 
         Assert.Contains("Item[]", raised);
-        Assert.Single(raised.Where(x => x == "Item[]"));
+        Assert.Single(raised, x => x == "Item[]");
     }
 
 
