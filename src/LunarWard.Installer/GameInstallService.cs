@@ -37,6 +37,16 @@ internal class GameInstallService
 
     public event EventHandler<GameInstallContext>? TaskStateChanged;
 
+    /// <summary>
+    /// 进度回报（替代上游的 gRPC 服务端流）。
+    /// 每 100ms 推一次，并在速度/剩余时间刷新后触发；宿主（UI）直接绑定即可。
+    /// </summary>
+    public IProgress<GameInstallProgress>? Progress { get; set; }
+
+    private CancellationTokenSource? _tickerCts;
+
+    private Task? _tickerTask;
+
     public GameInstallContext? CurrentTask { get; private set; }
 
 
@@ -51,6 +61,76 @@ internal class GameInstallService
             MaxRetryAttempts = 5,
             BackoffType = DelayBackoffType.Linear
         }).Build();
+        StartTicker();
+    }
+
+
+    /// <summary>
+    /// 每 100ms 刷新一次速度与剩余时间并推一次进度（对应上游
+    /// <c>GameInstallController</c> 的 <c>PeriodicTimer</c>，它被删掉后
+    /// <see cref="GameInstallContext.RefreshSpeed"/> 就没有驱动者了）。
+    /// </summary>
+    private void StartTicker()
+    {
+        _tickerCts = new CancellationTokenSource();
+        var token = _tickerCts.Token;
+        _tickerTask = Task.Run(async () =>
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+            try
+            {
+                while (await timer.WaitForNextTickAsync(token).ConfigureAwait(false))
+                {
+                    PublishProgress();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // 正常退出
+            }
+            catch (ObjectDisposedException)
+            {
+                // 正常退出
+            }
+        }, token);
+    }
+
+
+    /// <summary>推一次进度快照。</summary>
+    public void PublishProgress()
+    {
+        if (CurrentTask is not { } task)
+        {
+            return;
+        }
+
+        try
+        {
+            task.RefreshSpeed();
+            Progress?.Report(GameInstallProgress.FromTask(task));
+            TaskStateChanged?.Invoke(this, task);
+        }
+        catch (Exception)
+        {
+            // 进度回报绝不影响安装
+        }
+    }
+
+
+    /// <summary>停止后台刷新（宿主退出时调用）。</summary>
+    public void Dispose()
+    {
+        try
+        {
+            _tickerCts?.Cancel();
+            _tickerCts?.Dispose();
+        }
+        catch (Exception)
+        {
+            // ignore
+        }
+
+        _tickerCts = null;
     }
 
 
@@ -291,6 +371,7 @@ internal class GameInstallService
             _tasks.TryRemove(context.GameId, out _);
         }
         TaskStateChanged?.Invoke(this, context);
+        Progress?.Report(GameInstallProgress.FromTask(context));
         if (_tasks.Values.FirstOrDefault(x => x.State is not GameInstallState.Paused and not GameInstallState.Error && x != context) is GameInstallContext anotherTask)
         {
             CurrentTask = anotherTask;

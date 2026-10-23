@@ -92,7 +92,7 @@ public sealed class TempDirectory : IDisposable
     public string CreateFakeWine()
     {
         var bin = System.IO.Path.Join(Path, "wine");
-        File.WriteAllText(bin, "#!/bin/sh\necho wine-10.0 (fake)\n");
+        File.WriteAllText(bin, "#!/bin/sh\necho 'wine-10.0 (fake)'\n");
         File.SetUnixFileMode(bin, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         return bin;
     }

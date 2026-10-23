@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.Compression;
 
 namespace LunarWard.Installer;
@@ -40,6 +40,12 @@ public interface IArchiveExtractor
     /// <paramref name="percent"/> 报告 0..1 的进度（对应上游 <c>Extracting</c> 事件的 <c>FinishPercent</c>）。
     /// </summary>
     Task ExtractAsync(IReadOnlyList<string> archives, string destination, IProgress<double>? percent, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 只列条目名，不解压（对应上游 <c>SharpSevenZipExtractor.ArchiveFileData</c>）。
+    /// 失败时返回空列表——调用方应把"探测不到"当作"没有"。
+    /// </summary>
+    Task<IReadOnlyList<string>> ListAsync(IReadOnlyList<string> archives, CancellationToken cancellationToken = default);
 }
 
 
@@ -174,6 +180,83 @@ public sealed class SevenZipArchiveExtractor : IArchiveExtractor
 
         firstVolume = actualFirst;
         return true;
+    }
+
+
+    public async Task<IReadOnlyList<string>> ListAsync(IReadOnlyList<string> archives, CancellationToken cancellationToken = default)
+    {
+        if (archives.Count == 0)
+        {
+            return [];
+        }
+
+        // 分卷包：7z 只需要第一段；非分卷则用第一个文件
+        var archive = LooksLikeSplitVolumeSet(archives, out var firstVolume) ? firstVolume : archives[0];
+
+        if (_executable is not null)
+        {
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = _executable,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                };
+                startInfo.ArgumentList.Add("l");
+                startInfo.ArgumentList.Add(archive);
+                startInfo.ArgumentList.Add("-slt");
+                startInfo.ArgumentList.Add("-ba");
+
+                using var process = Process.Start(startInfo);
+                if (process is null)
+                {
+                    return [];
+                }
+
+                var stdout = await process.StandardOutput.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                if (process.ExitCode != 0)
+                {
+                    return [];
+                }
+
+                // -slt 输出形如：Path = xxx（每段一条），其余是属性行
+                var result = new List<string>();
+                foreach (var line in stdout.Split('\n'))
+                {
+                    const string key = "Path = ";
+                    if (line.StartsWith(key, StringComparison.Ordinal))
+                    {
+                        var name = line[key.Length..].TrimEnd('\r');
+                        if (name.Length > 0)
+                        {
+                            result.Add(name);
+                        }
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "7z 列目录失败 {Archive}", archive);
+                return [];
+            }
+        }
+
+        // 无 7z：zip 走 BCL
+        try
+        {
+            using var zip = ZipFile.OpenRead(archive);
+            return zip.Entries.Select(x => x.FullName).ToList();
+        }
+        catch (Exception)
+        {
+            return [];
+        }
     }
 
 

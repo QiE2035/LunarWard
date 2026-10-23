@@ -210,7 +210,7 @@ public sealed class LaunchPlanFactory
 
         if (!string.IsNullOrEmpty(wine.Language) && !string.Equals(wine.Language, "System", StringComparison.OrdinalIgnoreCase))
         {
-            env["LANG"] = wine.Language.Replace('-', '_') + ".UTF-8";
+            env["LANG"] = NormalizeLocale(wine.Language) + ".UTF-8";
         }
 
         if (wine.SharedLibraries.Count > 0)
@@ -220,6 +220,23 @@ public sealed class LaunchPlanFactory
         }
 
         return env;
+    }
+
+
+    /// <summary>
+    /// 把 <c>zh-cn</c> / <c>zh_CN</c> / <c>zh-CN</c> 统一成 <c>zh_CN</c>
+    /// （POSIX 语言环境要求语言小写、地区大写）。
+    /// </summary>
+    public static string NormalizeLocale(string language)
+    {
+        var text = language.Trim().Replace('-', '_');
+        var parts = text.Split('_', 2);
+        if (parts.Length == 1)
+        {
+            return parts[0].ToLowerInvariant();
+        }
+
+        return parts[0].ToLowerInvariant() + "_" + parts[1].ToUpperInvariant();
     }
 
 

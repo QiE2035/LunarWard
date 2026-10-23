@@ -145,19 +145,23 @@ public sealed class LaunchEngine
 
     private readonly IXdgPaths _paths;
 
+    private readonly IDxvkManager? _dxvk;
+
 
     public LaunchEngine(
         IProcessTree processTree,
         IProcessController controller,
         IProcessLauncher launcher,
         IPrefixManager prefixManager,
-        IXdgPaths paths)
+        IXdgPaths paths,
+        IDxvkManager? dxvk = null)
     {
         _processTree = processTree;
         _controller = controller;
         _launcher = launcher;
         _prefixManager = prefixManager;
         _paths = paths;
+        _dxvk = dxvk;
     }
 
 
@@ -229,7 +233,24 @@ public sealed class LaunchEngine
                 return LaunchResult.Fail(new LaunchError.PrefixNotClean(pids));
             }
 
-            // 2. 写 PreWrites（Prepare 时机）
+            // 2. DXVK（若运行时指定了托管/自定义来源）
+            if (_dxvk is not null && plan.Runtime.DxvkDirectory is { Length: > 0 } dxvkDir && Directory.Exists(dxvkDir))
+            {
+                try
+                {
+                    if (!_dxvk.IsInstalled(plan.Prefix))
+                    {
+                        await _dxvk.InstallAsync(plan.Prefix, dxvkDir, ct).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // DXVK 安装失败不阻止启动（wine 自带 d3d 仍可跑）
+                    phases.Add(new PhaseRecord("Dxvk", DateTimeOffset.Now, 0) { Detail = ex.Message });
+                }
+            }
+
+            // 3. 写 PreWrites（Prepare 时机）
             foreach (var program in plan.ExternalPrograms)
             {
                 foreach (var write in program.PreWrites.Where(w => w.When == FileWriteWhen.Prepare))

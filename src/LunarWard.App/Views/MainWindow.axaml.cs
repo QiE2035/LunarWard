@@ -35,6 +35,10 @@ public partial class MainWindow : Window
         ApplyThemeStyle();
         MountBackground();
         ViewModel?.RefreshProfileDetailsIfSelected();
+        if (ViewModel is { } vm)
+        {
+            _ = vm.LoadAnnouncementsAsync();
+        }
 
         if (CaptureMode.Enabled)
         {

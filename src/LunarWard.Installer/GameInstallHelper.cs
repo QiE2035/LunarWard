@@ -996,28 +996,19 @@ internal partial class GameInstallHelper
 
         public async Task<bool> ContainsAnyAsync(IReadOnlyList<string> archives, IReadOnlyList<string> names, CancellationToken ct)
         {
-            var temp = Path.Combine(Path.GetTempPath(), "lunarward-probe-" + Guid.NewGuid().ToString("N")[..10]);
-            try
-            {
-                Directory.CreateDirectory(temp);
-                await _extractor.ExtractAsync(archives, temp, null, ct);
-                return names.Any(n => File.Exists(Path.Join(temp, n)));
-            }
-            catch (Exception)
+            // 只读元数据（7z l -slt / ZipArchive 条目），不解压整个包。
+            var entries = await _extractor.ListAsync(archives, ct).ConfigureAwait(false);
+            if (entries.Count == 0)
             {
                 return false;
             }
-            finally
-            {
-                try
-                {
-                    Directory.Delete(temp, recursive: true);
-                }
-                catch (Exception)
-                {
-                    // ignore
-                }
-            }
+
+            // 压缩包内路径可能是 a/b/hdiffmap.json，按文件名比较
+            var fileNames = entries
+                .Select(x => x.Replace('\\', '/'))
+                .Select(x => x[(x.LastIndexOf('/') + 1)..])
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            return names.Any(fileNames.Contains);
         }
     }
 

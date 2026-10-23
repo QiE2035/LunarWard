@@ -30,6 +30,8 @@ public sealed class AppServices
         ConfigWarning = warning;
         LauncherService = new Services.LauncherService(this);
         Background = new Services.BackgroundService(paths);
+        Announcements = new Services.AnnouncementService(paths);
+        Scanner = new Services.GameScanner(paths);
     }
 
 
@@ -56,6 +58,10 @@ public sealed class AppServices
     public Services.LauncherService LauncherService { get; }
 
     public Services.BackgroundService Background { get; }
+
+    public Services.AnnouncementService Announcements { get; }
+
+    public Services.GameScanner Scanner { get; }
 
 
     public static void Initialize(IXdgPaths paths)

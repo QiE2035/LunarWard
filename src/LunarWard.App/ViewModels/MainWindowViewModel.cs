@@ -171,8 +171,56 @@ public sealed partial class MainWindowViewModel : ObservableObject
             Profiles.Add(new ProfileItemViewModel("genshin-cn", profile, "原神"));
         }
 
+        EnsureDefaultRuntime();
+
         var index = Math.Clamp(_services.Config.Launcher.LastProfileIndex, 0, Profiles.Count - 1);
         SelectedProfile = Profiles.FirstOrDefault(p => p.Id == previous) ?? Profiles[index];
+    }
+
+
+    /// <summary>
+    /// 首次运行时挑一个可用运行时（系统 wine → 本项目托管 → 只读借用其它启动器 → Steam Proton），
+    /// 避免开箱即"PATH 里找不到 wine"。用户可在设置里改。
+    /// </summary>
+    private void EnsureDefaultRuntime()
+    {
+        if (!string.IsNullOrEmpty(_services.Config.Launcher.DefaultRuntime)
+            && _services.Config.Runtimes.ContainsKey(_services.Config.Launcher.DefaultRuntime))
+        {
+            return;
+        }
+
+        var available = new RuntimeScanner(_services.Paths).Scan();
+        var picked = available.FirstOrDefault(x => x.Source == "System")
+                     ?? available.FirstOrDefault(x => x.Source == "Managed")
+                     ?? available.FirstOrDefault(x => x.Source == "Borrowed")
+                     ?? available.FirstOrDefault(x => x.Source == "Proton");
+        if (picked is null)
+        {
+            return;
+        }
+
+        _services.Config.Runtimes[picked.Name] = new RuntimeConfigDto
+        {
+            Runner = RunnerDto.FromDomain(picked.Runner),
+            Dxvk = new DxvkDto { Kind = "System" },
+        };
+        _services.Config.Launcher.DefaultRuntime = picked.Name;
+
+        foreach (var profile in _services.Config.Profiles.Values)
+        {
+            profile.Runtime = new ScopedRuntimeDto { Kind = "Default" };
+        }
+
+        try
+        {
+            _services.Config.Save(_services.Paths.ConfigFile);
+            _log.Info($"首次运行自动选择运行时：{picked.Name}（{picked.Path}）");
+        }
+        catch (Exception ex)
+        {
+            _log.Error("保存默认运行时失败", ex);
+        }
     }
 
 
@@ -304,6 +352,27 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
 
     [RelayCommand]
+    private void OpenSettings()
+    {
+        if (SelectedProfile is null)
+        {
+            return;
+        }
+
+        var window = new Views.SettingsWindow
+        {
+            DataContext = new SettingsViewModel(_services, SelectedProfile),
+        };
+        window.Closed += (_, _) =>
+        {
+            ReloadProfiles();
+            RefreshProfileDetailsIfSelected();
+        };
+        window.Show();
+    }
+
+
+    [RelayCommand]
     private void Diagnose()
     {
         try
@@ -330,6 +399,42 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     [RelayCommand]
     private void ToggleEnvironmentPanel() => ShowEnvironmentPanel = !ShowEnvironmentPanel;
+
+
+    /// <summary>异步拉取公告（离线时静默降级，不阻塞 UI）。</summary>
+    public async Task LoadAnnouncementsAsync()
+    {
+        if (SelectedProfile is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var gameBiz = Games.GameCatalog
+                .Get(SelectedProfile.Profile.Game, string.Equals(SelectedProfile.Profile.Edition, "Global", StringComparison.OrdinalIgnoreCase)
+                    ? Games.GameEdition.Global
+                    : Games.GameEdition.China)?.GameBiz ?? "hk4e_cn";
+
+            var items = await _services.Announcements.FetchAsync(gameBiz).ConfigureAwait(false);
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Announcements.Clear();
+                foreach (var item in items)
+                {
+                    Announcements.Add(new AnnouncementViewModel(item.Title, item.Body, item.Source.ToString(), item.IsRead));
+                }
+
+                AnnouncementHtml = items.Count == 0
+                    ? "暂无公告数据（离线或接口不可用）"
+                    : string.Join("\n", items.Take(4).Select(x => $"• {x.Title}"));
+            });
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"拉取公告失败：{ex.Message}");
+        }
+    }
 
 
     [RelayCommand]
