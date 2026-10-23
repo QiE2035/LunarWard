@@ -53,7 +53,7 @@ public class InstallerHttpClientFactoryTests
     [Fact]
     public async Task TransientHttpError_RetriesThreeTimesWithLinearBackoff()
     {
-        using var server = new FlakyServer(HttpStatusCode.InternalServerError, successAfter: int.MaxValue);
+        using var server = new FlakyServer(HttpStatusCode.InternalServerError, failFirstRequests: int.MaxValue);
         using var client = InstallerHttpClientFactory.Instance.CreateClient();
         var stopwatch = Stopwatch.StartNew();
         using var response = await client.GetAsync(server.Url);
@@ -73,7 +73,7 @@ public class InstallerHttpClientFactoryTests
     [Fact]
     public async Task TransientHttpError_RecoversAfterRetries()
     {
-        using var server = new FlakyServer(HttpStatusCode.InternalServerError, successAfter: 2);
+        using var server = new FlakyServer(HttpStatusCode.InternalServerError, failFirstRequests: 2);
         using var client = InstallerHttpClientFactory.Instance.CreateClient();
         var stopwatch = Stopwatch.StartNew();
         using var response = await client.GetAsync(server.Url);
@@ -91,7 +91,7 @@ public class InstallerHttpClientFactoryTests
     [Fact]
     public async Task RequestTimeout_IsRetried()
     {
-        using var server = new FlakyServer(HttpStatusCode.RequestTimeout, successAfter: int.MaxValue);
+        using var server = new FlakyServer(HttpStatusCode.RequestTimeout, failFirstRequests: int.MaxValue);
         using var client = InstallerHttpClientFactory.Instance.CreateClient();
         using var response = await client.GetAsync(server.Url);
 
@@ -107,7 +107,7 @@ public class InstallerHttpClientFactoryTests
     [Fact]
     public async Task ClientError_IsNotRetried()
     {
-        using var server = new FlakyServer(HttpStatusCode.NotFound, successAfter: int.MaxValue);
+        using var server = new FlakyServer(HttpStatusCode.NotFound, failFirstRequests: int.MaxValue);
         using var client = InstallerHttpClientFactory.Instance.CreateClient();
         var stopwatch = Stopwatch.StartNew();
         using var response = await client.GetAsync(server.Url);
@@ -123,7 +123,7 @@ public class InstallerHttpClientFactoryTests
     [Fact]
     public async Task Success_IsNotRetried()
     {
-        using var server = new FlakyServer(HttpStatusCode.OK, successAfter: 0);
+        using var server = new FlakyServer(HttpStatusCode.OK, failFirstRequests: 0);
         using var client = InstallerHttpClientFactory.Instance.CreateClient();
         using var response = await client.GetAsync(server.Url);
 
@@ -168,10 +168,10 @@ public class InstallerHttpClientFactoryTests
         private int _hits;
 
 
-        public FlakyServer(HttpStatusCode failStatus, int successAfter)
+        public FlakyServer(HttpStatusCode failStatus, int failFirstRequests)
         {
             FailStatus = failStatus;
-            SuccessAfter = successAfter;
+            FailFirstRequests = failFirstRequests;
             Port = Random.Shared.Next(18200, 18999);
             _listener.Prefixes.Add($"http://127.0.0.1:{Port}/");
             _listener.Start();
@@ -183,7 +183,7 @@ public class InstallerHttpClientFactoryTests
 
         public HttpStatusCode FailStatus { get; }
 
-        public int SuccessAfter { get; }
+        public int FailFirstRequests { get; }
 
         public int Hits => Volatile.Read(ref _hits);
 
@@ -207,7 +207,7 @@ public class InstallerHttpClientFactoryTests
                 var n = Interlocked.Increment(ref _hits);
                 try
                 {
-                    context.Response.StatusCode = n <= SuccessAfter ? 200 : (int)FailStatus;
+                    context.Response.StatusCode = n <= FailFirstRequests ? (int)FailStatus : 200;
                     context.Response.Close();
                 }
                 catch (Exception)

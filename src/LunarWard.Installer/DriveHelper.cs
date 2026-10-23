@@ -174,7 +174,6 @@ public static class DriveHelper
 
         return format switch
         {
-            // 无 inode 概念 / 明确不支持硬链接
             "vfat" or "msdos" or "msdosfs" or "fat" or "fat16" or "fat32" => false,
             "exfat" or "fuse.exfat" => false,
             "iso9660" or "udf" or "fuse.udf" or "iso9660fs" => false,
@@ -207,15 +206,7 @@ public static class DriveHelper
                 return false;
             }
 
-            var devA = StatxDeviceId(a);
-            var devB = StatxDeviceId(b);
-            if (devA is not null && devB is not null)
-            {
-                return devA == devB;
-            }
-
-            // statx 不可用（老内核/非 Linux）时退化为挂载点比较
-            return string.Equals(GetPathRoot(a), GetPathRoot(b), StringComparison.Ordinal);
+            return string.Equals(Path.GetPathRoot(a), Path.GetPathRoot(b), StringComparison.Ordinal);
         }
         catch (Exception)
         {

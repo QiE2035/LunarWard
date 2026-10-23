@@ -9,6 +9,7 @@
     <Project Path="src/LunarWard.Wine/LunarWard.Wine.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/LunarWard.Installer.UnitTests/LunarWard.Installer.UnitTests.csproj" />
     <Project Path="tests/LunarWard.IntegrationTests/LunarWard.IntegrationTests.csproj" />
     <Project Path="tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj" />
   </Folder>
