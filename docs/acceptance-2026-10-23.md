@@ -345,17 +345,17 @@ $ LUNARWARD_REAL_WINE=1 dotnet test --filter 'FullyQualifiedName~RealWine'
 
 ```bash
 $ dotnet test LunarWard.slnx
-LunarWard.UnitTests.dll           — 通过: 257，失败: 0，跳过: 0
+LunarWard.UnitTests.dll           — 通过: 276，失败: 0，跳过: 0
 LunarWard.Installer.UnitTests.dll — 通过:  31，失败: 0，跳过: 0
 LunarWard.IntegrationTests.dll    — 通过:  27，失败: 0，跳过: 0
 ```
 
 | 套件 | 数量 | 位置 |
 |---|---|---|
-| **核心单元测试** | **257** | `tests/LunarWard.UnitTests/` |
+| **核心单元测试** | **276** | `tests/LunarWard.UnitTests/` |
 | **安装器单元测试** | **31** | `tests/LunarWard.Installer.UnitTests/` |
 | **集成测试** | **27** | `tests/LunarWard.IntegrationTests/` |
-| **合计** | **315** | — |
+| **合计** | **334** | — |
 
 **集成测试 25 个的构成**：
 
@@ -374,12 +374,13 @@ LunarWard.IntegrationTests.dll    — 通过:  27，失败: 0，跳过: 0
 | 加了 S 系列 shell 测试 | 138 + 19 | 157 |
 | 加了 Installer 单测 + 验收测试 | 138 + 31 + 25 | 194 |
 | 加了时长 / 截图 / i18n / 组件下载器 | 178 + 31 + 25 | 234 |
-| 加了抽卡 / 便笺 / 截图窗口 / prefix 修复 | 257 + 31 + 27 | **315** |
+| 加了抽卡 / 便笺 / 截图窗口 / prefix 修复 | 257 + 31 + 27 | 315 |
+| 加了账号切换 | 276 + 31 + 27 | **334** |
 
-> **引用测试规模时请用 315**（当前实测）。单一数字必然漂移，
+> **引用测试规模时请用 334**（当前实测）。单一数字必然漂移，
 > 需要精确值请直接跑 `dotnet test LunarWard.slnx`。
 
-**核心单元测试分布（257）**：
+**核心单元测试分布（276）**：
 
 | 文件 | 用例数 | 覆盖 |
 |---|---|---|
@@ -394,6 +395,7 @@ LunarWard.IntegrationTests.dll    — 通过:  27，失败: 0，跳过: 0
 | `UrlProtocolTests.cs` | 19 | `lunarward://` 解析（未知 verb 降级、不把 URI 当路径） |
 | `GachaCachePathTests.cs` | 12 | 抽卡缓存路径无反斜杠、`user.reg` 解析与 Windows→Linux 路径翻译 |
 | `PrefixInitTests` / `WineMonoDisableTests` | 9 | prefix 初始化的 mono/gecko 禁用（实测 2分32秒 → 8秒） |
+| `WineAccountTests.cs` | 19 | 账号切换：Wine 键名 `\xHHHH` 转义、`hex:` 原位替换、段头不丢、写到不该写的地方要拒绝 |
 | `PlayTimeTests.cs` | 7 | 时长累计、持久化、非法时间戳、排序、损坏恢复、未知字段、原子写 |
 | `ScreenshotTests.cs` | 9 | 截图目录发现、排序、扩展名过滤、UID 提取、导出防覆盖、占用统计 |
 | `AppStringsTests.cs` | 16 | 英文覆盖、无空值、语言归一化、切换通知、未知键回显 |

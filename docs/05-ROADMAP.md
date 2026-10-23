@@ -223,7 +223,7 @@ cd src/LunarWard.Core && dotnet build
 
 | 功能 | 原实现 | 新实现 | 优先级 |
 |---|---|---|---|
-| 账号切换 | registry 操作 | ✅ 只读部分（`Games/WineRegistryInstallPathProvider.cs` 解析 `user.reg`）；写入未实现 | P0 |
+| 账号切换 | registry 操作 | ✅ 完整实现（`Games/WineAccountService.cs` 读写 `user.reg` 的 `hex:` 值 + 账号窗口） | P0 |
 | 动态背景 | `Features/Background`（Win2D） | ✅ `LibVLCSharp.Avalonia` 的 `VideoView` + 静态图回退（`Services/BackgroundService.cs`） | P0 |
 | 游戏时长 | `Features/PlayTime` | 复用相位引擎的起止时间 → ✅ 已实现（`LunarWard.Launch/PlayTimeService.cs`） | P1 |
 | 截图管理 | `Features/Screenshot`（WIC） | ✅ 目录发现 + 预览 + 导出（`ScreenshotService` + `Views/ScreenshotWindow.axaml`） | P1 |

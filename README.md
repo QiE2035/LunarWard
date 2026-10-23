@@ -7,7 +7,7 @@ Linux 下的《原神》/《绝区零》启动器，定位是 **Starward 在 Lin
 运行时管理与 UI 视图。
 
 > 当前状态：**已实现（M0–M7 完成，M8 移植完成待真机验证）**。
-> 解决方案 0 warning / 0 error，315 个测试全通过（257 单元 + 31 安装器 + 27 集成），
+> 解决方案 0 warning / 0 error，334 个测试全通过（276 单元 + 31 安装器 + 27 集成），
 > 主界面可运行（见下方截图自检命令）。真机验收 R1–R15 的完成情况见
 > [acceptance-2026-10-23.md](docs/acceptance-2026-10-23.md)。
 
@@ -55,7 +55,7 @@ lunarward/
 │   ├── LunarWard.Installer/       # ← Starward.RPC/GameInstall 移植（去 gRPC/Vanara）
 │   └── LunarWard.App/             # Avalonia 12 视图层
 ├── tests/
-│   ├── LunarWard.UnitTests/           # 257
+│   ├── LunarWard.UnitTests/           # 276
 │   ├── LunarWard.Installer.UnitTests/ # 31
 │   └── LunarWard.IntegrationTests/    # 27（合成游戏 + 真 /proc + 真 wine）
 ├── packaging/                     # .desktop / PKGBUILD
