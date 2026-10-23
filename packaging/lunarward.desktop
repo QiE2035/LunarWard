@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=LunarWard
+Comment=Genshin Impact / Zenless Zone Zero launcher for Linux
+Exec=lunarward %U
+Icon=lunarward
+Terminal=false
+Categories=Game;Utility;
+MimeType=x-scheme-handler/lunarward;
+StartupWMClass=LunarWard
