@@ -2,6 +2,10 @@
 
 **开工前必须清空本文件。** 每条都标了推荐答案，若需求方认可可直接标记为已决。
 
+> **状态（2026-10-23）**：Q1–Q11 已全部**按推荐执行**并落地为代码，
+> 汇总见文末「汇总」表与 §「落地对照」。本文件保留原始问题与理由，
+> 供将来回顾"当时为什么这么定"。
+
 ---
 
 ## Q1. `Override("")` 与 `Remove` 的 UI 语义
@@ -217,17 +221,34 @@ Avalonia 没有跨平台的"窗口透明 + 合成器模糊"API。
 
 | # | 问题 | 推荐 | 状态 |
 |---|---|---|---|
-| Q1 | `Override("")` 的 UI 交互 | 清空=删除 + "设为空值"副选项 | ⬜ 待确认 |
-| Q2 | Steam VDF 库 | M0 核验；不理想则退化为标准路径 | ⬜ 待确认 |
-| Q3 | 终端方案 | Avalonia 终端控件，M0 实测选定 | ✅ 已降级（不再是风险） |
-| Q4 | 许可 | MIT | ⬜ 待确认 |
-| Q5 | 安装器分期 | 首期只做安装/修复/校验 | ⬜ 待确认 |
-| Q6 | 游戏库导入 | 首期只做扫描 | ⬜ 待确认 |
-| Q7 | 默认主题 | Modern | ⬜ 待确认 |
-| Q8 | 打包形态 | 源码 + AUR 首期 | ⬜ 待确认 |
+| Q1 | `Override("")` 的 UI 交互 | 清空=删除 + "设为空值"副选项 | ✅ 已按推荐执行 |
+| Q2 | Steam VDF 库 | M0 核验；不理想则退化为标准路径 | ✅ 已按推荐执行（退化方案） |
+| Q3 | 终端方案 | Avalonia 终端控件，M0 实测选定 | ✅ 已选定 `Iciclecreek.Avalonia.Terminal` 4.1.0 |
+| Q4 | 许可 | MIT | ✅ 已按推荐执行 |
+| Q5 | 安装器分期 | 首期只做安装/修复/校验 | ✅ 已按推荐执行 |
+| Q6 | 游戏库导入 | 首期只做扫描 | ✅ 已按推荐执行 |
+| Q7 | 默认主题 | Modern | ✅ 已按推荐执行 |
+| Q8 | 打包形态 | 源码 + AUR 首期 | ✅ 已按推荐执行 |
 | Q9 | Trigger 取值 | 只保留 Auto / Manual | ✅ 已决 |
-| Q10 | 错误上报 | 不做 | ⬜ 待确认 |
-| Q11 | Acrylic 模糊策略 | 统一 L2 半透明，不做 KDE 特化 | ⬜ 待确认 |
+| Q10 | 错误上报 | 不做 | ✅ 已按推荐执行（本地日志 + launch-report） |
+| Q11 | Acrylic 模糊策略 | 统一 L2 半透明，不做 KDE 特化 | ✅ 已按推荐执行 |
 
-若全部认可"推荐"，可直接在下一会话说"按推荐执行"，我会把相应条目标记为已决，
-然后开始 M0（技术验证：Avalonia 窗口 / 视频背景与终端控件 / Acrylic 降级 / Starward.Core 在 Linux 编译）。
+---
+
+## 落地对照（2026-10-23）
+
+| # | 落地位置 | 说明 |
+|---|---|---|
+| Q1 | `ViewModels/MainWindowViewModel.cs` 的 `EnvEntryViewModel` | 三态下拉 + 「设为空值」副选项；清空输入默认转 `Remove` |
+| Q2 | `App/Services/GameScanner.cs` 的 `RuntimeScanner.SteamLibraries()` | 不引入 VDF 库：只抓 `libraryfolders.vdf` 的 `"path"` 行 + 标准路径 |
+| Q3 | `Views/ShellWindow.axaml.cs` | `TerminalView.LaunchProcess(dir, shell, ["-l"])`；PTY 失败时回退到「导出 env.sh」 |
+| Q4 | `LICENSE` | MIT |
+| Q5 | `src/LunarWard.Installer/` | 安装/修复/校验/预下载/卸载的服务都在，首期只接安装与修复入口 |
+| Q6 | `App/Services/GameScanner.cs` | 扫描 `~/games` 等 + **只读**读取 sleepy-launcher 的 `config.json`；不修改对方目录 |
+| Q7 | `LauncherConfig.Launcher.Style` 默认 `"Modern"` | 设置页可切 `Classic` |
+| Q8 | `packaging/PKGBUILD` + `packaging/lunarward.desktop` | 源码 + Arch 打包；Flatpak 后续 |
+| Q9 | `src/LunarWard.Launch/ExternalProgram.cs` 的 `Trigger` | 只有 `Auto` / `Manual`，`PostLaunch` 之后才可用 |
+| Q10 | `App/Services/BackgroundService.cs` 的 `LogService` + `launch-report.json` | 无 Sentry 之类 |
+| Q11 | `src/LunarWard.App/AppServices.cs` 的 `AcrylicLevel` | 只实现 L2 半透明 + L3 纯色；L1 的 KDE 特化不做 |
+
+验收状态见 `docs/acceptance-2026-10-23.md`，M0 实测结论见 `docs/M0-RESULTS.md`。

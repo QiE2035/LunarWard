@@ -13,9 +13,9 @@
 | HTTP | `System.Net.Http` + `Polly` | 内建 / 8.7.0 | 沿用 Starward 的重试策略 |
 | 解压 | `ZstdSharp.Port` | 0.8.8 | 沿用 Starward |
 | 视频背景 | **`LibVLCSharp.Avalonia`** | 3.10.2 | 见 `04-FEATURES.md` §5.4 |
-| 终端 | Avalonia 终端控件（待选） | — | 见 `06-OPEN-QUESTIONS.md` Q3 |
-| Markdown | `Markdig` | 待核验 | 应用内公告渲染 |
-| VDF（Steam） | 待核验 | — | 见 `06-OPEN-QUESTIONS.md` Q2 |
+| 终端 | `Iciclecreek.Avalonia.Terminal` | 4.1.0 | M0 实测选定（Q3） |
+| Markdown | `Markdig` | 1.4.2 | 应用内公告渲染 |
+| VDF（Steam） | **不引入库** | — | Q2 退化方案：标准路径 + 只抓 `"path"` 行 |
 
 ### 为什么是 Avalonia 而不是 GTK4/GirCore
 
