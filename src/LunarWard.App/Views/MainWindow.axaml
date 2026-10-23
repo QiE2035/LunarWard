@@ -93,13 +93,13 @@
                         <Grid ColumnDefinitions="Auto,180,*,Auto,Auto">
                           <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}" Margin="0,0,8,0" />
                           <TextBox Grid.Column="1" Text="{Binding Name}" Margin="0,0,8,0" />
-                          <TextBox Grid.Column="2" Text="{Binding Path}" Watermark="选择 .exe 或可执行文件" />
+                          <TextBox Grid.Column="2" Text="{Binding Path}" PlaceholderText="选择 .exe 或可执行文件" />
                           <ComboBox Grid.Column="3" ItemsSource="{Binding Triggers}"
                                     SelectedItem="{Binding Trigger}" MinWidth="110" Margin="8,0,0,0" />
                           <Button Grid.Column="4" Classes="toolbar" Content="立即启动"
                                   IsEnabled="{Binding CanStartNow}" Margin="8,0,0,0" />
                         </Grid>
-                        <TextBox Text="{Binding Arguments}" Watermark="参数（支持 %game% %prefix% %exe% 等关键字）" />
+                        <TextBox Text="{Binding Arguments}" PlaceholderText="参数（支持 %game% %prefix% %exe% 等关键字）" />
                         <TextBlock Text="{Binding Warnings}" Classes="error" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Suggestion}" Classes="status"
                                    IsVisible="{Binding Suggestion, Converter={x:Static ObjectConverters.IsNotNull}}" />

@@ -13,7 +13,7 @@ LunarWard —— Linux 下的《原神》/《绝区零》启动器。
 
 | 依赖 | 说明 | 检查命令 |
 |---|---|---|
-| **.NET 10 运行时** | **必须**。发行包不是 self-contained | `dotnet --list-runtimes \| grep 'Microsoft.NETCore.App 10'` |
+| **.NET 10 运行时** | **必须**。发行包不是 self-contained | `dotnet --list-runtimes`（找 `Microsoft.NETCore.App 10.x`） |
 | Linux x64 + 支持复合的桌面 | Wayland / X11 均可 | `echo $XDG_SESSION_TYPE` |
 
 安装 .NET 10 运行时：

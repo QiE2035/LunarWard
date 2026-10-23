@@ -54,7 +54,10 @@ internal static class CaptureMode
                     Math.Max(1, (int)window.Bounds.Height));
                 using var bitmap = new RenderTargetBitmap(size, new Vector(96, 96));
                 bitmap.Render(window);
-                bitmap.Save(path);
+                using (var stream = File.Create(path))
+                {
+                    bitmap.Save(stream, new PngBitmapEncoderOptions());
+                }
                 Console.WriteLine($"SCREENSHOT_OK {path} {size.Width}x{size.Height}");
             }
             catch (Exception ex)

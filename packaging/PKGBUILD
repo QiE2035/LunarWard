@@ -1,0 +1,93 @@
+# Maintainer: LunarWard contributors
+#
+# Arch / CachyOS 打包脚本。
+# 构建：makepkg -si
+# 说明：见 packaging/README.md
+#
+# 注意：本包**不包含**任何游戏补丁二进制（Hk4eTouch / ZZZ-touch-unlocker 等）。
+# 依据 docs/00-DECISIONS.md D11，补丁由用户自备。见 THIRD-PARTY-NOTICES.md §三。
+
+pkgname=lunarward
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Genshin Impact / Zenless Zone Zero launcher for Linux (Starward reimplementation)"
+arch=('x86_64')
+url="https://github.com/lunarward/lunarward"
+license=('MIT')
+depends=('dotnet-runtime>=10.0')
+makedepends=('dotnet-sdk>=10.0')
+optdepends=(
+  'vlc: 动态背景（视频背景需要 libvlc 与 VLC 插件包，Arch 上二者分开）'
+  'hdiffpatch: 差量更新（提供 hpatchz，缺失时回退全量下载）'
+  '7zip: 解包安装（提供 7z/7za，缺失时仅能解普通 .zip）'
+)
+provides=('lunarward')
+conflicts=('lunarward-git')
+options=('!strip')
+source=()
+sha256sums=()
+
+
+# 源码即本仓库。makepkg 在仓库根目录运行时不需要下载任何 source，
+# 所有路径都相对 PKGBUILD 所在目录的上一级（= 仓库根）。
+_repo_root() {
+  realpath "${startdir:-$PWD}/.."
+}
+
+
+build() {
+  cd "$(_repo_root)"
+
+  export DOTNET_CLI_TELEMETRY_OPTOUT=1
+  export DOTNET_NOLOGO=1
+  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+
+  mkdir -p "$pkgdir/usr/lib/lunarward"
+
+  dotnet publish src/LunarWard.App/LunarWard.App.csproj \
+    -c Release \
+    -r linux-x64 \
+    --self-contained false \
+    -o "$pkgdir/usr/lib/lunarward"
+}
+
+
+package() {
+  cd "$(_repo_root)"
+
+  # ── 程序集已在 build() 里落到 $pkgdir/usr/lib/lunarward ──
+  # 复核关键产物存在，避免"publish 静默降级"导致打出空包
+  for f in LunarWard.dll LunarWard.runtimeconfig.json; do
+    if [ ! -f "$pkgdir/usr/lib/lunarward/$f" ]; then
+      error "publish 产物缺失：$pkgdir/usr/lib/lunarward/$f"
+      return 1
+    fi
+  done
+
+  # ── /usr/bin/lunarward 包装脚本 ──
+  install -Dm755 /dev/stdin "$pkgdir/usr/bin/lunarward" <<'LAUNCHER'
+#!/bin/sh
+# LunarWard 启动包装脚本。
+# 用 dotnet 宿主执行托管程序集（包依赖 dotnet-runtime，非 self-contained）。
+exec dotnet /usr/lib/lunarward/LunarWard.dll "$@"
+LAUNCHER
+
+  # ── .desktop 入口 ──
+  install -Dm644 packaging/lunarward.desktop \
+    "$pkgdir/usr/share/applications/lunarward.desktop"
+
+  # ── 图标（.ico 直接放 pixmaps，桌面环境普遍支持） ──
+  install -Dm644 src/LunarWard.App/Assets/lunarward.ico \
+    "$pkgdir/usr/share/pixmaps/lunarward.ico"
+
+  # ── 许可与第三方声明 ──
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 THIRD-PARTY-NOTICES.md \
+    "$pkgdir/usr/share/licenses/$pkgname/THIRD-PARTY-NOTICES.md"
+
+  # ── 文档 ──
+  install -Dm644 docs/USER-GUIDE.md \
+    "$pkgdir/usr/share/doc/$pkgname/USER-GUIDE.md"
+  install -Dm644 docs/TROUBLESHOOTING.md \
+    "$pkgdir/usr/share/doc/$pkgname/TROUBLESHOOTING.md"
+}

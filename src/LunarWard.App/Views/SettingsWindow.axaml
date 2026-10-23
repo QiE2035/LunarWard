@@ -22,7 +22,7 @@
                         MinWidth="140" Margin="0,0,8,0" />
               <ComboBox Grid.Column="1" ItemsSource="{Binding Editions}" SelectedItem="{Binding Edition}" Margin="0,0,8,0" />
               <Button Grid.Column="2" Classes="toolbar" Content="扫描" Command="{Binding ScanGamesCommand}" Margin="0,0,8,0" />
-              <TextBox Grid.Column="3" Text="{Binding GamePath}" Watermark="例如 /home/you/games/hk4e_cn" />
+              <TextBox Grid.Column="3" Text="{Binding GamePath}" PlaceholderText="例如 /home/you/games/hk4e_cn" />
             </Grid>
             <ItemsControl ItemsSource="{Binding DetectedGames}" MaxHeight="150">
               <ItemsControl.ItemTemplate>
