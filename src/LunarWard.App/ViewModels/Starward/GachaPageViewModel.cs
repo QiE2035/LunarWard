@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.App.ViewModels;
@@ -10,18 +11,23 @@ using LunarWard.Platform;
 namespace LunarWard.App.ViewModels.Starward;
 
 /// <summary>
-/// 抽卡记录页（复刻 Starward <c>GachaLogPage</c>）：顶部工具条 + 卡池统计卡片流 + 记录列表。
+/// 抽卡记录页（复刻 Starward <c>Features/Gacha/GachaLogPage.xaml</c>）的数据侧。
 /// </summary>
 /// <remarks>
 /// <para>
-/// 拉取、链接定位、统计全部复用既有实现：<see cref="GachaService.FindGachaUrl"/> /
-/// <see cref="GachaService.FetchAsync"/> / <see cref="GachaService.ComputeStatistics"/>。
-/// 页面 VM <b>不重算</b>任何统计，只把 <see cref="GachaService.ComputeStatistics"/> 的结果
-/// （<see cref="GachaPoolViewModel"/>）包成可本地化的卡片。
+/// 页面结构照 GachaLogPage：44px 页头（标题 = <see cref="GachaTypeText"/>、UID ComboBox、
+/// 更新记录、设置、Pane 按钮）+ SplitView（右侧 Pane = 材料统计）。
+/// 卡池卡片对应 <c>GachaStatsCard</c>，见 <see cref="GachaPoolCardViewModel"/>。
 /// </para>
 /// <para>
-/// 版式见 <c>docs/07-UI-REPLICA.md</c> §5；Starward 的统计卡对应
-/// <c>Features/Gacha/GachaStatsCard.xaml</c>（圆角 8、卡池名 + 抽数 + 5★ 统计 + 出金列表）。
+/// 拉取、定位、统计全部复用既有实现：<see cref="GachaService.FindGachaUrl"/> /
+/// <see cref="GachaService.FetchAsync"/> / <see cref="GachaService.ComputeStatistics"/>。
+/// 页面 VM <b>不重算</b>统计口径，只把结果按 Starward 的 <c>GachaTypeStats</c> 整形。
+/// </para>
+/// <para>
+/// 与 Starward 的已知差异（详见实现报告）：
+/// 记录只在本页内存中（无数据库），所以没有「按时间段删除」；
+/// <c>GachaRecord</c> 没有 <c>ItemId</c>，材料统计按名称分组、<c>up!</c> 不显示。
 /// </para>
 /// </remarks>
 public sealed partial class GachaPageViewModel : StarwardPageViewModel
@@ -35,6 +41,13 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     private readonly string _gameKind;
 
     private IReadOnlyList<GachaRecord> _allRecords = [];
+
+    /// <summary>「隐藏卡池」勾选项（空集合 = 显示全部，语义同 Starward GachaLogPage.xaml.cs:381-384）。</summary>
+    private readonly HashSet<int> _selectedPools = [];
+
+    private bool _suppressUidRebuild;
+
+    private bool _suppressBannerCallback;
 
     private bool _disposed;
 
@@ -52,7 +65,9 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         _gameBiz = definition?.GameBiz ?? "hk4e_cn";
 
         Pools = [];
-        Records = [];
+        ItemStats = [];
+        UidList = [];
+        BannerOptions = [];
 
         // 打开页面只定位链接，不自动拉取（避免一进页面就打网络，与旧窗口行为一致）
         var url = GachaService.FindGachaUrl(_gameDirectory, new LunarWard.Core.GameBiz(_gameBiz), out var error);
@@ -83,82 +98,102 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     }
 
 
-    // ── 状态 ──────────────────────────────────────────────────────────
+    // ── 页头 ──────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 页头标题 = Starward <c>GachaLogService.GetGachaLogText(CurrentGameBiz)</c>：
+    /// 原神「祈愿记录」、绝区零「调频记录」。
+    /// </summary>
+    public string GachaTypeText => _gameKind == "zzz"
+        ? Strings["Gacha.LogTitle.Zzz"]
+        : Strings["Gacha.LogTitle.Genshin"];
 
     /// <summary>抽卡链接（来自游戏网页缓存，可手工粘贴）。</summary>
     [ObservableProperty]
     private string _gachaUrl = "";
 
-
     /// <summary>次要色状态行（读取进度 / 已定位 / 导出结果）。</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasStatus))]
+    [NotifyPropertyChangedFor(nameof(ShowStatusArea))]
     private string _statusText = "";
 
     /// <summary>状态行是否有内容（空时不占高度）。</summary>
     public bool HasStatus => !string.IsNullOrWhiteSpace(StatusText);
-
 
     [ObservableProperty]
     private string? _errorText;
 
     public bool HasError => !string.IsNullOrEmpty(ErrorText);
 
-    partial void OnErrorTextChanged(string? value) => OnPropertyChanged(nameof(HasError));
+    partial void OnErrorTextChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasError));
+        OnPropertyChanged(nameof(ShowStatusArea));
+    }
 
+    /// <summary>状态行或错误条任一有内容 → 页头下方的那一块才占高度。</summary>
+    public bool ShowStatusArea => HasStatus || HasError;
 
     [ObservableProperty]
     private bool _isBusy;
 
-
+    /// <summary>右侧材料统计 Pane 是否展开（Starward <c>SplitView_Content.IsPaneOpen</c>）。</summary>
     [ObservableProperty]
-    private string _summaryText = "";
+    private bool _isPaneOpen;
 
-
-    /// <summary>只显示 5★ 记录。</summary>
+    /// <summary>当前选中的 UID（Starward <c>SelectUid</c>；Starward 从数据库取，这里从本次记录取）。</summary>
     [ObservableProperty]
-    private bool _fiveStarsOnly;
+    private long? _selectUid;
 
-    partial void OnFiveStarsOnlyChanged(bool value) => ApplyFilter();
+    partial void OnSelectUidChanged(long? value)
+    {
+        if (!_suppressUidRebuild)
+        {
+            Rebuild();
+        }
+    }
 
 
     // ── 数据 ──────────────────────────────────────────────────────────
 
-    /// <summary>卡池统计卡（数据来自 <see cref="GachaPoolViewModel"/>，不重算）。</summary>
+    /// <summary>卡池统计卡（数据来自 <see cref="GachaService.ComputeStatistics"/>）。</summary>
     public ObservableCollection<GachaPoolCardViewModel> Pools { get; }
 
-    /// <summary>记录行（跨游戏统一形态）。</summary>
-    public ObservableCollection<GachaRecordViewModel> Records { get; }
+    /// <summary>右侧 Pane 的材料统计（Starward <c>GachaItemStats</c>）。</summary>
+    public ObservableCollection<GachaItemStatsViewModel> ItemStats { get; }
+
+    /// <summary>页头 UID 下拉（Starward <c>UidList</c>）。</summary>
+    public ObservableCollection<long> UidList { get; }
+
+    /// <summary>「隐藏卡池」Flyout 的候选项。</summary>
+    public ObservableCollection<GachaBannerViewModel> BannerOptions { get; }
 
     public bool HasPools => Pools.Count > 0;
 
-    public bool HasRecords => Records.Count > 0;
+    public bool HasItemStats => ItemStats.Count > 0;
 
-    /// <summary>是否已经拉到任何记录（与"当前过滤后是否为空"区分）。</summary>
-    public bool HasData => _allRecords.Count > 0;
+    public bool HasBannerOptions => BannerOptions.Count > 0;
 
-    /// <summary>一条记录都没有 → 整块空态。</summary>
-    public bool ShowEmptyState => !HasData;
+    public bool HasUids => UidList.Count > 0;
 
-    /// <summary>有记录，但被「只看 5 星」过滤空了 → 列表区内的小提示，而不是整页空态。</summary>
-    public bool ShowFilteredEmpty => HasData && !HasRecords;
+    /// <summary>是否已经拉到任何记录（Starward 用 <c>GachaTypeStats</c> 是否存在判断）。</summary>
+    public bool HasRecords => _allRecords.Count > 0;
 
-    /// <summary>
-    /// 空态副标题：固定讲"怎么把记录弄出来"。
-    /// </summary>
-    /// <remarks>
-    /// 具体失败原因（没设游戏目录、缓存里没链接）由上面的错误条负责，
-    /// 这里不重复说同一件事，否则两行文字打架。
-    /// </remarks>
-    public string EmptyDetail => Strings["Gacha.EmptyDetail"];
-
-    public string RecordCountText => string.Format(Strings["Gacha.RecordCount"], Records.Count);
-
-    /// <summary>游戏标题（Starward 页头左侧的 20px 文本）。</summary>
-    public string GameName => Profile.DisplayName;
+    /// <summary>没有任何记录 → 整页居中空态（Starward StackPanel_Emoji）。</summary>
+    public bool ShowEmptyState => !HasRecords;
 
 
-    // ── UIGF 入口 ────────────────────────────────────────────────────
+    // ── 设置 Flyout 文案 / 占位状态 ────────────────────────────────────
+
+    /// <summary>旧版导出格式名（Starward GachaLogPage.xaml.cs:59-70）：原神 UIGF v3.0，绝区零 JSON。</summary>
+    public string LegacyFormatName => _gameKind == "zzz" ? "JSON" : "UIGF v3.0";
+
+    /// <summary>「从 UIGF v3.0 导入」按钮文字（Starward <c>LegacyImportText</c>）。</summary>
+    public string LegacyImportText => string.Format(Strings["Gacha.ImportFromLegacy"], LegacyFormatName);
+
+    /// <summary>抽卡语言（Starward <c>GachaLanguage</c> 默认跟随链接的 lang）。</summary>
+    public string GachaLanguage => "zh-cn";
 
     /// <summary>
     /// UIGF v4 导入导出是否可用。
@@ -171,27 +206,18 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
 
     public string UigfHint => Strings["Gacha.UigfPending"];
 
+    /// <summary>UIGF/JSON 导入是否可用（Starward 走 ImportGachaLogCommand；本仓库还没有实现）。</summary>
+    public bool IsImportAvailable => false;
+
+    public string ImportHint => Strings["Gacha.ImportPending"];
+
+    /// <summary>抽卡语言切换是否可用（需要 LunarWard.Core 透传 lang 参数）。</summary>
+    public bool IsLanguageChangeAvailable => false;
+
+    public string LanguageHint => Strings["Gacha.LanguagePending"];
+
 
     // ── 主操作 ────────────────────────────────────────────────────────
-
-    /// <summary>有链接才能读取记录；没有时强调色给「重新定位」。</summary>
-    public bool IsFetchPrimary => !string.IsNullOrWhiteSpace(GachaUrl) && !IsBusy;
-
-    /// <summary>没有链接时的主操作是「重新定位」。</summary>
-    public bool IsRelocatePrimary => !IsFetchPrimary;
-
-    partial void OnGachaUrlChanged(string value) => RaisePrimaryChanged();
-
-    partial void OnIsBusyChanged(bool value) => RaisePrimaryChanged();
-
-    private void RaisePrimaryChanged()
-    {
-        OnPropertyChanged(nameof(IsFetchPrimary));
-        OnPropertyChanged(nameof(IsRelocatePrimary));
-    }
-
-
-    // ── 命令 ──────────────────────────────────────────────────────────
 
     [RelayCommand]
     private void Relocate()
@@ -240,6 +266,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
             }
 
             _allRecords = records;
+            RebuildUidList();
             Rebuild();
             StatusText = string.Format(Strings["Gacha.FetchDone"], _allRecords.Count);
         }
@@ -286,55 +313,214 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     }
 
 
+    /// <summary>
+    /// 打开网页缓存文件夹（Starward <c>DeleteGachaCacheFolderCommand</c>：
+    /// 名字叫"删除"，实现其实是打开 <c>webCaches</c> 所在目录，让用户自己删）。
+    /// </summary>
+    [RelayCommand]
+    private void OpenCacheFolder()
+    {
+        try
+        {
+            var path = LunarWard.Core.Gacha.GachaLogClient.GetWebCachesFolderPath(
+                new LunarWard.Core.GameBiz(_gameBiz), _gameDirectory);
+            if (!Directory.Exists(path))
+            {
+                ErrorText = Strings["Gacha.CacheFolderMissing"];
+                return;
+            }
+
+            var info = new ProcessStartInfo { FileName = "xdg-open", UseShellExecute = false };
+            info.ArgumentList.Add(path);
+            using var process = Process.Start(info);
+            ErrorText = null;
+        }
+        catch (Exception ex)
+        {
+            ErrorText = ex.Message;
+        }
+    }
+
+
+    /// <summary>Pane 按钮（Starward <c>OpenItemStatsPaneCommand</c>）：切换材料统计侧栏。</summary>
+    [RelayCommand]
+    private void ToggleItemStatsPane() => IsPaneOpen = !IsPaneOpen;
+
+
+    /// <summary>删除记录 → 全部删除（记录只在内存里，清掉即回到空态）。</summary>
+    [RelayCommand]
+    private void ClearRecords()
+    {
+        _allRecords = [];
+        _selectedPools.Clear();
+
+        _suppressUidRebuild = true;
+        UidList.Clear();
+        SelectUid = null;
+        _suppressUidRebuild = false;
+
+        _suppressBannerCallback = true;
+        BannerOptions.Clear();
+        _suppressBannerCallback = false;
+
+        Rebuild();
+        ErrorText = null;
+        StatusText = Strings["Gacha.RecordsCleared"];
+
+        OnPropertyChanged(nameof(HasUids));
+        OnPropertyChanged(nameof(HasBannerOptions));
+    }
+
+
+    /// <summary>剪贴板复制成功后的状态提示（剪贴板只能从视图层拿，见 GachaPage.axaml.cs）。</summary>
+    public void NotifyUrlCopied()
+    {
+        ErrorText = null;
+        StatusText = Strings["Gacha.CopyUrlDone"];
+    }
+
+
+    /// <summary>视图层操作失败时的统一入口。</summary>
+    public void NotifyError(string message)
+    {
+        StatusText = "";
+        ErrorText = message;
+    }
+
+
     // ── 内部 ──────────────────────────────────────────────────────────
+
+    private void RebuildUidList()
+    {
+        _suppressUidRebuild = true;
+        UidList.Clear();
+        foreach (var uid in _allRecords
+                     .Select(r => r.Uid)
+                     .Where(uid => uid > 0)
+                     .Distinct()
+                     .OrderBy(uid => uid))
+        {
+            UidList.Add(uid);
+        }
+
+        SelectUid = UidList.Count > 0 ? UidList[0] : null;
+        _suppressUidRebuild = false;
+        OnPropertyChanged(nameof(HasUids));
+    }
+
 
     private void Rebuild()
     {
         Pools.Clear();
-        foreach (var statistics in GachaService.ComputeStatistics(_allRecords))
+        ItemStats.Clear();
+
+        var records = SelectUid is long uid && uid > 0
+            ? _allRecords.Where(r => r.Uid == uid).ToList()
+            : _allRecords.ToList();
+
+        var stats = GachaService.ComputeStatistics(records);
+        var byType = records
+            .GroupBy(r => r.GachaType)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<GachaRecord>)g.ToList());
+
+        foreach (var statistics in stats)
         {
-            Pools.Add(new GachaPoolCardViewModel(new GachaPoolViewModel(statistics)));
+            if (_selectedPools.Count > 0 && !_selectedPools.Contains(statistics.GachaType))
+            {
+                continue;
+            }
+
+            Pools.Add(new GachaPoolCardViewModel(
+                statistics,
+                byType[statistics.GachaType],
+                PoolText(statistics.GachaType),
+                Strings["Gacha.Pity"]));
         }
 
-        ApplyFilter();
-        UpdateSummary();
+        // Starward GachaLogService.cs:251-256：按 ItemId 分组 → 稀有度降序、次数降序、时间降序。
+        // 这里没有 ItemId，按名称分组。
+        foreach (var group in records
+                     .GroupBy(r => r.Name)
+                     .Select(g => new
+                     {
+                         Name = g.Key,
+                         RankType = g.Max(r => r.RankType),
+                         Count = g.Count(),
+                         Time = g.Max(r => r.Time),
+                     })
+                     .OrderByDescending(x => x.RankType)
+                     .ThenByDescending(x => x.Count)
+                     .ThenByDescending(x => x.Time))
+        {
+            ItemStats.Add(new GachaItemStatsViewModel(group.Name, group.RankType, group.Count));
+        }
+
+        SyncBannerOptions(stats);
 
         OnPropertyChanged(nameof(HasPools));
-    }
-
-
-    private void ApplyFilter()
-    {
-        Records.Clear();
-        var source = FiveStarsOnly
-            ? GachaService.GetFiveStars(_allRecords, max: 200)
-            : _allRecords.OrderByDescending(r => r.Time).Take(500);
-
-        foreach (var record in source)
-        {
-            Records.Add(new GachaRecordViewModel(record));
-        }
-
+        OnPropertyChanged(nameof(HasItemStats));
         OnPropertyChanged(nameof(HasRecords));
-        OnPropertyChanged(nameof(HasData));
         OnPropertyChanged(nameof(ShowEmptyState));
-        OnPropertyChanged(nameof(ShowFilteredEmpty));
-        OnPropertyChanged(nameof(EmptyDetail));
-        OnPropertyChanged(nameof(RecordCountText));
     }
 
 
-    private void UpdateSummary()
+    /// <summary>
+    /// 卡池类型 → 显示名。Starward 用 <c>IGachaType.ToLocalization()</c>；
+    /// 这里从 AppStrings 取同义文案，查不到时退回 <see cref="GachaService.GetPoolName"/>。
+    /// </summary>
+    private string PoolText(int gachaType)
     {
-        if (_allRecords.Count == 0)
+        var key = (_gameKind == "zzz" ? "Gacha.Pool.Zzz." : "Gacha.Pool.Genshin.") + gachaType;
+        var text = Strings[key];
+        return text == key ? GachaService.GetPoolName(_gameKind, gachaType) : text;
+    }
+
+
+    private void SyncBannerOptions(IReadOnlyList<GachaPoolStatistics> stats)
+    {
+        var types = stats.Select(s => s.GachaType).ToList();
+        var sameSet = BannerOptions.Count == types.Count
+                      && BannerOptions.Select(b => b.Value).SequenceEqual(types);
+        if (sameSet)
         {
-            SummaryText = Strings["Gacha.SummaryEmpty"];
             return;
         }
 
-        var total = _allRecords.Count;
-        var fiveStars = _allRecords.Count(r => r.IsFiveStar);
-        SummaryText = string.Format(Strings["Gacha.Summary"], total, fiveStars, $"{(double)fiveStars / total:P1}");
+        _suppressBannerCallback = true;
+        BannerOptions.Clear();
+        foreach (var statistics in stats)
+        {
+            BannerOptions.Add(new GachaBannerViewModel(
+                statistics.GachaType,
+                PoolText(statistics.GachaType),
+                OnBannerSelectionChanged)
+            {
+                IsSelected = _selectedPools.Contains(statistics.GachaType),
+            });
+        }
+
+        _suppressBannerCallback = false;
+        OnPropertyChanged(nameof(HasBannerOptions));
+    }
+
+
+    private void OnBannerSelectionChanged(GachaBannerViewModel banner)
+    {
+        if (_suppressBannerCallback)
+        {
+            return;
+        }
+
+        if (banner.IsSelected)
+        {
+            _selectedPools.Add(banner.Value);
+        }
+        else
+        {
+            _selectedPools.Remove(banner.Value);
+        }
+
+        Rebuild();
     }
 
 
@@ -343,6 +529,8 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         _disposed = true;
         _allRecords = [];
         Pools.Clear();
-        Records.Clear();
+        ItemStats.Clear();
+        UidList.Clear();
+        BannerOptions.Clear();
     }
 }

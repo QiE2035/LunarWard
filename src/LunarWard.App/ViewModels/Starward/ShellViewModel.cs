@@ -69,6 +69,43 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     public ObservableCollection<GameChoiceViewModel> GameChoices { get; } = [];
 
 
+    /// <summary>
+    /// 左上角横排游戏图标条（Starward GameSelector 的 <c>Grid_GameIconsArea</c>）：
+    /// 平时收起，鼠标移到当前游戏图标上时滑出；全屏选择层打开时保持可见。
+    /// </summary>
+    [ObservableProperty]
+    private bool _isGameIconsVisible;
+
+
+    /// <summary>鼠标进入左上角当前游戏图标。</summary>
+    public void ShowGameIcons() => IsGameIconsVisible = true;
+
+
+    /// <summary>鼠标离开图标条。全屏选择层打开时不收起（Starward 同款判断）。</summary>
+    public void HideGameIcons()
+    {
+        if (IsGameSelectorOpen)
+        {
+            return;
+        }
+
+        IsGameIconsVisible = false;
+    }
+
+
+    /// <summary>点击图标条里的游戏：切档案并收起图标条（Starward <c>Grid_GameIcon_Tapped</c>）。</summary>
+    [RelayCommand]
+    private async Task SelectGameIcon(GameChoiceViewModel choice)
+    {
+        // ChooseGameAsync 可能新建档案并重载 GameChoices，当前标记由 ReloadProfiles 统一维护。
+        await ChooseGameAsync(choice).ConfigureAwait(true);
+        if (!IsGameSelectorOpen)
+        {
+            IsGameIconsVisible = false;
+        }
+    }
+
+
     // ── 导航 ──────────────────────────────────────────────────────────
 
     [ObservableProperty]
@@ -168,12 +205,17 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     {
         BuildGameChoices();
         IsGameSelectorOpen = true;
+        ShowGameIcons();
         _ = LoadChoiceArtAsync();
     }
 
 
     [RelayCommand]
-    private void CloseGameSelector() => IsGameSelectorOpen = false;
+    private void CloseGameSelector()
+    {
+        IsGameSelectorOpen = false;
+        HideGameIcons();
+    }
 
 
     /// <summary>选择一个档案（或为未安装的游戏新建档案）。</summary>
@@ -236,6 +278,11 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         Profile = item;
         _services.Config.Launcher.LastProfileIndex = Profiles.IndexOf(item);
         SaveConfig();
+
+        foreach (var choice in GameChoices)
+        {
+            choice.IsCurrent = choice.SourceProfileId == item.Id;
+        }
 
         _ = LoadArtAsync();
         GameChanged?.Invoke(this, EventArgs.Empty);
@@ -403,6 +450,13 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         {
             _services.Config.Launcher.LastProfileIndex = Profiles.IndexOf(Profile);
         }
+
+        // 左上角图标条与全屏选择层共用 GameChoices：档案变化后重建，并标出当前游戏。
+        BuildGameChoices();
+        foreach (var choice in GameChoices)
+        {
+            choice.IsCurrent = choice.SourceProfileId == Profile?.Id;
+        }
     }
 
 
@@ -432,6 +486,12 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             await Assets.LoadAllLaunchersAsync(Profiles.Select(LauncherIdFor).Distinct()).ConfigureAwait(true);
             foreach (var choice in GameChoices)
             {
+                // 图标条用 40×40 方形图标（GameArt.Icon），全屏卡片用 192×108 缩略图 + Logo。
+                if (await Assets.BitmapAsync(Assets.For(choice.GameBiz)?.Icon).ConfigureAwait(true) is { } icon)
+                {
+                    choice.Icon = icon;
+                }
+
                 if (await Assets.CardArtAsync(choice.GameBiz).ConfigureAwait(true) is not { } art)
                 {
                     continue;
@@ -519,6 +579,7 @@ public sealed partial class GameChoiceViewModel : ObservableObject
 {
     public GameChoiceViewModel(ProfileItemViewModel profile, Games.GameDefinition? definition)
     {
+        SourceProfileId = profile.Id;
         ProfileId = profile.IsInstalled ? profile.Id : null;
         Definition = definition;
         Name = profile.DisplayName;
@@ -527,6 +588,9 @@ public sealed partial class GameChoiceViewModel : ObservableObject
         IsCurrent = false;
     }
 
+
+    /// <summary>来源档案 id（即使未安装也有值；用于图标条的当前游戏标记）。</summary>
+    public string SourceProfileId { get; }
 
     public string? ProfileId { get; }
 
@@ -538,7 +602,16 @@ public sealed partial class GameChoiceViewModel : ObservableObject
 
     public bool IsInstalled { get; }
 
-    public bool IsCurrent { get; set; }
+    /// <summary>是否当前档案（10×10 强调色点在图标条里标记）。</summary>
+    [ObservableProperty]
+    private bool _isCurrent;
+
+    /// <summary>40×40 方形游戏图标（Starward <c>GameBizIcon.GameIcon</c>）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasIcon))]
+    private Bitmap? _icon;
+
+    public bool HasIcon => Icon is not null;
 
     /// <summary>Starward 卡片背景（缩略图 192×108）。</summary>
     [ObservableProperty]

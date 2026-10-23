@@ -131,5 +131,77 @@
               Content="{Binding Strings[Shell.Close]}"
               Command="{Binding CloseGameSelectorCommand}" />
     </Grid>
+
+    <!--
+      ── 横排游戏图标条（Starward GameSelector 的 Grid_GameIconsArea）─────────
+      Margin 56,0,0,0 / Height 60 / Padding 6,0,12,0；
+      图标 40×40、CornerRadius 8、每项 Padding 6,8（ListViewItem 的 ContentMargin）；
+      未选中的图标盖 #60000000 遮罩，当前图标与悬停图标无遮罩（MaskOpacity 0/1）。
+      平时 Translation -100 收起，悬停左上角当前游戏图标滑出；全屏选择层打开时保持可见。
+      以 IsVisible 代替 Translation 动画（Avalonia 侧栏动画在 docs/07 §8 记为已知偏差）。
+    -->
+    <Grid x:Name="GameIconsArea"
+          Margin="56,0,0,0"
+          Height="60"
+          HorizontalAlignment="Left"
+          VerticalAlignment="Top"
+          IsVisible="{Binding IsGameIconsVisible}"
+          PointerExited="OnGameIconsAreaPointerExited">
+
+      <Grid.Styles>
+        <Style Selector="Button.game-icon">
+          <Setter Property="Width" Value="40" />
+          <Setter Property="Height" Value="40" />
+          <Setter Property="Margin" Value="6,8" />
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="CornerRadius" Value="8" />
+          <Setter Property="BorderThickness" Value="0" />
+          <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <!-- 未选中/未悬停：压暗（Starward MaskOpacity 默认 1.0） -->
+        <Style Selector="Button.game-icon Border.icon-mask">
+          <Setter Property="Opacity" Value="1" />
+        </Style>
+
+        <!-- 当前游戏：不压暗（GameBizIcon.IsSelected → MaskOpacity 0） -->
+        <Style Selector="Button.game-icon.current Border.icon-mask">
+          <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <!-- 悬停：不压暗（Grid_GameIcon_PointerEntered → MaskOpacity 0） -->
+        <Style Selector="Button.game-icon:pointerover Border.icon-mask">
+          <Setter Property="Opacity" Value="0" />
+        </Style>
+      </Grid.Styles>
+
+      <!-- Starward Grid_GameIconsArea 的 Padding="6,0,12,0"（Avalonia Grid 无 Padding，落在内容上） -->
+      <ItemsControl ItemsSource="{Binding GameChoices}"
+                    Margin="6,0,12,0"
+                    VerticalAlignment="Top">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:GameChoiceViewModel">
+            <Button Classes="game-icon"
+                    Classes.current="{Binding IsCurrent}"
+                    Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).SelectGameIconCommand}"
+                    CommandParameter="{Binding}"
+                    ToolTip.Tip="{Binding Title}">
+              <Panel>
+                <Border CornerRadius="8" Background="#33FFFFFF" />
+                <Image Width="40" Height="40" Source="{Binding Icon}" Stretch="UniformToFill"
+                       IsVisible="{Binding HasIcon}" />
+                <TextBlock Classes="icon" FontSize="20" Text="&#xE8A9;" IsVisible="{Binding !HasIcon}" />
+                <Border Classes="icon-mask" Background="#60000000" CornerRadius="8" />
+              </Panel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Grid>
   </Grid>
 </UserControl>

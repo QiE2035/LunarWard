@@ -100,8 +100,9 @@
    切 profile + 背景 + 公告 + 页面数据全部重载；ESC 或点空白关闭。
 3. **开始按钮**：文案/可用性由启动相位决定（沿用 `LaunchButtonState`）；悬停 300ms
    弹出游戏信息气泡（运行中显示 pid/时长）；忙碌时左侧转圈；运行中点击 = 停止。
-4. **公告卡**：Banner 左右切换用 PipsPager，无自动轮播（Starward 无 timer）；
-   Pivot 页签点击切换列表；公告铃铛打开公告窗口。
+4. **公告卡**：Banner 5s 自动轮播（Starward `GameBannerAndPost.xaml.cs` 的
+   `DispatcherQueueTimer`），悬停暂停并显示 `1/N` 计数，移出恢复；Pivot 页签点击
+   切换列表；公告铃铛打开公告窗口。（本行旧文写"无 timer"是错的，见 08 §2。）
 5. **背景**：默认使用当前游戏的官方背景图（HoYoPlay `getGames` 的
    `background`/`backgrounds`），本地自定义背景优先；悬停底部出现切换条；视频背景
    用 LibVLCSharp（已实现），启动游戏时暂停、退出恢复。
@@ -115,10 +116,10 @@
 |---|---|---|
 | 启动器 | `GameLauncherPage` | 公告三源 ✅、开始/停止 ✅、时长 ✅、背景 ✅、便笺 ✅、账号切换 ✅、URL 协议 ✅ |
 | 游戏设置 | `GameSettingPage` | **追加**：wine 运行时选择 ✅、十层 env 表 ✅、外部程序（Auto/Manual/三态 env/PreWrites）✅、启动参数、区服（config.ini）✅、诊断 ✅、环境 shell ✅ |
-| 游戏截图 | `ScreenshotPage` | 截图网格 + 预览 + 导出 ✅ |
-| 抽卡记录 | `GachaPage` | 拉取/统计/卡池卡片/记录列表/导出 ✅（UIGF 追加） |
-| 工具箱 | `ToolboxPage` | 每日便笺 ✅、账号记录 ✅（作为两个 Tab，Starward 工具箱同构） |
-| 账号记录 | 并入工具箱 | — |
+| 游戏截图 | `ScreenshotPage` | `ScreenshotPage2` 磁贴墙（204×115、间距 12）+ 点击预览；`ImageViewWindow2` 待移植 |
+| 抽卡记录 | `GachaPage` | `GachaLogPage` 44px 页头 + SplitView + `GachaStatsCard`；拉取/导出/UIGF 追加 |
+| 工具箱 | `GameRecordPage`（待 1:1 重写） | Starward 是游戏记录总览；LunarWard 当前把便笺/账号做成 Tab（自创，见 08 §1） |
+| 账号记录 | `SelfQueryPage`（待恢复独立页） | Starward 主视图有独立导航项，不并入工具箱 |
 | 设置 | `SettingPage` | 关于、通用（语言/主题/关闭行为）、下载、文件管理、截图、快捷键、高级（env 默认值/包装器/日志/更新通道）、工具箱 |
 | 安装/更新 | `InstallGameDialog` | 移植 `LunarWard.Installer`，M8 收尾 |
 

@@ -27,6 +27,7 @@ internal static class Program
             CaptureMode.Page = ReadArgument(args, "--page");
             CaptureMode.ProfileId = ReadArgument(args, "--profile");
             CaptureMode.OpenSelector = args.Contains("--open-selector");
+            CaptureMode.GameIcons = args.Contains("--game-icons");
             CaptureMode.Tab = ReadArgument(args, "--tab");
             CaptureMode.Language = ReadArgument(args, "--lang");
             CaptureMode.ExpandRail = args.Contains("--expand-rail");
@@ -83,6 +84,9 @@ internal static class CaptureMode
 
     /// <summary>截图前打开游戏选择层。</summary>
     public static bool OpenSelector { get; set; }
+
+    /// <summary>截图前展开左上角横排游戏图标条（模拟悬停当前游戏图标）。</summary>
+    public static bool GameIcons { get; set; }
 
     /// <summary>工具箱页的 Tab：<c>note</c>（默认）/ <c>accounts</c>。</summary>
     public static string? Tab { get; set; }

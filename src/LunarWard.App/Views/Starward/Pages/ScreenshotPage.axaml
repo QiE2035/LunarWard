@@ -6,284 +6,271 @@
              x:DataType="vm:ScreenshotPageViewModel">
 
   <!--
-    复刻 Starward Features/Screenshot/ScreenshotPage2.xaml（顶部 44px 工具条 + 内容区）。
-    本页按 docs/07-UI-REPLICA.md 的页面合同做成「左 360 列表 + 右大预览」：
-      - 工具条：标题 20（Starward FontSize=20）+ 截图目录（12 次要色，可复制）
-                + 刷新 / 导出选中 / 打开目录
-      - 左栏 360：ListBox，行高 44，文件名 14 + 时间 12 次要色，选中左强调条 3×16
-      - 右侧：Image Stretch=Uniform 居中；空态 64+ 图标 + 说明
-      - 底部：截图目录来源说明（12px 次要色）
-    颜色/字号全部取自 Styles/Starward.axaml，页面内不写裸色值。
+    复刻 Starward Features/Screenshot/ScreenshotPage2.xaml（1:1 结构，不是「受启发」的重设计）：
+      Row0 44px 页头（源码 130-150 行）
+        · 标题：Margin 24,0,0,0 / 左对齐 / 垂直居中 / FontSize 20 / Bold
+        · 右侧 StackPanel：Margin 0,0,38,0 / HorizontalAlignment Right / Spacing 16，
+          里面只有「管理截图文件夹」按钮（Starward 全页唯一的按钮）
+      Row1 磁贴墙：ItemsView + UniformGridLayout（源码 169-282 行）
+        · Padding 24,0,0,12（:171）
+        · MinColumnSpacing 12 / MinItemHeight 115 / MinItemWidth 204 / MinRowSpacing 12（:177-180）
+        · 每项：圆角 4（:188）、ClipToBounds（:186）、背景 ControlAltFillColorTertiary（:197）
+        · 缩略图居中（:194-201）、悬停信息层（#60000000 + 时间 12px #F3F3F3，:206-232）
+    空态：StackPanel 居中 Spacing 16 + 160×160 图标 + 16px 次要色文案（源码 153-166 行）。
+    AnnotatedScrollBar（源码 285-312）尚未移植，暂用普通滚动条，见 docs/07 §8。
   -->
+
+  <UserControl.Resources>
+    <!-- Starward ScreenshotPage2.xaml:207 Grid_ImageInfo Background="#60000000" -->
+    <SolidColorBrush x:Key="ScreenshotTileInfoBackground" Color="#60000000" />
+    <!-- Starward ScreenshotPage2.xaml:229 时间文字 Foreground="#F3F3F3" -->
+    <SolidColorBrush x:Key="ScreenshotTileTimeForeground" Color="#F3F3F3" />
+  </UserControl.Resources>
 
   <UserControl.Styles>
     <!--
-      页面局部覆盖 card：Starward 的卡片在能模糊时是 CustomAcrylicBrush（半透明 + 模糊）。
-      Linux 上没有模糊，用 Starward 自己的 Fallback 值 #F52C2C2C 才压得住背景图上的文字。
-      这里只改本页作用域，不动 Styles/Starward.axaml。
+      磁贴外壳（Starward Grid_ImageItem，:185-192）：圆角 4 + ClipToBounds。
+      Avalonia 的 Grid 没有 CornerRadius，用 Border 承载圆角，内部结构不变。
     -->
-    <Style Selector="Border.card">
-      <Setter Property="Background" Value="{StaticResource StarAcrylicBrush}" />
-    </Style>
-
-    <!-- 截图列表：行高 44、选中态左侧 3px 强调条（Starward 的 ListBoxItem 选中语义） -->
-    <Style Selector="ListBox#ScreenshotList ListBoxItem">
-      <Setter Property="MinHeight" Value="44" />
-      <Setter Property="Padding" Value="0" />
-      <Setter Property="Margin" Value="0,0,0,2" />
+    <Style Selector="Border.tile">
       <Setter Property="CornerRadius" Value="4" />
-      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="ClipToBounds" Value="True" />
     </Style>
 
-    <Style Selector="ListBox#ScreenshotList ListBoxItem:selected /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource StarSelectionBrush}" />
+    <!--
+      悬停信息层（Starward Grid_ImageInfo，:206-208 + Storyboard :235-251）：
+      Starward 用 0.6s 的 DoubleAnimation 把 Opacity 0→1；Avalonia 用等价的
+      DoubleTransition。另外 Starward 还会把缩略图放大到 1.2，Avalonia 12 没有
+      等价的 Transform 过渡，这部分未移植（记录在 docs/07 §8）。
+    -->
+    <Style Selector="Grid.info">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.6" />
+        </Transitions>
+      </Setter>
     </Style>
 
-    <Style Selector="ListBox#ScreenshotList ListBoxItem:pointerover /template/ ContentPresenter">
+    <Style Selector="Border.tile:pointerover Grid.info">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <!-- Flyout 里的三行操作（LunarWard 追加，见页头按钮注释） -->
+    <Style Selector="Button.flyout-row">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="11,6" />
+    </Style>
+
+    <Style Selector="Button.flyout-row /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="Button.flyout-row:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
-    </Style>
-
-    <!-- 选中强调条默认隐藏，选中时出现（与导航栏 3×16 的竖条同构） -->
-    <Style Selector="Border.accent-bar">
-      <Setter Property="IsVisible" Value="False" />
-      <Setter Property="Background" Value="{StaticResource StarAccentBrush}" />
-    </Style>
-
-    <Style Selector="ListBoxItem:selected Border.accent-bar">
-      <Setter Property="IsVisible" Value="True" />
     </Style>
   </UserControl.Styles>
 
-  <Grid RowDefinitions="44,*,Auto">
+  <Grid RowDefinitions="44,*">
 
-    <!-- ══ 顶部工具条（Starward：标题左、操作右，行高 44） ═══════════════ -->
-    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="24,0,24,0" ColumnSpacing="16">
+    <!-- ══ 页头（Starward :137-150） ═════════════════════════════════════ -->
+    <TextBlock Grid.Row="0"
+               Margin="24,0,0,0"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Center"
+               FontSize="20"
+               FontWeight="Bold"
+               Text="{Binding Strings[Screenshot.Title]}" />
 
-      <TextBlock Grid.Column="0"
-                 VerticalAlignment="Center"
-                 Classes="section"
-                 Text="{Binding Strings[Screenshot.Title]}" />
+    <StackPanel Grid.Row="0"
+                Margin="0,0,38,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="16">
 
-      <!-- 截图目录：12px 次要色 + 复制路径 -->
-      <Border Grid.Column="1"
-              HorizontalAlignment="Left"
-              Margin="8,0,0,0"
-              VerticalAlignment="Center"
-              CornerRadius="4"
-              Background="{StaticResource StarOverlayAcrylicBrush}"
-              Padding="8,2,4,2">
-        <StackPanel Orientation="Horizontal" Spacing="4">
-          <TextBlock Classes="tertiary"
-                     VerticalAlignment="Center"
-                     TextTrimming="CharacterEllipsis"
-                     MaxWidth="360"
-                     Text="{Binding DirectoryDisplay}"
-                     ToolTip.Tip="{Binding DirectoryDisplay}" />
-          <Button Classes="icon-button"
-                  Width="24" Height="24" MinHeight="24"
-                  Command="{Binding CopyPathCommand}"
-                  ToolTip.Tip="{Binding Strings[Screenshot.CopyPath]}">
-            <TextBlock Classes="icon" FontSize="12"
-                       Foreground="{StaticResource StarTextTertiary}" Text="&#xE8C8;" />
-          </Button>
-        </StackPanel>
-      </Border>
+      <!--
+        Starward 唯一的按钮（:149）：Command=ManageScreenshotFolderCommand，
+        打开 ScreenshotFolderManageDialog。该对话框尚未移植，Flyout 内是
+        LunarWard 追加的三行（刷新 / 打开目录 / 导出全部），外加目录路径与复制。
+      -->
+      <Button x:Name="ManageButton" Content="{Binding Strings[Screenshot.ManageFolders]}">
+        <Button.Flyout>
+          <Flyout Placement="BottomEdgeAlignedRight">
+            <StackPanel Width="320" Spacing="2">
 
-      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-        <Button Classes="overlay"
-                Command="{Binding RefreshCommand}"
-                ToolTip.Tip="{Binding Strings[Screenshot.Refresh]}">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBlock Classes="icon" FontSize="14" Text="&#xE72C;" />
-            <TextBlock Text="{Binding Strings[Screenshot.Refresh]}" />
-          </StackPanel>
-        </Button>
+              <!-- 截图目录 + 复制路径（旧页面能力，保留在 Flyout 里） -->
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="8,4,4,2">
+                <TextBlock Grid.Column="0"
+                           Classes="tertiary"
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Text="{Binding DirectoryDisplay}"
+                           ToolTip.Tip="{Binding DirectoryDisplay}" />
+                <Button Grid.Column="1"
+                        Width="24" Height="24" MinHeight="24"
+                        Padding="0"
+                        Background="Transparent"
+                        Command="{Binding CopyPathCommand}"
+                        ToolTip.Tip="{Binding Strings[Screenshot.CopyPath]}">
+                  <TextBlock Classes="icon" FontSize="12"
+                             Foreground="{StaticResource StarTextTertiary}"
+                             Text="&#xE8C8;" />
+                </Button>
+              </Grid>
 
-        <Button Classes="accent"
-                Command="{Binding ExportSelectedCommand}"
-                IsEnabled="{Binding CanExport}"
-                ToolTip.Tip="{Binding Strings[Screenshot.ExportSelected]}">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBlock Classes="icon" FontSize="14" Text="&#xE8E5;" />
-            <TextBlock Text="{Binding Strings[Screenshot.ExportSelected]}" />
-          </StackPanel>
-        </Button>
+              <TextBlock Margin="8,0,8,4"
+                         Classes="tertiary"
+                         TextWrapping="Wrap"
+                         IsVisible="{Binding HasSummary}"
+                         Text="{Binding SummaryText}" />
 
-        <Button Classes="overlay"
-                Command="{Binding OpenDirectoryCommand}">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBlock Classes="icon" FontSize="14" Text="&#xE8B7;" />
-            <TextBlock Text="{Binding Strings[Screenshot.OpenDirectory]}" />
-          </StackPanel>
-        </Button>
-      </StackPanel>
-    </Grid>
+              <Border Classes="divider" Margin="8,2" />
 
-    <!-- ══ 主体：左 360 列表 + 右预览 ═══════════════════════════════════ -->
-    <Grid Grid.Row="1"
-          Margin="24,8,24,8"
-          ColumnDefinitions="360,16,*">
+              <Button Classes="flyout-row" Command="{Binding RefreshCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <TextBlock Classes="icon" FontSize="14" Text="&#xE72C;" />
+                  <TextBlock Text="{Binding Strings[Screenshot.Refresh]}" />
+                </StackPanel>
+              </Button>
 
-      <!-- ── 左：文件列表 ─────────────────────────────────────────── -->
-      <Border Grid.Column="0" Classes="card" Padding="8">
-        <Grid RowDefinitions="Auto,*" RowSpacing="4">
+              <Button Classes="flyout-row" Command="{Binding OpenDirectoryCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <TextBlock Classes="icon" FontSize="14" Text="&#xE8B7;" />
+                  <TextBlock Text="{Binding Strings[Screenshot.OpenDirectory]}" />
+                </StackPanel>
+              </Button>
 
-          <Grid Grid.Row="0" ColumnDefinitions="Auto,8,*" Margin="8,4,8,4">
-            <TextBlock Grid.Column="0"
-                       Classes="tertiary"
-                       VerticalAlignment="Center"
-                       Text="{Binding Strings[Screenshot.ListHeader]}" />
-            <TextBlock Grid.Column="2"
-                       Classes="tertiary"
-                       VerticalAlignment="Center"
-                       TextTrimming="CharacterEllipsis"
-                       Text="{Binding SummaryText}"
-                       IsVisible="{Binding HasSummary}" />
-          </Grid>
+              <Button Classes="flyout-row" Command="{Binding ExportAllCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <TextBlock Classes="icon" FontSize="14" Text="&#xE8E5;" />
+                  <TextBlock Text="{Binding Strings[Screenshot.ExportAll]}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Flyout>
+        </Button.Flyout>
+      </Button>
+    </StackPanel>
 
-          <ListBox Grid.Row="1"
-                   x:Name="ScreenshotList"
-                   ItemsSource="{Binding Browser.Items}"
-                   SelectedItem="{Binding Browser.Selected, Mode=TwoWay}"
-                   Background="Transparent"
-                   BorderThickness="0"
-                   Padding="0"
-                   IsVisible="{Binding HasItems}">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="oldvm:ScreenshotItemViewModel">
-                <Grid ColumnDefinitions="3,8,*,Auto" Height="44" Background="Transparent">
-                  <!-- 选中时出现的强调条 -->
-                  <Border Grid.Column="0"
-                          Classes="accent-bar"
-                          Width="3" Height="16"
-                          CornerRadius="1.5"
-                          VerticalAlignment="Center" />
+    <!-- ══ 磁贴墙（Starward ItemsView，:169-282） ═══════════════════════ -->
+    <ScrollViewer Grid.Row="1"
+                  HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+      <!-- Starward ItemsView Padding="24,0,0,12"（:171） -->
+      <Border Padding="24,0,0,12">
+        <ItemsControl x:Name="ScreenshotWall"
+                      ItemsSource="{Binding Browser.Items}"
+                      SizeChanged="OnWallSizeChanged">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <!--
+                Starward UniformGridLayout 的 Avalonia 等价物（:177-180）。
+                UniformGridLayout 会把每一行拉伸到可用宽度，WrapPanel 不支持拉伸，
+                因此 ItemWidth 由 code-behind 按列数重算（见 ScreenshotPage.axaml.cs）。
+              -->
+              <WrapPanel Orientation="Horizontal"
+                         ItemWidth="204"
+                         ItemHeight="115"
+                         ItemSpacing="12"
+                         LineSpacing="12" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
 
-                  <StackPanel Grid.Column="2"
-                              VerticalAlignment="Center"
-                              Spacing="2"
-                              Margin="0,0,8,0">
-                    <TextBlock FontSize="14"
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="oldvm:ScreenshotItemViewModel">
+              <!--
+                Starward Grid_ImageItem（:185-192）：圆角 4、ClipToBounds、点击打开大图。
+                背景是 Starward 的 ControlAltFillColorTertiaryBrush（:197）；该 Fluent token
+                在 Styles/Starward.axaml 里统一收敛成 StarControlFillBrush（#0FFFFFFF）。
+              -->
+              <Border Classes="tile"
+                      Height="115"
+                      Background="{StaticResource StarControlFillBrush}"
+                      AttachedToVisualTree="OnTileAttached"
+                      Tapped="OnTileTapped">
+                <Grid>
+                  <!--
+                    Starward CachedImage（:193-205）：水平/垂直居中、IsThumbnail=True。
+                    LunarWard 的缩略图是 ScreenshotItemViewModel.Thumbnail：
+                    背景线程解码到 412 宽（Starward ImageThumbnail 的同一档尺寸），
+                    不会一次性解码原图。
+                  -->
+                  <Image Source="{Binding Thumbnail}"
+                         Stretch="Uniform"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+
+                  <!-- Starward Grid_ImageInfo（:206-232）：悬停显示时间，背景 #60000000 -->
+                  <Grid Classes="info" Background="{StaticResource ScreenshotTileInfoBackground}">
+                    <TextBlock Margin="8,0,8,4"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom"
+                               FontSize="12"
+                               Foreground="{StaticResource ScreenshotTileTimeForeground}"
                                TextTrimming="CharacterEllipsis"
-                               Text="{Binding FileName}" />
-                    <TextBlock Classes="tertiary" Text="{Binding Time}" />
-                  </StackPanel>
-
-                  <TextBlock Grid.Column="3"
-                             Classes="tertiary"
-                             VerticalAlignment="Center"
-                             Margin="0,0,8,0"
-                             Text="{Binding SizeText}" />
+                               Text="{Binding Time}" />
+                  </Grid>
                 </Grid>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-
-          <!-- 左栏空态：只给一句紧凑提示，详细说明在右侧空态里 -->
-          <StackPanel Grid.Row="1"
-                      Margin="8,4,8,8"
-                      Spacing="6"
-                      IsVisible="{Binding IsEmpty}">
-            <TextBlock Classes="tertiary" TextWrapping="Wrap"
-                       Text="{Binding Strings[Screenshot.EmptyTitle]}" />
-            <TextBlock Classes="tertiary" TextWrapping="Wrap"
-                       IsVisible="{Binding HasGameDirectory}"
-                       Text="{Binding DirectoryDisplay}" />
-          </StackPanel>
-        </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
       </Border>
+    </ScrollViewer>
 
-      <!-- ── 右：大预览 ───────────────────────────────────────────── -->
-      <Border Grid.Column="2" Classes="card" Padding="0" ClipToBounds="True">
-        <Panel>
-
-          <!-- 选中项：整幅 Uniform 居中 -->
-          <Image Source="{Binding Browser.Selected.Preview}"
-                 Stretch="Uniform"
-                 Margin="16"
-                 IsVisible="{Binding HasSelection}" />
-
-          <!-- 空态（本机很可能没有截图，这里必须精致） -->
-          <StackPanel HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      Spacing="16"
-                      MaxWidth="380"
-                      IsVisible="{Binding !HasSelection}">
-            <Border Width="112" Height="112"
-                    CornerRadius="56"
-                    HorizontalAlignment="Center"
-                    Background="{StaticResource StarControlFillBrush}"
-                    BorderBrush="{StaticResource StarCardStrokeBrush}"
-                    BorderThickness="1">
-              <TextBlock Classes="icon"
-                         FontSize="64"
-                         Foreground="{StaticResource StarTextTertiary}"
-                         Text="&#xE722;" />
-            </Border>
-
-            <TextBlock HorizontalAlignment="Center"
-                       FontSize="16"
-                       TextWrapping="Wrap"
-                       TextAlignment="Center"
-                       Text="{Binding Strings[Screenshot.PreviewHint]}" />
-
-            <TextBlock HorizontalAlignment="Center"
-                       Classes="tertiary"
-                       TextWrapping="Wrap"
-                       TextAlignment="Center"
-                       IsVisible="{Binding IsEmpty}"
-                       Text="{Binding Strings[Screenshot.EmptyDetail]}" />
-
-            <TextBlock HorizontalAlignment="Center"
-                       Classes="tertiary"
-                       TextWrapping="Wrap"
-                       TextAlignment="Center"
-                       IsVisible="{Binding !HasGameDirectory}"
-                       Text="{Binding Strings[Screenshot.NoGameDirectoryDetail]}" />
-
-            <Button HorizontalAlignment="Center"
-                    IsVisible="{Binding IsEmpty}"
-                    Command="{Binding OpenDirectoryCommand}">
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <TextBlock Classes="icon" FontSize="14" Text="&#xE8B7;" />
-                <!-- 没配游戏目录时，按钮实际是「去游戏设置」，文案跟着换 -->
-                <TextBlock Text="{Binding Strings[Screenshot.EmptyAction]}"
-                           IsVisible="{Binding HasGameDirectory}" />
-                <TextBlock Text="{Binding Strings[Screenshot.EmptyActionNoDir]}"
-                           IsVisible="{Binding !HasGameDirectory}" />
-              </StackPanel>
-            </Button>
-          </StackPanel>
-        </Panel>
+    <!-- ══ 空态（Starward StackPanel_Emoji，:153-166） ═══════════════════ -->
+    <!--
+      Starward 放的是游戏 emoji 的 160×160 PNG（派蒙/帕姆/…）。LunarWard 没有这套素材，
+      用同尺寸占位框 + 72px 的图标字形（E722 相机），字号按 160 框放大到 72。
+    -->
+    <StackPanel Grid.RowSpan="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16"
+                IsVisible="{Binding IsEmpty}">
+      <Border Width="160" Height="160" HorizontalAlignment="Center">
+        <TextBlock Classes="icon"
+                   FontSize="72"
+                   Foreground="{StaticResource StarTextTertiary}"
+                   Text="&#xE722;" />
       </Border>
-    </Grid>
+      <!-- 目录不存在：Starward 的原文案（ScreenshotPage_ScreenshotFolderDoesNotExist） -->
+      <TextBlock HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding Strings[Screenshot.FolderDoesNotExist]}"
+                 IsVisible="{Binding DirectoryMissing}" />
 
-    <!-- ══ 底部说明 + 操作反馈 ═════════════════════════════════════════ -->
-    <Grid Grid.Row="2" Margin="24,0,24,12" RowDefinitions="Auto,Auto" RowSpacing="4">
-      <Border Grid.Row="0"
-              HorizontalAlignment="Stretch"
-              CornerRadius="4"
-              Background="{StaticResource StarOverlayAcrylicBrush}"
-              Padding="12,6">
-        <TextBlock Classes="tertiary"
-                   Foreground="{StaticResource StarTextSecondary}"
-                   TextWrapping="Wrap"
-                   Text="{Binding Strings[Screenshot.FootNote]}" />
+      <!-- 目录存在但还没截图：Starward 此时是空白墙，这里补一句说明（LunarWard 追加） -->
+      <TextBlock HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding Strings[Screenshot.EmptyTitle]}"
+                 IsVisible="{Binding FolderExistsButEmpty}" />
+    </StackPanel>
+
+    <!--
+      操作反馈（LunarWard 追加）：Starward 用 InAppToast，ToastHost 尚未移植，
+      这里用同位置（底部居中、MaxWidth 600）的小 InfoBar 承担；无操作时不显示。
+    -->
+    <StackPanel Grid.Row="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="24,0,24,24"
+                Spacing="8">
+      <Border Classes="infobar"
+              MaxWidth="600"
+              IsVisible="{Binding HasActionText}">
+        <TextBlock Text="{Binding ActionText}" TextWrapping="Wrap" />
       </Border>
-
-      <StackPanel Grid.Row="1" Spacing="4">
-        <TextBlock Classes="tertiary"
-                   Foreground="{StaticResource StarSuccessBrush}"
-                   Text="{Binding ActionText}"
-                   IsVisible="{Binding HasActionText}" />
-
-        <Border Classes="infobar error"
-                HorizontalAlignment="Left"
-                IsVisible="{Binding HasErrorText}">
-          <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" />
-        </Border>
-      </StackPanel>
-    </Grid>
+      <Border Classes="infobar error"
+              MaxWidth="600"
+              IsVisible="{Binding HasErrorText}">
+        <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" />
+      </Border>
+    </StackPanel>
 
   </Grid>
 </UserControl>

@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Input;
+using LunarWard.App.ViewModels.Starward;
 
 namespace LunarWard.App.Views.Starward;
 
@@ -16,4 +18,14 @@ public partial class NavigationRail : UserControl
     {
         InitializeComponent();
     }
+
+
+    // ── 左上角当前游戏图标：悬停滑出横排图标条（Starward GameSelector） ──
+
+    private void OnGameIconPointerEntered(object? sender, PointerEventArgs e)
+        => (DataContext as ShellViewModel)?.ShowGameIcons();
+
+
+    private void OnGameIconPointerExited(object? sender, PointerEventArgs e)
+        => (DataContext as ShellViewModel)?.HideGameIcons();
 }

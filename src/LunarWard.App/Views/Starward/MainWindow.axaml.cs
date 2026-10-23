@@ -37,6 +37,11 @@ public partial class MainWindow : Window
                 shell.OpenGameSelectorCommand.Execute(null);
             }
 
+            if (CaptureMode.GameIcons)
+            {
+                shell.ShowGameIcons();
+            }
+
             _ = AwaitReadyThenCaptureAsync(shell);
             return;
         }

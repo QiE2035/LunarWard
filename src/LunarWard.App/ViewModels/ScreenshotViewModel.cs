@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.App.Services;
@@ -122,7 +123,21 @@ public sealed partial class ScreenshotViewModel : ObservableObject
 /// <summary>一张截图的展示项（延迟解码）。</summary>
 public sealed partial class ScreenshotItemViewModel : ObservableObject
 {
+    /// <summary>
+    /// 磁贴缩略图的目标宽度。Starward 的 <c>CachedImage</c> 走
+    /// <c>ImageThumbnail.GetThumbnailSize</c>：目标框 412×232
+    /// （Features/Codec/ImageThumbnail.cs:265-266），这里用同一档尺寸，
+    /// 磁贴（Starward 的 MinItemWidth 204，实际约 204–226 宽）在高 DPI 下也不会糊。
+    /// </summary>
+    private const int ThumbnailWidth = 412;
+
+
     private Bitmap? _preview;
+
+    private Bitmap? _thumbnail;
+
+    /// <summary>0 = 还没开始；1 = 加载中或已结束（失败也算结束，不重试）。</summary>
+    private int _thumbnailState;
 
 
     public ScreenshotItemViewModel(GameScreenshot screenshot)
@@ -144,6 +159,51 @@ public sealed partial class ScreenshotItemViewModel : ObservableObject
 
     [ObservableProperty]
     private Bitmap? preview;
+
+
+    /// <summary>
+    /// 磁贴缩略图。磁贴墙（Starward 的 <c>ItemsView</c>）只绑定本属性：
+    /// 未解码时是 <c>null</c>，解码完成后自动通知。
+    /// </summary>
+    public Bitmap? Thumbnail => _thumbnail;
+
+
+    /// <summary>
+    /// 懒加载磁贴缩略图：只在磁贴真正上屏时调用，并且按 <see cref="ThumbnailWidth"/>
+    /// 缩放解码，而不是一次性解码原图（1920×1080 原图一张约 8 MiB）。
+    /// </summary>
+    /// <remarks>
+    /// 解码放到线程池：磁贴墙一次会实例化很多项，同步解码会卡住 UI 线程。
+    /// 完成后回 UI 线程赋值（Avalonia <see cref="Bitmap"/> 解码后可以跨线程传递）。
+    /// </remarks>
+    public void EnsureThumbnail()
+    {
+        if (Interlocked.Exchange(ref _thumbnailState, 1) != 0)
+        {
+            return;
+        }
+
+        string path = Screenshot.Path;
+        _ = Task.Run(() =>
+        {
+            Bitmap? bitmap = null;
+            try
+            {
+                using var stream = File.OpenRead(path);
+                bitmap = Bitmap.DecodeToWidth(stream, ThumbnailWidth, BitmapInterpolationMode.MediumQuality);
+            }
+            catch (Exception)
+            {
+                // 坏图 / 不支持的格式：保持 null，磁贴只显示背景色（与 Starward 的 CachedImage 一致）
+            }
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                _thumbnail = bitmap;
+                OnPropertyChanged(nameof(Thumbnail));
+            });
+        });
+    }
 
 
     /// <summary>解码预览图；失败时保持 <c>null</c>（UI 显示占位）。</summary>

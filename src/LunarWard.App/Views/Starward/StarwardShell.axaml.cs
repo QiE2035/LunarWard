@@ -209,6 +209,10 @@ public partial class StarwardShell : UserControl
 
     // ── 游戏选择层 ───────────────────────────────────────────────────
 
+    private void OnGameIconsAreaPointerExited(object? sender, PointerEventArgs e)
+        => ViewModel?.HideGameIcons();
+
+
     private void OnGameSelectorScrimPressed(object? sender, PointerPressedEventArgs e)
     {
         ViewModel?.CloseGameSelectorCommand.Execute(null);
