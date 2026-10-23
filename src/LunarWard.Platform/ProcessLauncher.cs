@@ -59,8 +59,10 @@ public sealed class UnixProcessLauncher : IProcessLauncher
 
         if (request.NewSession && SetsidPath.Value is { } setsid)
         {
-            // setsid 是 executable + args，不改环境
+            // setsid -w：若 setsid 因"已是进程组长"而 fork 出子进程，
+            // 用 -w 等待它，保证 Process.WaitForExit / ExitCode 仍指向真正的子进程。
             args.Insert(0, fileName);
+            args.Insert(0, "-w");
             fileName = setsid;
         }
 

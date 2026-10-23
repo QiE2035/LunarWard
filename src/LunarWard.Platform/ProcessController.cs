@@ -32,9 +32,13 @@ public sealed class LinuxProcessController : IProcessController
     public static LinuxProcessController Default { get; } = new();
 
 
+    /// <remarks>
+    /// <paramref name="pid"/> 为负数时表示"整个进程组"（<c>kill(2)</c> 的语义），
+    /// 这是回收 shell 进程树的关键，不能拒绝。
+    /// </remarks>
     public bool Signal(int pid, int signal)
     {
-        if (pid <= 0)
+        if (pid == 0)
         {
             return false;
         }
@@ -69,6 +73,11 @@ public sealed class LinuxProcessController : IProcessController
             Unix.Libc.Kill(-pid, SIGHUP);
         }
     }
+
+
+    /// <summary>向整个进程组发 SIGTERM。</summary>
+    public bool TerminateGroup(int processGroupId, int signal = SIGTERM)
+        => processGroupId > 0 && Unix.Libc.Kill(-processGroupId, signal) == 0;
 
 
     public async Task<bool> WaitForExitAsync(int pid, TimeSpan timeout, CancellationToken ct = default)

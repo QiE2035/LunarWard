@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace LunarWard.Installer;
 
@@ -8,29 +9,26 @@ namespace LunarWard.Installer;
 /// <para>上游 <c>Starward.RPC.DriveHelper</c> 通过 <c>Vanara.PInvoke.Kernel32</c> 调用
 /// <c>GetDriveType</c> / <c>GetDiskFreeSpaceEx</c> / <c>GetVolumeInformation</c>，
 /// 并用 <c>IOCTL_STORAGE_QUERY_PROPERTY</c> 判断 USB。Linux 上这些 API 都不存在，
-/// 这里改用 BCL 的 <see cref="DriveInfo"/> 加上少量 <c>procfs</c>/<c>sysfs</c> 读取。</para>
+/// 这里改用 BCL 的 <see cref="DriveInfo"/>、<c>statx(2)</c> 与少量 <c>procfs</c>/<c>sysfs</c> 读取。</para>
 ///
-/// <para>映射关系：</para>
-/// <list type="table">
-/// <item><description><c>Kernel32.GetDriveType</c> → <see cref="GetDriveType"/>，
-/// 内部用 <see cref="DriveInfo.DriveType"/>。Linux 的 .NET 实现由 <c>statfs(2)</c> 的
-/// <c>f_type</c> 与挂载点推出：块设备 → <c>Fixed</c>，tmpfs/ramfs → <c>Ram</c>，
-/// NFS/CIFS → <c>Network</c>，vfat/iso9660 等 → <c>Removable</c>。</description></item>
-/// <item><description><c>Kernel32.GetDiskFreeSpaceEx</c> → <see cref="GetDriveAvailableSpace"/>，
-/// 对应其实参 <c>freeBytesAvailable</c>（当前用户可用），而不是 <c>totalNumberOfFreeBytes</c>。</description></item>
-/// <item><description><c>Kernel32.GetVolumeInformation</c> → <see cref="GetDriveFormat"/>，
-/// 由 <c>statfs</c> 的 <c>f_type</c> 反查名字（<c>btrfs</c> / <c>ext4</c> / <c>ntfs</c> / <c>tmpfs</c> …）。</description></item>
-/// </list>
+/// <para><b>为什么不能用 <c>Path.GetPathRoot</c></b>：在 Unix 上它恒定返回 <c>"/"</c>
+/// （<c>Path.GetPathRoot("/tmp") == "/"</c>），于是 <c>new DriveInfo(root)</c> 永远在查根卷，
+/// <c>/tmp</c>（tmpfs）会被报成根卷的 <c>btrfs</c>。本类的所有 API 因此都直接对
+/// <b>路径本身</b>（或其最近的已存在祖先）构造 <see cref="DriveInfo"/>，由 BCL 解析真实挂载点。</para>
 ///
-/// <para><b>注意</b>：上游的 <c>is "NTFS"</c> 判断在 Linux 上不能直接照搬。
-/// 上游用 NTFS 判断"能否硬链接"，而 Linux 上 ext4/btrfs/xfs 都支持硬链接，
-/// 该判断的正确语义见 <see cref="SupportsHardLink"/>；同一卷判定见 <see cref="IsSameVolume"/>。</para>
+/// <para><b>为什么同一卷判定要用 <c>statx(2)</c></b>：btrfs 子卷共用 <c>mountinfo</c> 里的同一个
+/// <c>major:minor</c>（实测 <c>/</c> 与 <c>/home</c> 都是 <c>0:34</c>），但它们的
+/// <c>st_dev</c> 不同，<c>link(2)</c> 跨子卷会返回 <c>EXDEV</c>。只看 mountinfo 会误判为同卷。</para>
 /// </summary>
 public static class DriveHelper
 {
 
 
-    /// <summary>路径所在卷的根；无法解析时返回 <c>null</c>。总是以 <c>/</c> 结尾，与上游补尾部斜杠的语义一致。</summary>
+    /// <summary>
+    /// 路径所在挂载点的根（即 cover 该路径的最深挂载点），总是以 <c>/</c> 结尾；
+    /// 无法解析时返回 <c>null</c>。这与上游"补尾部斜杠"的语义一致，
+    /// 但返回的是<b>真实挂载点</b>而不是恒定 <c>/</c>。
+    /// </summary>
     public static string? GetPathRoot(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -48,31 +46,38 @@ public static class DriveHelper
             return null;
         }
 
-        var root = Path.GetPathRoot(full);
-        if (string.IsNullOrWhiteSpace(root))
+        var mountPoint = FindMountPoint(full)?.MountPoint;
+        if (string.IsNullOrEmpty(mountPoint))
+        {
+            mountPoint = Path.GetPathRoot(full);
+        }
+
+        if (string.IsNullOrWhiteSpace(mountPoint))
         {
             return null;
         }
 
-        return root.EndsWith(Path.DirectorySeparatorChar) ? root : root + Path.DirectorySeparatorChar;
+        return mountPoint.EndsWith(Path.DirectorySeparatorChar)
+            ? mountPoint
+            : mountPoint + Path.DirectorySeparatorChar;
     }
 
 
     /// <summary>
-    /// 驱动器类型。路径无有效根时返回 <see cref="DriveType.NoRootDirectory"/>
+    /// 驱动器类型。路径不存在且找不到任何已存在的祖先时返回 <see cref="DriveType.NoRootDirectory"/>
     /// （上游 <c>Kernel32.GetDriveType</c> 对非法路径返回 <c>DRIVE_NO_ROOT_DIR</c>）。
     /// </summary>
     public static DriveType GetDriveType(string path)
     {
-        var root = GetPathRoot(path);
-        if (string.IsNullOrWhiteSpace(root))
+        var probe = GetProbePath(path);
+        if (probe is null)
         {
             return DriveType.NoRootDirectory;
         }
 
         try
         {
-            return new DriveInfo(root).DriveType;
+            return new DriveInfo(probe).DriveType;
         }
         catch (Exception)
         {
@@ -83,19 +88,20 @@ public static class DriveHelper
 
     /// <summary>
     /// 卷上当前用户可用的空闲字节数。
-    /// 路径无有效根或卷不可读时抛 <see cref="DriveNotFoundException"/>，与上游 <c>GetDiskFreeSpaceEx</c> 失败时的行为一致。
+    /// 路径无效或卷不可读时抛 <see cref="DriveNotFoundException"/>，与上游
+    /// <c>GetDiskFreeSpaceEx</c> 失败时的行为一致。
     /// </summary>
     public static long GetDriveAvailableSpace(string path)
     {
-        var root = GetPathRoot(path);
-        if (string.IsNullOrWhiteSpace(root))
+        var probe = GetProbePath(path);
+        if (probe is null)
         {
             throw new DriveNotFoundException($"The path '{path}' does not have a valid root directory.");
         }
 
         try
         {
-            return new DriveInfo(root).AvailableFreeSpace;
+            return new DriveInfo(probe).AvailableFreeSpace;
         }
         catch (Exception ex) when (ex is not DriveNotFoundException)
         {
@@ -107,15 +113,15 @@ public static class DriveHelper
     /// <summary>卷的总容量（字节）。</summary>
     public static long GetDriveTotalSpace(string path)
     {
-        var root = GetPathRoot(path);
-        if (string.IsNullOrWhiteSpace(root))
+        var probe = GetProbePath(path);
+        if (probe is null)
         {
             throw new DriveNotFoundException($"The path '{path}' does not have a valid root directory.");
         }
 
         try
         {
-            return new DriveInfo(root).TotalSize;
+            return new DriveInfo(probe).TotalSize;
         }
         catch (Exception ex) when (ex is not DriveNotFoundException)
         {
@@ -130,15 +136,15 @@ public static class DriveHelper
     /// </summary>
     public static string? GetDriveFormat(string path)
     {
-        var root = GetPathRoot(path);
-        if (string.IsNullOrWhiteSpace(root))
+        var probe = GetProbePath(path);
+        if (probe is null)
         {
             return null;
         }
 
         try
         {
-            var format = new DriveInfo(root).DriveFormat;
+            var format = new DriveInfo(probe).DriveFormat;
             return string.IsNullOrWhiteSpace(format) ? null : format.ToLowerInvariant();
         }
         catch (Exception)
@@ -152,50 +158,64 @@ public static class DriveHelper
     /// 该卷是否支持硬链接（即 <c>link(2)</c> 可用）。
     ///
     /// <para>这取代了上游 <c>GetDriveFormat(...) is "NTFS"</c> 的判断。Linux 上
-    /// ext2/3/4、btrfs、xfs、zfs、f2fs、tmpfs、overlayfs 都支持硬链接；
-    /// FAT/exFAT/ISO9660/UDF/NFSv2 不支持。</para>
+    /// ext2/3/4、btrfs（含跨子卷 —— 那是 <c>EXDEV</c>，由 <see cref="IsSameVolume"/> 负责）、
+    /// xfs、zfs、f2fs、tmpfs、overlayfs 都支持硬链接；
+    /// FAT/exFAT/ISO9660/UDF/NFS 不支持。</para>
     /// </summary>
     public static bool SupportsHardLink(string path)
     {
         var format = GetDriveFormat(path);
         if (format is null)
         {
-            // 判不出来就乐观地试一次，失败由调用方的 link(2) 返回值兜底
+            // 判不出格式（如权限受限）时乐观放行：真正的失败由 link(2) 的返回值兜底，
+            // 由 GameInstallHelper.HardLinkAsync 回退到重新下载。
             return true;
         }
 
         return format switch
         {
+            // 无 inode 概念 / 明确不支持硬链接
             "vfat" or "msdos" or "msdosfs" or "fat" or "fat16" or "fat32" => false,
-            "exfat" or "fuse.exfat" or "iso9660" or "udf" or "fuse.udf" => false,
+            "exfat" or "fuse.exfat" => false,
+            "iso9660" or "udf" or "fuse.udf" or "iso9660fs" => false,
             "nfs" or "nfs2" or "nfs3" => false,
+            "cifs" or "smbfs" or "smb3" => false,
+            "proc" or "sysfs" or "devpts" or "cgroup" or "cgroup2" => false,
+            // ntfs / ntfs3 / fuseblk 支持；ext4 / btrfs / xfs / zfs / f2fs / tmpfs 支持
             _ => true,
         };
     }
 
 
     /// <summary>
-    /// 两个路径是否位于同一个卷上。
+    /// 两个路径是否位于同一个卷上（可安全 <c>link(2)</c>）。
     ///
-    /// <para>这是上游 <c>Path.GetPathRoot(a) == Path.GetPathRoot(b)</c> 在 Linux 上的正确版本：
-    /// 在 Linux 上 <c>/home</c>、<c>/var</c> 常与 <c>/</c> 是不同的挂载点，但
-    /// <c>Path.GetPathRoot</c> 全都返回 <c>/</c>，直接比较会误判为"同卷"，
-    /// 从而导致跨卷硬链接失败。</para>
+    /// <para>这是上游 <c>Path.GetPathRoot(a) == Path.GetPathRoot(b)</c> 在 Linux 上的正确版本。
+    /// 在 Linux 上 <c>Path.GetPathRoot</c> 对任何路径都返回 <c>/</c>，直接比较会把
+    /// <c>/home</c> 与 <c>/var</c> 误判为同卷。更隐蔽的是 btrfs 子卷：它们在
+    /// <c>mountinfo</c> 里共享同一个 <c>major:minor</c>，但跨子卷 <c>link(2)</c> 仍返回
+    /// <c>EXDEV</c>。因此这里优先用 <c>statx(2)</c> 比较 <c>stx_dev_major</c>/<c>stx_dev_minor</c>。</para>
     /// </summary>
     public static bool IsSameVolume(string pathA, string pathB)
     {
         try
         {
-            var a = Path.GetFullPath(pathA);
-            var b = Path.GetFullPath(pathB);
-            var devA = GetDeviceId(a);
-            var devB = GetDeviceId(b);
+            var a = GetProbePath(pathA);
+            var b = GetProbePath(pathB);
+            if (a is null || b is null)
+            {
+                return false;
+            }
+
+            var devA = StatxDeviceId(a);
+            var devB = StatxDeviceId(b);
             if (devA is not null && devB is not null)
             {
                 return devA == devB;
             }
 
-            return string.Equals(Path.GetPathRoot(a), Path.GetPathRoot(b), StringComparison.Ordinal);
+            // statx 不可用（老内核/非 Linux）时退化为挂载点比较
+            return string.Equals(GetPathRoot(a), GetPathRoot(b), StringComparison.Ordinal);
         }
         catch (Exception)
         {
@@ -224,13 +244,13 @@ public static class DriveHelper
                 return false;
             }
 
-            var root = GetPathRoot(path);
-            if (string.IsNullOrWhiteSpace(root))
+            var probe = GetProbePath(path);
+            if (probe is null)
             {
                 return false;
             }
 
-            var driveType = GetDriveType(root);
+            var driveType = GetDriveType(probe);
             if (driveType is DriveType.Removable or DriveType.CDRom)
             {
                 return true;
@@ -241,7 +261,7 @@ public static class DriveHelper
                 return false;
             }
 
-            var device = GetMountSource(root);
+            var device = FindMountPoint(Path.GetFullPath(path))?.Source;
             var blockName = GetBlockDeviceName(device);
             if (blockName is null)
             {
@@ -253,7 +273,7 @@ public static class DriveHelper
                 return true;
             }
 
-            return IsOnUsbBus(blockName);
+            return IsOnUsbBlockDevice(blockName);
         }
         catch (Exception)
         {
@@ -268,14 +288,132 @@ public static class DriveHelper
 
 
     /// <summary>
-    /// 用 <c>stat(2)</c> 拿 <c>st_dev</c>，这是判断"同卷"最准确的方式。
-    /// 这里通过 <see cref="DriveInfo.Name"/> 的挂载点等价类近似：
-    /// 先找最深挂载点，再用挂载点的 major:minor 比较。
+    /// 返回可用于构造 <see cref="DriveInfo"/> 的路径：路径本身（或最近的已存在祖先）。
+    /// <see cref="DriveInfo"/> 在 Unix 上对不存在的路径抛 <see cref="DriveNotFoundException"/>，
+    /// 而"目标目录还没创建"是安装流程的正常场景（安装前做空间预检）。
     /// </summary>
-    private static string? GetDeviceId(string fullPath)
+    private static string? GetProbePath(string path)
     {
-        var mount = FindMountPoint(fullPath);
-        return mount?.DeviceId;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        string current;
+        try
+        {
+            current = Path.GetFullPath(path);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+
+        while (!string.IsNullOrEmpty(current))
+        {
+            try
+            {
+                if (Directory.Exists(current) || File.Exists(current))
+                {
+                    return current;
+                }
+            }
+            catch (Exception)
+            {
+                // 权限不足等，继续向上找
+            }
+
+            var parent = Path.GetDirectoryName(current);
+            if (string.IsNullOrEmpty(parent) || parent == current)
+            {
+                // 退到根了
+                return Directory.Exists("/") ? "/" : null;
+            }
+
+            current = parent;
+        }
+
+        return null;
+    }
+
+
+    /// <summary>
+    /// 用 <c>statx(2)</c> 取 <c>st_dev</c> 的 (major, minor)。
+    /// 这是区分 btrfs 子卷的唯一可靠办法；失败返回 <c>null</c> 让调用方回退。
+    /// </summary>
+    private static (uint Major, uint Minor)? StatxDeviceId(string path)
+    {
+        try
+        {
+            if (SysStatx(AtFdcwd, path, AtSymlinkNofollow, StatxBasicStats, out var statx) != 0)
+            {
+                return null;
+            }
+
+            return (statx.DevMajor, statx.DevMinor);
+        }
+        catch (Exception)
+        {
+            // 非 Linux / 无 statx 符号
+            return null;
+        }
+    }
+
+
+    private const int AtFdcwd = -100;
+    private const int AtSymlinkNofollow = 0x100;
+    private const uint StatxBasicStats = 0x7ff;
+
+
+    [DllImport("libc", EntryPoint = "statx", SetLastError = true)]
+    private static extern int SysStatx(int dirfd, [MarshalAs(UnmanagedType.LPUTF8Str)] string pathname,
+                                       int flags, uint mask, out Statx buffer);
+
+
+    /// <summary>
+    /// <c>struct statx</c>（Linux 5.6+，布局跨架构稳定，总计 256 字节）。
+    /// 只声明到 <c>stx_dev_minor</c> 为止真正用到的字段，其余用 spare 补齐以保证长度正确 ——
+    /// 长度不对会让内核越界写。
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    private struct StatxTimestamp
+    {
+        public long TvSec;
+        public uint TvNsec;
+        public int Reserved;
+    }
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Statx
+    {
+        public uint Mask;
+        public uint Blksize;
+        public ulong Attributes;
+        public uint Nlink;
+        public uint Uid;
+        public uint Gid;
+        public ushort Mode;
+        public ushort Spare0;
+        public ulong Ino;
+        public ulong Size;
+        public ulong Blocks;
+        public ulong AttributesMask;
+        public StatxTimestamp Atime;
+        public StatxTimestamp Btime;
+        public StatxTimestamp Ctime;
+        public StatxTimestamp Mtime;
+        public uint RdevMajor;
+        public uint RdevMinor;
+        public uint DevMajor;
+        public uint DevMinor;
+        public ulong MntId;
+        public uint DioMemAlign;
+        public uint DioOffsetAlign;
+
+        // __spare3[12]：12 * 8 = 96 字节，保证结构体总计 256 字节
+        public ulong Spare1, Spare2, Spare3, Spare4, Spare5, Spare6,
+                     Spare7, Spare8, Spare9, Spare10, Spare11, Spare12;
     }
 
 
@@ -321,13 +459,6 @@ public static class DriveHelper
         }
 
         return best;
-    }
-
-
-    private static string? GetMountSource(string path)
-    {
-        var full = Path.GetFullPath(path);
-        return FindMountPoint(full)?.Source;
     }
 
 
@@ -447,7 +578,7 @@ public static class DriveHelper
     }
 
 
-    private static bool IsOnUsbBus(string blockName)
+    private static bool IsOnUsbBlockDevice(string blockName)
     {
         try
         {
@@ -459,7 +590,8 @@ public static class DriveHelper
             }
 
             // 某些内核把 block 目录做成真实目录，此时回溯物理设备路径
-            var resolved = new DirectoryInfo(Path.Join("/sys/block", blockName)).ResolveLinkTarget(returnFinalTarget: true);
+            var resolved = new DirectoryInfo(Path.Join("/sys/block", blockName))
+                .ResolveLinkTarget(returnFinalTarget: true);
             return resolved?.FullName.Contains("/usb", StringComparison.OrdinalIgnoreCase) is true;
         }
         catch (Exception)

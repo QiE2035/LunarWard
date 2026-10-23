@@ -1,4 +1,4 @@
-﻿using LunarWard.Core;
+using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using System;
 using System.Collections.Generic;
@@ -587,8 +587,8 @@ public partial class GamePackageService
         // 硬链接
         if (Directory.Exists(context.HardLinkPath)
             && Path.GetFullPath(context.InstallPath) != Path.GetFullPath(context.HardLinkPath)
-            && Path.GetPathRoot(context.HardLinkPath) == Path.GetPathRoot(context.InstallPath)
-            && DriveHelper.GetDriveFormat(context.InstallPath) is "NTFS")
+            && DriveHelper.IsSameVolume(context.HardLinkPath, context.InstallPath)
+            && DriveHelper.SupportsHardLink(context.InstallPath))
         {
             if (context.Operation is GameInstallOperation.Update && context.DownloadMode is GameInstallDownloadMode.Patch)
             {

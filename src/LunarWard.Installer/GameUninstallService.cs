@@ -1,4 +1,4 @@
-﻿using LunarWard.Core;
+using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using System;
 using System.IO;
@@ -178,7 +178,7 @@ internal class GameUninstallService
 
     private static bool CanHardLink(string source, string dest)
     {
-        return Path.GetPathRoot(source) == Path.GetPathRoot(dest) && DriveHelper.GetDriveFormat(dest) is "NTFS";
+        return DriveHelper.IsSameVolume(source, dest) && DriveHelper.SupportsHardLink(dest);
     }
 
 
