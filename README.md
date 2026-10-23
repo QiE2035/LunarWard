@@ -16,6 +16,9 @@ Linux 下的《原神》/《绝区零》启动器，定位是 **Starward 在 Lin
 ## 一分钟上手
 
 ```bash
+# 0. 全新 clone 即可直接构建与测试（不需要 submodule、不需要手动放文件）
+git clone <repo> && cd lunarward
+
 # 1. 工具链
 dotnet --version          # 需 10.x
 # 可选：libvlc（动态背景）、hdiffpatch（差量更新）、7zip（解包安装）
