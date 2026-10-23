@@ -5,156 +5,203 @@
              x:DataType="vm:SettingFileManageViewModel">
 
   <!--
-    复刻 Starward Features/Setting/FileManageSetting.xaml：
-      20px 标题 → 12 间距说明 → 40 高按钮行（强调按钮 + 路径按钮）
-      Starward 是「用户数据文件夹 / 备份数据库 / 删除所有设置 / 日志 / 缓存」；
-      Linux 上目录由 XDG 决定，所以四类目录都做成"只读路径 + 打开 + 复制"。
+    1:1 复刻 Starward Features/Setting/FileManageSetting.xaml（206 行）：
+      18-69   20px「数据文件夹」→ 0,12 说明 → 0,12 Grid：重新选择强调按钮
+              （40 高 / Padding 16,0 / CornerRadius 8,20,20,8）+ 当前文件夹胶囊
+              （40 高 / Margin 16,0 / Padding 20,0,20,1 / CornerRadius 20，路径 14px 次要色
+              最多两行省略 + 14px 文件夹图标 E8A7）
+      72-108  0,8 按钮行：备份数据库强调按钮（E413→这里用 F413）+ ProgressRing +
+              上次备份时间胶囊（40 高 / 20,0,20,1 / 圆角 20）
+      111-123 0,8「删除所有设置」强调按钮（40 高 / 16,0 / 8,20,20,8，E74D）
+      126-142 0,20 20px「日志」→ 0,8「打开日志文件夹」强调按钮（E838）
+      145-174 0,20 20px「缓存」→ 0,8 水平 StackPanel Spacing=20：两列行（次要色标签 /
+              占用）——日志、图片、浏览器、游戏资源、启动器背景
+      176-195 0,12 按钮行：清理缓存强调按钮（EA99）+ ProgressRing
+      196-199 0,4 CheckBox「清理启动器背景文件」
+    行号均指 Starward/src/Starward/Features/Setting/FileManageSetting.xaml。
+
+    LunarWard 落位说明：
+      · Linux 上数据目录由 XDG 决定 → 「重新选择数据文件夹」禁用；
+      · 没有 SQLite 数据库 → 「备份数据库」禁用；不提供一键删全部设置 → 该按钮禁用；
+      · 「缓存」五类里「游戏资源」LunarWard 没有对应缓存，如实显示 0 B。
+      · 末尾「目录与文件」区块是 LunarWard 追加（XDG 四个目录 + config.json），
+        排在 Starward 全部条目之后。
   -->
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+    <StackPanel HorizontalAlignment="Stretch">
 
-      <TextBlock Classes="section" Text="{Binding Strings[Settings.Files.SectionPaths]}" />
+      <!-- FileManageSetting.xaml:18 -->
+      <TextBlock Classes="section" Text="{Binding Strings[Settings.Files.DataFolder]}" />
 
-      <TextBlock Margin="0,12,0,0" Text="{Binding Strings[Settings.Files.ConfigHome]}" />
-      <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+      <!-- FileManageSetting.xaml:20-23 -->
+      <TextBlock Margin="0,12,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Files.DataFolderImportant]}" />
+
+      <!-- FileManageSetting.xaml:24-69 -->
+      <Grid Margin="0,12,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <!-- FileManageSetting.xaml:30-41（Linux 上目录由 XDG 决定 → 禁用） -->
         <Button Grid.Column="0"
-                Height="32"
-                Width="72"
-                Command="{Binding OpenPathCommand}"
-                CommandParameter="{Binding ConfigHome}"
-                Content="{Binding Strings[Settings.Common.Open]}" />
+                Height="40"
+                Padding="16,0"
+                BorderThickness="0"
+                CornerRadius="8,20,20,8"
+                Classes="accent"
+                IsEnabled="False">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE8DE;" />
+            <TextBlock Text="{Binding Strings[Settings.Files.ReselectDataFolder]}" />
+          </StackPanel>
+        </Button>
+
+        <!-- FileManageSetting.xaml:43-68（当前数据文件夹胶囊：点开目录） -->
         <Button Grid.Column="1"
-                Height="32"
-                Width="88"
-                Command="{Binding CopyPathCommand}"
-                CommandParameter="{Binding ConfigHome}"
-                Content="{Binding Strings[Settings.Common.CopyPath]}" />
-        <TextBlock Grid.Column="2"
-                   VerticalAlignment="Center"
-                   Margin="4,0,0,0"
-                   Classes="tertiary"
-                   FontFamily="{StaticResource StarMonoFontFamily}"
-                   TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="{Binding ConfigHome}"
-                   Text="{Binding ConfigHome}" />
-      </Grid>
-      <TextBlock Margin="0,12,0,0" Text="{Binding Strings[Settings.Files.DataHome]}" />
-      <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
-        <Button Grid.Column="0"
-                Height="32"
-                Width="72"
+                Height="40"
+                Margin="16,0,0,0"
+                Padding="20,0,20,1"
+                BorderThickness="0"
+                CornerRadius="20"
                 Command="{Binding OpenPathCommand}"
-                CommandParameter="{Binding DataHome}"
-                Content="{Binding Strings[Settings.Common.Open]}" />
-        <Button Grid.Column="1"
-                Height="32"
-                Width="88"
-                Command="{Binding CopyPathCommand}"
-                CommandParameter="{Binding DataHome}"
-                Content="{Binding Strings[Settings.Common.CopyPath]}" />
-        <TextBlock Grid.Column="2"
-                   VerticalAlignment="Center"
-                   Margin="4,0,0,0"
-                   Classes="tertiary"
-                   FontFamily="{StaticResource StarMonoFontFamily}"
-                   TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="{Binding DataHome}"
-                   Text="{Binding DataHome}" />
-      </Grid>
-      <TextBlock Margin="0,12,0,0" Text="{Binding Strings[Settings.Files.CacheHome]}" />
-      <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
-        <Button Grid.Column="0"
-                Height="32"
-                Width="72"
-                Command="{Binding OpenPathCommand}"
-                CommandParameter="{Binding CacheHome}"
-                Content="{Binding Strings[Settings.Common.Open]}" />
-        <Button Grid.Column="1"
-                Height="32"
-                Width="88"
-                Command="{Binding CopyPathCommand}"
-                CommandParameter="{Binding CacheHome}"
-                Content="{Binding Strings[Settings.Common.CopyPath]}" />
-        <TextBlock Grid.Column="2"
-                   VerticalAlignment="Center"
-                   Margin="4,0,0,0"
-                   Classes="tertiary"
-                   FontFamily="{StaticResource StarMonoFontFamily}"
-                   TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="{Binding CacheHome}"
-                   Text="{Binding CacheHome}" />
-      </Grid>
-      <TextBlock Margin="0,12,0,0" Text="{Binding Strings[Settings.Files.LogDir]}" />
-      <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
-        <Button Grid.Column="0"
-                Height="32"
-                Width="72"
-                Command="{Binding OpenPathCommand}"
-                CommandParameter="{Binding LogDirectory}"
-                Content="{Binding Strings[Settings.Common.Open]}" />
-        <Button Grid.Column="1"
-                Height="32"
-                Width="88"
-                Command="{Binding CopyPathCommand}"
-                CommandParameter="{Binding LogDirectory}"
-                Content="{Binding Strings[Settings.Common.CopyPath]}" />
-        <TextBlock Grid.Column="2"
-                   VerticalAlignment="Center"
-                   Margin="4,0,0,0"
-                   Classes="tertiary"
-                   FontFamily="{StaticResource StarMonoFontFamily}"
-                   TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="{Binding LogDirectory}"
-                   Text="{Binding LogDirectory}" />
+                CommandParameter="{Binding ConfigHome}">
+          <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       MaxLines="2"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="Wrap"
+                       Text="{Binding ConfigHome}" />
+            <TextBlock Grid.Column="1"
+                       Classes="icon"
+                       Margin="0,2,2,0"
+                       FontSize="14"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="&#xE8A7;" />
+          </Grid>
+        </Button>
       </Grid>
 
-      <!-- ── 配置文件 ─────────────────────────────────────────── -->
-      <TextBlock Margin="0,20,0,0"
-                 Classes="section"
-                 Text="{Binding Strings[Settings.Files.ConfigFile]}" />
-      <Grid Margin="0,12,0,0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
-        <Button Grid.Column="0"
-                Height="32"
-                Width="88"
-                Command="{Binding CopyPathCommand}"
-                CommandParameter="{Binding ConfigFile}"
-                Content="{Binding Strings[Settings.Common.CopyPath]}" />
-        <TextBlock Grid.Column="1"
-                   VerticalAlignment="Center"
-                   Margin="4,0,0,0"
-                   Classes="tertiary"
-                   FontFamily="{StaticResource StarMonoFontFamily}"
-                   TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="{Binding ConfigFile}"
-                   Text="{Binding ConfigFile}" />
-      </Grid>
+      <!-- FileManageSetting.xaml:42-68 的位置说明（Linux 上不能改） -->
+      <TextBlock Margin="0,8,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Files.ReselectUnavailable]}" />
 
+      <!-- FileManageSetting.xaml:72-108 备份数据库 -->
+      <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="16">
+        <Button Height="40"
+                Padding="16,0"
+                BorderThickness="0"
+                CornerRadius="8,20,20,8"
+                Classes="accent"
+                IsEnabled="False">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xF413;" />
+            <TextBlock Text="{Binding Strings[Settings.Files.BackupDatabase]}" />
+          </StackPanel>
+        </Button>
+
+        <!-- Starward 的 ProgressRing（仅运行时可见）与「上次备份」胶囊，这里保留位置但隐藏 -->
+        <ProgressBar Width="120"
+                     Height="3"
+                     VerticalAlignment="Center"
+                     IsIndeterminate="True"
+                     IsVisible="False" />
+      </StackPanel>
+
+      <TextBlock Margin="0,4,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Files.BackupUnavailable]}" />
+
+      <!-- FileManageSetting.xaml:111-123 删除所有设置 -->
       <Button Height="40"
-              Margin="0,12,0,0"
+              Margin="0,8,0,0"
               Padding="16,0"
+              BorderThickness="0"
               HorizontalAlignment="Left"
+              CornerRadius="8,20,20,8"
               Classes="accent"
-              Command="{Binding OpenConfigFolderCommand}">
+              IsEnabled="False">
         <StackPanel Orientation="Horizontal" Spacing="8">
-          <TextBlock Classes="icon" FontSize="16" Text="&#xE838;" />
-          <TextBlock Text="{Binding Strings[Settings.Files.OpenConfigDir]}" />
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE74D;" />
+          <TextBlock Text="{Binding Strings[Settings.Files.DeleteAllSettings]}" />
         </StackPanel>
       </Button>
 
-      <!-- ── 缓存维护 ─────────────────────────────────────────── -->
+      <TextBlock Margin="0,4,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Files.DeleteAllUnavailable]}" />
+
+      <!-- FileManageSetting.xaml:126-129 -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.Files.SectionMaintenance]}" />
+                 Text="{Binding Strings[Settings.Files.Log]}" />
 
-      <TextBlock Margin="0,12,0,0"
-                 Classes="description"
-                 Text="{Binding Strings[Settings.Files.ClearCacheDesc]}" />
+      <!-- FileManageSetting.xaml:131-142 -->
+      <Button Height="40"
+              Margin="0,8,0,0"
+              Padding="16,0"
+              BorderThickness="0"
+              HorizontalAlignment="Left"
+              CornerRadius="8,20,20,8"
+              Classes="accent"
+              Command="{Binding OpenPathCommand}"
+              CommandParameter="{Binding LogDirectory}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE838;" />
+          <TextBlock Text="{Binding Strings[Settings.Files.OpenLogFolder]}" />
+        </StackPanel>
+      </Button>
 
-      <TextBlock Margin="0,8,0,0" Text="{Binding CacheSize}" />
+      <!-- FileManageSetting.xaml:145-148 -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Files.Cache]}" />
 
+      <!-- FileManageSetting.xaml:149-174：两列（标签 / 占用），字号与颜色照抄 -->
+      <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="20">
+        <TextBlock>
+          <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[Settings.Files.Log]}" /><LineBreak />
+          <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[Settings.Files.Image]}" /><LineBreak />
+          <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[Settings.Files.Browser]}" /><LineBreak />
+          <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[Settings.Files.GameResource]}" /><LineBreak />
+          <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[Settings.Files.LauncherBackground]}" />
+        </TextBlock>
+        <TextBlock>
+          <Run Text="{Binding LogCacheSize}" /><LineBreak />
+          <Run Text="{Binding ImageCacheSize}" /><LineBreak />
+          <Run Text="{Binding BrowserCacheSize}" /><LineBreak />
+          <Run Text="{Binding GameCacheSize}" /><LineBreak />
+          <Run Text="{Binding LauncherBackgroundSize}" />
+        </TextBlock>
+      </StackPanel>
+
+      <!-- FileManageSetting.xaml:176-195 清理缓存 -->
       <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="16">
         <Button Height="40"
                 Padding="16,0"
+                BorderThickness="0"
+                CornerRadius="8,20,20,8"
                 Classes="accent"
                 IsEnabled="{Binding !IsClearing}"
                 Command="{Binding ClearCacheCommand}">
@@ -163,16 +210,83 @@
             <TextBlock Text="{Binding Strings[Settings.Files.ClearCache]}" />
           </StackPanel>
         </Button>
-        <ProgressBar Width="160"
+
+        <!-- Starward ProgressRing（28×28）→ 等宽不确定进度条 -->
+        <ProgressBar Width="120"
+                     Height="3"
                      VerticalAlignment="Center"
                      IsIndeterminate="True"
                      IsVisible="{Binding IsClearing}" />
       </StackPanel>
 
-      <TextBlock Margin="0,12,0,0"
-                 Classes="tertiary"
-                 TextWrapping="Wrap"
+      <!-- FileManageSetting.xaml:196-199 -->
+      <CheckBox Margin="0,4,0,0"
+                Content="{Binding Strings[Settings.Files.ClearLauncherBackground]}"
+                IsChecked="{Binding ClearLauncherBackground, Mode=TwoWay}" />
+
+      <!-- LunarWard 追加：缓存总占用（Starward 只列分类，不显示合计） -->
+      <TextBlock Margin="0,4,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding CacheSize}" />
+
+      <!-- ── LunarWard 追加：目录与文件（XDG 四目录 + config.json）。
+              放在 Starward 全部条目之后，不改动原有顺序。────────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Files.SectionPaths]}" />
+
+      <ItemsControl ItemsSource="{Binding DirectoryRows}" Margin="0,12,0,0">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:SettingPathRowViewModel">
+            <StackPanel Margin="0,0,0,8">
+              <TextBlock Text="{Binding Label}" />
+              <Grid Margin="0,4,0,0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                <Button Grid.Column="0"
+                        Height="32"
+                        Width="72"
+                        Command="{Binding $parent[UserControl].((vm:SettingFileManageViewModel)DataContext).OpenPathCommand}"
+                        CommandParameter="{Binding Path}"
+                        Content="{Binding $parent[UserControl].((vm:SettingFileManageViewModel)DataContext).Strings[Settings.Common.Open]}" />
+                <Button Grid.Column="1"
+                        Height="32"
+                        Width="88"
+                        Command="{Binding $parent[UserControl].((vm:SettingFileManageViewModel)DataContext).CopyPathCommand}"
+                        CommandParameter="{Binding Path}"
+                        Content="{Binding $parent[UserControl].((vm:SettingFileManageViewModel)DataContext).Strings[Settings.Common.CopyPath]}" />
+                <TextBlock Grid.Column="2"
+                           VerticalAlignment="Center"
+                           Margin="4,0,0,0"
+                           FontFamily="{StaticResource StarMonoFontFamily}"
+                           FontSize="12"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip.Tip="{Binding Path}"
+                           Text="{Binding Path}" />
+              </Grid>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <Button Height="40"
+              Margin="0,4,0,0"
+              Padding="16,0"
+              HorizontalAlignment="Left"
+              BorderThickness="0"
+              CornerRadius="8,20,20,8"
+              Classes="accent"
+              Command="{Binding OpenConfigFolderCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE838;" />
+          <TextBlock Text="{Binding Strings[Settings.Files.OpenConfigDir]}" />
+        </StackPanel>
+      </Button>
+
+      <TextBlock Margin="0,8,0,0"
+                 FontSize="12"
                  Foreground="{StaticResource StarCautionBrush}"
+                 TextWrapping="Wrap"
                  Text="{Binding Status}"
                  IsVisible="{Binding HasStatus}" />
     </StackPanel>

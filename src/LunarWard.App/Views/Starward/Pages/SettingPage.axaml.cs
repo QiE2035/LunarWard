@@ -58,6 +58,29 @@ public partial class SettingPage : StarwardPage
     protected override void DisposeViewModel(PageContext context) => Clear();
 
 
+    /// <summary>
+    /// 自检入口：按 Starward 页面名切换到指定二级子页。
+    /// </summary>
+    /// <remarks>
+    /// <c>--page settings --settings-section files</c> 用；tag 既接受 Starward 短名
+    /// （<c>about</c> / <c>files</c> …），也接受 XAML 里的完整 Tag（<c>FileManageSetting</c>）。
+    /// 与 Starward 的 <c>NavigationView_ItemInvoked</c> 一样只做"选中 + 换 Frame 内容"。
+    /// </remarks>
+    public void SelectSection(string tag)
+    {
+        if (_viewModel is null || SettingSectionTags.Parse(tag) is not { } kind)
+        {
+            return;
+        }
+
+        var section = _viewModel.Sections.FirstOrDefault(s => s.Kind == kind);
+        if (section is not null)
+        {
+            _viewModel.SelectedSection = section;
+        }
+    }
+
+
     /// <summary>创建 VM 并选中当前子页（构造与"从别页回来"都走这里）。</summary>
     private void Build()
     {

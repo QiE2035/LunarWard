@@ -5,36 +5,46 @@
              x:DataType="vm:SettingAboutViewModel">
 
   <!--
-    复刻 Starward Features/Setting/AboutSetting.xaml：
-      Logo 160×160 → 24px Bold 应用名 → 副标题 → 当前版本 → 相关链接（20px 标题 + 8 间距的粗体链接）
-    LunarWard 追加：许可说明、致谢、日志目录（Starward 有「检查更新」，LunarWard 走发行包，不内置更新器）。
+    1:1 复刻 Starward Features/Setting/AboutSetting.xaml（135 行）：
+      18-22  Image 160×160（Logo，左对齐）
+      24-27  0,12 → 24px Bold 应用名
+      28     0,4  → 副标题（14px 次要色）
+      32-39  0,12 → 「当前版本：」+ 版本号（SemiBold、强调色）
+      43-46  0,12 → 预览版渠道 ToggleSwitch
+      47-85  0,4  → Grid ColumnSpacing=16：检查更新强调按钮（40 高 / Padding 12,0,16,0 /
+              CornerRadius 4,20,20,4）+ 状态列（已是最新版 / ProgressRing / 错误文字）
+      89-91  0,20 → 20px「相关链接」
+      92-126 每条链接 0,8、左对齐、粗体强调色（Starward 用 Hyperlink+Run，这里用透明
+              按钮等价物，视觉一致）
+    行号均指 Starward/src/Starward/Features/Setting/AboutSetting.xaml。
   -->
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+    <StackPanel HorizontalAlignment="Stretch">
 
-      <!-- ── Logo：Starward 用 Assets/logo.png；LunarWard 没有独立 logo，用强调色底 + 图标 ── -->
+      <!-- AboutSetting.xaml:18-22 -->
+      <!-- Starward 是 Assets/logo.png；LunarWard 没有独立 logo，用强调色底 + 月亮图标占位 -->
       <Border Width="160" Height="160"
               HorizontalAlignment="Left"
               CornerRadius="24"
-              Background="{StaticResource StarAccentBrush}"
-              Margin="0,4,0,0">
-        <!-- Starward 这里是 Assets/logo.png；LunarWard 没有独立 logo，用「月亮」图标代替 -->
+              Background="{StaticResource StarAccentBrush}">
         <TextBlock Classes="icon"
                    FontSize="80"
                    Foreground="{StaticResource StarAccentForegroundBrush}"
                    Text="&#xE708;" />
       </Border>
 
+      <!-- AboutSetting.xaml:24-27 -->
       <TextBlock Margin="0,12,0,0"
                  FontSize="24"
                  FontWeight="Bold"
                  Text="{Binding AppName}" />
 
+      <!-- AboutSetting.xaml:28（Starward：「Developed by Scighost, all rights reserved.」） -->
       <TextBlock Margin="0,4,0,0"
                  Classes="description"
                  Text="{Binding Strings[Settings.About.Tagline]}" />
 
-      <!-- ── 当前版本 ──────────────────────────────────────────── -->
+      <!-- AboutSetting.xaml:32-39 -->
       <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="4">
         <TextBlock Text="{Binding Strings[Settings.About.Version]}" />
         <TextBlock FontWeight="SemiBold"
@@ -42,28 +52,64 @@
                    Text="{Binding Version}" />
       </StackPanel>
 
-      <!-- ── 复刻声明（如实写明来源）──────────────────────────── -->
-      <TextBlock Margin="0,12,0,0"
-                 Classes="description"
-                 Text="{Binding Strings[Settings.About.ReplicaNote]}" />
+      <!-- AboutSetting.xaml:43-46 预览版更新渠道。
+           LunarWard 通过发行包（.deb / AppImage）更新，没有内置更新器：保留位置、禁用。 -->
+      <ToggleSwitch Margin="0,12,0,0"
+                    IsEnabled="False"
+                    OffContent="{Binding Strings[Settings.About.PreviewChannel]}"
+                    OnContent="{Binding Strings[Settings.About.PreviewChannel]}" />
 
-      <TextBlock Margin="0,8,0,0"
-                 Classes="description"
-                 Text="{Binding Strings[Settings.About.License]}" />
+      <!-- AboutSetting.xaml:47-85 检查更新。
+           Starward 的第 1 列是「已是最新版 / ProgressRing / 错误文字」；LunarWard 没有
+           更新服务，第 1 列换成不可用说明（同一 Grid 位置与间距）。 -->
+      <Grid Margin="0,4,0,0" ColumnSpacing="16">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
 
-      <!-- ── 相关链接（Starward：20px 标题 + 8 间距的粗体链接）──── -->
+        <!-- AboutSetting.xaml:54-64 -->
+        <Button Grid.Column="0"
+                Height="40"
+                Padding="12,0,16,0"
+                BorderThickness="0"
+                CornerRadius="4,20,20,4"
+                Classes="accent"
+                IsEnabled="False">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE752;" />
+            <TextBlock Text="{Binding Strings[Settings.About.CheckUpdate]}" />
+          </StackPanel>
+        </Button>
+
+        <!-- AboutSetting.xaml:66-73 的「已是最新版」状态位：LunarWard 说明为什么不可用 -->
+        <TextBlock Grid.Column="1"
+                   VerticalAlignment="Center"
+                   MaxWidth="620"
+                   FontSize="12"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   TextWrapping="Wrap"
+                   Text="{Binding Strings[Settings.About.UpdaterUnavailable]}" />
+      </Grid>
+
+      <!-- AboutSetting.xaml:89-126 相关链接 -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
                  Text="{Binding Strings[Settings.About.Links]}" />
 
-      <ItemsControl ItemsSource="{Binding Links}" Margin="0,8,0,0">
+      <ItemsControl ItemsSource="{Binding Links}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:SettingLinkViewModel">
+            <!-- 每条 0,8、左对齐、粗体强调色（对应 Hyperlink + Bold Run） -->
             <Button Classes="link"
+                    Margin="0,8,0,0"
                     HorizontalAlignment="Left"
                     MinHeight="24"
                     Padding="0"
                     FontWeight="Bold"
+                    IsEnabled="{Binding IsEnabled}"
+                    ToolTip.Tip="{Binding Note}"
                     Content="{Binding Label}"
                     Command="{Binding $parent[UserControl].((vm:SettingAboutViewModel)DataContext).OpenLinkCommand}"
                     CommandParameter="{Binding}" />
@@ -71,33 +117,31 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
 
-      <!-- ── 致谢 ─────────────────────────────────────────────── -->
-      <TextBlock Margin="0,12,0,0"
-                 Classes="tertiary"
+      <!-- ── LunarWard 追加：复刻声明 / 许可 / 致谢（Starward 关于页没有这些，放在全部
+              Starward 条目之后，12px 次要色，不改变上面任何一项的顺序）───────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.About.ReplicaNote]}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.About.License]}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
                  Text="{Binding Strings[Settings.About.Thanks]}" />
 
-      <!-- ── 日志目录（LunarWard 追加，Starward 放在文件管理页）──── -->
-      <TextBlock Margin="0,20,0,0"
-                 Classes="section"
-                 Text="{Binding Strings[Settings.About.LogFolder]}" />
-
-      <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,*" ColumnSpacing="12">
-        <Button Grid.Column="0"
-                Height="32"
-                Command="{Binding OpenLogFolderCommand}">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="icon" FontSize="16" Text="&#xE838;" />
-            <TextBlock Text="{Binding Strings[Settings.About.OpenLogFolder]}" />
-          </StackPanel>
-        </Button>
-        <TextBlock Grid.Column="1"
-                   VerticalAlignment="Center"
-                   Classes="tertiary"
-                   TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="{Binding LogDirectory}"
-                   Text="{Binding LogDirectory}" />
-      </Grid>
+      <TextBlock Margin="0,8,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.About.LinksUnavailableNote]}" />
 
       <TextBlock Margin="0,8,0,0"
                  Classes="tertiary"

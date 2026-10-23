@@ -5,59 +5,66 @@
              x:DataType="vm:SettingToolboxViewModel">
 
   <!--
-    复刻 Starward Features/Setting/ToolboxSetting.xaml：
-      GridView(SelectionMode=None) 里的 180×220 卡片（图标 40 → 名称 Bold → 12px 说明）
-    Starward 的卡片是「每日便笺 / 账号记录 / 抽奖记录」；LunarWard 这里是本项目的
-    工具箱入口（游戏设置 / 诊断 / 环境 shell / 截图），跳转统一走 Shell.Navigate。
+    1:1 复刻 Starward Features/Setting/ToolboxSetting.xaml（62 行）：
+      14      GridView（SelectionMode=None，自身滚动，无外层 Margin/Padding）
+      18-22   每张卡片 Button 180×220，内容拉伸（Stretch/Stretch）
+      23-54   卡片内 Grid RowSpacing=8，三行 100 / Auto / *：
+              · 图标（FontIcon 40，水平垂直居中，有图时切换 CachedImage 48×48）
+              · 名称（Bold，换行）
+              · 说明（12px，次要色，换行 + 省略）
+    行号均指 Starward/src/Starward/Features/Setting/ToolboxSetting.xaml。
+
+    Avalonia 没有 GridView：用 ScrollViewer + ItemsControl(WrapPanel) 复刻。
+    WinUI 的默认 GridViewItem 在条目外留 4px（GridViewItemMargin），这里用
+    每张卡片 Margin 0,0,4,4 对齐；卡片尺寸/内部行高/字号与源码一致。
+    卡片内容（游戏设置 / 启动诊断 / 环境 shell / 截图）是 LunarWard 自己的工具箱
+    入口，沿用 Starward 的卡片版式，没有替换 Starward 设置页里的任何条目。
   -->
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24" Spacing="12">
+    <ItemsControl ItemsSource="{Binding Items}" Padding="0,0,24,24">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <WrapPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:SettingToolboxItemViewModel">
+          <!-- ToolboxSetting.xaml:18-22 -->
+          <Button Width="180"
+                  Height="220"
+                  Margin="0,0,4,4"
+                  Padding="12"
+                  HorizontalContentAlignment="Stretch"
+                  VerticalContentAlignment="Stretch"
+                  Command="{Binding $parent[UserControl].((vm:SettingToolboxViewModel)DataContext).InvokeCommand}"
+                  CommandParameter="{Binding}">
+            <!-- ToolboxSetting.xaml:23-54 -->
+            <Grid RowDefinitions="100,Auto,*" RowSpacing="8">
+              <!-- 图标：FontIcon 40，居中（Starward 也有 CachedImage 48 的可选分支，LunarWard 无素材） -->
+              <TextBlock Grid.Row="0"
+                         Classes="icon"
+                         FontSize="40"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         Text="{Binding Icon}" />
 
-      <ItemsControl ItemsSource="{Binding Items}">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <WrapPanel Orientation="Horizontal" />
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:SettingToolboxItemViewModel">
-            <Button Width="180" Height="220"
-                    Margin="0,0,12,12"
-                    Padding="12"
-                    HorizontalContentAlignment="Stretch"
-                    VerticalContentAlignment="Stretch"
-                    Command="{Binding $parent[UserControl].((vm:SettingToolboxViewModel)DataContext).InvokeCommand}"
-                    CommandParameter="{Binding}">
-              <Grid RowDefinitions="100,Auto,*" RowSpacing="8">
-                <TextBlock Grid.Row="0"
-                           Classes="icon"
-                           FontSize="40"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Text="{Binding Icon}" />
+              <!-- 名称：Bold、换行 -->
+              <TextBlock Grid.Row="1"
+                         FontWeight="Bold"
+                         TextWrapping="Wrap"
+                         Text="{Binding Name}" />
 
-                <TextBlock Grid.Row="1"
-                           FontWeight="Bold"
-                           TextWrapping="Wrap"
-                           Text="{Binding Name}" />
-
-                <TextBlock Grid.Row="2"
-                           FontSize="12"
-                           TextWrapping="Wrap"
-                           TextTrimming="CharacterEllipsis"
-                           Foreground="{StaticResource StarTextSecondary}"
-                           Text="{Binding Description}" />
-              </Grid>
-            </Button>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-
-      <TextBlock Classes="tertiary"
-                 TextWrapping="Wrap"
-                 Foreground="{StaticResource StarCautionBrush}"
-                 Text="{Binding Status}"
-                 IsVisible="{Binding HasStatus}" />
-    </StackPanel>
+              <!-- 说明：12px、次要色、换行 + 省略 -->
+              <TextBlock Grid.Row="2"
+                         FontSize="12"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         TextWrapping="Wrap"
+                         TextTrimming="CharacterEllipsis"
+                         Text="{Binding Description}" />
+            </Grid>
+          </Button>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
   </ScrollViewer>
 </UserControl>

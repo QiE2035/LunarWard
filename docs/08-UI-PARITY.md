@@ -29,14 +29,14 @@
 | 启动器 | `GameLauncherPage.xaml`(684，其中 PipsPager 样式 ~330 行) | `Pages/GameLauncherPage.axaml`(281) | 🟡 | 公告卡/开始按钮/时长胶囊位置一致；预下载、安装进度态、DX12 选项、区服 ComboBox、拖放背景、账号切换器（Starward 是 40 高 ComboBox + 切换/编辑）、便笺 Flyout 未移植 |
 | 游戏设置 | `GameSettingPage.xaml`(199) + `GameSettingService.cs` | `Pages/GameSettingPage.axaml`(约 900) + `Services/WineRegistry.cs` / `GameSettingRegistry.cs` | 🟡 | 本轮已按源码恢复左列（分辨率/全屏/无边框/自定义分辨率/语音语言）+ 右列图形设置 + 60px 应用条；值通过 `wine reg` 读写游戏 prefix 的 `HKCU\Software\miHoYo\<游戏>`（与 Starward 同一组键）。LunarWard 目录/wine/env/外部程序/诊断移到下方追加区。未移植：HDR（Linux/Wine 无等价物，开关禁用+说明）、按显示器尺寸过滤分辨率列表、星铁帧率（LunarWard 不支持星铁）、游戏版本检测（用 exe 是否存在近似） |
 | 设置总览 | `SettingPage.xaml`(108) | `Pages/SettingPage.axaml`(160) | ✅ | 260 二级导航 + Frame Margin 24,24,0,0 一致 |
-| 关于 | `AboutSetting.xaml`(135) | `SettingAboutView.axaml`(110) | 🟡 | LunarWard 品牌内容替换（合理），链接区/日志目录已本地化 |
-| 通用 | `GeneralSetting.xaml`(87) | `SettingGeneralView.axaml`(119) | 🟡 | 追加了主题/启动行为；缺"帮助翻译"链接；Windows 系统效果段落省略（合理） |
-| 下载 | `DownloadSetting.xaml`(104) | `SettingDownloadView.axaml`(102) | 🟡 | 逐项核对后补齐 |
-| 文件管理 | `FileManageSetting.xaml`(206) | `SettingFileManageView.axaml`(180) | 🟡 | 缓存/日志列表结构需逐项核对 |
-| 截图设置 | `ScreenshotSetting.xaml`(189) | `SettingScreenshotView.axaml`(96) | 🟡 | 只移植了一部分开关 |
-| 快捷键 | `HotkeySetting.xaml`(62) | `SettingHotkeyView.axaml`(89) | 🟡 | 键盘录入对话框（`HotkeyInput.xaml` 117）未移植 |
-| 手柄增强 | `GamepadControlSetting.xaml`(207) | `SettingGamepadView.axaml`(38) | 🟡 | 依 Windows GameInput，LunarWard 不支持；按"说明 + 保留菜单项"处理（如实告知） |
-| 高级 | `AdvancedSetting.xaml`(125) | `SettingAdvancedView.axaml`(169) | 🟡 | 追加了 LunarWard 项；逐项核对 |
+| 关于 | `AboutSetting.xaml`(135) | `SettingAboutView.axaml`(约 190) | 🟡 | 本轮已按源码重排：Logo 160 / 24px Bold / 版本行 / 预览版 Toggle / 检查更新按钮 / 相关链接；Windows 更新器与预览通道如实禁用 |
+| 通用 | `GeneralSetting.xaml`(87) | `SettingGeneralView.axaml`(约 160) | 🟡 | 本轮已对齐：语言 ComboBox 36/260/圆角 8,18,18,8、帮助翻译链接、关闭窗口两 Radio、注册表账号 Toggle、分隔线、系统效果说明位；LunarWard 主题/启动/公告追加在后 |
+| 下载 | `DownloadSetting.xaml`(104) | `SettingDownloadView.axaml`(约 210) | 🟡 | 本轮已对齐：默认安装路径 + 定位 + 文件夹胶囊、硬链接 Toggle、限速行；Windows 默认路径/硬链接/限速控件禁用并说明 |
+| 文件管理 | `FileManageSetting.xaml`(206) | `SettingFileManageView.axaml`(约 400) | 🟡 | 本轮已对齐：数据文件夹、备份数据库（ProgressRing→ProgressBar）、删除所有设置、日志、缓存五分类真实占用、清理缓存 + 清理背景；SQLite 备份/改目录禁用并说明 |
+| 截图设置 | `ScreenshotSetting.xaml`(189) | `SettingScreenshotView.axaml`(约 350) | 🟡 | 本轮已对齐：文件夹按钮/胶囊、快捷键占位、格式质量（Segmented 无等价物→禁用占位）、三个 Toggle、HDR 说明、测试/清缓存、两段 12px 说明；WIC 转码/全局热键禁用并说明 |
+| 快捷键 | `HotkeySetting.xaml`(62) | `SettingHotkeyView.axaml`(约 130) | 🟡 | 本轮已对齐标题/行高/宽度；`HotkeyInput` 用同边框/圆角的禁用占位（Linux 无全局热键） |
+| 手柄增强 | `GamepadControlSetting.xaml`(207) | `SettingGamepadView.axaml`(约 200) | 🟡 | 本轮已按源码重排标题/Toggle/说明/模拟输入/按键映射/三段说明；GameInput 不存在 → 控件禁用 + Linux 替代方案（Steam Input）追加在后 |
+| 高级 | `AdvancedSetting.xaml`(125) | `SettingAdvancedView.axaml`(约 230) | 🟡 | 本轮已对齐 URL 协议 / RPC 服务 / 日志级别三段；RPC 在 LunarWard 不存在 → 保留状态行、去掉伪造按钮；日志/env 追加在后 |
 | 工具箱 | `GameRecordPage`（GameRecord/*）+ `DailyNoteButton.xaml`(722) | `Pages/ToolboxPage.axaml`(409) | 🔴 | Starward 工具箱是游戏记录总览；每日便笺是**启动器右下按钮的 Flyout**。当前页把便笺/账号做成两个 Tab，且便笺 Tab 显示 cookie 输入框——版式自创，需重写 |
 | 截图页 | `ScreenshotPage2.xaml`(319)（+`ImageViewWindow2.xaml` 731） | `Pages/ScreenshotPage.axaml`(263) | 🟡 | 本轮已按源码重写：44px 页头 + 磁贴墙（列宽按 UniformGridLayout 公式均摊）+ 空态。未移植：ItemsView 容器虚拟化、AnnotatedScrollBar、悬停 1.2× 放大、`ImageViewWindow2`（点击走系统查看器）、截图文件夹管理对话框（Flyout 三行代替） |
 | 抽卡页 | `GachaLogPage.xaml`(475) + `GachaStatsCard.xaml`(293) + `ZZZGachaStatsCard`(294) | `Pages/GachaPage.axaml`(451) + `Controls/GachaStatsCard.axaml`(306) | 🟡 | 本轮已按源码重写：44px 页头（UID/更新 SplitButton/设置 Flyout/强调色 Pane 按钮）+ SplitView + 统计卡（行序、字号、稀有度色照抄）+ 5★/4★ 列表 + 空态。未移植：ZZZ 统计卡、材料图标与卡池底图（无素材，占位）、按时间段删除、UIGF v4、虚拟化 |
@@ -71,6 +71,13 @@
   LunarWard 设置移到下方追加区（20px 标题 + 说明）。
 - 真 wine 往返：`LUNARWARD_REAL_WINE=1 LUNARWARD_TEST_WINE=<wine>` 跑
   `WineRegistryRealWineTests`（wineboot 建 prefix → 写 DWORD → 读回），本机通过。
+- **设置页 9 个子页**（t-settings）：按 `Features/Setting/*.xaml` 逐段重排，
+  每个 XAML 头部注释标源码行号；Windows 专有项保留结构位置并禁用/说明，不伪造。
+  新增 `--settings-section <tag>` 自检开关（about/general/download/files/screenshot/
+  hotkey/gamepad/advanced/toolbox），逐子页出图（含 en-US）。
+  已知偏差：ProgressRing→ProgressBar、Segmented→禁用占位、Hyperlink→透明按钮、
+  GridView 无虚拟化、XboxFluent2 字形用 MDL2 替代、禁用 Toggle 文案不变灰
+  （全局样式属 Lead 独占，未动）。
 - 全量测试 348 通过（290 单测 + 31 安装器 + 27 集成；其中 14 个是新增的注册表
   解析/映射用例，真 wine 往返用例默认跳过）。
 

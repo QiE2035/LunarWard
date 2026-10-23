@@ -16,6 +16,9 @@ internal static class Program
         //
         //   --screenshot <png>                 启动器页（默认）
         //   --page launcher|game-setting|screenshot|gacha|toolbox|settings
+        //   --settings-section <tag>           设置页的二级子页（tag 与 Starward 页面名一致）：
+        //                                      about|general|download|files|screenshot|hotkey|
+        //                                      gamepad|advanced|toolbox
         //   --profile <id>                     指定档案（如 genshin-cn）
         //   --wait <ms>                        渲染前等待（默认 1600，给网络素材留时间）
         //   --window <name>                    旧窗口自检（settings / account / dailynote / gacha）
@@ -25,6 +28,7 @@ internal static class Program
             CaptureMode.Path = args[index + 1];
             CaptureMode.TargetWindow = ReadArgument(args, "--window") ?? "main";
             CaptureMode.Page = ReadArgument(args, "--page");
+            CaptureMode.SettingsSection = ReadArgument(args, "--settings-section");
             CaptureMode.ProfileId = ReadArgument(args, "--profile");
             CaptureMode.OpenSelector = args.Contains("--open-selector");
             CaptureMode.GameIcons = args.Contains("--game-icons");
@@ -78,6 +82,13 @@ internal static class CaptureMode
 
     /// <summary>要切到的 Starward 页面（<c>launcher</c> 等），null = 启动器页。</summary>
     public static string? Page { get; set; }
+
+    /// <summary>
+    /// 设置页的二级子页 tag（Starward 页面名）：<c>about</c> / <c>general</c> /
+    /// <c>download</c> / <c>files</c> / <c>screenshot</c> / <c>hotkey</c> /
+    /// <c>gamepad</c> / <c>advanced</c> / <c>toolbox</c>。配合 <c>--page settings</c> 使用。
+    /// </summary>
+    public static string? SettingsSection { get; set; }
 
     /// <summary>指定档案 id。</summary>
     public static string? ProfileId { get; set; }

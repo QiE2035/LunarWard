@@ -183,7 +183,9 @@ public partial class GachaPage : UserControl
 
 1. `dotnet build LunarWard.slnx` 0 warning / 0 error。
 2. `dotnet run --project src/LunarWard.App -- --screenshot artifacts/screens/sw-<page>.png --page <name> --profile genshin-cn`
-   逐页出图；`--screenshot` 支持 `--page launcher|game-setting|screenshot|gacha|toolbox|settings`。
+   逐页出图；`--screenshot` 支持 `--page launcher|game-setting|screenshot|gacha|toolbox|settings`，
+   设置页可用 `--settings-section <about|general|download|files|screenshot|hotkey|gamepad|advanced|toolbox>`
+   直接落到二级子页。
 3. 每页与 Starward 参考截图并排比对：窗口结构、元素位置/尺寸、字体层级、圆角、
    颜色、悬停/选中态逐项打勾；差异记入本文 §8。
 4. 旧顶栏 UI 删除后，`--screenshot` 默认落到启动器页，README 截图更新。

@@ -33,9 +33,10 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
         _gameKind = context.Profile.Profile.Game;
         // 没配游戏目录时不能调 GetDirectory：它会拼出相对路径 "ScreenShot"，看起来像工作目录
         HasGameDirectory = !string.IsNullOrEmpty(_gameDirectory);
+        // Starward 的文件夹胶囊总是有值；没配游戏目录时用占位文案，保持胶囊结构
         DirectoryPath = HasGameDirectory
             ? ScreenshotService.GetDirectory(_gameDirectory, _gameKind)
-            : "";
+            : Strings["Settings.Screenshot.NoGameDirShort"];
         Reload();
     }
 
@@ -45,17 +46,8 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
 
     public string DirectoryPath { get; }
 
-    public string FormatValue => Strings["Settings.Screenshot.FormatValue"];
-
-    public string SortValue => Strings["Settings.Screenshot.SortValue"];
-
-
     [ObservableProperty]
     private string _countText = "";
-
-
-    [ObservableProperty]
-    private bool _isEmpty = true;
 
 
     /// <summary>重新统计截图数量与占用（进入页面时调用）。</summary>
@@ -63,7 +55,6 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
     {
         if (!HasGameDirectory)
         {
-            IsEmpty = true;
             CountText = Strings["Settings.Screenshot.NoGameDirectory"];
             return;
         }
@@ -71,7 +62,6 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
         try
         {
             var (count, bytes) = _service.Summarize(_gameDirectory, _gameKind);
-            IsEmpty = count == 0;
             CountText = count == 0
                 ? Strings["Settings.Screenshot.Empty"]
                 : string.Format(
@@ -82,7 +72,6 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
         }
         catch (Exception ex)
         {
-            IsEmpty = true;
             CountText = Strings["Settings.Screenshot.Empty"];
             Status = ex.Message;
         }
@@ -124,6 +113,12 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
     [RelayCommand]
     private async Task CopyPathAsync()
     {
+        if (!HasGameDirectory)
+        {
+            Status = Strings["Settings.Screenshot.NoGameDirectory"];
+            return;
+        }
+
         Status = await SettingShellActions.TryCopyAsync(DirectoryPath).ConfigureAwait(true) is { } error
             ? error
             : Strings["Settings.Common.Copied"];

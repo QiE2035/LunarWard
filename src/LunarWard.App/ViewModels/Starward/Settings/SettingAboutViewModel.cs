@@ -5,10 +5,21 @@ using LunarWard.App.Views.Starward;
 
 namespace LunarWard.App.ViewModels.Starward;
 
-/// <summary>关于页（复刻 Starward <c>AboutSetting.xaml</c>）。</summary>
+/// <summary>关于页（1:1 复刻 Starward <c>AboutSetting.xaml</c>）。</summary>
 /// <remarks>
-/// Starward 有"检查更新 / 预览版通道"；LunarWard 走发行包升级，不内置更新器，
-/// 因此这里只保留版本、许可、链接、致谢与日志目录。
+/// <para>
+/// 控件顺序 / 间距照抄 Starward：Logo(160) → 24px 应用名 → 副标题 → 版本 →
+/// 预览版渠道 → 检查更新 → 「相关链接」+ 5 条粗体链接。
+/// </para>
+/// <para>
+/// Starward 有「检查更新 / 预览版通道」；LunarWard 走发行包升级，不内置更新器，
+/// 因此这两个控件保留位置但禁用（<c>AboutSetting.xaml:43-85</c>），旁边写清原因。
+/// 相关链接里的「隐私策略 / 赞助开发者」在 LunarWard 没有对应页面，同样保留位置并禁用。
+/// </para>
+/// <para>
+/// LunarWard 追加的「上游 Starward / 文档」两条链接排在 Starward 五条之后；
+/// 复刻声明 / 许可 / 致谢排在全部 Starward 条目之后。
+/// </para>
 /// </remarks>
 public sealed partial class SettingAboutViewModel : SettingSectionViewModel
 {
@@ -16,24 +27,30 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
         : base(context, SettingSectionKind.About, "Settings.About", "\uE946", showDivider)
     {
         Version = ReadVersion();
-        LogDirectory = Services.Paths.LogDirectory;
 
-        Links = new List<SettingLinkViewModel>
-        {
+        // 顺序 = AboutSetting.xaml:92-126（项目主页 / 反馈问题 / 更新记录 / 隐私策略 / 赞助开发者）
+        // + LunarWard 追加的两条（上游 Starward / 文档）。
+        Links =
+        [
             new SettingLinkViewModel(Strings["Settings.About.Homepage"], "https://github.com/QiE2035/LunarWard"),
-            new SettingLinkViewModel(Strings["Settings.About.Upstream"], "https://github.com/Scighost/Starward"),
             new SettingLinkViewModel(Strings["Settings.About.Issues"], "https://github.com/QiE2035/LunarWard/issues"),
+            new SettingLinkViewModel(Strings["Settings.About.Releases"], "https://github.com/QiE2035/LunarWard/releases"),
+            // LunarWard 不收集个人数据，也没有单独的隐私策略 / 赞助页面：
+            // 保留 Starward 的链接位但禁用，而不是指向一个不相干的页面。
+            new SettingLinkViewModel(Strings["Settings.About.Privacy"], null,
+                Strings["Settings.About.PrivacyUnavailable"]),
+            new SettingLinkViewModel(Strings["Settings.About.Donate"], null,
+                Strings["Settings.About.DonateUnavailable"]),
+            new SettingLinkViewModel(Strings["Settings.About.Upstream"], "https://github.com/Scighost/Starward"),
             new SettingLinkViewModel(Strings["Settings.About.Docs"], "https://github.com/QiE2035/LunarWard/blob/main/docs/07-UI-REPLICA.md"),
-        };
+        ];
     }
 
 
-    /// <summary>应用名（Starward 里是 24px Bold 的「Starward」）。</summary>
+    /// <summary>应用名（Starward 里是 24px Bold 的「Starward」，AboutSetting.xaml:24-27）。</summary>
     public string AppName => "LunarWard";
 
     public string Version { get; }
-
-    public string LogDirectory { get; }
 
     public List<SettingLinkViewModel> Links { get; }
 
@@ -41,21 +58,12 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
     [RelayCommand]
     private async Task OpenLinkAsync(SettingLinkViewModel? link)
     {
-        if (link is null)
+        if (link?.Url is null)
         {
             return;
         }
 
         await Services.OpenUriAsync(link.Url).ConfigureAwait(true);
-    }
-
-
-    [RelayCommand]
-    private void OpenLogFolder()
-    {
-        Status = SettingShellActions.TryOpen(LogDirectory) is { } error
-            ? string.Format(Strings["Settings.Common.OpenFailed"], error)
-            : null;
     }
 
 
@@ -82,5 +90,13 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
 }
 
 
-/// <summary>关于页的一条外链（Starward 用 Hyperlink + Run）。</summary>
-public sealed record SettingLinkViewModel(string Label, string Url);
+/// <summary>
+/// 关于页的一条外链（Starward 用 <c>Hyperlink</c> + <c>Run</c>，这里用透明按钮等价物）。
+/// </summary>
+/// <param name="Label">链接文字。</param>
+/// <param name="Url">目标地址；<c>null</c> 表示 LunarWard 没有对应页面，条目禁用。</param>
+/// <param name="Note">禁用原因（Tooltip）。</param>
+public sealed record SettingLinkViewModel(string Label, string? Url, string? Note = null)
+{
+    public bool IsEnabled => Url is not null;
+}

@@ -22,6 +22,46 @@ public enum SettingSectionKind
 
 
 /// <summary>
+/// 设置子页 tag 解析（<c>--settings-section</c> 自检开关与 <c>SettingPage.SelectSection</c> 共用）。
+/// </summary>
+/// <remarks>
+/// tag 用 Starward 页面名：<c>about</c> / <c>general</c> / <c>download</c> / <c>files</c> /
+/// <c>screenshot</c> / <c>hotkey</c> / <c>gamepad</c> / <c>advanced</c> / <c>toolbox</c>；
+/// 同时接受 <c>SettingPage.xaml</c> 里的完整 Tag（如 <c>FileManageSetting</c>）。
+/// </remarks>
+internal static class SettingSectionTags
+{
+    public static SettingSectionKind? Parse(string? tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            return null;
+        }
+
+        var text = tag.Trim().Replace("-", "").Replace("_", "");
+        if (text.EndsWith("Setting", StringComparison.OrdinalIgnoreCase))
+        {
+            text = text[..^"Setting".Length];
+        }
+
+        return text.ToLowerInvariant() switch
+        {
+            "about" => SettingSectionKind.About,
+            "general" => SettingSectionKind.General,
+            "download" => SettingSectionKind.Download,
+            "files" or "filemanage" or "filemanagement" => SettingSectionKind.FileManage,
+            "screenshot" or "screenshots" => SettingSectionKind.Screenshot,
+            "hotkey" or "hotkeys" or "keyboardshortcuts" => SettingSectionKind.Hotkey,
+            "gamepad" or "gamepadcontrol" => SettingSectionKind.Gamepad,
+            "advanced" => SettingSectionKind.Advanced,
+            "toolbox" => SettingSectionKind.Toolbox,
+            _ => null,
+        };
+    }
+}
+
+
+/// <summary>
 /// 设置子页 VM 的基类：子页都是 <see cref="StarwardPageViewModel"/>（拿到同一份
 /// <see cref="StarwardPageViewModel.Context"/>），并负责自己的标题本地化。
 /// </summary>
@@ -118,18 +158,19 @@ public sealed partial class SettingPageViewModel : StarwardPageViewModel
 
     /// <summary>
     /// 初始子页。默认「关于」（与 Starward <c>Frame_Setting.Navigate(typeof(AboutSetting))</c> 一致）；
-    /// 自检/截图时可用环境变量 <c>LUNARWARD_SETTINGS_SECTION</c>（如 <c>advanced</c>）直接落到某一页。
+    /// 自检/截图时可用 <c>--settings-section &lt;tag&gt;</c>（旧开关
+    /// <c>LUNARWARD_SETTINGS_SECTION</c> 仍保留）直接落到某一页。
     /// </summary>
     private SettingSectionViewModel? ResolveInitialSection()
     {
-        var requested = Environment.GetEnvironmentVariable("LUNARWARD_SETTINGS_SECTION");
+        var requested = CaptureMode.SettingsSection;
         if (string.IsNullOrWhiteSpace(requested))
         {
-            return null;
+            requested = Environment.GetEnvironmentVariable("LUNARWARD_SETTINGS_SECTION");
         }
 
-        return Sections.FirstOrDefault(s =>
-            string.Equals(s.Kind.ToString(), requested.Trim(), StringComparison.OrdinalIgnoreCase));
+        var kind = SettingSectionTags.Parse(requested);
+        return kind is null ? null : Sections.FirstOrDefault(s => s.Kind == kind);
     }
 
 

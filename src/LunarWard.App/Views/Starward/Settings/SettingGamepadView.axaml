@@ -5,32 +5,188 @@
              x:DataType="vm:SettingGamepadViewModel">
 
   <!--
-    Starward Features/Setting/GamepadControlSetting.xaml 的第一屏：
-      20px 标题 + 右侧 ToggleSwitch → 说明 → 分隔线 → 后续分区
-    LunarWard 不支持（依赖 Windows GameInput / XInput 模拟），因此没有 ToggleSwitch，
-    只按同样的节奏留标题 + 说明。菜单项保留是为了排版一致。
+    1:1 复刻 Starward Features/Setting/GamepadControlSetting.xaml（207 行）的标题与节奏。
+    Starward 依赖 Windows GameInput / XInput 模拟与全局按键注入，Linux 没有等价实现，
+    因此所有可交互控件保留结构位置、统一禁用，并在源码里「警告文字」的位置（33-68 行）
+    如实说明不可用；不伪造任何开关状态。
+      18-19   ScrollViewer > StackPanel Padding="0,0,24,0"（Avalonia 无 Padding → 用 Margin="0,0,24,0" 等价）
+      22-30   水平 StackPanel Spacing=20：20px「手柄增强」+ ToggleSwitch（Margin 0,-4）
+      33-36   0,8 说明（14px 次要色）
+      38-68   0,8 警示文字（Starward 是 GameInput 缺失/过时提示；这里说明 Linux 不支持）
+      70      MenuFlyoutSeparator 0,12,0,12
+      73-82   水平 StackPanel Spacing=20：20px「模拟输入」+ ToggleSwitch（Margin 0,-4）
+      85-88   0,4 说明（模拟输入功能说明）
+      91-96   0,12 水平：Xbox 导航键图标 + 12 间距文字「长按导航键…」
+      99-108  0,12 水平：左摇杆键图标 + "+" + 右摇杆键图标 + 12 间距文字「同时按下…」
+      110      MenuFlyoutSeparator 0,12,0,12
+      113      20px「按键映射」
+      116-144 0,12 水平 Spacing=12：导航键图标 + 文字 + ComboBox(MinWidth 160) +
+              TextBox(MinWidth 160，仅键盘模式可见) + 成功图标 / 警示文字
+      147-175 同结构：分享键
+      179-197 三段 12px 次要色说明（12 / 2 / 2 间距）
+    行号均指 Starward/src/Starward/Features/Setting/GamepadControlSetting.xaml。
+
+    图标：Starward 用 Assets/Font/XboxFluent2.ttf（E9A1 导航键 / E9A4、E9C8 摇杆键 /
+    E7D4 分享键）。LunarWard 没有该字体：E9A1 在 Segoe MDL2 中存在，直接复用；
+    E9A4/E9C8/E7D4 不存在，用最接近的 MDL2 字形（E7FC 手柄 / E72D 分享）占位。
   -->
-  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <StackPanel HorizontalAlignment="Stretch" Margin="0,0,24,24">
+  <ScrollViewer Background="{x:Null}"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="0,0,24,0">
 
-      <TextBlock Classes="section" Text="{Binding Strings[Settings.ControllerEnhancement]}" />
+      <!-- GamepadControlSetting.xaml:22-30 -->
+      <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Spacing="20">
+        <TextBlock Classes="section" Text="{Binding Strings[Settings.ControllerEnhancement]}" />
+        <ToggleSwitch Margin="0,-4,0,-4"
+                      IsEnabled="False"
+                      OffContent="{Binding Strings[Settings.Common.Disabled]}"
+                      OnContent="{Binding Strings[Settings.Common.Enabled]}" />
+      </StackPanel>
 
-      <Border Classes="infobar warning" Margin="0,12,0,0">
-        <StackPanel Spacing="6">
-          <TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Strings[Settings.Gamepad.Unsupported]}" />
-          <TextBlock FontSize="14"
-                     TextWrapping="Wrap"
-                     Text="{Binding Strings[Settings.Gamepad.Desc]}" />
-        </StackPanel>
-      </Border>
+      <!-- GamepadControlSetting.xaml:33-36 -->
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Gamepad.XboxOnly]}" />
 
-      <TextBlock Margin="0,16,0,0"
+      <!-- GamepadControlSetting.xaml:38-68 的 GameInput 警示位：Linux 上不可用的原因 -->
+      <TextBlock Margin="0,8,0,0"
+                 FontSize="14"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Gamepad.Unavailable]}" />
+
+      <TextBlock Margin="0,8,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Gamepad.Desc]}" />
+
+      <!-- GamepadControlSetting.xaml:70 MenuFlyoutSeparator -->
+      <Border Height="1" Margin="0,12,0,12" Background="{StaticResource StarDividerBrush}" />
+
+      <!-- GamepadControlSetting.xaml:73-82 -->
+      <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Spacing="20">
+        <TextBlock Classes="section" Text="{Binding Strings[Settings.Gamepad.SimulateInput]}" />
+        <ToggleSwitch Margin="0,-4,0,-4"
+                      IsEnabled="False"
+                      OffContent="{Binding Strings[Settings.Common.Disabled]}"
+                      OnContent="{Binding Strings[Settings.Common.Enabled]}" />
+      </StackPanel>
+
+      <!-- GamepadControlSetting.xaml:85-88 -->
+      <TextBlock Margin="0,4,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Gamepad.SimulateInputDesc]}" />
+
+      <!-- GamepadControlSetting.xaml:91-96 长按导航键 -->
+      <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
+        <TextBlock Classes="icon"
+                   FontSize="20"
+                   Text="&#xE9A1;" />
+        <TextBlock Margin="12,0,0,0"
+                   VerticalAlignment="Center"
+                   Text="{Binding Strings[Settings.Gamepad.LongPressGuide]}" />
+      </StackPanel>
+
+      <!-- GamepadControlSetting.xaml:99-108 同时按下左右摇杆键 -->
+      <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
+        <TextBlock Classes="icon"
+                   FontSize="20"
+                   Text="&#xE7FC;" />
+        <TextBlock Margin="2,0,2,0"
+                   VerticalAlignment="Center"
+                   Text="+" />
+        <TextBlock Classes="icon"
+                   FontSize="20"
+                   Text="&#xE7FC;" />
+        <TextBlock Margin="12,0,0,0"
+                   VerticalAlignment="Center"
+                   Text="{Binding Strings[Settings.Gamepad.BothThumbsticks]}" />
+      </StackPanel>
+
+      <!-- GamepadControlSetting.xaml:110 MenuFlyoutSeparator -->
+      <Border Height="1" Margin="0,12,0,12" Background="{StaticResource StarDividerBrush}" />
+
+      <!-- GamepadControlSetting.xaml:113 -->
+      <TextBlock Classes="section" Text="{Binding Strings[Settings.Gamepad.ButtonMapping]}" />
+
+      <!-- GamepadControlSetting.xaml:116-144 导航键 -->
+      <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="12">
+        <TextBlock Classes="icon"
+                   FontSize="20"
+                   Text="&#xE9A1;" />
+        <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Settings.Gamepad.GuideButton]}" />
+        <ComboBox MinWidth="160"
+                  VerticalAlignment="Center"
+                  SelectedIndex="0"
+                  IsEnabled="False">
+          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.NoAction]}" />
+          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.GameScreenshot]}" />
+          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.KeyboardKeys]}" />
+        </ComboBox>
+        <TextBox MinWidth="160"
+                 HorizontalAlignment="Left"
+                 IsEnabled="False"
+                 IsVisible="False"
+                 PlaceholderText="{Binding Strings[Settings.Gamepad.EnterKeyText]}" />
+      </StackPanel>
+
+      <!-- GamepadControlSetting.xaml:147-175 分享键 -->
+      <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="12">
+        <TextBlock Classes="icon"
+                   FontSize="20"
+                   Text="&#xE72D;" />
+        <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Settings.Gamepad.ShareButton]}" />
+        <ComboBox MinWidth="160"
+                  VerticalAlignment="Center"
+                  SelectedIndex="0"
+                  IsEnabled="False">
+          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.NoAction]}" />
+          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.GameScreenshot]}" />
+          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.KeyboardKeys]}" />
+        </ComboBox>
+        <TextBox MinWidth="160"
+                 HorizontalAlignment="Left"
+                 IsEnabled="False"
+                 IsVisible="False"
+                 PlaceholderText="{Binding Strings[Settings.Gamepad.EnterKeyText]}" />
+      </StackPanel>
+
+      <!-- GamepadControlSetting.xaml:179-197 -->
+      <TextBlock Margin="0,12,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Gamepad.MappingGuideDesc]}" />
+
+      <TextBlock Margin="0,2,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Gamepad.MappingKeyboardDesc]}" />
+
+      <TextBlock Margin="0,2,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Gamepad.MappingShareDesc]}" />
+
+      <!-- ── LunarWard 追加：Linux 上的替代方案（Starward 没有这一块，
+              放在全部 Starward 条目之后）──────────────────────────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Gamepad.LinuxSection]}" />
+
+      <TextBlock Margin="0,8,0,0"
                  Classes="description"
                  Text="{Binding Strings[Settings.Gamepad.SteamInput]}" />
 
-      <Border Height="1" Margin="0,20,0,12" Background="{StaticResource StarDividerBrush}" />
-
-      <TextBlock Classes="tertiary"
+      <TextBlock Margin="0,4,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
                  Text="{Binding Strings[Settings.Gamepad.KeptForParity]}" />
     </StackPanel>

@@ -54,7 +54,9 @@ dotnet run --project src/LunarWard.App
 # 4. 无头自检（渲染一帧 Starward 界面到 PNG 后退出，用于 CI）
 dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #    逐页出图：--page launcher|game-setting|screenshot|gacha|toolbox|settings
-#    其它自检开关：--open-selector（打开游戏选择层）、--tab accounts（工具箱账号页）、
+#    其它自检开关：--open-selector（打开游戏选择层）、--game-icons（展开游戏图标条）、
+#                 --tab accounts（工具箱账号页）、--lang en-US、
+#                 --settings-section <about|general|download|files|screenshot|hotkey|gamepad|advanced|toolbox>、
 #                 --profile <id>、--wait <ms>
 
 # 5. 打包（Arch）

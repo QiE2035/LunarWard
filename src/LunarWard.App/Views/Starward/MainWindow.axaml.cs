@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using LunarWard.App.ViewModels.Starward;
 
 namespace LunarWard.App.Views.Starward;
@@ -94,8 +95,40 @@ public partial class MainWindow : Window
             }
         }
 
+        // 设置子页：--page settings --settings-section <tag>
+        // 设置页在 Frame 里，等视觉树挂好后按 tag 切二级导航（自检每页出图用）。
+        if (CaptureMode.SettingsSection is { Length: > 0 } settingsSection)
+        {
+            await SelectSettingsSectionAsync(settingsSection);
+        }
+
         await Task.Delay(CaptureMode.WaitMilliseconds);
         CaptureMode.Capture(this);
+    }
+
+
+    /// <summary>
+    /// 等设置页挂到视觉树后调用 <c>SettingPage.SelectSection(tag)</c>。
+    /// </summary>
+    /// <remarks>
+    /// 设置页由 <c>StarwardShell</c> 的 <c>PageHost</c> 承载，<c>OnOpened</c> 时可能还没
+    /// 完成挂载，所以最多重试 3 秒；找不到就交给正常截图（不抛错）。
+    /// </remarks>
+    private async Task SelectSettingsSectionAsync(string tag)
+    {
+        for (var attempt = 0; attempt < 15; attempt++)
+        {
+            var page = Shell?.GetVisualDescendants().OfType<Pages.SettingPage>().FirstOrDefault();
+            if (page is not null)
+            {
+                page.SelectSection(tag);
+                // 让新子页的排版与绑定跑完一帧再截图
+                await Task.Delay(300);
+                return;
+            }
+
+            await Task.Delay(200);
+        }
     }
 
 
