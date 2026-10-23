@@ -30,13 +30,13 @@
           Background="Transparent"
           PointerPressed="OnTitleBarPointerPressed">
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-        <Button Classes="caption-button" Click="OnMinimizeClick" ToolTip.Tip="最小化">
+        <Button Classes="caption-button" Click="OnMinimizeClick" ToolTip.Tip="{Binding Strings[Shell.Minimize]}">
           <TextBlock Classes="icon" FontSize="10" Text="&#xE921;" />
         </Button>
-        <Button Classes="caption-button" IsEnabled="False" ToolTip.Tip="最大化">
+        <Button Classes="caption-button" IsEnabled="False" ToolTip.Tip="{Binding Strings[Shell.Maximize]}">
           <TextBlock Classes="icon" FontSize="10" Text="&#xE922;" />
         </Button>
-        <Button Classes="caption-close" Click="OnCloseClick" ToolTip.Tip="关闭">
+        <Button Classes="caption-close" Click="OnCloseClick" ToolTip.Tip="{Binding Strings[Shell.Close]}">
           <TextBlock Classes="icon" FontSize="10" Text="&#xE8BB;" />
         </Button>
       </StackPanel>

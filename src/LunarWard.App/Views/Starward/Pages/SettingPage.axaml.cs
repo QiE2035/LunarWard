@@ -41,6 +41,17 @@ public partial class SettingPage : StarwardPage
         {
             Build();
         }
+
+        // TEMP 清理缓存自检
+        if (Environment.GetEnvironmentVariable("LUNARWARD_CLEAR_CACHE") == "1" && _viewModel is { } vm)
+        {
+            Avalonia.Threading.DispatcherTimer.RunOnce(async () =>
+            {
+                var files = _viewModel.Sections.OfType<SettingFileManageViewModel>().First();
+                await files.ClearCacheCommand.ExecuteAsync(null);
+            }, TimeSpan.FromMilliseconds(300));
+            Avalonia.Threading.DispatcherTimer.RunOnce(() => vm.Confirmation.ConfirmCommand.Execute(null), TimeSpan.FromMilliseconds(900));
+        }
     }
 
 

@@ -37,13 +37,6 @@ public partial class GameSettingPage : StarwardPage
         }
 
         _viewModel.OnNavigatedTo();
-
-        // TEMP-VERIFY: 截图验证用滚动，验证完删除
-        if (double.TryParse(Environment.GetEnvironmentVariable("LW_SCROLL_OFFSET"), out var offset))
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() => DbgScroll.Offset = new Avalonia.Vector(0, offset),
-                Avalonia.Threading.DispatcherPriority.Background);
-        }
     }
 
 

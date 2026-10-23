@@ -100,7 +100,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     private string _contentStatus = "";
 
 
-    public string CurrentPivotHeader => Posts.FirstOrDefault()?.Header ?? "活动";
+    public string CurrentPivotHeader => Posts.FirstOrDefault()?.Header ?? Strings["Launcher.Activity"];
 
 
     /// <summary>当前选中的资讯分组（Starward Pivot 的 SelectedIndex）。</summary>
@@ -158,7 +158,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
     private async Task LoadContentAsync()
     {
-        ContentStatus = "正在获取游戏资讯…";
+        ContentStatus = Strings["Launcher.LoadingContent"];
         try
         {
             var assets = _context.Shell.Assets;
@@ -167,7 +167,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             if (content is null)
             {
                 HasContent = false;
-                ContentStatus = "离线：没有拿到活动/公告（不影响启动）";
+                ContentStatus = Strings["Launcher.OfflineContent"];
                 return;
             }
 
@@ -182,9 +182,9 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
             var groups = new (string Header, string Type)[]
             {
-                ("活动", GamePostType.POST_TYPE_ACTIVITY),
-                ("公告", GamePostType.POST_TYPE_ANNOUNCE),
-                ("资讯", GamePostType.POST_TYPE_INFO),
+                (Strings["Launcher.Activity"], GamePostType.POST_TYPE_ACTIVITY),
+                (Strings["Launcher.Announcement"], GamePostType.POST_TYPE_ANNOUNCE),
+                (Strings["Launcher.Info"], GamePostType.POST_TYPE_INFO),
             };
             foreach (var (header, type) in groups)
             {
@@ -206,13 +206,13 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             }
 
             HasContent = Banners.Count > 0 || Posts.Any(x => x.Items.Count > 0);
-            ContentStatus = HasContent ? "" : "暂无活动与公告";
+            ContentStatus = HasContent ? "" : Strings["Launcher.NoContent"];
         }
         catch (Exception ex)
         {
             _log.Warn($"启动器页资讯加载失败：{ex.Message}");
             HasContent = false;
-            ContentStatus = "拉取资讯失败（离线或接口不可用）";
+            ContentStatus = Strings["Launcher.ContentFailed"];
         }
         finally
         {
@@ -321,7 +321,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         if (launcher.State == LaunchPhaseState.Running)
         {
             launcher.RequestStop();
-            StatusText = "正在停止…";
+            StatusText = Strings["Launcher.Stopping"];
             return;
         }
 
@@ -345,7 +345,9 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             _runningSince = null;
             UpdatePlayTime();
             StatusText = result.Success
-                ? (result.Signal is { } signal ? $"游戏已退出（就绪信号：{signal}）" : "游戏已退出")
+                ? (result.Signal is { } signal
+                    ? string.Format(Strings["Launcher.GameExitedWithSignal"], signal)
+                    : Strings["Launcher.GameExited"])
                 : "";
             if (!result.Success)
             {
@@ -370,16 +372,18 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         IsRunning = state == LaunchPhaseState.Running;
         StatusText = state switch
         {
-            LaunchPhaseState.Idle => "就绪",
-            LaunchPhaseState.Running => "游戏运行中",
-            LaunchPhaseState.Error => "出错了",
+            LaunchPhaseState.Idle => Strings["Main.StatusIdle"],
+            LaunchPhaseState.Running => Strings["Main.StatusRunning"],
+            LaunchPhaseState.Error => Strings["Main.StatusError"],
             _ => text,
         };
 
         if (state == LaunchPhaseState.Running)
         {
             _runningSince ??= DateTimeOffset.Now;
-            RunningInfo = _services.LauncherService.GamePid is { } pid ? $"PID {pid}" : "游戏运行中";
+            RunningInfo = _services.LauncherService.GamePid is { } pid
+                ? $"PID {pid}"
+                : Strings["Main.StatusRunning"];
             _services.Background.Pause();
         }
         else if (state == LaunchPhaseState.Idle)

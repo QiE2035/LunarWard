@@ -123,17 +123,32 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         var directory = ProfileConfig.ExpandPath(GamePath);
         if (string.IsNullOrEmpty(directory))
         {
+            // 还没选目录是"未配置"，不是"配错了"：用三级文字，不要一进来就报警
             HasGameDirectory = false;
+            DirectoryInvalid = false;
+            IsGamePathEmpty = true;
             GameDirectoryName = Strings["GameSetting.DirectoryMissing"];
             return;
         }
 
         var definition = GameCatalog.Detect(directory);
         HasGameDirectory = definition is not null;
+        DirectoryInvalid = definition is null;
+        IsGamePathEmpty = false;
         GameDirectoryName = definition is not null
             ? $"{definition.DisplayName} · {definition.Executable}"
             : Strings["GameSetting.DirectoryUnrecognized"];
     }
+
+
+    /// <summary>目录存在但不像游戏目录（缺 exe）时才用 Caution 色。</summary>
+    [ObservableProperty]
+    private bool _directoryInvalid;
+
+
+    /// <summary>输入框为空：显示"还没选目录"的占位小字（不用警告色）。</summary>
+    [ObservableProperty]
+    private bool _isGamePathEmpty = true;
 
 
     [ObservableProperty]
@@ -754,9 +769,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         var profile = Profile.Profile;
         foreach (var program in profile.ExternalPrograms)
         {
-            var item = CreateProgramItem(program, keywords);
-            item.IsExpanded = Environment.GetEnvironmentVariable("LW_EXPAND") is "1";
-            Programs.Add(item);
+            Programs.Add(CreateProgramItem(program, keywords));
         }
 
         HasPrograms = Programs.Count > 0;

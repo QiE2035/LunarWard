@@ -70,7 +70,7 @@
   <Grid RowDefinitions="*,60">
 
     <!-- ══ 内容区 ═══════════════════════════════════════════════════════ -->
-    <ScrollViewer x:Name="DbgScroll" VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
       <Grid Margin="24,20,24,24" ColumnDefinitions="*,*" ColumnSpacing="24">
 
         <!-- ══════════════════════════════════════════════════════════
@@ -95,17 +95,25 @@
                     Command="{Binding ScanGamesCommand}" />
           </Grid>
 
+          <!-- 三态：识别成功（次要色）/ 目录不像游戏（Caution）/ 还没选（三级文字） -->
           <TextBlock Margin="0,8,0,0"
                      FontSize="12"
                      TextWrapping="Wrap"
-                     Text="{Binding GameDirectoryName}"
                      IsVisible="{Binding HasGameDirectory}"
-                     Foreground="{StaticResource StarTextSecondary}" />
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{Binding GameDirectoryName}" />
 
           <TextBlock Classes="caution"
                      Margin="0,8,0,0"
-                     Text="{Binding GameDirectoryName}"
-                     IsVisible="{Binding !HasGameDirectory}" />
+                     TextWrapping="Wrap"
+                     IsVisible="{Binding DirectoryInvalid}"
+                     Text="{Binding GameDirectoryName}" />
+
+          <TextBlock Classes="tertiary"
+                     Margin="0,8,0,0"
+                     TextWrapping="Wrap"
+                     IsVisible="{Binding IsGamePathEmpty}"
+                     Text="{Binding GameDirectoryName}" />
 
           <TextBlock Classes="tertiary"
                      Margin="0,4,0,0"
@@ -424,7 +432,7 @@
                     <Grid ColumnDefinitions="Auto,8,*,Auto,Auto">
                       <CheckBox Grid.Column="0"
                                 Margin="0,0,0,0"
-                                MinHeight="24"
+                                MinHeight="32"
                                 IsChecked="{Binding Enabled, Mode=TwoWay}"
                                 ToolTip.Tip="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramEnabled]}" />
                       <TextBlock Grid.Column="2"
@@ -523,7 +531,7 @@
                                  Text="{Binding WorkingDirectory, Mode=TwoWay}" />
                       </StackPanel>
 
-                      <CheckBox MinHeight="24"
+                      <CheckBox MinHeight="32"
                                 Content="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.ProgramWait]}"
                                 IsChecked="{Binding Wait, Mode=TwoWay}" />
 
@@ -539,27 +547,28 @@
                         <ItemsControl.ItemTemplate>
                           <DataTemplate x:DataType="vm:GameSettingEnvEntryViewModel">
                             <StackPanel Margin="0,2" Spacing="2">
-                              <Grid ColumnDefinitions="110,8,90,8,*,Auto">
+                              <Grid ColumnDefinitions="112,8,96,8,*,Auto">
                                 <TextBox Grid.Column="0"
-                                         Height="28"
+                                         Height="32"
                                          FontSize="12"
                                          FontFamily="{StaticResource StarMonoFontFamily}"
                                          PlaceholderText="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.EnvKeyPlaceholder]}"
                                          Text="{Binding Key, Mode=TwoWay}" />
                                 <ComboBox Grid.Column="2"
-                                          Height="28"
+                                          Height="32"
                                           HorizontalAlignment="Stretch"
                                           ItemsSource="{Binding Kinds}"
                                           SelectedItem="{Binding SelectedKind, Mode=TwoWay}" />
+                                <!-- 只有「覆盖」态才有值：继承不写、删除直接移除键，留个空框会误导 -->
                                 <TextBox Grid.Column="4"
-                                         Height="28"
+                                         Height="32"
                                          FontSize="12"
                                          FontFamily="{StaticResource StarMonoFontFamily}"
-                                         IsEnabled="{Binding IsEditable}"
+                                         IsVisible="{Binding IsEditable}"
                                          PlaceholderText="{Binding $parent[UserControl].((vm:GameSettingPageViewModel)DataContext).Strings[GameSetting.EnvValuePlaceholder]}"
                                          Text="{Binding Value, Mode=TwoWay}" />
                                 <Button Grid.Column="5"
-                                        Width="28" Height="28"
+                                        Width="32" Height="32"
                                         Padding="0"
                                         Margin="4,0,0,0"
                                         Classes="flat"
@@ -568,7 +577,7 @@
                                   <TextBlock Classes="icon" FontSize="12" Text="&#xE711;" />
                                 </Button>
                               </Grid>
-                              <CheckBox MinHeight="20"
+                              <CheckBox MinHeight="32"
                                         Margin="0,0,0,0"
                                         Padding="8,0,0,0"
                                         FontSize="12"

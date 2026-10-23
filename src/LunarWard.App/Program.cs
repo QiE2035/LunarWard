@@ -28,6 +28,7 @@ internal static class Program
             CaptureMode.ProfileId = ReadArgument(args, "--profile");
             CaptureMode.OpenSelector = args.Contains("--open-selector");
             CaptureMode.Tab = ReadArgument(args, "--tab");
+            CaptureMode.Language = ReadArgument(args, "--lang");
             if (int.TryParse(ReadArgument(args, "--wait"), out var wait) && wait >= 0)
             {
                 CaptureMode.WaitMilliseconds = wait;
@@ -84,6 +85,9 @@ internal static class CaptureMode
 
     /// <summary>工具箱页的 Tab：<c>note</c>（默认）/ <c>accounts</c>。</summary>
     public static string? Tab { get; set; }
+
+    /// <summary>自检时的界面语言（<c>zh-CN</c> / <c>en-US</c>）。</summary>
+    public static string? Language { get; set; }
 
     /// <summary>渲染前等待时间（毫秒）。</summary>
     public static int WaitMilliseconds { get; set; } = 1600;

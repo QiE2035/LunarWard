@@ -38,6 +38,11 @@ public partial class App : Application
             return;
         }
 
+        if (CaptureMode.Language is { Length: > 0 } language)
+        {
+            Localization.AppStrings.Instance.Language = Localization.AppStrings.Normalize(language);
+        }
+
         _shell = new ShellViewModel(AppServices.Current, _log);
         if (CaptureMode.ProfileId is { } profileId)
         {

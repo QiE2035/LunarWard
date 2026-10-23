@@ -113,7 +113,7 @@
                             Margin="6" Padding="6,2" CornerRadius="4"
                             Background="#99000000"
                             IsVisible="{Binding IsInstalled}">
-                      <TextBlock FontSize="11" Foreground="{StaticResource StarTextSecondary}" Text="已安装" />
+                      <TextBlock FontSize="11" Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[Launcher.Installed]}" />
                     </Border>
                   </Panel>
                 </Border>

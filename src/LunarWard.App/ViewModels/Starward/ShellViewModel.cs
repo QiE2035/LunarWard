@@ -557,4 +557,7 @@ public sealed partial class GameChoiceViewModel : ObservableObject
     public string GameBiz => Definition?.GameBiz ?? "";
 
     public string Title => $"{Name} · {Edition}";
+
+    /// <summary>XAML 内的文案（例如「已安装」标记）。</summary>
+    public Localization.AppStrings Strings => Localization.AppStrings.Instance;
 }

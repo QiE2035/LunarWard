@@ -91,6 +91,7 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
     [RelayCommand]
     private async Task ClearCacheAsync()
     {
+        Log.Info($"TEMP ClearCache 进入 IsClearing={IsClearing}");
         if (IsClearing)
         {
             return;
@@ -100,6 +101,7 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
             Strings["Settings.Files.ClearCacheTitle"],
             string.Format(CultureInfo.CurrentCulture, Strings["Settings.Files.ClearCacheBody"], CacheHome)).ConfigureAwait(true);
 
+        Log.Info($"TEMP ClearCache confirmed={confirmed}");
         if (!confirmed)
         {
             return;
@@ -109,26 +111,28 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
         Status = Strings["Settings.Files.Clearing"];
         try
         {
-            var before = SettingShellActions.DirectorySize(CacheHome);
-            var today = $"lunarward-{DateTime.Now:yyyy-MM-dd}";
+            var before = SettingShellActions.DirectorySize(CacheHome ?? "");
+            var logDirectory = LogDirectory ?? "";
 
-            foreach (var file in Directory.EnumerateFiles(CacheHome))
+            // 目录结构（logs / background / bilibili…）要保留，只清内容：
+            // 当天日志还被 Serilog 打开着，删掉会让本次会话之后的日志消失。
+            foreach (var dir in Directory.EnumerateDirectories(CacheHome))
             {
-                // 当天的日志还被 Serilog 打开着，删了会让后续日志消失：明确保留
-                if (Path.GetFileName(file).StartsWith(today, StringComparison.Ordinal))
+                if (string.Equals(Path.GetFullPath(dir), Path.GetFullPath(logDirectory), StringComparison.Ordinal))
                 {
+                    ClearLogDirectory(dir);
                     continue;
                 }
 
-                TryDeleteFile(file);
-            }
-
-            foreach (var dir in Directory.EnumerateDirectories(CacheHome))
-            {
                 TryDeleteDirectory(dir);
             }
 
-            // 删空的子目录后重建目录结构（背景/日志/缓存目录要还在）
+            foreach (var file in Directory.EnumerateFiles(CacheHome))
+            {
+                TryDeleteFile(file);
+            }
+
+            // 目录可能被整棵删掉：重建（背景/日志/缓存目录要还在）
             (Services.Paths as Platform.XdgPaths)?.EnsureDirectories();
 
             var after = SettingShellActions.DirectorySize(CacheHome);
@@ -158,6 +162,44 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
             CultureInfo.CurrentCulture,
             Strings["Settings.Files.CacheSize"],
             SettingShellActions.Bytes(bytes));
+    }
+
+
+    /// <summary>清日志目录：保留当天的滚动文件，其余删除。</summary>
+    /// <remarks>
+    /// Serilog 的文件名是 <c>lunarward-20261023.log</c>（无短横线的日期），而
+    /// <see cref="LogService.LogFile"/> 用的是 <c>lunarward-2026-10-23.log</c>；两种都要认。
+    /// 另外当天写过的文件也一并保留，避免跨零点后刚写的日志被删。
+    /// </remarks>
+    private void ClearLogDirectory(string directory)
+    {
+        var now = DateTime.Now;
+        var dashed = $"lunarward-{now:yyyy-MM-dd}";
+        var plain = $"lunarward-{now:yyyyMMdd}";
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(directory))
+            {
+                var name = Path.GetFileName(file);
+                if (name.StartsWith(dashed, StringComparison.Ordinal)
+                    || name.StartsWith(plain, StringComparison.Ordinal)
+                    || File.GetLastWriteTime(file).Date == now.Date)
+                {
+                    continue;
+                }
+
+                TryDeleteFile(file);
+            }
+
+            foreach (var child in Directory.EnumerateDirectories(directory))
+            {
+                TryDeleteDirectory(child);
+            }
+        }
+        catch (Exception)
+        {
+            // 无权限/目录消失：跳过
+        }
     }
 
 
