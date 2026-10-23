@@ -191,7 +191,7 @@ gamePid = 427
 
 ---
 
-### 2.6 过程中发现并修复的产品缺陷 ①：进程组信号
+### 2.6 过程中发现并修复的产品缺陷 ①：进程组信号（静默失败）
 
 **这是本次验收最有价值的产出**——一次真实的"测试暴露产品 bug"。
 
@@ -245,7 +245,47 @@ $ dotnet test tests/LunarWard.IntegrationTests --filter 'FullyQualifiedName~S4'
 "整组信号真的送达了"的证据。
 
 
-### 2.7 过程中发现并修复的产品缺陷 ②：首次建 prefix 卡在 wine-mono 提示
+### 2.7 过程中发现并修复的产品缺陷 ②：启动按钮渲染为灰色
+
+**这是"只有截图能发现"的一类 bug**——所有属性、绑定、命令状态都正确。
+
+| 检查项 | 结果 |
+|---|---|
+| `LaunchButtonEnabled` | `True` ✓ |
+| `LaunchCommand.CanExecute` | `True` ✓ |
+| `Button.IsEnabled` | `True` ✓ |
+| `Button.Background` | `#e64fc3f7`（浅蓝）✓ |
+| `Button.CornerRadius` | `26,26,26,26`（样式生效）✓ |
+| 模板内 `ContentPresenter.Background` | `#e64fc3f7` ✓ |
+| **屏幕上实际像素** | **`#353C48`（灰）** ✗ |
+
+**根因**：Avalonia 的 Fluent 主题给 `Button` 定义了 `ControlTheme`，模板里的
+`Border`/`ContentPresenter` 用自己的触发器管理填充色。在 `Button` 上写
+`<Setter Property="Background" ...>` 只改**控件的属性值**，不会穿透到模板内部
+——所以属性查询一切正常，渲染却不变。
+
+**修复**（`Styles/LunarWard.axaml`）：改用模板作用域选择器
+
+```xml
+<Style Selector="Button.launch /template/ ContentPresenter">
+  <Setter Property="Background" Value="#E64FC3F7" />
+  <Setter Property="CornerRadius" Value="26" />
+</Style>
+<Style Selector="Button.launch:pointerover /template/ ContentPresenter"> … </Style>
+<Style Selector="Button.launch:pressed      /template/ ContentPresenter"> … </Style>
+<Style Selector="Button.launch:disabled     /template/ ContentPresenter"> … </Style>
+```
+
+设置页的「保存」按钮用的是同一个 `.launch` 类，一并修好。
+
+**教训**：Avalonia 里改 Fluent 控件的配色，必须区分"控件属性"与"模板内元素"。
+前者能被样式系统读到却未必被渲染使用；后者才真正决定像素。
+验证方式不能只看属性，必须**截图采样像素**——这也是本仓库保留
+`--screenshot` 自检开关的原因。
+
+---
+
+### 2.8 过程中发现并修复的产品缺陷 ③：首次建 prefix 卡在 wine-mono 提示
 
 **这是比 ① 更严重的一个**——它会让**每一个首次使用的用户**踩到。
 
