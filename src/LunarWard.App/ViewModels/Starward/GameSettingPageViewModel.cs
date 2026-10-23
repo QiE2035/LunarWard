@@ -302,17 +302,59 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
     }
 
 
-    /// <summary>分辨率下拉条目：Starward 的 <c>Resolutions</c> 列表 + 当前值。</summary>
-    private void BuildResolutionOptions()
+    /// <summary>
+    /// 显示器物理尺寸（Starward <c>InitializeResolutionItem</c> 用
+    /// <c>DisplayArea.OuterBounds</c> 过滤分辨率列表）。页面挂载后由视图传入。
+    /// </summary>
+    public void SetDisplayBounds(int width, int height)
     {
-        if (ResolutionOptions.Count > 0)
+        if (width <= 0 || height <= 0)
         {
             return;
         }
 
+        _displayBounds = (width, height);
+        BuildResolutionOptions(force: true);
+        var match = ResolutionOptions.FirstOrDefault(x => x.Width == ResolutionWidth && x.Height == ResolutionHeight);
+        if (match is not null)
+        {
+            _baseSettingLoading = true;
+            SelectedResolution = match;
+            _baseSettingLoading = false;
+        }
+    }
+
+
+    private (int Width, int Height)? _displayBounds;
+
+
+    /// <summary>
+    /// 分辨率下拉条目：Starward 的 <c>Resolutions</c> 列表（按显示器尺寸过滤）+ 当前值。
+    /// </summary>
+    private void BuildResolutionOptions(bool force = false)
+    {
+        if (ResolutionOptions.Count > 0 && !force)
+        {
+            return;
+        }
+
+        ResolutionOptions.Clear();
+        var bounds = _displayBounds;
         foreach (var (width, height) in GameSettingRegistry.CommonResolutions)
         {
+            if (bounds is { } b && (width > b.Width || height > b.Height))
+            {
+                continue;
+            }
+
             ResolutionOptions.Add(new ResolutionOption(width, height, GameSettingRegistry.FormatResolution(width, height)));
+        }
+
+        if (bounds is { } display
+            && !ResolutionOptions.Any(x => x.Width == display.Width && x.Height == display.Height))
+        {
+            ResolutionOptions.Add(new ResolutionOption(display.Width, display.Height,
+                GameSettingRegistry.FormatResolution(display.Width, display.Height)));
         }
     }
 
