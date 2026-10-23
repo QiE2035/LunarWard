@@ -7,9 +7,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>false</InvariantGlobalization>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <!-- 上游 Starward.Core 有大量 CS8618，逐条修会破坏"只改三处"的约束 -->
-    <NoWarn>$(NoWarn);CS8618;CS8600;CS8602;CS8603;CS8604;CS8625;CA1416</NoWarn>
+    <!--
+      上游 Starward.Core 有大量 CS8618，逐条修会破坏"只改三处"的约束。
+      NU1900 = 取不到 NuGet 漏洞数据（只读缓存/离线 CI/镜像源没有漏洞库时必然出现），
+      是环境问题而非代码问题；审计本身仍开着，真实漏洞（NU1901–NU1904）照常报。
+    -->
+    <NoWarn>$(NoWarn);CS8618;CS8600;CS8602;CS8603;CS8604;CS8625;CA1416;NU1900</NoWarn>
     <EnableWindowsTargeting>false</EnableWindowsTargeting>
+
   </PropertyGroup>
 
   <PropertyGroup>
