@@ -1,3 +1,4 @@
+using LunarWard.Launch;
 using LunarWard.Wine;
 using Xunit;
 
@@ -188,5 +189,41 @@ public class CommandLineSplitterTests
     public void EmptyQuotedArgument_IsKept()
     {
         Assert.Equal(["a", "", "b"], CommandLineSplitter.Split("a \"\" b"));
+    }
+}
+
+
+/// <summary>
+/// 基线 env 必须禁掉 wine-mono / wine-gecko 的自动安装提示。
+/// </summary>
+/// <remarks>
+/// 否则 <c>wineboot</c> 会弹「是否下载 wine-mono」并阻塞——启动器无窗口，
+/// 只能等到超时（实测 2 分 32 秒 vs 8 秒，见 docs/TROUBLESHOOTING.md §6.1b）。
+/// </remarks>
+public class WineMonoDisableTests
+{
+    [Theory]
+    [InlineData("winemenubuilder.exe=d;mscoree,mshtml=")]
+    public void BaselineDllOverrides_DisablesMonoAndGecko(string value)
+    {
+        // 与 LaunchPlanFactory 的基线值保持一致
+        Assert.Contains("mscoree", value);
+        Assert.Contains("mshtml", value);
+    }
+
+
+    [Fact]
+    public void WineSettingsOverride_KeepsMonoDisabled()
+    {
+        // 用户配了 shared_libraries 之后，mono/gecko 的禁用不能被覆盖掉
+        var env = LaunchPlanFactory.BuildWineSettingsEnv(new LunarWard.Wine.WineSettings
+        {
+            SharedLibraries = ["dxgi", "d3d11"],
+        });
+
+        Assert.True(env.TryGetValue("WINEDLLOVERRIDES", out var value));
+        Assert.Contains("dxgi=n,b", value);
+        Assert.Contains("d3d11=n,b", value);
+        Assert.Contains("mscoree,mshtml=", value);
     }
 }

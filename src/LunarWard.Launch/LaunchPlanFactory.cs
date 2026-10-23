@@ -104,7 +104,10 @@ public sealed class LaunchPlanFactory
         env.Set(EnvLayer.Baseline, "WINEPREFIX", prefix);
         env.Set(EnvLayer.Baseline, "WINEARCH", "win64");
         env.Set(EnvLayer.Baseline, "WINEDEBUG", "-all");
-        env.Set(EnvLayer.Baseline, "WINEDLLOVERRIDES", "winemenubuilder.exe=d");
+        // mscoree/mshtml 必须禁：否则 wine 在某些 prefix 上会弹「下载 wine-mono」对话框，
+        // 无窗口运行的启动器会一直卡住（实测 2 分 32 秒超时，见 docs/TROUBLESHOOTING.md §6.1b）。
+        // 原神/绝区零是原生 PE 游戏，不需要 .NET Framework / MSHTML。
+        env.Set(EnvLayer.Baseline, "WINEDLLOVERRIDES", "winemenubuilder.exe=d;mscoree,mshtml=");
         env.Set(EnvLayer.Baseline, "WINEESYNC", "1");
 
         // 2. runner 组件
@@ -216,7 +219,9 @@ public sealed class LaunchPlanFactory
         if (wine.SharedLibraries.Count > 0)
         {
             // 环境变量优先级高于注册表（见 docs/04-FEATURES.md §3.7 的说明）
-            env["WINEDLLOVERRIDES"] = string.Join(';', wine.SharedLibraries.Select(d => $"{d}=n,b"));
+            // 用户配的 DLL override + 必须保留的 mono/gecko 禁用
+            env["WINEDLLOVERRIDES"] = string.Join(';', wine.SharedLibraries.Select(d => $"{d}=n,b"))
+                                      + ";mscoree,mshtml=";
         }
 
         return env;
