@@ -212,20 +212,23 @@ M0 验证出四个**设计与现实不符**的点，全部已按下列方式修�
 > 同时移除了 `Vanara.PInvoke.Kernel32`（`DriveHelper` 改用 `DriveInfo`）
 > 与 `Starward.NativeLib`（只用于 Windows API）。详见 `docs/02-ARCHITECTURE.md` §4.2。
 
-### 3.4 托管组件下载**未实现**
+### 3.4 托管组件下载：M0 时未实现，**现已实现**（不引 git）
 
 | 项 | 内容 |
 |---|---|
 | **原计划** | 从 an-anime-team 组件索引（`https://github.com/an-anime-team/components`）用 `git` 同步，进而下载托管 wine / dxvk 组件 |
-| **实际状态** | ❌ **未实现**。没有 `git clone` / `fetch` / `reset --hard` 逻辑，没有组件下载器 |
-| **当前支持的四种来源** | ① **借用**（只读借用其它启动器已下载的 runner）② **自定义**（用户指定路径）③ **系统**（`which wine`）④ **Proton**（Steam 的 `dist/bin/wine`） |
-| **组件索引** | `ComponentRepository` 只**读** `<data>/components/` 下已存在的 JSON，不负责获取 |
-| **用户可见影响** | **能用**——四种来源覆盖了绝大多数场景；但"启动器内一键下载 wine"这个便利功能还没有 |
-| **后续** | 归入 M1（`docs/05-ROADMAP.md`：`LunarWard.Wine` 的"runner/prefix/dxvk 解析与**安装**"） |
+| **M0 时状态** | ❌ 未实现。`ComponentRepository` 只读 `<data>/components/` 下已有的 JSON |
+| **现在状态** | ✅ 已实现：`LunarWard.Wine/ComponentInstaller.cs` |
+| **与计划的一处偏差** | **不引入 git**：直接下载 `components.json` 与分组 JSON（`raw.githubusercontent.com`），语义等价、零外部依赖（没装 git 的用户也能用） |
+| **安装安全性** | 下载 → `.part` → rename；解压 → `<dest>.tmp` → rename。**绝不产出半个组件**；失败保留 `.part` 供续传 |
+| **解压** | `.tar.xz` / `.tar.gz` / `.tar.zst` 走系统 `tar`（POSIX base，所有发行版都有）；`.zip` 走 BCL；无 `tar` 时退回 BCL `TarReader`（仅纯 `.tar`） |
+| **测试** | `ComponentInstallerTests`（6 个，真实 `HttpListener` + 真实 `tar.gz`；HTTP 失败时断言不留残骸） |
+| **仍未覆盖** | 真实 an-anime-team 索引的端到端下载（需要几百 MB 与网络），留待真机验收 |
 
-**这四条偏差的共同特征**：三个是"Windows 专属 native 依断在 Linux 上不可用"，
+**这四条偏差的共同特征**：三个是"Windows 专属 native 依赖在 Linux 上不可用"，
 一个是"跨进程 RPC 在单进程应用里是纯负担"。它们都不是设计错误，
 而是**只有真机编译才会暴露的实现细节**——M0 的价值正在于此。
+第四条（组件下载）在 M0 之后已经补上，且选择了比"引 git"更省的实现。
 
 ---
 
