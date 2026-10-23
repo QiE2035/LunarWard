@@ -12,8 +12,8 @@ public abstract class GachaLogClient
 {
 
 
-    protected const string WEB_CACHE_PATH_YS_CN = @"YuanShen_Data\webCaches\Cache\Cache_Data\data_2";
-    protected const string WEB_CACHE_PATH_YS_OS = @"GenshinImpact_Data\webCaches\Cache\Cache_Data\data_2";
+    protected const string WEB_CACHE_PATH_YS_CN = @"YuanShen_Data/webCaches/Cache/Cache_Data/data_2";
+    protected const string WEB_CACHE_PATH_YS_OS = @"GenshinImpact_Data/webCaches/Cache/Cache_Data/data_2";
 
     protected const string API_PREFIX_YS_CN = "https://public-operation-hk4e.mihoyo.com/gacha_info/api/getGachaLog";
     protected const string API_PREFIX_YS_OS = "https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getGachaLog";
@@ -23,7 +23,7 @@ public abstract class GachaLogClient
 
 
 
-    protected const string WEB_CACHE_SR_PATH = @"StarRail_Data\webCaches\Cache\Cache_Data\data_2";
+    protected const string WEB_CACHE_SR_PATH = @"StarRail_Data/webCaches/Cache/Cache_Data/data_2";
 
     protected const string API_PREFIX_SR_CN = "https://public-operation-hkrpg.mihoyo.com/common/hkrpg_gacha_record/api/getGachaLog";
     protected const string API_PREFIX_SR_OS = "https://public-operation-hkrpg-sg.hoyoverse.com/common/hkrpg_gacha_record/api/getGachaLog";
@@ -32,7 +32,7 @@ public abstract class GachaLogClient
     protected static ReadOnlySpan<byte> SPAN_WEB_PREFIX_SR_OS => "https://gs.hoyoverse.com/hkrpg/event/e20211215gacha"u8;
 
 
-    protected const string WEB_CACHE_ZZZ_PATH = @"ZenlessZoneZero_Data\webCaches\Cache\Cache_Data\data_2";
+    protected const string WEB_CACHE_ZZZ_PATH = @"ZenlessZoneZero_Data/webCaches/Cache/Cache_Data/data_2";
 
     protected const string API_PREFIX_ZZZ_CN = "https://public-operation-nap.mihoyo.com/common/gacha_record/api/getGachaLog";
     protected const string API_PREFIX_ZZZ_OS = "https://public-operation-nap-sg.hoyoverse.com/common/gacha_record/api/getGachaLog";
@@ -126,10 +126,10 @@ public abstract class GachaLogClient
     {
         string prefix = gameBiz.Value switch
         {
-            GameBiz.hk4e_cn or GameBiz.hk4e_bilibili => @"YuanShen_Data\webCaches",
-            GameBiz.hk4e_global => @"GenshinImpact_Data\webCaches",
-            GameBiz.hkrpg_cn or GameBiz.hkrpg_global or GameBiz.hkrpg_bilibili => @"StarRail_Data\webCaches",
-            GameBiz.nap_cn or GameBiz.nap_global or GameBiz.nap_bilibili => @"ZenlessZoneZero_Data\webCaches",
+            GameBiz.hk4e_cn or GameBiz.hk4e_bilibili => @"YuanShen_Data/webCaches",
+            GameBiz.hk4e_global => @"GenshinImpact_Data/webCaches",
+            GameBiz.hkrpg_cn or GameBiz.hkrpg_global or GameBiz.hkrpg_bilibili => @"StarRail_Data/webCaches",
+            GameBiz.nap_cn or GameBiz.nap_global or GameBiz.nap_bilibili => @"ZenlessZoneZero_Data/webCaches",
             _ => throw new ArgumentOutOfRangeException($"Unknown region {gameBiz}"),
         };
         return Path.Join(installPath, prefix);
@@ -157,7 +157,7 @@ public abstract class GachaLogClient
         {
             foreach (var item in Directory.GetDirectories(webCache))
             {
-                string target = Path.Join(item, @"Cache\Cache_Data\data_2");
+                string target = Path.Join(item, @"Cache/Cache_Data/data_2");
                 if (File.Exists(target))
                 {
                     DateTime targetLastWriteTime = File.GetLastWriteTime(target);

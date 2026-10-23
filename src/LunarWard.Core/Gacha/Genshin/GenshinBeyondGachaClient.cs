@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -9,8 +9,8 @@ public class GenshinBeyondGachaClient
 {
 
 
-    private const string WEB_CACHE_PATH_YS_CN = @"YuanShen_Data\webCaches\Cache\Cache_Data\data_2";
-    private const string WEB_CACHE_PATH_YS_OS = @"GenshinImpact_Data\webCaches\Cache\Cache_Data\data_2";
+    private const string WEB_CACHE_PATH_YS_CN = @"YuanShen_Data/webCaches/Cache/Cache_Data/data_2";
+    private const string WEB_CACHE_PATH_YS_OS = @"GenshinImpact_Data/webCaches/Cache/Cache_Data/data_2";
 
     private static ReadOnlySpan<byte> SPAN_WEB_PREFIX_YS_CN => "https://webstatic.mihoyo.com/hk4e/event/e20250716gacha/index.html"u8;
     private static ReadOnlySpan<byte> SPAN_WEB_PREFIX_YS_OS => "https://gs.hoyoverse.com/genshin/event/e20250716gacha/index.html"u8;
@@ -175,8 +175,8 @@ public class GenshinBeyondGachaClient
     {
         string prefix = gameBiz.Value switch
         {
-            GameBiz.hk4e_cn or GameBiz.hk4e_bilibili => @"YuanShen_Data\webCaches",
-            GameBiz.hk4e_global => @"GenshinImpact_Data\webCaches",
+            GameBiz.hk4e_cn or GameBiz.hk4e_bilibili => @"YuanShen_Data/webCaches",
+            GameBiz.hk4e_global => @"GenshinImpact_Data/webCaches",
             _ => throw new ArgumentOutOfRangeException($"Unknown region {gameBiz}"),
         };
         return Path.Join(installPath, prefix);
@@ -202,7 +202,7 @@ public class GenshinBeyondGachaClient
         {
             foreach (var item in Directory.GetDirectories(webCache))
             {
-                string target = Path.Join(item, @"Cache\Cache_Data\data_2");
+                string target = Path.Join(item, @"Cache/Cache_Data/data_2");
                 if (File.Exists(target) && File.GetLastWriteTime(target) > lastWriteTime)
                 {
                     file = target;

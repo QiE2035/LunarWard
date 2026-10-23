@@ -35,6 +35,10 @@ public sealed class AppServices
         PlayTime = new Launch.PlayTimeService(paths);
         ComponentInstaller = new Wine.ComponentInstaller(paths);
         Localization.AppStrings.Instance.Language = Localization.AppStrings.Normalize(Config.Launcher.Language);
+
+        // 把"游戏安装路径"的来源接到 Wine：LunarWard.Core 的抽卡模块靠它定位 webCaches。
+        // 没装 wine prefix 时保持 null（Linux 无注册表）。
+        GlobalGameInstallPathProvider.Configure(this);
     }
 
 
@@ -75,6 +79,72 @@ public sealed class AppServices
     {
         Current = new AppServices(paths);
         (paths as XdgPaths)?.EnsureDirectories();
+    }
+
+
+    /// <summary>
+    /// 抽卡/便笺模块需要的"游戏安装路径"。
+    /// </summary>
+    /// <remarks>
+    /// <c>GachaLogClient.InstallPathProvider</c> 是静态属性（上游也是静态注册表读取），
+    /// 这里集中一处设置，避免散落在各处。
+    /// </remarks>
+    private static class GlobalGameInstallPathProvider
+    {
+        public static void Configure(AppServices services)
+        {
+            LunarWard.Core.Gacha.GachaLogClient.InstallPathProvider = new Provider(services);
+        }
+
+
+        private sealed class Provider : LunarWard.Core.IGameInstallPathProvider
+        {
+            private readonly AppServices _services;
+
+            public Provider(AppServices services) => _services = services;
+
+
+            public string? GetInstallPath(LunarWard.Core.GameBiz gameBiz)
+            {
+                // 1) 优先用当前档案里配的游戏目录
+                foreach (var profile in _services.Config.Profiles.Values)
+                {
+                    var dir = Launch.ProfileConfig.ExpandPath(profile.Path);
+                    if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+                    {
+                        continue;
+                    }
+
+                    var definition = Games.GameCatalog.Detect(dir);
+                    if (definition is not null && definition.GameBiz == gameBiz.Value)
+                    {
+                        return dir;
+                    }
+                }
+
+                // 2) 退到 Wine prefix 的 user.reg（游戏自己写过 InstallPath）
+                foreach (var profile in _services.Config.Profiles.Values)
+                {
+                    var prefix = Launch.PrefixResolver.Resolve(profile.Prefix.ToDomain(), profile.Game, _services.Paths);
+                    if (!Directory.Exists(prefix))
+                    {
+                        continue;
+                    }
+
+                    var registry = new Games.WineRegistryInstallPathProvider(prefix);
+                    var path = registry.GetInstallPath(gameBiz);
+                    if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
+                    {
+                        return path;
+                    }
+                }
+
+                return null;
+            }
+
+
+            public string? GetLauncherPath(string registryKey) => null;
+        }
     }
 
 
