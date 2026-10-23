@@ -1,0 +1,1 @@
+﻿global using LunarWard.Core.Localization;

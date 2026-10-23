@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LunarWard.App/LunarWard.App.csproj" />
+    <Project Path="src/LunarWard.Core/LunarWard.Core.csproj" />
+    <Project Path="src/LunarWard.Games/LunarWard.Games.csproj" />
+    <Project Path="src/LunarWard.Installer/LunarWard.Installer.csproj" />
+    <Project Path="src/LunarWard.Launch/LunarWard.Launch.csproj" />
+    <Project Path="src/LunarWard.Platform/LunarWard.Platform.csproj" />
+    <Project Path="src/LunarWard.Wine/LunarWard.Wine.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LunarWard.IntegrationTests/LunarWard.IntegrationTests.csproj" />
+    <Project Path="tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj" />
+  </Folder>
+</Solution>

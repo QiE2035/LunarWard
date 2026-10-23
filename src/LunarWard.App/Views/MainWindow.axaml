@@ -1,0 +1,138 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LunarWard.App.ViewModels"
+        x:Class="LunarWard.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="LunarWard"
+        Width="1120" Height="720"
+        MinWidth="880" MinHeight="560"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="False"
+        WindowStartupLocation="CenterScreen">
+
+  <Grid RowDefinitions="Auto,*">
+
+    <!-- ── 顶部栏 ─────────────────────────────────────────── -->
+    <Border Grid.Row="0" Classes="topbar">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <TextBlock Text="LunarWard" Classes="title" />
+          <ComboBox ItemsSource="{Binding Profiles}"
+                    SelectedItem="{Binding SelectedProfile}"
+                    MinWidth="180"
+                    DisplayMemberBinding="{Binding Display}" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Classes="toolbar" Content="环境 shell" Command="{Binding OpenEnvironmentShellCommand}" />
+          <Button Classes="toolbar" Content="诊断" Command="{Binding DiagnoseCommand}" />
+          <Button Classes="toolbar" Content="环境变量" Command="{Binding ToggleEnvironmentPanelCommand}" />
+          <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" MinWidth="110" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ── 主体 ───────────────────────────────────────────── -->
+    <Grid Grid.Row="1">
+      <!-- 背景层：视频/图片（L2 半透明叠层见 BackgroundLayer） -->
+      <Border x:Name="BackgroundHost" ClipToBounds="True" />
+
+      <!-- 半透明渐变（L2） -->
+      <Border x:Name="AcrylicLayer" IsHitTestVisible="False" />
+
+      <ScrollViewer>
+        <Grid Margin="40,28" RowDefinitions="Auto,*,Auto">
+
+          <!-- 版本亮点 / 公告卡片 -->
+          <Border Grid.Row="0" Classes="card" MaxWidth="900" HorizontalAlignment="Center">
+            <StackPanel Spacing="8">
+              <TextBlock Text="公告与版本亮点" Classes="title" />
+              <TextBlock Text="{Binding AnnouncementHtml, FallbackValue='暂无公告数据（联网后自动拉取）'}"
+                         TextWrapping="Wrap" MaxHeight="120" />
+              <TextBlock Text="{Binding RuntimeExplain}" Classes="status" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- 启动区 -->
+          <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14">
+            <Button Classes="launch"
+                    Content="{Binding LaunchButtonText}"
+                    IsEnabled="{Binding LaunchButtonEnabled}"
+                    Command="{Binding LaunchCommand}"
+                    HorizontalAlignment="Center" />
+
+            <TextBlock Text="{Binding StatusText}" Classes="status" HorizontalAlignment="Center" />
+
+            <TextBlock Text="{Binding ErrorText}" Classes="error"
+                       IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       TextWrapping="Wrap" MaxWidth="640" HorizontalAlignment="Center" />
+
+            <TextBlock Text="{Binding BackgroundError}"
+                       Classes="status" IsVisible="{Binding BackgroundError, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       TextWrapping="Wrap" MaxWidth="640" HorizontalAlignment="Center" />
+          </StackPanel>
+
+          <!-- 外部程序 -->
+          <Border Grid.Row="2" Classes="card" MaxWidth="900" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="外部程序（后启动 / 补丁）" Classes="title" />
+                <Button Grid.Column="1" Classes="toolbar" Content="+ 添加" Command="{Binding AddExternalProgramCommand}" />
+              </Grid>
+
+              <TextBlock Classes="status" TextWrapping="Wrap"
+                         Text="后启动与补丁注入是同一个概念：『伴随启动』= 补丁（游戏就绪后拉起），『手动』= 后启动。伴随启动会成为该 wine prefix 的第二个客户端。" />
+
+              <ItemsControl ItemsSource="{Binding ExternalPrograms}" MaxHeight="220">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ProgramItemViewModel">
+                    <Border BorderBrush="#22FFFFFF" BorderThickness="0,0,0,1" Padding="0,8">
+                      <StackPanel Spacing="6">
+                        <Grid ColumnDefinitions="Auto,180,*,Auto,Auto">
+                          <CheckBox Grid.Column="0" IsChecked="{Binding Enabled}" Margin="0,0,8,0" />
+                          <TextBox Grid.Column="1" Text="{Binding Name}" Margin="0,0,8,0" />
+                          <TextBox Grid.Column="2" Text="{Binding Path}" Watermark="选择 .exe 或可执行文件" />
+                          <ComboBox Grid.Column="3" ItemsSource="{Binding Triggers}"
+                                    SelectedItem="{Binding Trigger}" MinWidth="110" Margin="8,0,0,0" />
+                          <Button Grid.Column="4" Classes="toolbar" Content="立即启动"
+                                  IsEnabled="{Binding CanStartNow}" Margin="8,0,0,0" />
+                        </Grid>
+                        <TextBox Text="{Binding Arguments}" Watermark="参数（支持 %game% %prefix% %exe% 等关键字）" />
+                        <TextBlock Text="{Binding Warnings}" Classes="error" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Suggestion}" Classes="status"
+                                   IsVisible="{Binding Suggestion, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </ScrollViewer>
+
+      <!-- 环境变量面板（诊断层） -->
+      <Border x:Name="EnvPanel"
+              IsVisible="{Binding ShowEnvironmentPanel}"
+              Background="#E6101418" Padding="24" Margin="0" VerticalAlignment="Stretch">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock Grid.Row="0" Text="环境变量（十层合并结果与来源）" Classes="title" Margin="0,0,0,12" />
+          <ListBox Grid.Row="1" ItemsSource="{Binding EnvironmentRows}" Background="Transparent">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:EnvironmentRowViewModel">
+                <Grid ColumnDefinitions="280,*,150">
+                  <TextBlock Grid.Column="0" Text="{Binding Key}" FontFamily="monospace" FontSize="12" />
+                  <TextBlock Grid.Column="1" Text="{Binding Value}" FontFamily="monospace" FontSize="12"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="2" Text="{Binding Source}" FontSize="12" Foreground="#99FFFFFF" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Border>
+
+    </Grid>
+  </Grid>
+</Window>

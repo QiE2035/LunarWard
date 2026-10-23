@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>LunarWard.Installer</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LunarWard.Core\LunarWard.Core.csproj" />
+    <ProjectReference Include="..\LunarWard.Platform\LunarWard.Platform.csproj" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Ini" />
+    <PackageReference Include="ZstdSharp.Port" />
+  </ItemGroup>
+</Project>
