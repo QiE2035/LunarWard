@@ -412,6 +412,30 @@ LunarWard.IntegrationTests.dll    — 通过:  27，失败: 0，跳过: 0
 | `DriveHelperHardLinkTests.cs` | 硬链接去重闸门 |
 | `InstallerHttpClientFactoryTests.cs` | HTTP 重试策略与连接池配置 |
 
+### 3.1b 全新 clone 的可复现性（交付质量的关键证据）
+
+"在我机器上能跑"不算交付。这里记录一次**从零开始**的验证：
+
+```bash
+$ git clone --depth 1 file:///path/to/lunarward artifacts/clonecheck
+$ cd artifacts/clonecheck
+$ dotnet build LunarWard.slnx
+    0 个警告
+    0 个错误
+
+$ dotnet test LunarWard.slnx
+LunarWard.UnitTests.dll           — 通过: 276，失败: 0
+LunarWard.Installer.UnitTests.dll — 通过:  31，失败: 0
+LunarWard.IntegrationTests.dll    — 通过:  27，失败: 0
+```
+
+**必须直接可构建**，不能要求先 `git submodule update` 或手工放文件——
+这也是选择 `git subtree` 而不是 `submodule` 的原因（见 `third_party/README.md`）。
+
+> 过程中发现：`NU1900`（取不到 NuGet 漏洞数据）在只读 NuGet 缓存/离线 CI 下
+> **必然出现**，会让"0 警告"变成环境依赖。已在 `Directory.Build.props` 里只屏蔽这一条
+> （真实漏洞 NU1901–NU1904 照常报）。
+
 ### 3.2 集成测试 → R 项映射
 
 | 测试 | 用例名 | 覆盖的 R 项 | 覆盖的是哪一半 |
