@@ -5,21 +5,22 @@
 ## 一、里程碑
 
 M0 是**唯一的前置门禁**——它验证四个未证实的技术点，任何一项失败都需要回到
-设计阶段。M0 通过后，M1–M5 可并行推进。
+> **状态（2026-10-23）**：M0–M8 已完成，M9/M10 部分完成。
+> 详细证据见 `M0-RESULTS.md`、`acceptance-2026-10-23.md` 与本文件 §四的交付清单。
 
-| # | 内容 | 产出 | 依赖 |
-|---|---|---|---|
-| **M0** | **技术验证**（见 §1.1） | 一个能跑的最小验证工程 + 结论记录 | — |
-| **M1** | `LunarWard.Platform` + `LunarWard.Wine` | 进程发现、runner/prefix/dxvk 解析与安装、sandbox | M0 |
-| **M2** | `LunarWard.Launch` 相位引擎 | 七相位实现 + `launch-report.json` + dry-run | M1 |
-| **M3** | `LunarWard.Games` 区服切换 | `config.ini`（Ini Binder）+ PCGameSDK 下载 | M2 |
-| **M4** | `LunarWard.Games` 外部程序 | 三态 env 合并 + Auto/Manual + PreWrites | M2 |
-| **M5** | 环境 shell | Avalonia 终端控件 + 复用 `LaunchPlan.Env` | M2, M0 |
-| **M6** | `LunarWard.App` UI 骨架 | 窗口、游戏切换、启动按钮状态机 | M2 |
-| **M7** | Starward 风格 UI | 公告三源 + 动态背景 + 双主题 | M6 |
-| **M8** | `LunarWard.Installer` | 移植 `Starward.RPC/GameInstall`，去 gRPC/Vanara | M2 |
-| **M9** | Starward P0/P1 功能 | 抽卡、便笺、时长、截图、URL 协议 | M7, M8 |
-| **M10** | 打磨 | i18n、崩溃上报、导入向导、文档 | M9 |
+| # | 内容 | 产出 | 依赖 | 状态 |
+|---|---|---|---|---|
+| **M0** | **技术验证**（见 §1.1） | 一个能跑的最小验证工程 + 结论记录 | — | ✅ `M0-RESULTS.md` |
+| **M1** | `LunarWard.Platform` + `LunarWard.Wine` | 进程发现、runner/prefix/dxvk 解析与安装、sandbox | M0 | ✅ 除"托管组件下载器"与 sandbox 隔离 |
+| **M2** | `LunarWard.Launch` 相位引擎 | 七相位实现 + `launch-report.json` + dry-run | M1 | ✅ |
+| **M3** | `LunarWard.Games` 区服切换 | `config.ini`（Ini Binder）+ PCGameSDK 下载 | M2 | ✅ |
+| **M4** | `LunarWard.Games` 外部程序 | 三态 env 合并 + Auto/Manual + PreWrites | M2 | ✅ |
+| **M5** | 环境 shell | Avalonia 终端控件 + 复用 `LaunchPlan.Env` | M2, M0 | ✅ |
+| **M6** | `LunarWard.App` UI 骨架 | 窗口、游戏切换、启动按钮状态机 | M2 | ✅ |
+| **M7** | Starward 风格 UI | 公告三源 + 动态背景 + 双主题 | M6 | ✅（动态背景本机回退静态图） |
+| **M8** | `LunarWard.Installer` | 移植 `Starward.RPC/GameInstall`，去 gRPC/Vanara | M2 | ✅ 移植完成；UI 入口待接、真机下载未验证 |
+| **M9** | Starward P0/P1 功能 | 抽卡、便笺、时长、截图、URL 协议 | M7, M8 | ⚠️ 时长 ✅；抽卡/便笺/截图/URL 未接 UI（Core 侧客户端已就绪） |
+| **M10** | 打磨 | i18n、崩溃上报、导入向导、文档 | M9 | ⚠️ i18n ✅、文档 ✅；导入向导与崩溃上报按 Q10 不做 |
 
 ### 1.1 M0 的三个验证项
 
@@ -257,14 +258,14 @@ cd src/LunarWard.Core && dotnet build
 | `launch-report.json` 能正确输出 | ✅ | `I13` / `Report_HasSevenPhasesAndFullChain` |
 | 配置损坏时能恢复 | ✅ | `U13` / `PlayTimeTests.CorruptStore_IsBackedUpAndReset` |
 | 崩溃时不留下 wine 进程残留 | ✅ | `I10` / `R12_NoResidualWineClientsAfterExit` / `R15_...AreCleanedOnNextLaunch` |
-| i18n：至少 zh-CN + en-US | ⚠️ | `LunarWard.Core/Localization` 有 13 种语言资源；**App 自身 UI 尚未接 i18n** |
+| i18n：至少 zh-CN + en-US | ✅ | `App/Localization/AppStrings.cs`（zh-CN + en-US，键缺失时回显键名）；Core 另有 13 种语言资源 |
 | 文档：README、用户手册、排障指南 | ✅ | `README.md` / `docs/USER-GUIDE.md` / `docs/TROUBLESHOOTING.md` |
 | 许可文件与第三方声明 | ✅ | `LICENSE` / `THIRD-PARTY-NOTICES.md` |
 | **不包含**任何补丁二进制 | ✅ | 仓库内无 `.exe`/`.dll` 补丁；`git ls-files` 可核 |
 | `.desktop` 文件 + 图标 | ✅ | `packaging/lunarward.desktop`（`desktop-file-validate` 通过）+ `Assets/lunarward.ico` |
 | Flatpak 或 AppImage 打包 | ⏳ | 首期只做源码 + Arch（`packaging/PKGBUILD`），Flatpak 后续（Q8） |
 
-未关闭的 3 项：R1–R8/R10/R11/R14 需游戏本体；App UI 的 i18n；Flatpak。
+未关闭的 2 项：R1–R8/R10/R11/R14 需游戏本体；Flatpak（首期只做源码 + Arch）。
 
 ---
 
