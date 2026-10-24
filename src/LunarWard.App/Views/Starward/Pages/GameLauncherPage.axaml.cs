@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Input.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using LunarWard.App.ViewModels.Starward;
 
@@ -19,12 +22,176 @@ public partial class GameLauncherPage : StarwardPage
         InitializeComponent();
         _viewModel = new GameLauncherPageViewModel(context);
         DataContext = _viewModel;
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        _viewModel.RefreshBackgroundImages();
+        if (CaptureMode.ShowBackgroundBar)
+        {
+            _viewModel.ShowBackgroundBar = true;
+        }
+
+        RebuildPips();
+    }
+
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(GameLauncherPageViewModel.SelectedBackgroundIndex))
+        {
+            RebuildPips();
+        }
+    }
+
+
+    /// <summary>
+    /// Starward 的 <c>PipsPager_SwitchBackgroundImage</c>：每个背景一个可点圆点，
+    /// 选中的圆点更大更亮（源码里选中/普通字形同号但字号 8/6）。
+    /// </summary>
+    private void RebuildPips()
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        PipsPanel.Children.Clear();
+        for (var i = 0; i < _viewModel.BackgroundImages.Count; i++)
+        {
+            var index = i;
+            var selected = i == _viewModel.SelectedBackgroundIndex;
+            var dot = new Avalonia.Controls.Shapes.Ellipse
+            {
+                Width = selected ? 8 : 6,
+                Height = selected ? 8 : 6,
+                Fill = new SolidColorBrush(Color.Parse(selected ? "#FFFFFFFF" : "#88FFFFFF")),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            };
+            var button = new Button
+            {
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Padding = new Thickness(5, 4, 5, 4),
+                MinWidth = 0,
+                Content = dot,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            };
+            button.Click += (_, _) => _viewModel.SelectBackgroundCommand.Execute(index);
+            PipsPanel.Children.Add(button);
+        }
+    }
+
+
+    private void OnBackgroundBarPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        _viewModel.CycleBackgroundCommand.Execute(e.Delta.Y > 0 ? -1 : 1);
+        e.Handled = true;
+    }
+
+
+    private async void OnCopyBackgroundClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_viewModel?.CurrentBackground is not { } background)
+        {
+            return;
+        }
+
+        try
+        {
+            if (TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard)
+            {
+                return;
+            }
+
+            if (await GetBackgroundBitmapAsync(background).ConfigureAwait(true) is { } bitmap)
+            {
+                await clipboard.SetBitmapAsync(bitmap).ConfigureAwait(true);
+            }
+            else
+            {
+                await clipboard.SetTextAsync(background.Value).ConfigureAwait(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.ReportError(ex.Message);
+        }
+    }
+
+
+    private async void OnSaveBackgroundClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_viewModel?.CurrentBackground is not { } background)
+        {
+            return;
+        }
+
+        try
+        {
+            if (TopLevel.GetTopLevel(this) is not { } topLevel)
+            {
+                return;
+            }
+
+            var fileName = File.Exists(background.Value)
+                ? Path.GetFileName(background.Value)
+                : "lunarward-background.png";
+            var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                SuggestedFileName = fileName,
+            }).ConfigureAwait(true);
+            if (file is null)
+            {
+                return;
+            }
+
+            await using var destination = await file.OpenWriteAsync().ConfigureAwait(true);
+            if (File.Exists(background.Value))
+            {
+                await using var source = File.OpenRead(background.Value);
+                await source.CopyToAsync(destination).ConfigureAwait(true);
+            }
+            else if (await GetBackgroundBitmapAsync(background).ConfigureAwait(true) is { } bitmap)
+            {
+                bitmap.Save(destination);
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.ReportError(ex.Message);
+        }
+    }
+
+
+    private async Task<Bitmap?> GetBackgroundBitmapAsync(BackgroundSwitchItem background)
+    {
+        if (background.IsVideo)
+        {
+            return null;
+        }
+
+        if (File.Exists(background.Value))
+        {
+            return new Bitmap(background.Value);
+        }
+
+        return _viewModel is null
+            ? null
+            : await _viewModel.GetBitmapAsync(background.Value).ConfigureAwait(true);
     }
 
 
     protected override void DisposeViewModel(PageContext context)
     {
-        _viewModel?.Dispose();
+        if (_viewModel is not null)
+        {
+            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            _viewModel.Dispose();
+        }
+
         _viewModel = null;
     }
 

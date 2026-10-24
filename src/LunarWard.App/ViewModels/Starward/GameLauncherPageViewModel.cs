@@ -460,6 +460,108 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     }
 
 
+    /// <summary>当前选中的背景（图库/复制/另存为按它取文件）。</summary>
+    public BackgroundSwitchItem? CurrentBackground
+        => SelectedBackgroundIndex >= 0 && SelectedBackgroundIndex < BackgroundImages.Count
+            ? BackgroundImages[SelectedBackgroundIndex]
+            : null;
+
+
+    public string GalleryDirectory => _services.Background.CacheDirectory;
+
+
+    /// <summary>复制/另存为的失败信息回填（Starward 用 Toast，这里沿用页面错误行）。</summary>
+    public void ReportError(string message) => ErrorText = message;
+
+
+    public Task<Bitmap?> GetBitmapAsync(string value) => _context.Shell.Assets.BitmapAsync(value);
+
+
+    /// <summary>Starward「图库」打开背景浏览窗；Linux 等价为打开背景缓存目录。</summary>
+    [RelayCommand]
+    private void OpenBackgroundFolder()
+    {
+        try
+        {
+            Directory.CreateDirectory(GalleryDirectory);
+        }
+        catch (Exception)
+        {
+            // 目录建立失败也照样尝试打开（可能已存在）
+        }
+
+        if (SettingShellActions.TryOpen(GalleryDirectory) is { } error)
+        {
+            ErrorText = error;
+        }
+    }
+
+
+    partial void OnSelectedBackgroundIndexChanged(int value) => OnPropertyChanged(nameof(CurrentBackground));
+
+
+    /// <summary>视频背景的播放/暂停（Starward <c>StartOrStopVideoBackgroundCommand</c>）。</summary>
+    [ObservableProperty]
+    private bool _videoPaused;
+
+
+    partial void OnVideoPausedChanged(bool value)
+    {
+        if (value)
+        {
+            _services.Background.Pause();
+        }
+        else
+        {
+            _services.Background.Resume();
+        }
+
+        OnPropertyChanged(nameof(VideoToggleGlyph));
+    }
+
+
+    partial void OnHasVideoBackgroundChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanToggleVideo));
+    }
+
+
+    public bool CanToggleVideo => HasVideoBackground;
+
+    /// <summary>Starward <c>StartStopButtonIcon</c>：暂停时显示播放，播放中显示暂停。</summary>
+    public string VideoToggleGlyph => VideoPaused ? "\uE768" : "\uE769";
+
+
+    [RelayCommand]
+    private void ToggleVideo()
+    {
+        if (CanToggleVideo)
+        {
+            VideoPaused = !VideoPaused;
+        }
+    }
+
+
+    /// <summary>滚轮在切换条上滚动：循环切换背景（Starward <c>PointerWheelChanged</c>）。</summary>
+    [RelayCommand]
+    private void CycleBackground(int delta)
+    {
+        var count = BackgroundImages.Count;
+        if (count == 0 || delta == 0)
+        {
+            return;
+        }
+
+        var index = (SelectedBackgroundIndex + delta) % count;
+        if (index < 0)
+        {
+            index += count;
+        }
+
+        _ = SelectBackgroundAsync(index);
+    }
+
+
     public void OnBackgroundBarPointerEnter() => ShowBackgroundBar = true;
 
     public void OnBackgroundBarPointerExit() => ShowBackgroundBar = false;

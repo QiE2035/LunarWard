@@ -513,7 +513,8 @@
            Height="60"
            VerticalAlignment="Bottom"
            PointerEntered="OnBackgroundBarPointerEntered"
-           PointerExited="OnBackgroundBarPointerExited">
+           PointerExited="OnBackgroundBarPointerExited"
+           PointerWheelChanged="OnBackgroundBarPointerWheelChanged">
       <Border IsVisible="{Binding ShowBackgroundBar}"
               VerticalAlignment="Stretch"
               PointerEntered="OnBackgroundBarPointerEntered"
@@ -528,30 +529,35 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom"
                     Margin="16,0,0,4"
                     Orientation="Horizontal" Spacing="4">
-          <!-- 圆点指示器（PipsPager） -->
-          <ItemsControl ItemsSource="{Binding BackgroundImages}" VerticalAlignment="Center">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" Spacing="4" />
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:BackgroundSwitchItem">
-                <Ellipse Width="6" Height="6" VerticalAlignment="Center" Fill="#AAFFFFFF" />
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
+          <!-- 圆点指示器（Starward PipsPager：选中 8 号字形、普通 6 号；这里用可点的圆点） -->
+          <StackPanel x:Name="PipsPanel" VerticalAlignment="Center" Orientation="Horizontal" Spacing="2" />
 
           <Border Width="1" Height="16" Margin="4,0" Background="#44FFFFFF" />
 
-          <Button Classes="overlay" Padding="6" MinWidth="28" ToolTip.Tip="{Binding Strings[Launcher.Gallery]}">
+          <!-- 图库（Starward OpenBackgroundViewWindow；Linux 等价为打开背景目录） -->
+          <Button Classes="overlay" Padding="6" MinWidth="28"
+                  Command="{Binding OpenBackgroundFolderCommand}"
+                  ToolTip.Tip="{Binding Strings[Launcher.Gallery]}">
             <TextBlock Classes="icon" Text="&#xE91B;" Foreground="{StaticResource StarTextSecondary}" />
           </Button>
-          <Button Classes="overlay" Padding="6" MinWidth="28" ToolTip.Tip="{Binding Strings[Launcher.Copy]}">
+          <!-- 复制 -->
+          <Button Classes="overlay" Padding="6" MinWidth="28"
+                  Click="OnCopyBackgroundClick"
+                  ToolTip.Tip="{Binding Strings[Launcher.Copy]}">
             <TextBlock Classes="icon" Text="&#xE8C8;" Foreground="{StaticResource StarTextSecondary}" />
           </Button>
-          <Button Classes="overlay" Padding="6" MinWidth="28" ToolTip.Tip="{Binding Strings[Launcher.SaveAs]}">
+          <!-- 另存为 -->
+          <Button Classes="overlay" Padding="6" MinWidth="28"
+                  Click="OnSaveBackgroundClick"
+                  ToolTip.Tip="{Binding Strings[Launcher.SaveAs]}">
             <TextBlock Classes="icon" Text="&#xE74E;" Foreground="{StaticResource StarTextSecondary}" />
+          </Button>
+          <!-- 播放/暂停（仅视频背景，Starward Visibility={x:Bind CanStopVideo}） -->
+          <Button Classes="overlay" Padding="6" MinWidth="28"
+                  IsVisible="{Binding CanToggleVideo}"
+                  Command="{Binding ToggleVideoCommand}"
+                  ToolTip.Tip="{Binding Strings[Launcher.PlayPause]}">
+            <TextBlock Classes="icon" Text="{Binding VideoToggleGlyph}" Foreground="{StaticResource StarTextSecondary}" />
           </Button>
         </StackPanel>
       </Border>
