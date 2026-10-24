@@ -35,8 +35,8 @@ public partial class ToolboxPage : StarwardPage
 
 
     /// <summary>
-    /// 选中「深境螺旋」且有角色时挂载 <see cref="Record.SpiralAbyssPage"/>；
-    /// 其余菜单（未移植）回到占位。Starward 的 Frame.Navigate 同理。
+    /// 选中已移植的战绩页（深境螺旋 / 幽境危战）且有角色时挂载对应子页；
+    /// 其余菜单回到占位。Starward 的 Frame.Navigate 同理。
     /// </summary>
     private void UpdateHostedPage()
     {
@@ -46,9 +46,14 @@ public partial class ToolboxPage : StarwardPage
         }
 
         StarwardPage? page = null;
-        if (_viewModel.SelectedItem?.Tag == "SpiralAbyss" && _viewModel.CurrentRole is { } role)
+        if (_viewModel.CurrentRole is { } role && _viewModel.SelectedItem?.Tag is { } tag)
         {
-            page = new Record.SpiralAbyssPage(Context, role);
+            page = tag switch
+            {
+                "SpiralAbyss" => new Record.SpiralAbyssPage(Context, role),
+                "StygianOnslaught" => new Record.StygianOnslaughtPage(Context, role),
+                _ => null,
+            };
         }
 
         if (ReferenceEquals(page, _hostedPage))

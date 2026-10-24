@@ -204,6 +204,24 @@
     <Setter Property="TextElement.Foreground" Value="{StaticResource StarAccentForegroundBrush}" />
   </Style>
 
+  <!-- 分段切换（Starward CommunityToolkit Segmented：单人 / 多人） -->
+  <Style Selector="Button.segmented">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource StarTextSecondary}" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="12,4" />
+    <Setter Property="MinHeight" Value="28" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+
+  <Style Selector="Button.segmented.selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource StarAccentBrush}" />
+  </Style>
+
+  <Style Selector="Button.segmented.selected">
+    <Setter Property="Foreground" Value="{StaticResource StarAccentForegroundBrush}" />
+  </Style>
+
   <!-- 纯图标按钮（40×40，导航栏/右上角工具按钮） -->
   <Style Selector="Button.icon-button">
     <Setter Property="Width" Value="40" />
