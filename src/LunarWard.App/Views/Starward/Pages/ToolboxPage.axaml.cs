@@ -53,6 +53,7 @@ public partial class ToolboxPage : StarwardPage
                 "SpiralAbyss" => new Record.SpiralAbyssPage(Context, role),
                 "ImaginariumTheater" => new Record.ImaginariumTheaterPage(Context, role),
                 "StygianOnslaught" => new Record.StygianOnslaughtPage(Context, role),
+                "InterKnotMonthlyReport" => new Record.InterKnotMonthlyReportPage(Context, role),
                 _ => null,
             };
         }
