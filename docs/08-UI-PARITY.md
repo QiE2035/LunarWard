@@ -37,7 +37,7 @@
 | 快捷键 | `HotkeySetting.xaml`(62) | `SettingHotkeyView.axaml`(约 130) | 🟡 | 本轮已对齐标题/行高/宽度；`HotkeyInput` 用同边框/圆角的禁用占位（Linux 无全局热键） |
 | 手柄增强 | `GamepadControlSetting.xaml`(207) | `SettingGamepadView.axaml`(约 200) | 🟡 | 本轮已按源码重排标题/Toggle/说明/模拟输入/按键映射/三段说明；GameInput 不存在 → 控件禁用 + Linux 替代方案（Steam Input）追加在后 |
 | 高级 | `AdvancedSetting.xaml`(125) | `SettingAdvancedView.axaml`(约 230) | 🟡 | 本轮已对齐 URL 协议 / RPC 服务 / 日志级别三段；RPC 在 LunarWard 不存在 → 保留状态行、去掉伪造按钮；日志/env 追加在后 |
-| 工具箱 | `GameRecordPage.xaml`(527) + `.cs` + 各战绩子页 | `Pages/ToolboxPage.axaml`(约 430) + `.cs`/VM；子页 `Pages/Record/SpiralAbyssPage.axaml`(约 360) + VM(约 480)、`Pages/Record/ImaginariumTheaterPage.axaml`(约 470) + VM(约 520)、`Pages/Record/StygianOnslaughtPage.axaml`(约 320) + VM(约 430)、`Pages/Record/InterKnotMonthlyReportPage.axaml`(约 350) + VM(约 540)、`Pages/Record/DeadlyAssaultPage.axaml`(约 600) + VM(约 480) | 🟡 | 容器已按源码重写：248px 左栏（头像/角色/登录 Flyout/角色列表）、战绩菜单、底部「更新设备指纹」、右侧 Frame；角色通过 cookie 调 `GetGameRolesAsync` 实时拉取。**深境螺旋、幻想真境剧诗、幽境危战、绳网月报、危局强袭战五个子页已 1:1 移植**；其余子页仍是"尚未移植"占位（不伪造数据）。登录用 cookie 代替 WebView；头像暂用通用图标（未拉 HeadIcon）；难度勋章/Segmented 因缺素材与控件差异用数字圆章/双 Button 占位（幻想真境剧诗的勋章/星章/幻剧之花同样用同色圆章 + 星形字形占位） |
+| 工具箱 | `GameRecordPage.xaml`(527) + `.cs` + 各战绩子页 | `Pages/ToolboxPage.axaml`(约 430) + `.cs`/VM；子页 `Pages/Record/SpiralAbyssPage.axaml`(约 360) + VM(约 480)、`Pages/Record/ImaginariumTheaterPage.axaml`(约 470) + VM(约 520)、`Pages/Record/StygianOnslaughtPage.axaml`(约 320) + VM(约 430)、`Pages/Record/InterKnotMonthlyReportPage.axaml`(约 350) + VM(约 540)、`Pages/Record/DeadlyAssaultPage.axaml`(约 600) + VM(约 480)、`Pages/Record/ShiyuDefensePage.axaml`(约 760) + VM(约 740) | 🟡 | 容器已按源码重写：248px 左栏（头像/角色/登录 Flyout/角色列表）、战绩菜单、底部「更新设备指纹」、右侧 Frame；角色通过 cookie 调 `GetGameRolesAsync` 实时拉取。**深境螺旋、幻想真境剧诗、幽境危战、绳网月报、危局强袭战、式舆防卫战六个子页已 1:1 移植**；其余子页仍是"尚未移植"占位（不伪造数据）。登录用 cookie 代替 WebView；头像暂用通用图标（未拉 HeadIcon）；难度勋章/Segmented 因缺素材与控件差异用数字圆章/双 Button 占位（幻想真境剧诗的勋章/星章/幻剧之花同样用同色圆章 + 星形字形占位） |
 | 截图页 | `ScreenshotPage2.xaml`(319)（+`ImageViewWindow2.xaml` 731） | `Pages/ScreenshotPage.axaml`(263) | 🟡 | 本轮已按源码重写：44px 页头 + 磁贴墙（列宽按 UniformGridLayout 公式均摊）+ 空态。未移植：ItemsView 容器虚拟化、AnnotatedScrollBar、悬停 1.2× 放大、`ImageViewWindow2`（点击走系统查看器）、截图文件夹管理对话框（Flyout 三行代替） |
 | 抽卡页 | `GachaLogPage.xaml`(475) + `GachaStatsCard.xaml`(293) + `ZZZGachaStatsCard`(294) | `Pages/GachaPage.axaml`(451) + `Controls/GachaStatsCard.axaml`(306) | 🟡 | 本轮已按源码重写：44px 页头（UID/更新 SplitButton/设置 Flyout/强调色 Pane 按钮）+ SplitView + 统计卡（行序、字号、稀有度色照抄）+ 5★/4★ 列表 + 空态。未移植：ZZZ 统计卡、材料图标与卡池底图（无素材，占位）、按时间段删除、UIGF v4、虚拟化 |
 | 游戏公告窗 | `GameNoticeWindow.xaml`(273) | 无 | 🔴 | 未移植 |
@@ -130,6 +130,16 @@
   （同结构，星用浅色）。数据用 `GameRecordClient.GetDeadlyAssaultInfoAsync(schedule=1/2)`
   （当期 + 上期）；缺 `rank-bg-*.png` / 稀有度图标 / `star-icon-*.png`，用同色渐变圆章 +
   `S`/`A` 字形 + `E735` 星形字形占位，不伪造素材。demo 夹具 `LUNARWARD_TOOLBOX_DEMO=1`。
+- **式舆防卫战子页**（Lead）：按 `Features/GameRecord/ZZZ/ShiyuDefensePage.xaml` 移植：
+  左栏 0,18,18,0 强调刷新胶囊 + 赛期 ListView（日期 + S/A/B 圆章 + 次数，v2 赛期显示
+  概要分数）；右侧按 `hadal_ver` 分流——**v1**：出战统计条（S/A/B 次数 + 最高防线 + 4-7 层
+  时长）与逐防线卡（防线名 / 评级 / 挑战时间 / 防线效果、第一队与第二队各 76×94 角色卡 +
+  58×78 邦布 + 敌人名与弱点/抗性属性章 + 通关时长）；**v2**：680 宽概要卡（28 号分数 +
+  排名百分比章 + 评级 + 挑战时间 / 通关时长）、第五防线卡（每节点分数 + 评级 + 挑战时间 +
+  增益 + 角色/邦布 + 战斗时长）、第四防线卡（增益 + 挑战时间 + 评级 + 角色/邦布 + 战斗时长）。
+  数据用 `GameRecordClient.GetShiyuDefenseInfoAsync(schedule=1/2)` 拉 `hadal_info_v1`/
+  `hadal_info_v2`；缺 S/A/B 评级图与属性图标，用同色文字章占位；demo 夹具
+  `LUNARWARD_TOOLBOX_DEMO=1`（`LUNARWARD_SHIYU_V1=1` 切到 v1 演示赛期，便于截图）。
 - **幻想真境剧诗子页**（Lead）：按 `Features/GameRecord/Genshin/ImaginariumTheaterPage.xaml`
   移植各期 ListView（日期 + 勋章圆章 + `幕/最大幕` + `星章/最大幕`）、0,18,18,0 强调刷新胶囊、
   统计周期行、演出回顾 5 行（最佳记录 = 难度模式 + 第 N 幕 + 月谕圣牌数 / 12 颗逐幕星章 /
@@ -141,14 +151,14 @@
   字形占位并在 XAML 注释；头像类图片缺失时回退 `E77B` 字形（与深境螺旋一致）。
   demo 夹具同样走 `LUNARWARD_TOOLBOX_DEMO=1`。
 - **工具箱挂载**：`ToolboxPageViewModel.PortedTags` 列出已移植菜单
-  （SpiralAbyss / ImaginariumTheater / StygianOnslaught / InterKnotMonthlyReport / DeadlyAssault），`ToolboxPage.UpdateHostedPage`
+  （SpiralAbyss / ImaginariumTheater / StygianOnslaught / InterKnotMonthlyReport / DeadlyAssault / ShiyuDefense），`ToolboxPage.UpdateHostedPage`
   按 tag 创建 `Record.SpiralAbyssPage` / `Record.ImaginariumTheaterPage` /
-  `Record.StygianOnslaughtPage` / `Record.InterKnotMonthlyReportPage` / `Record.DeadlyAssaultPage` 挂到 `ContentControl`；其余菜单显示"尚未移植"占位。
+  `Record.StygianOnslaughtPage` / `Record.InterKnotMonthlyReportPage` / `Record.DeadlyAssaultPage` / `Record.ShiyuDefensePage` 挂到 `ContentControl`；其余菜单显示"尚未移植"占位。
 
 ## 4. 下一步队列（按用户可见度排序）
 
 1. 工具箱战绩子页：按 Starward `Features/GameRecord/{Genshin,ZZZ}/*Page.xaml`
-   逐个移植（深境螺旋 ✅、幻想真境剧诗 ✅、幽境危战 ✅、绳网月报 ✅、危局强袭战 ✅ → 式舆防卫战），
+   逐个移植（深境螺旋 ✅、幻想真境剧诗 ✅、幽境危战 ✅、绳网月报 ✅、危局强袭战 ✅、式舆防卫战 ✅ → 旅行者札记/绳网月报历史等剩余 Genshin 子页），
    数据用 `GameRecordClient` 的对应 API；再补 `SelfQueryPage`（账号记录独立页）。
 2. 启动器剩余控件：`GameAccountSwitcher`（40 高 ComboBox + 切换/编辑）、
    `StartGameButton` 的安装进度态、预下载、DX12、区服 ComboBox、拖放背景、

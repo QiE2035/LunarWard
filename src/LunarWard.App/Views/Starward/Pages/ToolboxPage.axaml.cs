@@ -55,6 +55,7 @@ public partial class ToolboxPage : StarwardPage
                 "StygianOnslaught" => new Record.StygianOnslaughtPage(Context, role),
                 "InterKnotMonthlyReport" => new Record.InterKnotMonthlyReportPage(Context, role),
                 "DeadlyAssault" => new Record.DeadlyAssaultPage(Context, role),
+                "ShiyuDefense" => new Record.ShiyuDefensePage(Context, role),
                 _ => null,
             };
         }

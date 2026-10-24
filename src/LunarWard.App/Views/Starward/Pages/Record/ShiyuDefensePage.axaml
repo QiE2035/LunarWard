@@ -1,0 +1,796 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Pages.Record.ShiyuDefensePage"
+             x:DataType="vm:ShiyuDefensePageViewModel">
+
+  <!--
+    式舆防卫战页：对照 Starward Features/GameRecord/ZZZ/ShiyuDefensePage.xaml。
+    结构 = 左栏（刷新 + 赛期列表） + 右侧（period / v1 出战统计 + 逐防线 / v2 概要 + 第五、第四防线）。
+    S/A/B 评级图、属性图标、邦布/敌人立绘资源不在仓库里，用同色文字章 + 字形占位。
+  -->
+
+  <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
+
+    <!-- ══ 空态 ══════════════════════════════════════════════════════════ -->
+    <StackPanel Grid.RowSpan="2"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16"
+                IsVisible="{Binding ShowEmpty}">
+      <Border Width="160"
+              Height="160"
+              CornerRadius="80"
+              Background="{StaticResource StarControlFillBrush}">
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="64"
+                   Foreground="{StaticResource StarTextTertiary}"
+                   Text="&#xE7FC;" />
+      </Border>
+      <TextBlock HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding Strings[Common.NoData]}" />
+    </StackPanel>
+
+    <!-- ══ 左栏：刷新 ═══════════════════════════════════════════════════ -->
+    <StackPanel Margin="0,24,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Spacing="12">
+      <Button Height="36"
+              BorderThickness="0"
+              Classes="accent"
+              CornerRadius="0,18,18,0"
+              Command="{Binding RefreshCommand}">
+        <StackPanel Margin="4,0,4,0" Orientation="Horizontal" Spacing="8">
+          <Grid>
+            <ProgressBar Width="16" Height="16" IsIndeterminate="True" Background="Transparent" IsVisible="{Binding IsBusy}" />
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" IsVisible="{Binding !IsBusy}" />
+          </Grid>
+          <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Common.Refresh]}" />
+        </StackPanel>
+      </Button>
+    </StackPanel>
+
+    <!-- ══ 左栏：赛期列表（Starward ListView_ShiyuDefense） ═════════════ -->
+    <ListBox Grid.Row="1"
+             Padding="12,0,12,0"
+             Background="Transparent"
+             ItemsSource="{Binding DefenseList}"
+             SelectedItem="{Binding CurrentDefense, Mode=TwoWay}"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             IsVisible="{Binding DefenseList.Count}">
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem">
+          <Setter Property="Padding" Value="4,0,4,0" />
+          <Setter Property="Margin" Value="0,4" />
+          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+          <Setter Property="Background" Value="Transparent" />
+        </Style>
+      </ListBox.Styles>
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:ShiyuDefensePeriodItem">
+          <Border Padding="12,8"
+                  Background="{StaticResource StarOverlayAcrylicBrush}"
+                  CornerRadius="4">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding DateText}" />
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Border Width="22" Height="22"
+                        Background="Black"
+                        CornerRadius="4">
+                  <TextBlock HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             FontSize="12"
+                             FontWeight="Bold"
+                             Foreground="#FFB13F"
+                             Text="{Binding RatingLetter}" />
+                </Border>
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           IsVisible="{Binding HasTimes}"
+                           Text="{Binding TimesText}" />
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           IsVisible="{Binding HasScore}"
+                           Text="{Binding ScoreText}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <!-- ══ 右侧详情 ═════════════════════════════════════════════════════ -->
+    <ScrollViewer Grid.RowSpan="2"
+                  Grid.Column="1"
+                  IsVisible="{Binding CurrentDefense, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <StackPanel Margin="24" Spacing="8">
+
+        <TextBlock Foreground="{StaticResource StarTextSecondary}" Text="{Binding PeriodText}" />
+
+        <TextBlock Foreground="#FF6B6B"
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}"
+                   Text="{Binding ErrorText}" />
+
+        <!-- ══ v1（Starward Grid 出战统计 + 防线列表） ═════════════════════ -->
+        <StackPanel Spacing="8" IsVisible="{Binding ShowV1}">
+          <Border Margin="0,-4,0,0"
+                  Padding="12,8"
+                  Background="{StaticResource StarOverlayAcrylicBrush}"
+                  CornerRadius="8">
+            <StackPanel Spacing="6">
+              <StackPanel Orientation="Horizontal" Spacing="24">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Border Width="32" Height="32" Background="Black" CornerRadius="4">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="18" FontWeight="Bold" Foreground="#FFB13F" Text="S" />
+                  </Border>
+                  <TextBlock VerticalAlignment="Center" FontSize="20" FontWeight="Bold"
+                             Text="{Binding CurrentDefense.V1.STimes, StringFormat='x{0}'}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Border Width="32" Height="32" Background="Black" CornerRadius="4">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="18" FontWeight="Bold" Foreground="#B57EDC" Text="A" />
+                  </Border>
+                  <TextBlock VerticalAlignment="Center" FontSize="20" FontWeight="Bold"
+                             Text="{Binding CurrentDefense.V1.ATimes, StringFormat='x{0}'}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Border Width="32" Height="32" Background="Black" CornerRadius="4">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="18" FontWeight="Bold" Foreground="#7FB3FF" Text="B" />
+                  </Border>
+                  <TextBlock VerticalAlignment="Center" FontSize="20" FontWeight="Bold"
+                             Text="{Binding CurrentDefense.V1.BTimes, StringFormat='x{0}'}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock VerticalAlignment="Center" FontSize="12"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding Strings[ShiyuDefense.HighestStageCleared]}" />
+                  <TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="Bold"
+                             Text="{Binding CurrentDefense.V1.MaxLayerText, StringFormat='x{0}'}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock VerticalAlignment="Center" FontSize="12"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding Strings[ShiyuDefense.Layer47ClearTime]}" />
+                  <TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="Bold"
+                             Text="{Binding CurrentDefense.V1.BattleTime47Text}" />
+                </StackPanel>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <ItemsControl ItemsSource="{Binding CurrentDefense.V1.Floors}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Spacing="8" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ShiyuFloorItem">
+                <Border Padding="20,8"
+                        Background="{StaticResource StarOverlayAcrylicBrush}"
+                        CornerRadius="8">
+                  <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding ZoneName}" />
+                        <Border Width="22" Height="22" Background="Black" CornerRadius="4">
+                          <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                     FontSize="12" FontWeight="Bold" Foreground="#FFB13F"
+                                     Text="{Binding RatingLetter}" />
+                        </Border>
+                        <TextBlock VerticalAlignment="Center" FontSize="12"
+                                   Foreground="{StaticResource StarTextSecondary}"
+                                   Text="{Binding ChallengeTimeText}" />
+                      </StackPanel>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasBuffs}">
+                      <TextBlock FontSize="12"
+                                 Foreground="{StaticResource StarTextSecondary}"
+                                 Text="{Binding EffectsLabel}" />
+                      <ItemsControl ItemsSource="{Binding Buffs}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="8" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:ShiyuBuffItem">
+                            <StackPanel Spacing="2">
+                              <TextBlock FontSize="12" FontWeight="Bold" Text="{Binding Title}" />
+                              <TextBlock FontSize="12"
+                                         Foreground="{StaticResource StarTextSecondary}"
+                                         Text="{Binding Text}"
+                                         TextWrapping="Wrap" />
+                            </StackPanel>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                      <StackPanel Spacing="6" IsVisible="{Binding Node1, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <TextBlock FontSize="12"
+                                   Foreground="{StaticResource StarTextSecondary}"
+                                   Text="{Binding Team1Label}" />
+                        <ContentControl Content="{Binding Node1}">
+                          <ContentControl.ContentTemplate>
+                            <DataTemplate x:DataType="vm:ShiyuNodeItem">
+                              <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                  <ItemsControl ItemsSource="{Binding Avatars}">
+                                    <ItemsControl.ItemsPanel>
+                                      <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                                      </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                      <DataTemplate x:DataType="vm:ShiyuAvatarItem">
+                                        <Grid Width="76" Height="94">
+                                          <Border Width="76" Height="94" Background="#0A0A0A" CornerRadius="8" />
+                                          <Border Width="72" Height="72" Margin="2,2,2,2"
+                                                  VerticalAlignment="Top"
+                                                  CornerRadius="8,8,0,0"
+                                                  ClipToBounds="True">
+                                            <Grid>
+                                              <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                         FontSize="28" Foreground="#66FFFFFF" Text="&#xE77B;" />
+                                              <Image Source="{Binding Icon}" Stretch="UniformToFill"
+                                                     IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                            </Grid>
+                                          </Border>
+                                          <TextBlock Margin="0,0,0,2" HorizontalAlignment="Center"
+                                                     VerticalAlignment="Bottom" FontSize="12"
+                                                     Foreground="{StaticResource StarTextSecondary}"
+                                                     Text="{Binding LevelText}" />
+                                          <Border Width="22" Height="22" HorizontalAlignment="Left"
+                                                  VerticalAlignment="Top" Background="Black" CornerRadius="8,0,4,0">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       FontSize="12" FontWeight="Bold"
+                                                       Foreground="{Binding RarityBrush}"
+                                                       Text="{Binding RarityText}" />
+                                          </Border>
+                                          <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                  Background="#A0000000" CornerRadius="0,8,0,4"
+                                                  IsVisible="{Binding HasRank}">
+                                            <TextBlock Margin="4,2" FontSize="14"
+                                                       Foreground="{StaticResource StarTextSecondary}"
+                                                       Text="{Binding RankText}" />
+                                          </Border>
+                                        </Grid>
+                                      </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                  </ItemsControl>
+
+                                  <Grid Width="58" Height="78" Margin="0,15,0,0"
+                                        IsVisible="{Binding Buddy, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                          <Border Background="#0A0A0A" CornerRadius="8" />
+                                    <Border Width="54" Height="56" Margin="2,2,2,2"
+                                            VerticalAlignment="Top" CornerRadius="8,8,0,0" ClipToBounds="True">
+                                      <Grid>
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontSize="24" Foreground="#66FFFFFF" Text="&#xE7FC;" />
+                                        <Image Height="84" Margin="-8,-8,0,0"
+                                               HorizontalAlignment="Left" VerticalAlignment="Top"
+                                               Source="{Binding Buddy.Icon}" Stretch="UniformToFill"
+                                               IsVisible="{Binding Buddy.Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                      </Grid>
+                                    </Border>
+                                    <TextBlock Margin="0,0,0,2" HorizontalAlignment="Center"
+                                               VerticalAlignment="Bottom" FontSize="12"
+                                               Foreground="{StaticResource StarTextSecondary}"
+                                               Text="{Binding Buddy.LevelText}" />
+                                    <Border Width="20" Height="20" HorizontalAlignment="Left"
+                                            VerticalAlignment="Top" Background="Black" CornerRadius="8,0,4,0">
+                                      <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                 FontSize="11" FontWeight="Bold"
+                                                 Foreground="{Binding Buddy.RarityBrush}"
+                                                 Text="{Binding Buddy.RarityText}" />
+                                    </Border>
+                                  </Grid>
+                                </StackPanel>
+
+                                <ItemsControl ItemsSource="{Binding Monsters}" IsVisible="{Binding HasMonsters}">
+                                  <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                      <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                  </ItemsControl.ItemsPanel>
+                                  <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ShiyuMonsterItem">
+                                      <Border Margin="0,0,8,4" Padding="6,4" Background="#0DFFFFFF" CornerRadius="6">
+                                        <StackPanel Spacing="2">
+                                          <TextBlock FontSize="12" FontWeight="Bold" Text="{Binding Name}" />
+                                          <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding HasWeakness}">
+                                            <TextBlock FontSize="10"
+                                                       Foreground="{StaticResource StarTextSecondary}"
+                                                       Text="{Binding WeaknessLabel}" />
+                                            <ItemsControl ItemsSource="{Binding Weakness}">
+                                              <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                  <StackPanel Orientation="Horizontal" Spacing="2" />
+                                                </ItemsPanelTemplate>
+                                              </ItemsControl.ItemsPanel>
+                                              <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:ShiyuElementChip">
+                                                  <Border Padding="3,0" Background="{Binding Brush}" CornerRadius="3">
+                                                    <TextBlock FontSize="10" Foreground="#1A1A1A" Text="{Binding Label}" />
+                                                  </Border>
+                                                </DataTemplate>
+                                              </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                          </StackPanel>
+                                          <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding HasResistance}">
+                                            <TextBlock FontSize="10"
+                                                       Foreground="{StaticResource StarTextSecondary}"
+                                                       Text="{Binding ResistanceLabel}" />
+                                            <ItemsControl ItemsSource="{Binding Resistance}">
+                                              <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                  <StackPanel Orientation="Horizontal" Spacing="2" />
+                                                </ItemsPanelTemplate>
+                                              </ItemsControl.ItemsPanel>
+                                              <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:ShiyuElementChip">
+                                                  <Border Padding="3,0" Background="{Binding Brush}" CornerRadius="3">
+                                                    <TextBlock FontSize="10" Foreground="#1A1A1A" Text="{Binding Label}" />
+                                                  </Border>
+                                                </DataTemplate>
+                                              </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                          </StackPanel>
+                                        </StackPanel>
+                                      </Border>
+                                    </DataTemplate>
+                                  </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBlock FontSize="12"
+                                           Foreground="{StaticResource StarTextSecondary}"
+                                           Text="{Binding ClearTimeText}" />
+                              </StackPanel>
+                            </DataTemplate>
+                          </ContentControl.ContentTemplate>
+                        </ContentControl>
+                      </StackPanel>
+
+                      <StackPanel Grid.Column="1" Spacing="6" IsVisible="{Binding Node2, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <TextBlock FontSize="12"
+                                   Foreground="{StaticResource StarTextSecondary}"
+                                   Text="{Binding Team2Label}" />
+                        <ContentControl Content="{Binding Node2}">
+                          <ContentControl.ContentTemplate>
+                            <DataTemplate x:DataType="vm:ShiyuNodeItem">
+                              <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                  <ItemsControl ItemsSource="{Binding Avatars}">
+                                    <ItemsControl.ItemsPanel>
+                                      <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                                      </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                      <DataTemplate x:DataType="vm:ShiyuAvatarItem">
+                                        <Grid Width="76" Height="94">
+                                          <Border Width="76" Height="94" Background="#0A0A0A" CornerRadius="8" />
+                                          <Border Width="72" Height="72" Margin="2,2,2,2"
+                                                  VerticalAlignment="Top"
+                                                  CornerRadius="8,8,0,0"
+                                                  ClipToBounds="True">
+                                            <Grid>
+                                              <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                         FontSize="28" Foreground="#66FFFFFF" Text="&#xE77B;" />
+                                              <Image Source="{Binding Icon}" Stretch="UniformToFill"
+                                                     IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                            </Grid>
+                                          </Border>
+                                          <TextBlock Margin="0,0,0,2" HorizontalAlignment="Center"
+                                                     VerticalAlignment="Bottom" FontSize="12"
+                                                     Foreground="{StaticResource StarTextSecondary}"
+                                                     Text="{Binding LevelText}" />
+                                          <Border Width="22" Height="22" HorizontalAlignment="Left"
+                                                  VerticalAlignment="Top" Background="Black" CornerRadius="8,0,4,0">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       FontSize="12" FontWeight="Bold"
+                                                       Foreground="{Binding RarityBrush}"
+                                                       Text="{Binding RarityText}" />
+                                          </Border>
+                                          <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                  Background="#A0000000" CornerRadius="0,8,0,4"
+                                                  IsVisible="{Binding HasRank}">
+                                            <TextBlock Margin="4,2" FontSize="14"
+                                                       Foreground="{StaticResource StarTextSecondary}"
+                                                       Text="{Binding RankText}" />
+                                          </Border>
+                                        </Grid>
+                                      </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                  </ItemsControl>
+
+                                  <Grid Width="58" Height="78" Margin="0,15,0,0"
+                                        IsVisible="{Binding Buddy, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                          <Border Background="#0A0A0A" CornerRadius="8" />
+                                    <Border Width="54" Height="56" Margin="2,2,2,2"
+                                            VerticalAlignment="Top" CornerRadius="8,8,0,0" ClipToBounds="True">
+                                      <Grid>
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontSize="24" Foreground="#66FFFFFF" Text="&#xE7FC;" />
+                                        <Image Height="84" Margin="-8,-8,0,0"
+                                               HorizontalAlignment="Left" VerticalAlignment="Top"
+                                               Source="{Binding Buddy.Icon}" Stretch="UniformToFill"
+                                               IsVisible="{Binding Buddy.Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                      </Grid>
+                                    </Border>
+                                    <TextBlock Margin="0,0,0,2" HorizontalAlignment="Center"
+                                               VerticalAlignment="Bottom" FontSize="12"
+                                               Foreground="{StaticResource StarTextSecondary}"
+                                               Text="{Binding Buddy.LevelText}" />
+                                    <Border Width="20" Height="20" HorizontalAlignment="Left"
+                                            VerticalAlignment="Top" Background="Black" CornerRadius="8,0,4,0">
+                                      <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                 FontSize="11" FontWeight="Bold"
+                                                 Foreground="{Binding Buddy.RarityBrush}"
+                                                 Text="{Binding Buddy.RarityText}" />
+                                    </Border>
+                                  </Grid>
+                                </StackPanel>
+
+                                <ItemsControl ItemsSource="{Binding Monsters}" IsVisible="{Binding HasMonsters}">
+                                  <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                      <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                  </ItemsControl.ItemsPanel>
+                                  <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ShiyuMonsterItem">
+                                      <Border Margin="0,0,8,4" Padding="6,4" Background="#0DFFFFFF" CornerRadius="6">
+                                        <StackPanel Spacing="2">
+                                          <TextBlock FontSize="12" FontWeight="Bold" Text="{Binding Name}" />
+                                          <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding HasWeakness}">
+                                            <TextBlock FontSize="10"
+                                                       Foreground="{StaticResource StarTextSecondary}"
+                                                       Text="{Binding WeaknessLabel}" />
+                                            <ItemsControl ItemsSource="{Binding Weakness}">
+                                              <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                  <StackPanel Orientation="Horizontal" Spacing="2" />
+                                                </ItemsPanelTemplate>
+                                              </ItemsControl.ItemsPanel>
+                                              <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:ShiyuElementChip">
+                                                  <Border Padding="3,0" Background="{Binding Brush}" CornerRadius="3">
+                                                    <TextBlock FontSize="10" Foreground="#1A1A1A" Text="{Binding Label}" />
+                                                  </Border>
+                                                </DataTemplate>
+                                              </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                          </StackPanel>
+                                          <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding HasResistance}">
+                                            <TextBlock FontSize="10"
+                                                       Foreground="{StaticResource StarTextSecondary}"
+                                                       Text="{Binding ResistanceLabel}" />
+                                            <ItemsControl ItemsSource="{Binding Resistance}">
+                                              <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                  <StackPanel Orientation="Horizontal" Spacing="2" />
+                                                </ItemsPanelTemplate>
+                                              </ItemsControl.ItemsPanel>
+                                              <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:ShiyuElementChip">
+                                                  <Border Padding="3,0" Background="{Binding Brush}" CornerRadius="3">
+                                                    <TextBlock FontSize="10" Foreground="#1A1A1A" Text="{Binding Label}" />
+                                                  </Border>
+                                                </DataTemplate>
+                                              </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                          </StackPanel>
+                                        </StackPanel>
+                                      </Border>
+                                    </DataTemplate>
+                                  </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBlock FontSize="12"
+                                           Foreground="{StaticResource StarTextSecondary}"
+                                           Text="{Binding ClearTimeText}" />
+                              </StackPanel>
+                            </DataTemplate>
+                          </ContentControl.ContentTemplate>
+                        </ContentControl>
+                      </StackPanel>
+                    </Grid>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <!-- ══ v2（Starward 概要卡 + 第五/第四防线） ═════════════════════ -->
+        <StackPanel Spacing="8" IsVisible="{Binding ShowV2}">
+          <Border Width="680"
+                  Padding="16,12"
+                  HorizontalAlignment="Center"
+                  Background="{StaticResource StarControlFillBrush}"
+                  CornerRadius="8">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="Auto,*">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <TextBlock FontSize="28" FontWeight="Bold" Text="{Binding CurrentDefense.V2.BriefScoreText}" />
+                  <Border Margin="0,0,0,6" MinWidth="60" Height="20" VerticalAlignment="Bottom"
+                          Background="#FFB13F" CornerRadius="4">
+                    <TextBlock Margin="8,0" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"
+                               Foreground="#1A1A1A" Text="{Binding CurrentDefense.V2.RankPercentText}" />
+                  </Border>
+                  <Border Width="22" Height="22" Margin="0,0,0,5" VerticalAlignment="Bottom"
+                          Background="Black" CornerRadius="4">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="12" FontWeight="Bold" Foreground="#FFB13F"
+                               Text="{Binding CurrentDefense.V2.Info.MaxRating}" />
+                  </Border>
+                </StackPanel>
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="16">
+                <StackPanel Orientation="Horizontal" Spacing="4"
+                            IsVisible="{Binding CurrentDefense.V2.HasChallengeTime}">
+                  <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding Strings[ShiyuDefense.ChallengeTimeLabel]}" />
+                  <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding CurrentDefense.V2.ChallengeTimeText}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4"
+                            IsVisible="{Binding CurrentDefense.V2.HasBattleTime}">
+                  <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding Strings[ShiyuDefense.ClearTimeLabel]}" />
+                  <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                             Text="{Binding CurrentDefense.V2.BattleTimeText}" />
+                </StackPanel>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Padding="16,12"
+                  Background="{StaticResource StarControlFillBrush}"
+                  CornerRadius="8">
+            <StackPanel Spacing="8">
+              <TextBlock FontSize="16" FontWeight="Bold"
+                         Text="{Binding Strings[ShiyuDefense.FifthFrontier]}" />
+              <ItemsControl ItemsSource="{Binding CurrentDefense.V2.Fifth}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Spacing="8" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ShiyuV2ChallengeItem">
+                    <Border Padding="12" Background="{StaticResource StarOverlayAcrylicBrush}" CornerRadius="8">
+                      <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="Auto,*">
+                          <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock FontSize="24" FontWeight="Bold" Text="{Binding ScoreText}" />
+                            <Border Width="22" Height="22" VerticalAlignment="Center"
+                                    Background="Black" CornerRadius="4" IsVisible="{Binding HasRating}">
+                              <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         FontSize="12" FontWeight="Bold" Foreground="#FFB13F"
+                                         Text="{Binding RatingLetter}" />
+                            </Border>
+                            <TextBlock VerticalAlignment="Center" FontSize="12"
+                                       Foreground="{StaticResource StarTextSecondary}"
+                                       IsVisible="{Binding HasChallengeTime}"
+                                       Text="{Binding ChallengeTimeText}" />
+                          </StackPanel>
+                        </Grid>
+
+                        <StackPanel Spacing="2" IsVisible="{Binding HasBuff}">
+                          <TextBlock FontSize="12" FontWeight="Bold" Text="{Binding Buff.Title}" />
+                          <TextBlock FontSize="12"
+                                     Foreground="{StaticResource StarTextSecondary}"
+                                     Text="{Binding Buff.Text}"
+                                     TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <ItemsControl ItemsSource="{Binding Avatars}">
+                            <ItemsControl.ItemsPanel>
+                              <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="8" />
+                              </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate x:DataType="vm:ShiyuAvatarItem">
+                                <Grid Width="76" Height="94">
+                                  <Border Width="76" Height="94" Background="#0A0A0A" CornerRadius="8" />
+                                  <Border Width="72" Height="72" Margin="2,2,2,2"
+                                          VerticalAlignment="Top" CornerRadius="8,8,0,0" ClipToBounds="True">
+                                    <Grid>
+                                      <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                 FontSize="28" Foreground="#66FFFFFF" Text="&#xE77B;" />
+                                      <Image Source="{Binding Icon}" Stretch="UniformToFill"
+                                             IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                    </Grid>
+                                  </Border>
+                                  <TextBlock Margin="0,0,0,2" HorizontalAlignment="Center"
+                                             VerticalAlignment="Bottom" FontSize="12"
+                                             Foreground="{StaticResource StarTextSecondary}"
+                                             Text="{Binding LevelText}" />
+                                  <Border Width="22" Height="22" HorizontalAlignment="Left"
+                                          VerticalAlignment="Top" Background="Black" CornerRadius="8,0,4,0">
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               FontSize="12" FontWeight="Bold"
+                                               Foreground="{Binding RarityBrush}"
+                                               Text="{Binding RarityText}" />
+                                  </Border>
+                                </Grid>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+
+                          <Grid Width="58" Height="78" Margin="0,15,0,0"
+                                IsVisible="{Binding Buddy, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                  <Border Background="#0A0A0A" CornerRadius="8" />
+                            <Border Width="54" Height="56" Margin="2,2,2,2"
+                                    VerticalAlignment="Top" CornerRadius="8,8,0,0" ClipToBounds="True">
+                              <Grid>
+                                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontSize="24" Foreground="#66FFFFFF" Text="&#xE7FC;" />
+                                <Image Height="84" Margin="-8,-8,0,0"
+                                       HorizontalAlignment="Left" VerticalAlignment="Top"
+                                       Source="{Binding Buddy.Icon}" Stretch="UniformToFill"
+                                       IsVisible="{Binding Buddy.Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                              </Grid>
+                            </Border>
+                            <TextBlock Margin="0,0,0,2" HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom" FontSize="12"
+                                       Foreground="{StaticResource StarTextSecondary}"
+                                       Text="{Binding Buddy.LevelText}" />
+                            <Border Width="20" Height="20" HorizontalAlignment="Left"
+                                    VerticalAlignment="Top" Background="Black" CornerRadius="8,0,4,0">
+                              <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         FontSize="11" FontWeight="Bold"
+                                         Foreground="{Binding Buddy.RarityBrush}"
+                                         Text="{Binding Buddy.RarityText}" />
+                            </Border>
+                          </Grid>
+                        </StackPanel>
+
+                        <TextBlock FontSize="12"
+                                   Foreground="{StaticResource StarTextSecondary}"
+                                   IsVisible="{Binding HasBattleTime}"
+                                   Text="{Binding BattleTimeText}" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Border Padding="16,12"
+                  Background="{StaticResource StarControlFillBrush}"
+                  CornerRadius="8">
+            <StackPanel Spacing="8">
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock FontSize="16" FontWeight="Bold"
+                           Text="{Binding Strings[ShiyuDefense.FourthFrontier]}" />
+                <TextBlock VerticalAlignment="Center" FontSize="12"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           IsVisible="{Binding CurrentDefense.V2.HasFourthChallengeTime}"
+                           Text="{Binding CurrentDefense.V2.FourthChallengeTimeText}" />
+                <Border Width="22" Height="22" VerticalAlignment="Center"
+                        Background="Black" CornerRadius="4">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                             FontSize="12" FontWeight="Bold" Foreground="#FFB13F"
+                             Text="{Binding CurrentDefense.V2.FourthRatingLetter}" />
+                </Border>
+              </StackPanel>
+
+              <StackPanel Spacing="2" IsVisible="{Binding CurrentDefense.V2.HasFourthBuff}">
+                <TextBlock FontSize="12" FontWeight="Bold" Text="{Binding CurrentDefense.V2.FourthBuff.Title}" />
+                <TextBlock FontSize="12"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding CurrentDefense.V2.FourthBuff.Text}"
+                           TextWrapping="Wrap" />
+              </StackPanel>
+
+              <ItemsControl ItemsSource="{Binding CurrentDefense.V2.Fourth}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Spacing="8" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ShiyuV2ChallengeItem">
+                    <Border Padding="12" Background="{StaticResource StarOverlayAcrylicBrush}" CornerRadius="8">
+                      <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <ItemsControl ItemsSource="{Binding Avatars}">
+                            <ItemsControl.ItemsPanel>
+                              <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="8" />
+                              </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate x:DataType="vm:ShiyuAvatarItem">
+                                <Grid Width="76" Height="94">
+                                  <Border Width="76" Height="94" Background="#0A0A0A" CornerRadius="8" />
+                                  <Border Width="72" Height="72" Margin="2,2,2,2"
+                                          VerticalAlignment="Top" CornerRadius="8,8,0,0" ClipToBounds="True">
+                                    <Grid>
+                                      <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                 FontSize="28" Foreground="#66FFFFFF" Text="&#xE77B;" />
+                                      <Image Source="{Binding Icon}" Stretch="UniformToFill"
+                                             IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                    </Grid>
+                                  </Border>
+                                  <TextBlock Margin="0,0,0,2" HorizontalAlignment="Center"
+                                             VerticalAlignment="Bottom" FontSize="12"
+                                             Foreground="{StaticResource StarTextSecondary}"
+                                             Text="{Binding LevelText}" />
+                                  <Border Width="22" Height="22" HorizontalAlignment="Left"
+                                          VerticalAlignment="Top" Background="Black" CornerRadius="8,0,4,0">
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               FontSize="12" FontWeight="Bold"
+                                               Foreground="{Binding RarityBrush}"
+                                               Text="{Binding RarityText}" />
+                                  </Border>
+                                </Grid>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+
+                          <Grid Width="58" Height="78" Margin="0,15,0,0"
+                                IsVisible="{Binding Buddy, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                  <Border Background="#0A0A0A" CornerRadius="8" />
+                            <Border Width="54" Height="56" Margin="2,2,2,2"
+                                    VerticalAlignment="Top" CornerRadius="8,8,0,0" ClipToBounds="True">
+                              <Grid>
+                                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontSize="24" Foreground="#66FFFFFF" Text="&#xE7FC;" />
+                                <Image Height="84" Margin="-8,-8,0,0"
+                                       HorizontalAlignment="Left" VerticalAlignment="Top"
+                                       Source="{Binding Buddy.Icon}" Stretch="UniformToFill"
+                                       IsVisible="{Binding Buddy.Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                              </Grid>
+                            </Border>
+                            <TextBlock Margin="0,0,0,2" HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom" FontSize="12"
+                                       Foreground="{StaticResource StarTextSecondary}"
+                                       Text="{Binding Buddy.LevelText}" />
+                            <Border Width="20" Height="20" HorizontalAlignment="Left"
+                                    VerticalAlignment="Top" Background="Black" CornerRadius="8,0,4,0">
+                              <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         FontSize="11" FontWeight="Bold"
+                                         Foreground="{Binding Buddy.RarityBrush}"
+                                         Text="{Binding Buddy.RarityText}" />
+                            </Border>
+                          </Grid>
+                        </StackPanel>
+
+                        <TextBlock FontSize="12"
+                                   Foreground="{StaticResource StarTextSecondary}"
+                                   IsVisible="{Binding HasBattleTime}"
+                                   Text="{Binding BattleTimeText}" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>
