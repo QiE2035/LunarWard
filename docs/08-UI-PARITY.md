@@ -37,7 +37,7 @@
 | 快捷键 | `HotkeySetting.xaml`(62) | `SettingHotkeyView.axaml`(约 130) | 🟡 | 本轮已对齐标题/行高/宽度；`HotkeyInput` 用同边框/圆角的禁用占位（Linux 无全局热键） |
 | 手柄增强 | `GamepadControlSetting.xaml`(207) | `SettingGamepadView.axaml`(约 200) | 🟡 | 本轮已按源码重排标题/Toggle/说明/模拟输入/按键映射/三段说明；GameInput 不存在 → 控件禁用 + Linux 替代方案（Steam Input）追加在后 |
 | 高级 | `AdvancedSetting.xaml`(125) | `SettingAdvancedView.axaml`(约 230) | 🟡 | 本轮已对齐 URL 协议 / RPC 服务 / 日志级别三段；RPC 在 LunarWard 不存在 → 保留状态行、去掉伪造按钮；日志/env 追加在后 |
-| 工具箱 | `GameRecordPage.xaml`(527) + `.cs` + 各战绩子页 | `Pages/ToolboxPage.axaml`(约 430) + `.cs`/VM；子页 `Pages/Record/SpiralAbyssPage.axaml`(约 360) + VM(约 480)、`Pages/Record/StygianOnslaughtPage.axaml`(约 320) + VM(约 430) | 🟡 | 容器已按源码重写：248px 左栏（头像/角色/登录 Flyout/角色列表）、战绩菜单、底部「更新设备指纹」、右侧 Frame；角色通过 cookie 调 `GetGameRolesAsync` 实时拉取。**深境螺旋、幽境危战两个子页已 1:1 移植**；其余子页仍是"尚未移植"占位（不伪造数据）。登录用 cookie 代替 WebView；头像暂用通用图标（未拉 HeadIcon）；难度勋章/Segmented 因缺素材与控件差异用数字圆章/双 Button 占位 |
+| 工具箱 | `GameRecordPage.xaml`(527) + `.cs` + 各战绩子页 | `Pages/ToolboxPage.axaml`(约 430) + `.cs`/VM；子页 `Pages/Record/SpiralAbyssPage.axaml`(约 360) + VM(约 480)、`Pages/Record/ImaginariumTheaterPage.axaml`(约 470) + VM(约 520)、`Pages/Record/StygianOnslaughtPage.axaml`(约 320) + VM(约 430) | 🟡 | 容器已按源码重写：248px 左栏（头像/角色/登录 Flyout/角色列表）、战绩菜单、底部「更新设备指纹」、右侧 Frame；角色通过 cookie 调 `GetGameRolesAsync` 实时拉取。**深境螺旋、幻想真境剧诗、幽境危战三个子页已 1:1 移植**；其余子页仍是"尚未移植"占位（不伪造数据）。登录用 cookie 代替 WebView；头像暂用通用图标（未拉 HeadIcon）；难度勋章/Segmented 因缺素材与控件差异用数字圆章/双 Button 占位（幻想真境剧诗的勋章/星章/幻剧之花同样用同色圆章 + 星形字形占位） |
 | 截图页 | `ScreenshotPage2.xaml`(319)（+`ImageViewWindow2.xaml` 731） | `Pages/ScreenshotPage.axaml`(263) | 🟡 | 本轮已按源码重写：44px 页头 + 磁贴墙（列宽按 UniformGridLayout 公式均摊）+ 空态。未移植：ItemsView 容器虚拟化、AnnotatedScrollBar、悬停 1.2× 放大、`ImageViewWindow2`（点击走系统查看器）、截图文件夹管理对话框（Flyout 三行代替） |
 | 抽卡页 | `GachaLogPage.xaml`(475) + `GachaStatsCard.xaml`(293) + `ZZZGachaStatsCard`(294) | `Pages/GachaPage.axaml`(451) + `Controls/GachaStatsCard.axaml`(306) | 🟡 | 本轮已按源码重写：44px 页头（UID/更新 SplitButton/设置 Flyout/强调色 Pane 按钮）+ SplitView + 统计卡（行序、字号、稀有度色照抄）+ 5★/4★ 列表 + 空态。未移植：ZZZ 统计卡、材料图标与卡池底图（无素材，占位）、按时间段删除、UIGF v4、虚拟化 |
 | 游戏公告窗 | `GameNoticeWindow.xaml`(273) | 无 | 🔴 | 未移植 |
@@ -109,15 +109,25 @@
   对象，Starward 的 SQLite Value 列同源）；缺本地勋章 PNG 与 Segmented 控件，
   用难度色数字圆章 + 两个 Button（`Classes.selected`）占位，不伪造素材。
   demo 夹具同样走 `LUNARWARD_TOOLBOX_DEMO=1`。
+- **幻想真境剧诗子页**（Lead）：按 `Features/GameRecord/Genshin/ImaginariumTheaterPage.xaml`
+  移植各期 ListView（日期 + 勋章圆章 + `幕/最大幕` + `星章/最大幕`）、0,18,18,0 强调刷新胶囊、
+  统计周期行、演出回顾 5 行（最佳记录 = 难度模式 + 第 N 幕 + 月谕圣牌数 / 12 颗逐幕星章 /
+  幻剧之花数 / 触发场外观众声援 / 助演角色支援其他玩家，隔行 -24 底色）、战斗统计 5 行
+  （演出总时长 / 最高伤害输出 / 击败最多敌人 / 承伤最多 / 最快完成演出队伍，44×36 头像）、
+  参演名单（每幕：星章 + 第 N 幕或圣牌挑战 N + 完成时间、80×97 阵容、辉彩祝福 / 奇妙助益 /
+  神秘收获三组 32×32 图标 + ToolTip）。数据一次 `GameRecordClient.GetImaginariumTheaterInfosAsync`
+  （`need_detail=true` 返回完整对象）；缺勋章/星章/幻剧之花 PNG，用同色圆章 + `★`/`✦`/`✿`
+  字形占位并在 XAML 注释；头像类图片缺失时回退 `E77B` 字形（与深境螺旋一致）。
+  demo 夹具同样走 `LUNARWARD_TOOLBOX_DEMO=1`。
 - **工具箱挂载**：`ToolboxPageViewModel.PortedTags` 列出已移植菜单
-  （SpiralAbyss / StygianOnslaught），`ToolboxPage.UpdateHostedPage` 按 tag 创建
-  `Record.SpiralAbyssPage` / `Record.StygianOnslaughtPage` 挂到 `ContentControl`；
-  其余菜单显示"尚未移植"占位。
+  （SpiralAbyss / ImaginariumTheater / StygianOnslaught），`ToolboxPage.UpdateHostedPage`
+  按 tag 创建 `Record.SpiralAbyssPage` / `Record.ImaginariumTheaterPage` /
+  `Record.StygianOnslaughtPage` 挂到 `ContentControl`；其余菜单显示"尚未移植"占位。
 
 ## 4. 下一步队列（按用户可见度排序）
 
 1. 工具箱战绩子页：按 Starward `Features/GameRecord/{Genshin,ZZZ}/*Page.xaml`
-   逐个移植（深境螺旋 ✅、幽境危战 ✅ → 幻想真境剧诗、绳网月报/式舆防卫战/危局强袭战），
+   逐个移植（深境螺旋 ✅、幻想真境剧诗 ✅、幽境危战 ✅ → 绳网月报/式舆防卫战/危局强袭战），
    数据用 `GameRecordClient` 的对应 API；再补 `SelfQueryPage`（账号记录独立页）。
 2. 启动器剩余控件：`GameAccountSwitcher`（40 高 ComboBox + 切换/编辑）、
    `StartGameButton` 的安装进度态、预下载、DX12、区服 ComboBox、拖放背景、

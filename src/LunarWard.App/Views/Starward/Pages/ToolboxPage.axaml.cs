@@ -51,6 +51,7 @@ public partial class ToolboxPage : StarwardPage
             page = tag switch
             {
                 "SpiralAbyss" => new Record.SpiralAbyssPage(Context, role),
+                "ImaginariumTheater" => new Record.ImaginariumTheaterPage(Context, role),
                 "StygianOnslaught" => new Record.StygianOnslaughtPage(Context, role),
                 _ => null,
             };

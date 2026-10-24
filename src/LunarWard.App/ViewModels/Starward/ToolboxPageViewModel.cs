@@ -114,13 +114,14 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
     /// <summary>选中战绩页 → 显示"尚未移植"占位；未选中时 Starward 是空白 Frame。</summary>
     public bool ShowPlaceholder => SelectedItem is not null && !HasHostedPage;
 
-    /// <summary>占位提示只对尚未移植的页显示（深境螺旋 / 幽境危战已移植）。</summary>
+    /// <summary>占位提示只对尚未移植的页显示（深境螺旋 / 幻想真境剧诗 / 幽境危战已移植）。</summary>
     public bool ShowNotPortedHint => ShowPlaceholder && !PortedTags.Contains(SelectedItem?.Tag ?? "");
 
     /// <summary>已经 1:1 移植、能真正挂载子页的战绩菜单。</summary>
     public static IReadOnlySet<string> PortedTags { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
         "SpiralAbyss",
+        "ImaginariumTheater",
         "StygianOnslaught",
     };
 
