@@ -168,7 +168,11 @@
 - **工具箱挂载**：`ToolboxPageViewModel.PortedTags` 列出已移植菜单
   （SpiralAbyss / ImaginariumTheater / StygianOnslaught / InterKnotMonthlyReport / DeadlyAssault / ShiyuDefense / TravelersDiary），`ToolboxPage.UpdateHostedPage`
   按 tag 创建 `Record.SpiralAbyssPage` / `Record.ImaginariumTheaterPage` /
-  `Record.StygianOnslaughtPage` / `Record.InterKnotMonthlyReportPage` / `Record.DeadlyAssaultPage` / `Record.ShiyuDefensePage` / `Record.TravelersDiaryPage` 挂到 `ContentControl`；其余菜单（战绩 BattleChronicle）显示"尚未移植"占位。
+  `Record.StygianOnslaughtPage` / `Record.InterKnotMonthlyReportPage` / `Record.DeadlyAssaultPage` / `Record.ShiyuDefensePage` / `Record.TravelersDiaryPage` 挂到 `ContentControl`。
+- **战绩（BattleChronicle）**：Starward 是独立 `BattleChronicleWindow` + `BBSWebBridge`（WebView2 载入
+  米游社/HoYoLAB 网页并注入 cookie）。Linux 没有 WebView2，等价实现为按 `BBSWebBridge.xaml.cs`
+  的 `(GlobalServer, Game)` 映射用系统浏览器打开同一 URL（`ToolboxPageViewModel.BattleChronicleUrl` /
+  `OpenBattleChronicleAsync`），工具箱内容区只显示标题 + 浏览器提示（`ShowWebRecordHint`）。
 
 ## 4. 下一步队列（按用户可见度排序）
 

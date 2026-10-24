@@ -303,6 +303,14 @@
                    Foreground="{StaticResource StarTextSecondary}"
                    IsVisible="{Binding ShowNotPortedHint}"
                    Text="{Binding Strings[Toolbox.NotPorted]}" />
+        <TextBlock HorizontalAlignment="Center"
+                   FontSize="12"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   MaxWidth="420"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"
+                   IsVisible="{Binding ShowWebRecordHint}"
+                   Text="{Binding Strings[Toolbox.WebRecordHint]}" />
       </StackPanel>
 
       <!-- 登录/错误/忙碌提示：Starward 用 ContentDialog / InfoBar，这里放在内容区右上 -->

@@ -120,7 +120,7 @@
 | 游戏设置 | `GameSettingPage` | **追加**：wine 运行时选择 ✅、十层 env 表 ✅、外部程序（Auto/Manual/三态 env/PreWrites）✅、启动参数、区服（config.ini）✅、诊断 ✅、环境 shell ✅ |
 | 游戏截图 | `ScreenshotPage` | `ScreenshotPage2` 磁贴墙（204×115、间距 12）+ 点击预览；`ImageViewWindow2` 待移植 |
 | 抽卡记录 | `GachaPage` | `GachaLogPage` 44px 页头 + SplitView + `GachaStatsCard`；拉取/导出/UIGF 追加 |
-| 工具箱 | `GameRecordPage`（容器已 1:1，深境螺旋/幻想真境剧诗/幽境危战/绳网月报/危局强袭战/式舆防卫战/旅行者札记已移植） | 248px 左栏 + 战绩菜单 + 子页挂载；登录用 cookie 拉角色（见 08 §1） |
+| 工具箱 | `GameRecordPage`（容器已 1:1，深境螺旋/幻想真境剧诗/幽境危战/绳网月报/危局强袭战/式舆防卫战/旅行者札记已移植；战绩=米游社网页，用系统浏览器打开） | 248px 左栏 + 战绩菜单 + 子页挂载；登录用 cookie 拉角色（见 08 §1） |
 | 账号记录 | `SelfQueryPage`（待恢复独立页） | Starward 主视图有独立导航项，不并入工具箱 |
 | 设置 | `SettingPage` | 关于、通用（语言/主题/关闭行为）、下载、文件管理、截图、快捷键、高级（env 默认值/包装器/日志/更新通道）、工具箱 |
 | 安装/更新 | `InstallGameDialog` | 移植 `LunarWard.Installer`，M8 收尾 |

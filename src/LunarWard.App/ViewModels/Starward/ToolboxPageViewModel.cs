@@ -97,6 +97,7 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
 
         OnPropertyChanged(nameof(ShowPlaceholder));
         OnPropertyChanged(nameof(ShowNotPortedHint));
+        OnPropertyChanged(nameof(ShowWebRecordHint));
         OnPropertyChanged(nameof(PlaceholderTitle));
     }
 
@@ -109,13 +110,17 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
     {
         OnPropertyChanged(nameof(ShowPlaceholder));
         OnPropertyChanged(nameof(ShowNotPortedHint));
+        OnPropertyChanged(nameof(ShowWebRecordHint));
     }
 
     /// <summary>选中战绩页 → 显示"尚未移植"占位；未选中时 Starward 是空白 Frame。</summary>
     public bool ShowPlaceholder => SelectedItem is not null && !HasHostedPage;
 
     /// <summary>占位提示只对尚未移植的页显示（深境螺旋 / 幻想真境剧诗 / 幽境危战 / 绳网月报 / 危局强袭战已移植）。</summary>
-    public bool ShowNotPortedHint => ShowPlaceholder && !PortedTags.Contains(SelectedItem?.Tag ?? "");
+    public bool ShowNotPortedHint => ShowPlaceholder && SelectedItem?.Tag is not "BattleChronicle" && !PortedTags.Contains(SelectedItem?.Tag ?? "");
+
+    /// <summary>「战绩」在 Starward 是独立 WebView 窗口，Linux 下等价为在系统浏览器打开同名网页。</summary>
+    public bool ShowWebRecordHint => ShowPlaceholder && SelectedItem?.Tag is "BattleChronicle";
 
     /// <summary>已经 1:1 移植、能真正挂载子页的战绩菜单。</summary>
     public static IReadOnlySet<string> PortedTags { get; } = new HashSet<string>(StringComparer.Ordinal)
@@ -133,7 +138,14 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
 
 
     [RelayCommand]
-    private void SelectMenu(ToolboxMenuItem? item) => SelectedItem = item;
+    private void SelectMenu(ToolboxMenuItem? item)
+    {
+        SelectedItem = item;
+        if (item?.Tag is "BattleChronicle" && Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO") != "1")
+        {
+            _ = OpenBattleChronicleAsync();
+        }
+    }
 
 
     // ── 角色 / 登录 ──────────────────────────────────────────────────
@@ -346,6 +358,40 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
 
     [RelayCommand]
     private void OpenLocalAccounts() => LocalAccountsRequested?.Invoke(this, EventArgs.Empty);
+
+
+    /// <summary>
+    /// 战绩网页地址，照抄 Starward <c>BBSWebBridge.xaml.cs</c> 的 <c>(GlobalServer, Game)</c> 映射。
+    /// Starward 把网页塞进 WebView2 窗口并注入米游社登录 cookie；Linux 上改为系统浏览器打开。
+    /// </summary>
+    private string? BattleChronicleUrl => (_server == "global", _gameKind) switch
+    {
+        (true, "genshin") => "https://act.hoyolab.com/app/community-game-records-sea/m.html?gid=2",
+        (true, "starrail") => "https://act.hoyolab.com/app/community-game-records-sea/m.html?gid=6",
+        (true, "zzz") => "https://act.hoyolab.com/app/zzz-game-record/m.html?gid=8",
+        (false, "genshin") => "https://webstatic.mihoyo.com/app/community-game-records/?game_id=2",
+        (false, "starrail") => "https://webstatic.mihoyo.com/app/community-game-records/?game_id=6",
+        (false, "zzz") => "https://act.mihoyo.com/app/mihoyo-zzz-game-record/m.html?game_id=8",
+        _ => null,
+    };
+
+
+    private async Task OpenBattleChronicleAsync()
+    {
+        if (BattleChronicleUrl is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Services.OpenUriAsync(BattleChronicleUrl).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            ErrorText = ex.Message;
+        }
+    }
 
 
     private void BuildMenuItems()
