@@ -443,13 +443,24 @@ public class GameAdapterTests
 
 
     [Fact]
-    public void Dx12_OnlyAppliesToZzz()
+    public void Dx12_EnvOnlyAppliesToZzz()
     {
         var zzz = GameAdapter.BuildEnv("zzz", false, false, false, dx12: true, fsr: false);
         Assert.Equal("1", zzz.Env["DXVK_ENABLE_NVAPI"]);
 
         var genshin = GameAdapter.BuildEnv("genshin", false, false, false, dx12: true, fsr: false);
         Assert.False(genshin.Env.ContainsKey("DXVK_ENABLE_NVAPI"));
+    }
+
+
+    [Theory]
+    [InlineData("genshin")]
+    [InlineData("zzz")]
+    public void Dx12_AddsArgumentForEveryGame(string kind)
+    {
+        // Starward GameLauncherService：enable_dx12 时所有游戏都追加 -use-d3d12。
+        var arguments = GameAdapter.BuildArguments(kind, borderless: false, dx12: true, fsr: false);
+        Assert.Contains("-use-d3d12", arguments);
     }
 
 

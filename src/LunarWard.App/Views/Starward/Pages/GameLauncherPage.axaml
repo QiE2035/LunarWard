@@ -191,6 +191,21 @@
       </Grid>
     </Grid>
 
+    <!-- 用 DX12 启动（Starward 右下角 CompactCheckBox；Linux 落 profile.enhancements.dx12 → -use-d3d12） -->
+    <Border Margin="0,0,44,16"
+            Padding="10,0"
+            Height="32"
+            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+            CornerRadius="12"
+            Background="{StaticResource StarOverlayAcrylicBrush}"
+            IsVisible="{Binding ShowDx12Option}"
+            ToolTip.Tip="{Binding Strings[Launcher.Dx12Hint]}">
+      <CheckBox IsChecked="{Binding EnableDx12, Mode=TwoWay}"
+                Content="{Binding Strings[Launcher.EnableDx12]}"
+                FontSize="12"
+                Foreground="{StaticResource StarTextSecondary}" />
+    </Border>
+
     <!-- 定位游戏 / 未配置（Starward 在按钮正下方一行 12px 小字） -->
     <Button Classes="link"
             Margin="0,0,44,18"

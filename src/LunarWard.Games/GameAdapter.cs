@@ -64,7 +64,7 @@ public static class GameAdapter
     public static IReadOnlyList<string> BorderlessArguments { get; } =
         ["-screen-fullscreen", "0", "-popupwindow"];
 
-    /// <summary>DX12 的启动参数（仅 ZZZ）。</summary>
+    /// <summary>DX12 的启动参数（Starward 对所有游戏都传，见 <c>GameLauncherService</c>；DXVK 特化 env 只有 ZZZ）。</summary>
     public static IReadOnlyList<string> Dx12Arguments { get; } = ["-use-d3d12"];
 
     /// <summary>FSR 需要的窗口模式参数（参考实现：FSR 只在独占全屏下生效）。</summary>
@@ -171,7 +171,7 @@ public static class GameAdapter
         bool fsr)
     {
         var arguments = new List<string>();
-        if (dx12 && IsZzz(gameKind))
+        if (dx12)
         {
             arguments.AddRange(Dx12Arguments);
         }
@@ -188,10 +188,6 @@ public static class GameAdapter
 
         return arguments;
     }
-
-
-    /// <summary>该游戏是否支持 DX12 特化（本项目里只有 ZZZ）。</summary>
-    public static bool SupportsDx12(string? gameKind) => IsZzz(gameKind);
 
 
     /// <summary>

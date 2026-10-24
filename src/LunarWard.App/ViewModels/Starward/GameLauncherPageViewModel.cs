@@ -299,6 +299,33 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
 
     /// <summary>目录完全没配：按钮下方给一句"去游戏设置里指定目录"的小字。</summary>
+    /// <summary>
+    /// 用 DX12 启动（Starward 启动器右下角 <c>CompactCheckBox</c>「用 DX12 启动」，
+    /// 对应 app 配置 <c>enable_dx12_{biz}</c>；LunarWard 存在 profile 的
+    /// <c>enhancements.dx12</c> 里，启动时追加 <c>-use-d3d12</c>）。
+    /// </summary>
+    public bool EnableDx12
+    {
+        get => _context.Profile.Profile.Enhancements.Dx12;
+        set
+        {
+            if (value == EnableDx12)
+            {
+                return;
+            }
+
+            _context.Profile.Profile.Enhancements.Dx12 = value;
+            _services.Config.Save(_services.Paths.ConfigFile);
+            OnPropertyChanged();
+            _log.Info($"DX12 启动：{value}");
+        }
+    }
+
+
+    /// <summary>Starward 依据 <c>enable_dx_switch</c> 或已开启的配置显示；这里在已配置游戏路径时显示。</summary>
+    public bool ShowDx12Option => !ShowNotConfigured;
+
+
     public bool ShowNotConfigured => string.IsNullOrWhiteSpace(
         ProfileConfig.ExpandPath(_context.Profile.Profile.Path));
 
