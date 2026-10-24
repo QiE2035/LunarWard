@@ -26,7 +26,7 @@
 | 主视图 | `MainView.xaml`(152) | `StarwardShell.axaml`(135) | 🟡 | 导航项 5 vs 7（缺 SelfQuery / GenshinBeyondGacha，账号记录被并进工具箱）；无 BlankPage 状态；`Border_OverlayMask` 的淡入淡出用了 IsVisible 切换 |
 | 左栏 | `MainView.xaml` 的 NavigationView | `NavigationRail.axaml`(129) | ✅ | LeftCompact 56px、40×40、选中 3×16 强调条一致；图标条见下 |
 | 游戏选择 | `GameSelector.xaml`(572) + `.cs`(975) | 外壳内的全屏层 | 🟡 | **已补横排图标条**（悬停当前图标滑出、#60000000 遮罩、当前图标不压暗）；全屏层的服务器选择、固定、未安装游戏列表、拖放排序未移植 |
-| 启动器 | `GameLauncherPage.xaml`(684，其中 PipsPager 样式 ~330 行) | `Pages/GameLauncherPage.axaml`(约 560) | 🟡 | 公告卡/开始按钮/时长胶囊位置一致；**便笺已改为 `DailyNoteButton.xaml` 的 Flyout**（刷新/角色行/原神树脂+委托+宝钱+派遣/绝区零电量+会员+任务+活跃度+刮刮卡+录像店+悬赏+周纪）；Starward 默认隐藏账号切换器，已移除自创的圆形账号按钮。拖放背景已补（DragOver 顶部提示条 + Drop 拷入背景目录并立刻切换，支持 jpg/png/webp/bmp/mp4/webm/mkv）。账号切换条已补（40 高双胶囊：账号 ComboBox + 切换/编辑按钮，Margin 0,0,40,100；与源码一致由通用设置「基于注册表的游戏账号切换功能」开关控制，开关已实现为读写 Wine prefix 的 user.reg；“编辑”打开 LunarWard 已有的账号窗口，而非源码的内联 Flyout）。背景切换条已补：可点圆点（选中 8/普通 6，源码 PipsPager 同构）、滚轮循环切换、图库（Linux 等价为打开背景目录）/复制（图片进剪贴板）/另存为（文件选择器）/视频播放暂停。未移植：预下载、安装进度态、DX12 选项、区服 ComboBox、`GameAuthLoginButton` |
+| 启动器 | `GameLauncherPage.xaml`(684，其中 PipsPager 样式 ~330 行) | `Pages/GameLauncherPage.axaml`(约 560) | 🟡 | 公告卡/开始按钮/时长胶囊位置一致；**便笺已改为 `DailyNoteButton.xaml` 的 Flyout**（刷新/角色行/原神树脂+委托+宝钱+派遣/绝区零电量+会员+任务+活跃度+刮刮卡+录像店+悬赏+周纪）；Starward 默认隐藏账号切换器，已移除自创的圆形账号按钮。拖放背景已补（DragOver 顶部提示条 + Drop 拷入背景目录并立刻切换，支持 jpg/png/webp/bmp/mp4/webm/mkv）。账号切换条已补（40 高双胶囊：账号 ComboBox + 切换/编辑按钮，Margin 0,0,40,100；与源码一致由通用设置「基于注册表的游戏账号切换功能」开关控制，开关已实现为读写 Wine prefix 的 user.reg；“编辑”打开 LunarWard 已有的账号窗口，而非源码的内联 Flyout）。背景切换条已补：可点圆点（选中 8/普通 6，源码 PipsPager 同构）、滚轮循环切换、图库（Linux 等价为打开背景目录）/复制（图片进剪贴板）/另存为（文件选择器）/视频播放暂停。公告铃铛已接 `GameNoticeClient.GetGameNoticeUrl`（WebView2 窗口换成桌面浏览器打开，同「战绩」策略），红点走 `IsNoticeAlertAsync`。未移植：预下载、安装进度态、DX12 选项、区服 ComboBox、`GameAuthLoginButton` |
 | 游戏设置 | `GameSettingPage.xaml`(199) + `GameSettingService.cs` | `Pages/GameSettingPage.axaml`(约 900) + `Services/WineRegistry.cs` / `GameSettingRegistry.cs` | 🟡 | 本轮已按源码恢复左列（分辨率/全屏/无边框/自定义分辨率/语音语言）+ 右列图形设置 + 60px 应用条；值通过 `wine reg` 读写游戏 prefix 的 `HKCU\Software\miHoYo\<游戏>`（与 Starward 同一组键）。LunarWard 目录/wine/env/外部程序/诊断移到下方追加区。未移植：HDR（Linux/Wine 无等价物，开关禁用+说明）、按显示器尺寸过滤分辨率列表、星铁帧率（LunarWard 不支持星铁）、游戏版本检测（用 exe 是否存在近似） |
 | 设置总览 | `SettingPage.xaml`(108) | `Pages/SettingPage.axaml`(160) | ✅ | 260 二级导航 + Frame Margin 24,24,0,0 一致 |
 | 关于 | `AboutSetting.xaml`(135) | `SettingAboutView.axaml`(约 190) | 🟡 | 本轮已按源码重排：Logo 160 / 24px Bold / 版本行 / 预览版 Toggle / 检查更新按钮 / 相关链接；Windows 更新器与预览通道如实禁用 |
@@ -40,7 +40,7 @@
 | 工具箱 | `GameRecordPage.xaml`(527) + `.cs` + 各战绩子页 | `Pages/ToolboxPage.axaml`(约 430) + `.cs`/VM；子页 `Pages/Record/SpiralAbyssPage.axaml`(约 360) + VM(约 480)、`Pages/Record/ImaginariumTheaterPage.axaml`(约 470) + VM(约 520)、`Pages/Record/StygianOnslaughtPage.axaml`(约 320) + VM(约 430)、`Pages/Record/InterKnotMonthlyReportPage.axaml`(约 350) + VM(约 540)、`Pages/Record/DeadlyAssaultPage.axaml`(约 600) + VM(约 480)、`Pages/Record/ShiyuDefensePage.axaml`(约 760) + VM(约 740) | 🟡 | 容器已按源码重写：248px 左栏（头像/角色/登录 Flyout/角色列表）、战绩菜单、底部「更新设备指纹」、右侧 Frame；角色通过 cookie 调 `GetGameRolesAsync` 实时拉取。**深境螺旋、幻想真境剧诗、幽境危战、绳网月报、危局强袭战、式舆防卫战六个子页已 1:1 移植**；其余子页仍是"尚未移植"占位（不伪造数据）。登录用 cookie 代替 WebView；头像暂用通用图标（未拉 HeadIcon）；难度勋章/Segmented 因缺素材与控件差异用数字圆章/双 Button 占位（幻想真境剧诗的勋章/星章/幻剧之花同样用同色圆章 + 星形字形占位） |
 | 截图页 | `ScreenshotPage2.xaml`(319)（+`ImageViewWindow2.xaml` 731） | `Pages/ScreenshotPage.axaml`(263) | 🟡 | 本轮已按源码重写：44px 页头 + 磁贴墙（列宽按 UniformGridLayout 公式均摊）+ 空态。未移植：ItemsView 容器虚拟化、AnnotatedScrollBar、悬停 1.2× 放大、`ImageViewWindow2`（点击走系统查看器）、截图文件夹管理对话框（Flyout 三行代替） |
 | 抽卡页 | `GachaLogPage.xaml`(475) + `GachaStatsCard.xaml`(293) + `ZZZGachaStatsCard`(294) | `Pages/GachaPage.axaml`(451) + `Controls/GachaStatsCard.axaml`(306) | 🟡 | 本轮已按源码重写：44px 页头（UID/更新 SplitButton/设置 Flyout/强调色 Pane 按钮）+ SplitView + 统计卡（行序、字号、稀有度色照抄）+ 5★/4★ 列表 + 空态。未移植：ZZZ 统计卡、材料图标与卡池底图（无素材，占位）、按时间段删除、UIGF v4、虚拟化 |
-| 游戏公告窗 | `GameNoticeWindow.xaml`(273) | 无 | 🔴 | 未移植 |
+| 游戏公告窗 | `GameNoticeWindow.xaml`(273) | 无（浏览器打开同 URL） | 🟡 | WebView2 无 Linux 等价，改为 `xdg-open` 打开 `GameNoticeUrl`；窗口内按 Esc 关闭/`openInBrowser` 桥接不适用 |
 | 安装/更新 UI | Installer + `InstallGameDialog` | 仅后端 | 🔴 | 未移植 |
 | 素材 | Starward 自带 emoji/图标 PNG | 运行时从 HoYoPlay 拉 | 🟡 | 无 emoji 素材，空态用字形占位并在注释说明 |
 
@@ -182,7 +182,7 @@
 2. 启动器剩余控件：`StartGameButton` 的安装进度态、预下载、DX12、区服 ComboBox、
    `GameAuthLoginButton`。（`GameAccountSwitcher` ✅、拖放背景 ✅ 已补，见 §1 启动器行）
 3. 设置子页逐项核对（截图/快捷键/文件管理/高级/下载）。
-4. 公告窗、安装/更新 UI、`ImageViewWindow2`。
+4. 安装/更新 UI、`ImageViewWindow2`。
 
 ## 5. 验收
 

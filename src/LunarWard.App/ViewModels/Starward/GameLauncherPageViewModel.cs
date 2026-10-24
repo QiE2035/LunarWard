@@ -9,6 +9,7 @@ using LunarWard.App.ViewModels;
 using LunarWard.App.Views;
 using LunarWard.App.Views.Starward;
 using LunarWard.Core;
+using LunarWard.Core.GameNotice;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Games;
 using LunarWard.Launch;
@@ -59,6 +60,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         DailyNote = new DailyNoteButtonViewModel(context);
 
         _ = LoadContentAsync();
+        _ = UpdateNoticeAlertAsync();
         RefreshBackgroundImages();
         LoadGameAccounts();
     }
@@ -753,15 +755,50 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     private void OpenGameSettings() => _context.Shell.Navigate(ShellPage.GameSetting);
 
 
+    /// <summary>
+    /// 游戏公告：Starward 是 <c>GameNoticeWindow</c>（WebView2 + <c>GameNoticeClient.GetGameNoticeUrl</c>）。
+    /// Linux 没有 WebView2，等价为用桌面浏览器打开同一个公告页（与「战绩」同策略）。
+    /// </summary>
     [RelayCommand]
     private void OpenInGameNotices()
     {
-        if (Banners.Count == 0)
+        try
         {
-            return;
+            var url = GameNoticeClient.GetGameNoticeUrl(
+                new LunarWard.Core.GameBiz(GameBiz), CurrentNoticeUid(), NoticeLanguage);
+            if (SettingShellActions.TryOpen(url) is { } error)
+            {
+                ErrorText = error;
+            }
         }
+        catch (Exception ex)
+        {
+            ErrorText = ex.Message;
+        }
+    }
 
-        _ = OpenBannerLinkAsync();
+
+    private string NoticeLanguage => Strings.Language.ToLowerInvariant();
+
+
+    private long CurrentNoticeUid()
+        => SelectedGameAccount?.Snapshot.Uid ?? GameAccounts.FirstOrDefault()?.Snapshot.Uid ?? 0;
+
+
+    /// <summary>官网页面的新公告红点（Starward <c>GameNoticeService.IsNoticeAlertAsync</c>）。</summary>
+    private async Task UpdateNoticeAlertAsync()
+    {
+        try
+        {
+            var client = new GameNoticeClient();
+            HasNoticeAlert = await client
+                .IsNoticeAlertAsync(new LunarWard.Core.GameBiz(GameBiz), CurrentNoticeUid(), NoticeLanguage)
+                .ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"公告红点查询失败：{ex.Message}");
+        }
     }
 
     [RelayCommand]
