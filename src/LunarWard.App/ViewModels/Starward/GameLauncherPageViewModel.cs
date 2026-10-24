@@ -1,13 +1,16 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.App.Services;
 using LunarWard.App.ViewModels;
+using LunarWard.App.Views;
 using LunarWard.App.Views.Starward;
 using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
+using LunarWard.Games;
 using LunarWard.Launch;
 
 namespace LunarWard.App.ViewModels.Starward;
@@ -57,6 +60,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
         _ = LoadContentAsync();
         RefreshBackgroundImages();
+        LoadGameAccounts();
     }
 
 
@@ -594,6 +598,97 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     public event EventHandler<string>? BackgroundRequested;
 
 
+    // ── 游戏账号切换（Starward GameAccountSwitcher） ────────────────────
+    //
+    // 源码是 40 高 ComboBox + 切换/编辑三块亚克力胶囊，挂在右下（Margin 0,0,40,100），
+    // 由 AppConfig.EnableGameAccountSwitcher 控制。LunarWard 没有这条设置，
+    // 改为"本机保存过该游戏账号就显示"，避免默认什么都不显示、用户找不到入口。
+
+    public ObservableCollection<LauncherAccountItem> GameAccounts { get; } = [];
+
+    [ObservableProperty]
+    private LauncherAccountItem? _selectedGameAccount;
+
+    [ObservableProperty]
+    private bool _canChangeGameAccount;
+
+    [ObservableProperty]
+    private bool _isAccountSwitcherVisible;
+
+    [ObservableProperty]
+    private string _accountStatusText = "";
+
+
+    partial void OnSelectedGameAccountChanged(LauncherAccountItem? value)
+        => CanChangeGameAccount = value is not null;
+
+
+    public void LoadGameAccounts()
+    {
+        GameAccounts.Clear();
+        try
+        {
+            var path = Path.Join(_services.Paths.DataHome, "accounts.json");
+            if (File.Exists(path))
+            {
+                var accounts = JsonSerializer.Deserialize<List<GameAccountSnapshot>>(
+                    File.ReadAllText(path),
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? [];
+                foreach (var account in accounts.Where(x => x.GameBiz == GameBiz))
+                {
+                    GameAccounts.Add(new LauncherAccountItem(account));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"读取账号列表失败：{ex.Message}");
+        }
+
+        IsAccountSwitcherVisible = GameAccounts.Count > 0;
+        SelectedGameAccount = GameAccounts.FirstOrDefault();
+        CanChangeGameAccount = false;
+    }
+
+
+    /// <summary>把选中账号的快照写回 prefix 的 <c>user.reg</c>（Starward ChangeGameAccount）。</summary>
+    [RelayCommand]
+    private void ChangeGameAccount()
+    {
+        if (SelectedGameAccount is not { } account)
+        {
+            return;
+        }
+
+        try
+        {
+            var prefix = PrefixResolver.Resolve(
+                _context.Profile.Profile.Prefix.ToDomain(), _context.Profile.Id, _services.Paths);
+            var wine = new WineAccountService(prefix);
+            if (wine.Write(account.Snapshot) is { } error)
+            {
+                AccountStatusText = error;
+                return;
+            }
+
+            AccountStatusText = $"{Strings["Launcher.AccountSwitched"]}：{account.DisplayName}";
+            CanChangeGameAccount = false;
+        }
+        catch (Exception ex)
+        {
+            AccountStatusText = ex.Message;
+        }
+    }
+
+
+    [RelayCommand]
+    private void OpenAccountManager()
+    {
+        new AccountWindow { DataContext = new AccountViewModel(_services, _context.Profile) }.Show();
+        LoadGameAccounts();
+    }
+
+
     // ── 每日便笺 Flyout（Starward DailyNoteButton） ────────────────────
 
     /// <summary>右下便笺按钮的 Flyout VM（按钮打开时刷新一次）。</summary>
@@ -657,6 +752,19 @@ public sealed partial class PostGroupViewModel(string header, IReadOnlyList<Post
 
 
 public sealed record PostItemViewModel(string Title, string Date, string Link);
+
+
+/// <summary>启动器账号切换条的一项。</summary>
+public sealed class LauncherAccountItem(GameAccountSnapshot snapshot)
+{
+    public GameAccountSnapshot Snapshot { get; } = snapshot;
+
+    public string DisplayName => string.IsNullOrWhiteSpace(Snapshot.Name) || Snapshot.Name == "-"
+        ? (Snapshot.Uid > 0 ? $"UID {Snapshot.Uid}" : Snapshot.Sha256[..8])
+        : Snapshot.Name;
+
+    public string Uid => Snapshot.Uid > 0 ? $"UID {Snapshot.Uid}" : "";
+}
 
 
 public sealed record BackgroundSwitchItem(string Title, string Value)
