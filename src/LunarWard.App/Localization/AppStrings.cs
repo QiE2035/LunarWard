@@ -742,7 +742,7 @@ public sealed class AppStrings : INotifyPropertyChanged
         ["Settings.General.MinimizeToTray"] = "最小化到系统托盘",
         ["Settings.General.ExitCompletely"] = "完全退出",
         ["Settings.General.RegistrySwitcher"] = "基于注册表的游戏账号切换功能",
-        ["Settings.General.RegistryUnavailable"] = "Linux 上游戏账号保存在游戏自己的 Wine prefix 里，启动器没有等价的注册表读取/切换。",
+        ["Settings.General.RegistryUnavailable"] = "账号数据保存在游戏 Wine prefix 的 user.reg 里；切换账号会把选中快照写回该值。开启后，启动器右下角还会出现账号切换条（需先保存过账号）。",
         ["Settings.General.SystemEffectsIntro"] = "为了获得更好的体验，请在系统设置中启用以下功能：",
         ["Settings.General.SystemEffectsUnavailable"] = "Linux 的透明与动画效果由桌面环境 / 合成器控制，没有 Windows「设置」深链；这里保留 Starward 的说明与链接行位置。",
     };
@@ -1468,7 +1468,7 @@ public sealed class AppStrings : INotifyPropertyChanged
         ["Settings.General.MinimizeToTray"] = "Minimize to system tray",
         ["Settings.General.ExitCompletely"] = "Exit completely",
         ["Settings.General.RegistrySwitcher"] = "Registry-based game account switching feature",
-        ["Settings.General.RegistryUnavailable"] = "On Linux game accounts live in the game's own Wine prefix; the launcher has no equivalent registry read/switch.",
+        ["Settings.General.RegistryUnavailable"] = "Account data lives in user.reg inside the game's Wine prefix; switching writes the selected snapshot back. When enabled, the launcher also shows an account switcher at the bottom right (an account must be saved first).",
         ["Settings.General.SystemEffectsIntro"] = "For a better experience, please enable the following features in system settings:",
         ["Settings.General.SystemEffectsUnavailable"] = "On Linux transparency and animation effects are controlled by the desktop environment / compositor, with no Windows Settings deep links; Starward's description and link-row positions are kept.",
     };

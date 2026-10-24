@@ -25,6 +25,7 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
             string.Equals(o.Code, Localization.AppStrings.Normalize(Services.Config.Launcher.Language), StringComparison.Ordinal));
         Announcements = true;
         VideoBackground = Services.Config.Launcher.VideoBackground;
+        EnableGameAccountSwitcher = Services.Config.Launcher.EnableGameAccountSwitcher;
         _initializing = false;
     }
 
@@ -96,6 +97,22 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
 
     [ObservableProperty]
     private bool _videoBackground;
+
+
+    [ObservableProperty]
+    private bool _enableGameAccountSwitcher;
+
+
+    partial void OnEnableGameAccountSwitcherChanged(bool value)
+    {
+        if (_initializing)
+        {
+            return;
+        }
+
+        Services.Config.Launcher.EnableGameAccountSwitcher = value;
+        SaveConfig();
+    }
 
 
     partial void OnVideoBackgroundChanged(bool value)

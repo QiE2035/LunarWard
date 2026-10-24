@@ -696,7 +696,8 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             _log.Warn($"读取账号列表失败：{ex.Message}");
         }
 
-        IsAccountSwitcherVisible = GameAccounts.Count > 0;
+        IsAccountSwitcherVisible = _services.Config.Launcher.EnableGameAccountSwitcher
+                                   && GameAccounts.Count > 0;
         SelectedGameAccount = GameAccounts.FirstOrDefault();
         CanChangeGameAccount = false;
     }

@@ -82,9 +82,9 @@
                  Classes="description"
                  Text="{Binding Strings[Settings.General.CloseDesc]}" />
 
-      <!-- GeneralSetting.xaml:56-59（Windows 注册表账号切换 → 禁用） -->
+      <!-- GeneralSetting.xaml:56-59（账号切换；Windows 走注册表，Linux 走 Wine prefix 的 user.reg） -->
       <ToggleSwitch Margin="0,12,0,0"
-                    IsEnabled="False"
+                    IsChecked="{Binding EnableGameAccountSwitcher, Mode=TwoWay}"
                     OffContent="{Binding Strings[Settings.General.RegistrySwitcher]}"
                     OnContent="{Binding Strings[Settings.General.RegistrySwitcher]}" />
 

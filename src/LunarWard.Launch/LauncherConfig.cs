@@ -114,6 +114,12 @@ public sealed class LauncherSettings
 
     public bool VideoBackground { get; set; } = true;
 
+    /// <summary>
+    /// 启动器右下角显示游戏账号切换条（对应 Starward <c>AppConfig.EnableGameAccountSwitcher</c>，
+    /// 默认关闭）。开启后还要本机保存过该游戏的账号才会出现。
+    /// </summary>
+    public bool EnableGameAccountSwitcher { get; set; }
+
     public int BackgroundIndex { get; set; }
 
     public string? DefaultRuntime { get; set; }
