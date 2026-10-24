@@ -52,7 +52,31 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
         _server = _gameBiz.EndsWith("_global", StringComparison.Ordinal) ? "global" : "cn";
 
         BuildMenuItems();
-        _ = LoadRoleAsync();
+        if (Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO") == "1")
+        {
+            // 自检/截图夹具：不联网、不需要真实 cookie（与 Starward x:DesignInstance 同用途）。
+            ApplyDemoRole();
+        }
+        else
+        {
+            _ = LoadRoleAsync();
+        }
+    }
+
+
+    private void ApplyDemoRole()
+    {
+        var role = new GameRecordRole
+        {
+            Uid = 100000000,
+            GameBiz = _gameBiz,
+            Nickname = "LunarWard",
+            Level = 60,
+            Region = "cn_gf01",
+            RegionName = "天空岛",
+        };
+        ApplyRole(role);
+        HasHostedPage = false;
     }
 
 
@@ -72,12 +96,26 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
         }
 
         OnPropertyChanged(nameof(ShowPlaceholder));
+        OnPropertyChanged(nameof(ShowNotPortedHint));
         OnPropertyChanged(nameof(PlaceholderTitle));
     }
 
 
+    /// <summary>已移植的子页由视图层塞进 ContentControl（视图侧置 true）。</summary>
+    [ObservableProperty]
+    private bool _hasHostedPage;
+
+    partial void OnHasHostedPageChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowPlaceholder));
+        OnPropertyChanged(nameof(ShowNotPortedHint));
+    }
+
     /// <summary>选中战绩页 → 显示"尚未移植"占位；未选中时 Starward 是空白 Frame。</summary>
-    public bool ShowPlaceholder => SelectedItem is not null;
+    public bool ShowPlaceholder => SelectedItem is not null && !HasHostedPage;
+
+    /// <summary>占位提示只对尚未移植的页显示（深境螺旋已移植）。</summary>
+    public bool ShowNotPortedHint => ShowPlaceholder && SelectedItem?.Tag != "SpiralAbyss";
 
     public string PlaceholderTitle => SelectedItem?.Title ?? "";
 
@@ -90,6 +128,9 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
 
     [ObservableProperty]
     private bool _hasRole;
+
+    /// <summary>当前角色（深境螺旋等战绩子页需要；Starward 从 SQLite 读，这里从接口/便笺 cookie 来）。</summary>
+    public GameRecordRole? CurrentRole { get; private set; }
 
     [ObservableProperty]
     private string _nickname = "";
@@ -179,6 +220,7 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
 
     private void ApplyRole(GameRecordRole role)
     {
+        CurrentRole = role;
         HasRole = true;
         Nickname = role.Nickname ?? "";
         RegionText = string.IsNullOrWhiteSpace(role.RegionName) ? role.Region : role.RegionName;
@@ -270,6 +312,7 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
 
         _credentials.ClearCredentials(item.Server);
         _cookie = "";
+        CurrentRole = null;
         HasRole = false;
         Nickname = "";
         RegionText = "";

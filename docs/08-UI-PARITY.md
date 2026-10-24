@@ -37,7 +37,7 @@
 | 快捷键 | `HotkeySetting.xaml`(62) | `SettingHotkeyView.axaml`(约 130) | 🟡 | 本轮已对齐标题/行高/宽度；`HotkeyInput` 用同边框/圆角的禁用占位（Linux 无全局热键） |
 | 手柄增强 | `GamepadControlSetting.xaml`(207) | `SettingGamepadView.axaml`(约 200) | 🟡 | 本轮已按源码重排标题/Toggle/说明/模拟输入/按键映射/三段说明；GameInput 不存在 → 控件禁用 + Linux 替代方案（Steam Input）追加在后 |
 | 高级 | `AdvancedSetting.xaml`(125) | `SettingAdvancedView.axaml`(约 230) | 🟡 | 本轮已对齐 URL 协议 / RPC 服务 / 日志级别三段；RPC 在 LunarWard 不存在 → 保留状态行、去掉伪造按钮；日志/env 追加在后 |
-| 工具箱 | `GameRecordPage.xaml`(527) + `.cs` + 各战绩子页 | `Pages/ToolboxPage.axaml`(约 430) + `.cs`/VM | 🟡 | 容器已按源码重写：248px 左栏（头像/角色/登录 Flyout/角色列表）、战绩菜单（原神 战绩/旅行者札记/深境螺旋/幻想真境剧诗/幽境危战；绝区零 绳网月报/式舆防卫战/危局强袭战）、底部「更新设备指纹」、右侧空白 Frame；角色通过 cookie 调 `GetGameRolesAsync` 实时拉取。**战绩子页本身未移植**（点击显示"尚未移植"占位，不伪造数据）；登录用 cookie 代替 WebView；头像暂用通用图标（未拉 HeadIcon） |
+| 工具箱 | `GameRecordPage.xaml`(527) + `.cs` + 各战绩子页 | `Pages/ToolboxPage.axaml`(约 430) + `.cs`/VM；子页 `Pages/Record/SpiralAbyssPage.axaml`(约 360) + VM(约 480) | 🟡 | 容器已按源码重写：248px 左栏（头像/角色/登录 Flyout/角色列表）、战绩菜单、底部「更新设备指纹」、右侧 Frame；角色通过 cookie 调 `GetGameRolesAsync` 实时拉取。**深境螺旋子页已 1:1 移植**（周期列表/运行中显示、出战统计、出战次数、战斗数据榜、每层每间上下半阵容）；其余子页仍是"尚未移植"占位（不伪造数据）。登录用 cookie 代替 WebView；头像暂用通用图标（未拉 HeadIcon）；出战次数背后装饰星行与稀有度底图因无素材省略 |
 | 截图页 | `ScreenshotPage2.xaml`(319)（+`ImageViewWindow2.xaml` 731） | `Pages/ScreenshotPage.axaml`(263) | 🟡 | 本轮已按源码重写：44px 页头 + 磁贴墙（列宽按 UniformGridLayout 公式均摊）+ 空态。未移植：ItemsView 容器虚拟化、AnnotatedScrollBar、悬停 1.2× 放大、`ImageViewWindow2`（点击走系统查看器）、截图文件夹管理对话框（Flyout 三行代替） |
 | 抽卡页 | `GachaLogPage.xaml`(475) + `GachaStatsCard.xaml`(293) + `ZZZGachaStatsCard`(294) | `Pages/GachaPage.axaml`(451) + `Controls/GachaStatsCard.axaml`(306) | 🟡 | 本轮已按源码重写：44px 页头（UID/更新 SplitButton/设置 Flyout/强调色 Pane 按钮）+ SplitView + 统计卡（行序、字号、稀有度色照抄）+ 5★/4★ 列表 + 空态。未移植：ZZZ 统计卡、材料图标与卡池底图（无素材，占位）、按时间段删除、UIGF v4、虚拟化 |
 | 游戏公告窗 | `GameNoticeWindow.xaml`(273) | 无 | 🔴 | 未移植 |
@@ -91,10 +91,22 @@
 - 全量测试 348 通过（290 单测 + 31 安装器 + 27 集成；其中 14 个是新增的注册表
   解析/映射用例，真 wine 往返用例默认跳过）。
 
+- **深境螺旋子页**（Lead）：按 `Features/GameRecord/Genshin/SpiralAbyssPage.xaml` 移植
+  周期 ListView（日期 + 星数、选中态）、刷新按钮（0,18,18,0 强调胶囊）、统计周期行、
+  出战统计 3 列（-4 上移）、出战次数 4 卡（80×97、稀有度底、`×次数` 右下）、
+  战斗数据榜（2*,*,*、隔行 -24 底色、图标 44×36）、每层卡片（24,12 内边距、28 高层头、
+  9/9 星数）与每间（上/下半阵容 60×73、中间间名/时间/三星）。数据用
+  `GameRecordClient.GetSpiralAbyssAsync`（国服 Hyperion / 国际 HoYoLab 自动分流）。
+  新增 `--scroll-y <px>` 自检开关（截图前滚动主 ScrollViewer，截长页下半部分）。
+  420 行以下页面走 demo 夹具 `LUNARWARD_TOOLBOX_DEMO=1`（`SpiralAbyssPageViewModel` 内），
+  不联网。
+- **工具箱挂载**：`ToolboxPageViewModel` 的菜单点击改为按 `MenuKey` 创建页面
+  （`AbyssMenuKeys`），`SpiralAbyssPage` 宿主为 `ContentControl`，页面内自带刷新按钮。
+
 ## 4. 下一步队列（按用户可见度排序）
 
 1. 工具箱战绩子页：按 Starward `Features/GameRecord/{Genshin,ZZZ}/*Page.xaml`
-   逐个移植（深境螺旋/幻想真境剧诗/幽境危战、绳网月报/式舆防卫战/危局强袭战），
+   逐个移植（深境螺旋 ✅ → 幻想真境剧诗/幽境危战、绳网月报/式舆防卫战/危局强袭战），
    数据用 `GameRecordClient` 的对应 API；再补 `SelfQueryPage`（账号记录独立页）。
 2. 工具箱：按 `GameRecordPage` 结构重写；每日便笺改成启动器右下按钮的 Flyout
    （`DailyNoteButton.xaml` 1:1），账号记录恢复独立导航页（`SelfQueryPage.xaml`）。

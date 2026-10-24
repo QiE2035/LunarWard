@@ -87,7 +87,10 @@ public partial class MainWindow : Window
             try
             {
                 await Task.Delay(500);
-                Shell?.SelectToolboxTab(tab.Equals("accounts", StringComparison.OrdinalIgnoreCase) ? 1 : 0);
+                var index = int.TryParse(tab, out var parsed)
+                    ? parsed
+                    : tab.Equals("accounts", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+                Shell?.SelectToolboxTab(index);
             }
             catch (Exception)
             {
@@ -102,8 +105,32 @@ public partial class MainWindow : Window
             await SelectSettingsSectionAsync(settingsSection);
         }
 
+        if (CaptureMode.ScrollY > 0)
+        {
+            await Task.Delay(300);
+            ScrollPage(CaptureMode.ScrollY);
+            await Task.Delay(300);
+        }
+
         await Task.Delay(CaptureMode.WaitMilliseconds);
         CaptureMode.Capture(this);
+    }
+
+
+    /// <summary>
+    /// 自检截图辅助：把窗口里最大的 ScrollViewer 滚到指定位置（截长页面下半部分用）。
+    /// </summary>
+    private void ScrollPage(double y)
+    {
+        var viewer = this.GetVisualDescendants()
+            .OfType<ScrollViewer>()
+            .Where(x => x.IsVisible && x.Bounds.Width > 400 && x.Bounds.Height > 200)
+            .OrderByDescending(x => x.Bounds.Width * x.Bounds.Height)
+            .FirstOrDefault();
+        if (viewer is not null)
+        {
+            viewer.Offset = new Avalonia.Vector(0, y);
+        }
     }
 
 

@@ -36,6 +36,10 @@ internal static class Program
             CaptureMode.Tab = ReadArgument(args, "--tab");
             CaptureMode.Language = ReadArgument(args, "--lang");
             CaptureMode.ExpandRail = args.Contains("--expand-rail");
+            if (int.TryParse(ReadArgument(args, "--scroll-y"), out var scrollY) && scrollY > 0)
+            {
+                CaptureMode.ScrollY = scrollY;
+            }
             if (int.TryParse(ReadArgument(args, "--wait"), out var wait) && wait >= 0)
             {
                 CaptureMode.WaitMilliseconds = wait;
@@ -108,6 +112,9 @@ internal static class CaptureMode
 
     /// <summary>自检时的界面语言（<c>zh-CN</c> / <c>en-US</c>）。</summary>
     public static string? Language { get; set; }
+
+    /// <summary>自检时把页面里的主 ScrollViewer 滚到该偏移（截长页下半部分）。</summary>
+    public static double ScrollY { get; set; }
 
     /// <summary>截图前把左栏展开（模拟鼠标悬停）。</summary>
     public static bool ExpandRail { get; set; }

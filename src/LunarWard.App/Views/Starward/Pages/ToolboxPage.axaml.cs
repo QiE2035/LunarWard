@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using LunarWard.App.ViewModels;
 using LunarWard.App.ViewModels.Starward;
 
@@ -11,6 +12,8 @@ public partial class ToolboxPage : StarwardPage
 {
     private readonly ToolboxPageViewModel? _viewModel;
 
+    private StarwardPage? _hostedPage;
+
 
     public ToolboxPage(PageContext context) : base(context)
     {
@@ -18,6 +21,46 @@ public partial class ToolboxPage : StarwardPage
         _viewModel = new ToolboxPageViewModel(context);
         DataContext = _viewModel;
         _viewModel.LocalAccountsRequested += OnLocalAccountsRequested;
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(ToolboxPageViewModel.SelectedItem) or nameof(ToolboxPageViewModel.HasRole))
+        {
+            UpdateHostedPage();
+        }
+    }
+
+
+    /// <summary>
+    /// 选中「深境螺旋」且有角色时挂载 <see cref="Record.SpiralAbyssPage"/>；
+    /// 其余菜单（未移植）回到占位。Starward 的 Frame.Navigate 同理。
+    /// </summary>
+    private void UpdateHostedPage()
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        StarwardPage? page = null;
+        if (_viewModel.SelectedItem?.Tag == "SpiralAbyss" && _viewModel.CurrentRole is { } role)
+        {
+            page = new Record.SpiralAbyssPage(Context, role);
+        }
+
+        if (ReferenceEquals(page, _hostedPage))
+        {
+            return;
+        }
+
+        _hostedPage?.OnNavigatedFrom();
+        ContentHost.Content = page;
+        _hostedPage = page;
+        page?.OnNavigatedTo();
+        _viewModel.HasHostedPage = page is not null;
     }
 
 
@@ -35,6 +78,7 @@ public partial class ToolboxPage : StarwardPage
     {
         base.OnNavigatedTo();
         _viewModel?.ReloadRoleIfNeeded();
+        UpdateHostedPage();
     }
 
 
@@ -52,8 +96,11 @@ public partial class ToolboxPage : StarwardPage
 
     protected override void DisposeViewModel(PageContext context)
     {
+        _hostedPage?.OnNavigatedFrom();
+        _hostedPage = null;
         if (_viewModel is not null)
         {
+            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
             _viewModel.LocalAccountsRequested -= OnLocalAccountsRequested;
             _viewModel.Dispose();
         }

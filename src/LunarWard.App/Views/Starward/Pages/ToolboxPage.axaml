@@ -279,6 +279,9 @@
     <!-- ══ 右侧 Frame（Starward 未选中时是 BlankPage：空白） ═══════════ -->
     <Grid Grid.Column="1">
 
+      <!-- 已移植的战绩子页（深境螺旋；其余仍是占位） -->
+      <ContentControl x:Name="ContentHost" />
+
       <!-- 战绩子页尚未移植：选中菜单后显示占位（不伪造数据） -->
       <StackPanel HorizontalAlignment="Center"
                   VerticalAlignment="Center"
@@ -298,6 +301,7 @@
         <TextBlock HorizontalAlignment="Center"
                    FontSize="12"
                    Foreground="{StaticResource StarTextSecondary}"
+                   IsVisible="{Binding ShowNotPortedHint}"
                    Text="{Binding Strings[Toolbox.NotPorted]}" />
       </StackPanel>
 
