@@ -153,15 +153,27 @@
   （`need_detail=true` 返回完整对象）；缺勋章/星章/幻剧之花 PNG，用同色圆章 + `★`/`✦`/`✿`
   字形占位并在 XAML 注释；头像类图片缺失时回退 `E77B` 字形（与深境螺旋一致）。
   demo 夹具同样走 `LUNARWARD_TOOLBOX_DEMO=1`。
+- **旅行者札记子页**（Lead）：按 `Features/GameRecord/Genshin/TravelersDiaryPage.xaml` 移植：
+  左 280 栏月份卡列表（`E787` 图标 + `YYYY-MM` + ◆ 原石数）+ 刷新 / 获取明细两枚按钮；
+  右栏三张 8 圆角 acrylic 卡 —— 实时数据卡（今日共获取 / 当月共获取两列，原石 ◆ / 摩拉 ● 字形 +
+  数值、`ColorRectChart` 20 高分段条 + 图例换行面板）、历史数据卡（选中月份同结构）、
+  每日数据表（`MM-dd` / 原石数 / 进度条 `#A066BCF2` / 摩拉数 / 进度条 `#A0F2DE77`，每日进度 =
+  当天值 / 当月最大值）。新增 `Controls/ColorRectChart.cs`（硬边 `LinearGradientBrush`，
+  offset 成对写 stop）；「获取明细」在代码后置里现场 `MenuFlyout` 月份项（前台 Flyout 内容
+  不在逻辑树里，模板绑定拿不到 DataContext）。
+  数据：`GetTravelsDiarySummaryAsync` + `GetTravelsDiaryDetailAsync(month, type=1/2)`；LunarWard
+  没有 Starward 的 SQLite 全量缓存，月份列表由 `optional_month` 直接生成，选中月份时按需拉取。
+  缺 `UI_ItemIcon_201/202.png`，原石/摩拉用 `◆`/`●` 字形占位。
+  demo 夹具同样走 `LUNARWARD_TOOLBOX_DEMO=1`（示例：2026-10/12800 原石/1234567 摩拉 + 6 段图例 + 24 天明细）。
 - **工具箱挂载**：`ToolboxPageViewModel.PortedTags` 列出已移植菜单
-  （SpiralAbyss / ImaginariumTheater / StygianOnslaught / InterKnotMonthlyReport / DeadlyAssault / ShiyuDefense），`ToolboxPage.UpdateHostedPage`
+  （SpiralAbyss / ImaginariumTheater / StygianOnslaught / InterKnotMonthlyReport / DeadlyAssault / ShiyuDefense / TravelersDiary），`ToolboxPage.UpdateHostedPage`
   按 tag 创建 `Record.SpiralAbyssPage` / `Record.ImaginariumTheaterPage` /
-  `Record.StygianOnslaughtPage` / `Record.InterKnotMonthlyReportPage` / `Record.DeadlyAssaultPage` / `Record.ShiyuDefensePage` 挂到 `ContentControl`；其余菜单显示"尚未移植"占位。
+  `Record.StygianOnslaughtPage` / `Record.InterKnotMonthlyReportPage` / `Record.DeadlyAssaultPage` / `Record.ShiyuDefensePage` / `Record.TravelersDiaryPage` 挂到 `ContentControl`；其余菜单（战绩 BattleChronicle）显示"尚未移植"占位。
 
 ## 4. 下一步队列（按用户可见度排序）
 
 1. 工具箱战绩子页：按 Starward `Features/GameRecord/{Genshin,ZZZ}/*Page.xaml`
-   逐个移植（深境螺旋 ✅、幻想真境剧诗 ✅、幽境危战 ✅、绳网月报 ✅、危局强袭战 ✅、式舆防卫战 ✅ → 旅行者札记/绳网月报历史等剩余 Genshin 子页），
+   逐个移植（深境螺旋 ✅、幻想真境剧诗 ✅、幽境危战 ✅、绳网月报 ✅、危局强袭战 ✅、式舆防卫战 ✅、旅行者札记 ✅ → 战绩 BattleChronicle、绳网月报历史等剩余子页），
    数据用 `GameRecordClient` 的对应 API；再补 `SelfQueryPage`（账号记录独立页）。
 2. 启动器剩余控件：`GameAccountSwitcher`（40 高 ComboBox + 切换/编辑）、
    `StartGameButton` 的安装进度态、预下载、DX12、区服 ComboBox、拖放背景、

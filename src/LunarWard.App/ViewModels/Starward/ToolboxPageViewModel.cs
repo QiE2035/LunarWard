@@ -126,6 +126,7 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
         "InterKnotMonthlyReport",
         "DeadlyAssault",
         "ShiyuDefense",
+        "TravelersDiary",
     };
 
     public string PlaceholderTitle => SelectedItem?.Title ?? "";
