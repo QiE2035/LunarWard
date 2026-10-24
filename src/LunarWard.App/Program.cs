@@ -35,6 +35,8 @@ internal static class Program
             CaptureMode.OpenDailyNote = args.Contains("--open-daily-note");
             CaptureMode.ShowBackgroundBar = args.Contains("--background-bar");
             CaptureMode.ShowDragOverlay = args.Contains("--drag-overlay");
+            CaptureMode.InstallDialog = args.Contains("--install-dialog");
+            CaptureMode.InstallProgress = args.Contains("--install-progress");
             CaptureMode.Tab = ReadArgument(args, "--tab");
             CaptureMode.Language = ReadArgument(args, "--lang");
             CaptureMode.ExpandRail = args.Contains("--expand-rail");
@@ -114,6 +116,12 @@ internal static class CaptureMode
 
     /// <summary>截图前强制显示"拖放背景文件"提示条。</summary>
     public static bool ShowDragOverlay { get; set; }
+
+    /// <summary>截图前打开「选择安装路径」对话框（自检安装器 UI）。</summary>
+    public static bool InstallDialog { get; set; }
+
+    /// <summary>截图前强制显示安装进度弹层（假数据，自检版式）。</summary>
+    public static bool InstallProgress { get; set; }
 
     /// <summary>工具箱战绩菜单索引（0 起），用于截取选中态/占位版式。</summary>
     public static string? Tab { get; set; }

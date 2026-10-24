@@ -12,6 +12,8 @@ using LunarWard.Core;
 using LunarWard.Core.GameNotice;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Games;
+using LunarWard.Core;
+using LunarWard.Installer;
 using LunarWard.Launch;
 
 namespace LunarWard.App.ViewModels.Starward;
@@ -54,6 +56,9 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
         _services.LauncherService.StateChanged += OnStateChanged;
         _services.LauncherService.Completed += OnCompleted;
+        _services.Installer.TaskStateChanged += OnInstallTaskStateChanged;
+        _services.Installer.Progress = new Progress<GameInstallProgress>(progress
+            => Dispatcher.UIThread.Post(() => ApplyInstallProgress(progress)));
 
         ApplyState(_services.LauncherService.State);
         UpdatePlayTime();
@@ -352,6 +357,13 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     [RelayCommand]
     private async Task StartGameAsync()
     {
+        // Starward：GameState.InstallGame 时按钮是「安装游戏」，点击打开安装对话框而不是启动游戏。
+        if (!IsGameInstalled && !IsInstalling)
+        {
+            InstallDialogRequested?.Invoke();
+            return;
+        }
+
         var launcher = _services.LauncherService;
         if (launcher.State == LaunchPhaseState.Running)
         {
@@ -397,11 +409,12 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         // Starward 启动页按钮文案是「开始游戏 / 游戏正在运行」，相位细节放在状态小字里
         StartButtonText = state switch
         {
+            LaunchPhaseState.Idle or LaunchPhaseState.Error when !IsGameInstalled => Strings["InstallGameDialog.Install"],
             LaunchPhaseState.Idle or LaunchPhaseState.Error => Strings["Launcher.StartGame"],
             LaunchPhaseState.Running => Strings["Launcher.GameRunning"],
             _ => text,
         };
-        IsStartButtonEnabled = enabled;
+        IsStartButtonEnabled = enabled || (state is LaunchPhaseState.Idle or LaunchPhaseState.Error && !IsGameInstalled);
         IsBusy = state is LaunchPhaseState.Prepare or LaunchPhaseState.Launch
             or LaunchPhaseState.AwaitImage or LaunchPhaseState.AwaitReady or LaunchPhaseState.Cleanup;
         IsRunning = state == LaunchPhaseState.Running;
@@ -428,6 +441,192 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             _services.Background.Resume();
         }
     }
+
+
+    // ── 安装 / 更新（Starward StartGameButton 的安装进度弹层）────────────
+
+    /// <summary>视图订阅它来弹「选择安装路径」对话框（Starward 在页面代码里 ShowAsync）。</summary>
+    public event Action? InstallDialogRequested;
+
+    [ObservableProperty]
+    private bool _isInstalling;
+
+    [ObservableProperty]
+    private double _installProgress;
+
+    [ObservableProperty]
+    private string _installStatusText = "";
+
+    [ObservableProperty]
+    private string _installPercentText = "";
+
+    [ObservableProperty]
+    private string _installDetailText = "";
+
+    [ObservableProperty]
+    private bool _installCanResume;
+
+    private GameInstallRequest? _installRequest;
+    private GameInstallState _installState = GameInstallState.Stop;
+
+
+    /// <summary>游戏是否已经装好（目录里能找到 exe）。</summary>
+    public bool IsGameInstalled => !ShowNotConfigured && !ShowLocateGame;
+
+
+    /// <summary>自检截图专用：显示一张假的安装进度卡（不触发真实网络）。</summary>
+    public void ShowInstallProgressForCapture()
+    {
+        IsInstalling = true;
+        InstallCanResume = false;
+        InstallStatusText = Strings["InstallGameDialog.Installing"];
+        InstallProgress = 46.4;
+        InstallPercentText = "46.4%";
+        InstallDetailText = "4.32 GB / 9.31 GB  18.2 MB/s";
+    }
+
+
+    /// <summary>由页面代码在对话框确认后调用：开始下载安装。</summary>
+    public async Task BeginInstallAsync(GameInstallRequest request)
+    {
+        _installRequest = request;
+        IsInstalling = true;
+        InstallCanResume = false;
+        InstallProgress = 0;
+        InstallStatusText = Strings["InstallGameDialog.Installing"];
+        InstallPercentText = "0%";
+        InstallDetailText = "";
+
+        var progress = _services.Installer.StartOrContinue(request);
+        ApplyInstallProgress(progress);
+        var task = _services.Installer.CurrentTask;
+        if (task is not null)
+        {
+            // 安装器内部是同步长任务（下载/解压/校验），放到线程池跑，UI 靠 Progress 回调刷新。
+            await Task.Run(() => _services.Installer.RunAsync(task)).ConfigureAwait(true);
+        }
+    }
+
+
+    [RelayCommand]
+    private void PauseInstall()
+    {
+        if (_installRequest is null)
+        {
+            return;
+        }
+
+        ApplyInstallProgress(_services.Installer.Pause(_installRequest));
+    }
+
+
+    [RelayCommand]
+    private void ResumeInstall()
+    {
+        if (_installRequest is null)
+        {
+            return;
+        }
+
+        var progress = _services.Installer.StartOrContinue(_installRequest);
+        ApplyInstallProgress(progress);
+        if (_services.Installer.CurrentTask is { } task)
+        {
+            _ = Task.Run(() => _services.Installer.RunAsync(task));
+        }
+    }
+
+
+    [RelayCommand]
+    private void CancelInstall()
+    {
+        if (_installRequest is null)
+        {
+            return;
+        }
+
+        _services.Installer.Stop(_installRequest);
+        IsInstalling = false;
+        InstallCanResume = false;
+        InstallStatusText = "";
+        InstallDetailText = "";
+        InstallPercentText = "";
+        InstallProgress = 0;
+        _installRequest = null;
+        ApplyState(_services.LauncherService.State);
+    }
+
+
+    private void OnInstallTaskStateChanged(object? sender, GameInstallContext context)
+        => Dispatcher.UIThread.Post(() => ApplyInstallProgress(GameInstallProgress.FromTask(context)));
+
+
+    /// <summary>把安装器快照翻成界面文案（Starward 弹层里的百分比/速度/剩余时间）。</summary>
+    private void ApplyInstallProgress(GameInstallProgress progress)
+    {
+        _installState = (GameInstallState)progress.State;
+        InstallProgress = Math.Clamp(progress.ProgressPercent, 0, 100);
+        InstallPercentText = $"{progress.ProgressPercent:F1}%";
+        InstallCanResume = _installState is GameInstallState.Paused or GameInstallState.Error;
+
+        InstallStatusText = _installState switch
+        {
+            GameInstallState.Waiting => Strings["InstallGameDialog.Installing"],
+            GameInstallState.Downloading => Strings["InstallGameDialog.Downloading"],
+            GameInstallState.Paused => Strings["InstallGameDialog.Paused"],
+            GameInstallState.Finish => Strings["InstallGameDialog.Completed"],
+            GameInstallState.Error => string.Format(Strings["InstallGameDialog.Failed"], progress.ErrorMessage ?? ""),
+            _ => Strings["InstallGameDialog.Installing"],
+        };
+
+        if (_installState is GameInstallState.Downloading or GameInstallState.Waiting)
+        {
+            var finish = FormatBytes(progress.ProgressDownloadFinishBytes);
+            var total = progress.ProgressDownloadTotalBytes > 0 ? FormatBytes(progress.ProgressDownloadTotalBytes) : "?";
+            var speed = progress.NetworkDownloadSpeed > 0 ? $"{FormatBytes((long)progress.NetworkDownloadSpeed)}/s" : "";
+            InstallDetailText = $"{finish} / {total}  {speed}".Trim();
+        }
+
+        if (_installState is GameInstallState.Finish)
+        {
+            IsInstalling = false;
+            _installRequest = null;
+            InstallDetailText = "";
+            OnInstallFinished(progress);
+        }
+        else if (_installState is GameInstallState.Stop)
+        {
+            IsInstalling = false;
+            _installRequest = null;
+        }
+    }
+
+
+    private void OnInstallFinished(GameInstallProgress progress)
+    {
+        // 安装完把 profile 的路径指向安装目录（Starward 里是 config 的 install_path），然后按钮变「开始游戏」。
+        if (!string.IsNullOrWhiteSpace(progress.InstallPath))
+        {
+            _context.Profile.Profile.Path = progress.InstallPath;
+            _services.Config.Save(_services.Paths.ConfigFile);
+        }
+
+        OnPropertyChanged(nameof(IsGameInstalled));
+        OnPropertyChanged(nameof(ShowNotConfigured));
+        OnPropertyChanged(nameof(ShowLocateGame));
+        ApplyState(_services.LauncherService.State);
+        StatusText = Strings["InstallGameDialog.Completed"];
+        _log.Info($"安装完成：{progress.GameBiz} → {progress.InstallPath}");
+    }
+
+
+    private static string FormatBytes(long bytes) => bytes switch
+    {
+        >= 1L << 30 => $"{bytes / 1024d / 1024d / 1024d:F2} GB",
+        >= 1L << 20 => $"{bytes / 1024d / 1024d:F1} MB",
+        >= 1L << 10 => $"{bytes / 1024d:F0} KB",
+        _ => $"{bytes} B",
+    };
 
 
     /// <summary>由视图的 1s 计时器驱动（Starward 启动按钮在运行时显示已运行时间）。</summary>
@@ -842,6 +1041,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         _disposed = true;
         _bannerTimer.Stop();
         _services.LauncherService.StateChanged -= OnStateChanged;
+        _services.Installer.TaskStateChanged -= OnInstallTaskStateChanged;
         _services.LauncherService.Completed -= OnCompleted;
     }
 }

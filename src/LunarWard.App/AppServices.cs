@@ -28,6 +28,7 @@ public sealed class AppServices
         Dxvk = new Wine.DxvkManager();
         Config = Launch.LauncherConfig.Load(paths.ConfigFile, out var warning);
         ConfigWarning = warning;
+        Log = new Services.LogService(paths);
         LauncherService = new Services.LauncherService(this);
         Background = new Services.BackgroundService(paths);
         Announcements = new Services.AnnouncementService(paths);
@@ -35,6 +36,7 @@ public sealed class AppServices
         PlayTime = new Launch.PlayTimeService(paths);
         ComponentInstaller = new Wine.ComponentInstaller(paths);
         Localization.AppStrings.Instance.Language = Localization.AppStrings.Normalize(Config.Launcher.Language);
+        Installer = new LunarWard.Installer.GameInstallController(new Services.InstallerLogAdapter(Log));
 
         // 把"游戏安装路径"的来源接到 Wine：LunarWard.Core 的抽卡模块靠它定位 webCaches。
         // 没装 wine prefix 时保持 null（Linux 无注册表）。
@@ -73,6 +75,25 @@ public sealed class AppServices
     public Launch.PlayTimeService PlayTime { get; }
 
     public Wine.ComponentInstaller ComponentInstaller { get; }
+
+    public Services.LogService Log { get; }
+
+    /// <summary>内嵌安装器的公开门面（Starward 里由 RPC 服务提供，这里直接持有）。</summary>
+    public LunarWard.Installer.GameInstallController Installer { get; }
+
+    /// <summary>应用退出前调用：停掉所有安装任务并释放安装器。</summary>
+    public void ShutdownInstaller()
+    {
+        try
+        {
+            Installer.StopAllTasks("App shutdown");
+            Installer.Dispose();
+        }
+        catch
+        {
+            // 退出路径上不抛异常
+        }
+    }
 
 
     public static void Initialize(IXdgPaths paths)

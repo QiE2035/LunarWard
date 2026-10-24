@@ -135,10 +135,50 @@
       </StackPanel>
     </Border>
 
-    <!-- ── 右下：时长胶囊 + 开始按钮 ─────────────────────────────── -->
-    <Grid Margin="0,0,40,40"
-          HorizontalAlignment="Right" VerticalAlignment="Bottom"
-          ColumnDefinitions="Auto,Auto" ColumnSpacing="12">
+    <!-- ── 右下：安装进度弹层 + 时长胶囊 + 开始按钮 ─────────────────── -->
+    <StackPanel Margin="0,0,40,40"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Spacing="8">
+
+      <!--
+        Starward StartGameButton 的 Popup_GameInfoOrDownloadProgress：
+        安装/下载时在按钮上方浮出 320 宽的进度卡（状态 + 百分比 + 速度 + 暂停/继续/取消）。
+      -->
+      <Border Width="320"
+              Padding="16,12"
+              HorizontalAlignment="Right"
+              CornerRadius="8"
+              Background="{StaticResource StarAcrylicBrush}"
+              BorderBrush="{StaticResource StarCardStrokeBrush}"
+              BorderThickness="1"
+              BoxShadow="0 8 16 0 #33000000"
+              IsVisible="{Binding IsInstalling}">
+        <StackPanel Spacing="8">
+          <TextBlock FontWeight="SemiBold" Foreground="{StaticResource StarTextPrimary}"
+                     Text="{Binding InstallStatusText}" TextWrapping="Wrap" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                       Text="{Binding InstallDetailText}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                       Text="{Binding InstallPercentText}" VerticalAlignment="Center" />
+          </Grid>
+          <ProgressBar Height="4" Minimum="0" Maximum="100" Value="{Binding InstallProgress}"
+                       Foreground="{StaticResource StarAccentBrush}"
+                       Background="#24FFFFFF" CornerRadius="2" />
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Content="{Binding Strings[InstallGameDialog.Pause]}"
+                    Command="{Binding PauseInstallCommand}"
+                    IsVisible="{Binding !InstallCanResume}" />
+            <Button Content="{Binding Strings[InstallGameDialog.Resume]}"
+                    Command="{Binding ResumeInstallCommand}"
+                    IsVisible="{Binding InstallCanResume}" />
+            <Button Content="{Binding Strings[InstallGameDialog.Cancel]}"
+                    Command="{Binding CancelInstallCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="12" HorizontalAlignment="Right">
 
       <Border Grid.Column="0"
               Height="44"
@@ -191,7 +231,8 @@
           <TextBlock Classes="icon" FontSize="16" Text="&#xE713;" Foreground="{Binding SettingButtonForeground}" />
         </Button>
       </Grid>
-    </Grid>
+      </Grid>
+    </StackPanel>
 
     <!-- 用 DX12 启动（Starward 右下角 CompactCheckBox；Linux 落 profile.enhancements.dx12 → -use-d3d12） -->
     <Border Margin="0,0,44,16"

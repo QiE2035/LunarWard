@@ -23,6 +23,7 @@ public partial class GameLauncherPage : StarwardPage
         _viewModel = new GameLauncherPageViewModel(context);
         DataContext = _viewModel;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        _viewModel.InstallDialogRequested += OnInstallDialogRequested;
         DragDrop.SetAllowDrop(RootGrid, true);
         RootGrid.AddHandler(DragDrop.DragEnterEvent, OnRootGridDragOver);
         RootGrid.AddHandler(DragDrop.DragOverEvent, OnRootGridDragOver);
@@ -39,7 +40,44 @@ public partial class GameLauncherPage : StarwardPage
             _viewModel.IsDragOverlayVisible = true;
         }
 
+        if (CaptureMode.InstallProgress)
+        {
+            _viewModel.ShowInstallProgressForCapture();
+        }
+
+        if (CaptureMode.InstallDialog && CaptureMode.Path is { } dialogPath)
+        {
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.Delay(1000);
+                var dialog = new InstallGameDialog(Context.Services, _viewModel.GameBiz,
+                    Context.Shell.CurrentLauncherId, Context.Profile.Profile.Path);
+                dialog.ShowDialog(TopLevel.GetTopLevel(this) as Window ?? throw new InvalidOperationException());
+                dialog.CaptureSelf(dialogPath + ".dialog.png", 2500);
+            });
+        }
+
         RebuildPips();
+    }
+
+
+    /// <summary>
+    /// Starward 在页面代码里 `new InstallGameDialog(...).ShowAsync()`；
+    /// 对话框确认后拿到 <c>GameInstallRequest</c>，交给 ViewModel 起安装任务。
+    /// </summary>
+    private async void OnInstallDialogRequested()
+    {
+        if (_viewModel is null || TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        var dialog = new InstallGameDialog(Context.Services, _viewModel.GameBiz, Context.Shell.CurrentLauncherId, Context.Profile.Profile.Path);
+        await dialog.ShowDialog(owner);
+        if (dialog.Request is { } request)
+        {
+            await _viewModel.BeginInstallAsync(request);
+        }
     }
 
 

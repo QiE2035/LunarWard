@@ -56,6 +56,7 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #    逐页出图：--page launcher|game-setting|screenshot|gacha|toolbox|settings
 #    其它自检开关：--open-selector（打开游戏选择层）、--game-icons（展开游戏图标条）、
 #                 --open-daily-note（打开每日便笺 Flyout）、
+#                 --install-dialog（打开安装路径对话框）、--install-progress（显示安装进度弹层）、
 #                 --tab <n>（工具箱第 n 个战绩菜单）、--lang en-US、
 #                 --settings-section <about|general|download|files|screenshot|hotkey|gamepad|advanced|toolbox>、
 #                 --window playtime（打开游戏时长统计弹窗再截图）、
