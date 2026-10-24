@@ -26,7 +26,7 @@
 | 主视图 | `MainView.xaml`(152) | `StarwardShell.axaml`(135) | 🟡 | 导航项 5 vs 7（缺 SelfQuery / GenshinBeyondGacha，账号记录被并进工具箱）；无 BlankPage 状态；`Border_OverlayMask` 的淡入淡出用了 IsVisible 切换 |
 | 左栏 | `MainView.xaml` 的 NavigationView | `NavigationRail.axaml`(129) | ✅ | LeftCompact 56px、40×40、选中 3×16 强调条一致；图标条见下 |
 | 游戏选择 | `GameSelector.xaml`(572) + `.cs`(975) | 外壳内的全屏层 | 🟡 | **已补横排图标条**（悬停当前图标滑出、#60000000 遮罩、当前图标不压暗）；全屏层的服务器选择、固定、未安装游戏列表、拖放排序未移植 |
-| 启动器 | `GameLauncherPage.xaml`(684，其中 PipsPager 样式 ~330 行) | `Pages/GameLauncherPage.axaml`(约 560) | 🟡 | 公告卡/开始按钮/时长胶囊位置一致；**便笺已改为 `DailyNoteButton.xaml` 的 Flyout**（刷新/角色行/原神树脂+委托+宝钱+派遣/绝区零电量+会员+任务+活跃度+刮刮卡+录像店+悬赏+周纪）；Starward 默认隐藏账号切换器，已移除自创的圆形账号按钮。账号切换条已补（40 高双胶囊：账号 ComboBox + 切换/编辑按钮，Margin 0,0,40,100；源码需在设置开启，这里改为保存过账号即显示；“编辑”打开 LunarWard 已有的账号窗口，而非源码的内联 Flyout）。背景切换条已补：可点圆点（选中 8/普通 6，源码 PipsPager 同构）、滚轮循环切换、图库（Linux 等价为打开背景目录）/复制（图片进剪贴板）/另存为（文件选择器）/视频播放暂停。未移植：预下载、安装进度态、DX12 选项、区服 ComboBox、拖放背景、`GameAuthLoginButton` |
+| 启动器 | `GameLauncherPage.xaml`(684，其中 PipsPager 样式 ~330 行) | `Pages/GameLauncherPage.axaml`(约 560) | 🟡 | 公告卡/开始按钮/时长胶囊位置一致；**便笺已改为 `DailyNoteButton.xaml` 的 Flyout**（刷新/角色行/原神树脂+委托+宝钱+派遣/绝区零电量+会员+任务+活跃度+刮刮卡+录像店+悬赏+周纪）；Starward 默认隐藏账号切换器，已移除自创的圆形账号按钮。拖放背景已补（DragOver 顶部提示条 + Drop 拷入背景目录并立刻切换，支持 jpg/png/webp/bmp/mp4/webm/mkv）。账号切换条已补（40 高双胶囊：账号 ComboBox + 切换/编辑按钮，Margin 0,0,40,100；源码需在设置开启，这里改为保存过账号即显示；“编辑”打开 LunarWard 已有的账号窗口，而非源码的内联 Flyout）。背景切换条已补：可点圆点（选中 8/普通 6，源码 PipsPager 同构）、滚轮循环切换、图库（Linux 等价为打开背景目录）/复制（图片进剪贴板）/另存为（文件选择器）/视频播放暂停。未移植：预下载、安装进度态、DX12 选项、区服 ComboBox、拖放背景、`GameAuthLoginButton` |
 | 游戏设置 | `GameSettingPage.xaml`(199) + `GameSettingService.cs` | `Pages/GameSettingPage.axaml`(约 900) + `Services/WineRegistry.cs` / `GameSettingRegistry.cs` | 🟡 | 本轮已按源码恢复左列（分辨率/全屏/无边框/自定义分辨率/语音语言）+ 右列图形设置 + 60px 应用条；值通过 `wine reg` 读写游戏 prefix 的 `HKCU\Software\miHoYo\<游戏>`（与 Starward 同一组键）。LunarWard 目录/wine/env/外部程序/诊断移到下方追加区。未移植：HDR（Linux/Wine 无等价物，开关禁用+说明）、按显示器尺寸过滤分辨率列表、星铁帧率（LunarWard 不支持星铁）、游戏版本检测（用 exe 是否存在近似） |
 | 设置总览 | `SettingPage.xaml`(108) | `Pages/SettingPage.axaml`(160) | ✅ | 260 二级导航 + Frame Margin 24,24,0,0 一致 |
 | 关于 | `AboutSetting.xaml`(135) | `SettingAboutView.axaml`(约 190) | 🟡 | 本轮已按源码重排：Logo 160 / 24px Bold / 版本行 / 预览版 Toggle / 检查更新按钮 / 相关链接；Windows 更新器与预览通道如实禁用 |
@@ -180,7 +180,7 @@
    逐个移植（深境螺旋 ✅、幻想真境剧诗 ✅、幽境危战 ✅、绳网月报 ✅、危局强袭战 ✅、式舆防卫战 ✅、旅行者札记 ✅ → 战绩 BattleChronicle、绳网月报历史等剩余子页），
    数据用 `GameRecordClient` 的对应 API；再补 `SelfQueryPage`（账号记录独立页）。
 2. 启动器剩余控件：`StartGameButton` 的安装进度态、预下载、DX12、区服 ComboBox、
-   拖放背景、`GameAuthLoginButton`。（`GameAccountSwitcher` ✅ 已补，见 §1 启动器行）
+   `GameAuthLoginButton`。（`GameAccountSwitcher` ✅、拖放背景 ✅ 已补，见 §1 启动器行）
 3. 设置子页逐项核对（截图/快捷键/文件管理/高级/下载）。
 4. 公告窗、安装/更新 UI、`ImageViewWindow2`。
 

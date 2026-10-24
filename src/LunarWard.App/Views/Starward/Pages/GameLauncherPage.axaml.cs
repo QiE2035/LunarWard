@@ -23,10 +23,20 @@ public partial class GameLauncherPage : StarwardPage
         _viewModel = new GameLauncherPageViewModel(context);
         DataContext = _viewModel;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        DragDrop.SetAllowDrop(RootGrid, true);
+        RootGrid.AddHandler(DragDrop.DragEnterEvent, OnRootGridDragOver);
+        RootGrid.AddHandler(DragDrop.DragOverEvent, OnRootGridDragOver);
+        RootGrid.AddHandler(DragDrop.DragLeaveEvent, OnRootGridDragLeave);
+        RootGrid.AddHandler(DragDrop.DropEvent, OnRootGridDrop);
         _viewModel.RefreshBackgroundImages();
         if (CaptureMode.ShowBackgroundBar)
         {
             _viewModel.ShowBackgroundBar = true;
+        }
+
+        if (CaptureMode.ShowDragOverlay)
+        {
+            _viewModel.IsDragOverlayVisible = true;
         }
 
         RebuildPips();
@@ -38,6 +48,50 @@ public partial class GameLauncherPage : StarwardPage
         if (e.PropertyName is nameof(GameLauncherPageViewModel.SelectedBackgroundIndex))
         {
             RebuildPips();
+        }
+    }
+
+
+    private void OnRootGridDragOver(object? sender, DragEventArgs e)
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        var hasFiles = e.DataTransfer?.TryGetFiles()?.Any() == true;
+        e.DragEffects = hasFiles ? DragDropEffects.Copy : DragDropEffects.None;
+        _viewModel.IsDragOverlayVisible = hasFiles;
+        e.Handled = true;
+    }
+
+
+    private void OnRootGridDragLeave(object? sender, DragEventArgs e)
+    {
+        if (_viewModel is not null)
+        {
+            _viewModel.IsDragOverlayVisible = false;
+        }
+    }
+
+
+    private async void OnRootGridDrop(object? sender, DragEventArgs e)
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        _viewModel.IsDragOverlayVisible = false;
+        var path = e.DataTransfer?.TryGetFiles()?.FirstOrDefault()?.TryGetLocalPath();
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        if (await _viewModel.AdoptBackgroundFileAsync(path).ConfigureAwait(true) is { } error)
+        {
+            _viewModel.ReportError(error);
         }
     }
 

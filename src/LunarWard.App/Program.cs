@@ -34,6 +34,7 @@ internal static class Program
             CaptureMode.GameIcons = args.Contains("--game-icons");
             CaptureMode.OpenDailyNote = args.Contains("--open-daily-note");
             CaptureMode.ShowBackgroundBar = args.Contains("--background-bar");
+            CaptureMode.ShowDragOverlay = args.Contains("--drag-overlay");
             CaptureMode.Tab = ReadArgument(args, "--tab");
             CaptureMode.Language = ReadArgument(args, "--lang");
             CaptureMode.ExpandRail = args.Contains("--expand-rail");
@@ -110,6 +111,9 @@ internal static class CaptureMode
 
     /// <summary>截图前强制显示启动器底部背景切换条（模拟悬停）。</summary>
     public static bool ShowBackgroundBar { get; set; }
+
+    /// <summary>截图前强制显示"拖放背景文件"提示条。</summary>
+    public static bool ShowDragOverlay { get; set; }
 
     /// <summary>工具箱战绩菜单索引（0 起），用于截取选中态/占位版式。</summary>
     public static string? Tab { get; set; }

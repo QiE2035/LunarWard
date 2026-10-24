@@ -504,6 +504,57 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     partial void OnSelectedBackgroundIndexChanged(int value) => OnPropertyChanged(nameof(CurrentBackground));
 
 
+    /// <summary>拖放图片/视频时顶部提示条（Starward <c>Border_BackgroundDragIn</c>）。</summary>
+    [ObservableProperty]
+    private bool _isDragOverlayVisible;
+
+
+    /// <summary>
+    /// 拖放进来的背景文件：拷进背景目录，刷新列表并选中它
+    /// （Starward <c>BackgroundService.ChangeCustomBackgroundFileAsync</c> + <c>SetCustomBg</c>）。
+    /// </summary>
+    public async Task<string?> AdoptBackgroundFileAsync(string sourcePath)
+    {
+        try
+        {
+            var extension = Path.GetExtension(sourcePath).ToLowerInvariant();
+            if (extension is not (".jpg" or ".jpeg" or ".png" or ".webp" or ".bmp" or ".mp4" or ".webm" or ".mkv"))
+            {
+                return Strings["Launcher.DropBackgroundUnsupported"];
+            }
+
+            var directory = _services.Background.CacheDirectory;
+            Directory.CreateDirectory(directory);
+
+            var fileName = Path.GetFileName(sourcePath);
+            var destination = Path.Join(directory, fileName);
+            if (File.Exists(destination) && !string.Equals(Path.GetFullPath(sourcePath), Path.GetFullPath(destination), StringComparison.Ordinal))
+            {
+                fileName = $"{Path.GetFileNameWithoutExtension(fileName)}-{Guid.NewGuid():N}{extension}";
+                destination = Path.Join(directory, fileName);
+            }
+
+            if (!string.Equals(Path.GetFullPath(sourcePath), Path.GetFullPath(destination), StringComparison.Ordinal))
+            {
+                File.Copy(sourcePath, destination, true);
+            }
+
+            RefreshBackgroundImages();
+            var index = BackgroundImages.ToList().FindIndex(x => string.Equals(x.Value, destination, StringComparison.Ordinal));
+            if (index >= 0)
+            {
+                await SelectBackgroundAsync(index).ConfigureAwait(true);
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
+    }
+
+
     /// <summary>视频背景的播放/暂停（Starward <c>StartOrStopVideoBackgroundCommand</c>）。</summary>
     [ObservableProperty]
     private bool _videoPaused;

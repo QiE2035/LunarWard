@@ -117,6 +117,24 @@
                Text="{Binding ContentStatus}"
                IsVisible="{Binding !HasContent}" />
 
+    <!-- 拖放图片/视频文件提醒（Starward Border_BackgroundDragIn：顶部居中、24 内边、圆角 8） -->
+    <Border x:Name="BackgroundDragInOverlay"
+            Margin="0,40,0,0"
+            Padding="24"
+            HorizontalAlignment="Center" VerticalAlignment="Top"
+            CornerRadius="8"
+            Background="{StaticResource StarOverlayAcrylicBrush}"
+            IsHitTestVisible="False"
+            IsVisible="{Binding IsDragOverlayVisible}">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <TextBlock Classes="icon" FontSize="24" Foreground="{StaticResource StarTextSecondary}" Text="&#xE91B;" />
+        <TextBlock VerticalAlignment="Center"
+                   FontSize="16"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   Text="{Binding Strings[Launcher.DropBackground]}" />
+      </StackPanel>
+    </Border>
+
     <!-- ── 右下：时长胶囊 + 开始按钮 ─────────────────────────────── -->
     <Grid Margin="0,0,40,40"
           HorizontalAlignment="Right" VerticalAlignment="Bottom"
