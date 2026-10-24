@@ -58,6 +58,7 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --open-daily-note（打开每日便笺 Flyout）、
 #                 --tab <n>（工具箱第 n 个战绩菜单）、--lang en-US、
 #                 --settings-section <about|general|download|files|screenshot|hotkey|gamepad|advanced|toolbox>、
+#                 --window playtime（打开游戏时长统计弹窗再截图）、
 #                 --profile <id>、--scroll-y <px>（截图前滚到长页下半部分）、--wait <ms>
 
 # 5. 打包（Arch）

@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:LunarWard.App.Controls"
+        xmlns:loc="using:LunarWard.App.Localization"
+        x:Class="LunarWard.App.Views.Starward.PlayTimeStatsDialog"
+        Title="游戏时长统计"
+        Width="1008" Height="640"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner">
+
+  <!-- Starward PlayTimeStatsDialog：1008 宽的亚克力卡片（Windows 上 ContentDialog 更高，这里按内容给足高度） -->
+  <Border Background="{StaticResource StarAcrylicBrush}"
+          CornerRadius="8"
+          BorderThickness="1"
+          BorderBrush="#14FFFFFF"
+          BoxShadow="0 16 48 0 #99000000">
+    <Grid RowDefinitions="Auto,*">
+
+      <!-- 标题栏（Starward：标题 Margin 24,12,0,0；右侧 32×32 关闭按钮） -->
+      <Grid Grid.Row="0" Margin="24,12,16,0">
+        <TextBlock Text="{Binding [PlayTime.StatsTitle], Source={x:Static loc:AppStrings.Instance}}"
+                   FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
+        <Button HorizontalAlignment="Right" VerticalAlignment="Top"
+                Width="32" Height="32" Padding="0" CornerRadius="8"
+                Background="Transparent" BorderThickness="0"
+                Click="OnCloseClick"
+                ToolTip.Tip="{Binding [PlayTime.Close], Source={x:Static loc:AppStrings.Instance}}">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE711;"
+                     Foreground="{StaticResource StarTextSecondary}" />
+        </Button>
+      </Grid>
+
+      <!-- 内容（Starward：Margin 24,12,24,24） -->
+      <StackPanel Grid.Row="1" Margin="24,12,24,24">
+
+        <!-- 统计卡片：3 列 × 2 行，间距 4 -->
+        <Grid x:Name="StatCardsGrid" ColumnSpacing="4" RowSpacing="4" />
+
+        <!-- 分段切换 + 区间总计（Starward：Margin 4,20,4,0） -->
+        <Grid Margin="4,20,4,0">
+          <Border Classes="segmented" Background="Transparent" Padding="0" HorizontalAlignment="Left">
+            <StackPanel Orientation="Horizontal" Spacing="2">
+              <Button x:Name="RangeDaysButton" Classes="segmented selected" Click="OnRangeClick" Tag="0" MinWidth="60"
+                      Content="{Binding [PlayTime.RangeDays], Source={x:Static loc:AppStrings.Instance}}" />
+              <Button x:Name="RangeWeeksButton" Classes="segmented" Click="OnRangeClick" Tag="1" MinWidth="60"
+                      Content="{Binding [PlayTime.RangeWeeks], Source={x:Static loc:AppStrings.Instance}}" />
+              <Button x:Name="RangeMonthsButton" Classes="segmented" Click="OnRangeClick" Tag="2" MinWidth="60"
+                      Content="{Binding [PlayTime.RangeMonths], Source={x:Static loc:AppStrings.Instance}}" />
+            </StackPanel>
+          </Border>
+          <TextBlock x:Name="RangeTotalText" HorizontalAlignment="Right" VerticalAlignment="Center"
+                     FontSize="12" Foreground="{StaticResource StarTextSecondary}" />
+        </Grid>
+
+        <!-- 柱状图（Starward：Margin 0,20,0,0; PlotHeight 132） -->
+        <controls:PlayTimeBarChart x:Name="BarChart" Margin="0,20,0,0" PlotHeight="132" />
+
+        <!-- 日历热力图（Starward：Margin 0,24,0,0，方块自动铺满宽度） -->
+        <controls:PlayTimeCalendarHeatmap x:Name="Heatmap" Margin="0,24,0,0" />
+
+        <TextBlock x:Name="EmptyText" Margin="0,8,0,0"
+                   Text="{Binding [PlayTime.Empty], Source={x:Static loc:AppStrings.Instance}}"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   TextWrapping="Wrap"
+                   IsVisible="False" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

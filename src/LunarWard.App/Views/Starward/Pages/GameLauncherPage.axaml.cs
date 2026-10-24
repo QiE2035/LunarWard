@@ -210,7 +210,7 @@ public partial class GameLauncherPage : StarwardPage
             }
             else if (await GetBackgroundBitmapAsync(background).ConfigureAwait(true) is { } bitmap)
             {
-                bitmap.Save(destination);
+                bitmap.Save(destination, new Avalonia.Media.Imaging.PngBitmapEncoderOptions());
             }
         }
         catch (Exception ex)
@@ -274,6 +274,20 @@ public partial class GameLauncherPage : StarwardPage
 
 
     private void OnClockTick(object? sender, EventArgs e) => _viewModel?.TickRunningTime();
+
+
+    private void OnPlayTimeClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var dialog = new PlayTimeStatsDialog(Context.Services, Context.Profile.Id);
+        if (TopLevel.GetTopLevel(this) is Window owner)
+        {
+            dialog.Show(owner);
+        }
+        else
+        {
+            dialog.Show();
+        }
+    }
 
 
     private void OnBannerPointerEntered(object? sender, PointerEventArgs e) => _viewModel?.OnBannerPointerEnter();

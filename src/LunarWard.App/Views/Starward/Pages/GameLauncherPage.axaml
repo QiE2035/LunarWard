@@ -143,8 +143,10 @@
       <Border Grid.Column="0"
               Height="44"
               CornerRadius="22"
+              BoxShadow="0 8 16 0 #33000000"
               Background="{StaticResource StarOverlayAcrylicBrush}">
-        <Button Background="Transparent" BorderThickness="0" Padding="16,0" MinHeight="44" CornerRadius="22">
+        <Button Background="Transparent" BorderThickness="0" Padding="16,0" MinHeight="44" CornerRadius="22"
+                Click="OnPlayTimeClick">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Classes="icon" FontSize="20" Text="&#xE823;" Foreground="{StaticResource StarTextSecondary}" />
             <TextBlock FontWeight="SemiBold" Foreground="{StaticResource StarTextSecondary}" Text="{Binding PlayTimeText}" />
