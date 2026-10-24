@@ -52,7 +52,10 @@ public sealed partial class ShiyuDefensePageViewModel : StarwardPageViewModel
             Strings["ShiyuDefense.Team2"],
             Strings["ShiyuDefense.FrontierEffects"],
             Strings["ShiyuDefense.Weakness"],
-            Strings["ShiyuDefense.Resistance"]);
+            Strings["ShiyuDefense.Resistance"],
+            Strings["ShiyuDefense.EnemyDetails"],
+            Strings["ShiyuDefense.ClearedAt"],
+            Strings["ShiyuDefense.ClearTimeLabel"]);
         _ = InitializeAsync();
     }
 
@@ -198,6 +201,22 @@ public sealed partial class ShiyuDefensePageViewModel : StarwardPageViewModel
             }
         }
 
+        foreach (var buddy in EnumerateBuddies(item))
+        {
+            if (!string.IsNullOrWhiteSpace(buddy.Url))
+            {
+                buddy.Icon = await assets.BitmapAsync(buddy.Url).ConfigureAwait(true);
+            }
+        }
+
+        foreach (var challenge in EnumerateFifthChallenges(item))
+        {
+            if (!string.IsNullOrWhiteSpace(challenge.MonsterPicUrl))
+            {
+                challenge.MonsterPic = await assets.BitmapAsync(challenge.MonsterPicUrl).ConfigureAwait(true);
+            }
+        }
+
         foreach (var monster in EnumerateMonsters(item))
         {
             if (!string.IsNullOrWhiteSpace(monster.BgIconUrl))
@@ -222,59 +241,84 @@ public sealed partial class ShiyuDefensePageViewModel : StarwardPageViewModel
     {
         if (item.V1 is { } v1)
         {
-            foreach (var floor in v1.Info.AllFloorDetail ?? [])
+            foreach (var floor in v1.Floors)
             {
-                foreach (var avatar in floor.Node1?.Avatars ?? [])
+                foreach (var node in new[] { floor.Node1, floor.Node2 })
                 {
-                    yield return new ShiyuAvatarItem(avatar);
-                }
-
-                foreach (var avatar in floor.Node2?.Avatars ?? [])
-                {
-                    yield return new ShiyuAvatarItem(avatar);
+                    foreach (var avatar in node?.Avatars ?? [])
+                    {
+                        yield return avatar;
+                    }
                 }
             }
         }
 
         if (item.V2 is { } v2)
         {
-            foreach (var challenge in v2.Info.FifthLayerDetail?.LayerChallenges ?? [])
+            foreach (var challenge in v2.Fifth.Concat(v2.Fourth))
             {
-                foreach (var avatar in challenge.AvatarList ?? [])
+                foreach (var avatar in challenge.Avatars)
                 {
-                    yield return new ShiyuAvatarItem(avatar);
-                }
-            }
-
-            foreach (var challenge in v2.Info.FourthLayerDetail?.LayerChallenges ?? [])
-            {
-                foreach (var avatar in challenge.AvatarList ?? [])
-                {
-                    yield return new ShiyuAvatarItem(avatar);
+                    yield return avatar;
                 }
             }
         }
     }
 
 
-    private IEnumerable<ShiyuMonsterItem> EnumerateMonsters(ShiyuDefensePeriodItem item)
+    private static IEnumerable<ShiyuBuddyItem> EnumerateBuddies(ShiyuDefensePeriodItem item)
+    {
+        if (item.V1 is { } v1)
+        {
+            foreach (var floor in v1.Floors)
+            {
+                if (floor.Node1?.Buddy is { } b1)
+                {
+                    yield return b1;
+                }
+
+                if (floor.Node2?.Buddy is { } b2)
+                {
+                    yield return b2;
+                }
+            }
+        }
+
+        if (item.V2 is { } v2)
+        {
+            foreach (var challenge in v2.Fifth.Concat(v2.Fourth))
+            {
+                if (challenge.Buddy is { } buddy)
+                {
+                    yield return buddy;
+                }
+            }
+        }
+    }
+
+
+    private static IEnumerable<ShiyuMonsterItem> EnumerateMonsters(ShiyuDefensePeriodItem item)
     {
         if (item.V1 is not { } v1)
         {
             yield break;
         }
 
-        foreach (var floor in v1.Info.AllFloorDetail ?? [])
+        foreach (var floor in v1.Floors)
         {
             foreach (var node in new[] { floor.Node1, floor.Node2 })
             {
-                foreach (var monster in node?.MonsterInfo?.List ?? [])
+                foreach (var monster in node?.Monsters ?? [])
                 {
-                    yield return new ShiyuMonsterItem(monster, _labels);
+                    yield return monster;
                 }
             }
         }
     }
+
+
+    private static IEnumerable<ShiyuV2ChallengeItem> EnumerateFifthChallenges(ShiyuDefensePeriodItem item)
+        => item.V2?.Fifth ?? [];
 
 
     /// <summary>演示夹具：无 cookie 时用固定数据渲染两种版本。</summary>
@@ -286,6 +330,25 @@ public sealed partial class ShiyuDefensePageViewModel : StarwardPageViewModel
         ShowEmpty = false;
         CurrentDefense = DefenseList[Environment.GetEnvironmentVariable("LUNARWARD_SHIYU_V1") == "1" ? 1 : 0];
     }
+
+
+    public static IBrush RatingBrush(string? rating) => rating switch
+    {
+        "S" => new SolidColorBrush(Color.Parse("#FFB13F")),
+        "A" => new SolidColorBrush(Color.Parse("#B57EDC")),
+        "B" => new SolidColorBrush(Color.Parse("#7FB3FF")),
+        _ => new SolidColorBrush(Color.Parse("#9AA0A6")),
+    };
+
+
+    public static IBrush RankPercentBrush(int value) => value switch
+    {
+        <= 100 => new SolidColorBrush(Color.Parse("#FFB13F")),
+        <= 200 => new SolidColorBrush(Color.Parse("#C99BFF")),
+        <= 500 => new SolidColorBrush(Color.Parse("#7FB3FF")),
+        <= 3000 => new SolidColorBrush(Color.Parse("#6FCF97")),
+        _ => new SolidColorBrush(Color.Parse("#9AA0A6")),
+    };
 
 
     public static string PerformancesTime(int seconds)
@@ -308,7 +371,7 @@ public sealed partial class ShiyuDefensePageViewModel : StarwardPageViewModel
 
 
 /// <summary>页面内联文案（从 <see cref="ShiyuDefensePageViewModel.Strings"/> 取，避免模板里绑页面）。</summary>
-public sealed record ShiyuLabels(string Team1, string Team2, string Effects, string Weakness, string Resistance);
+public sealed record ShiyuLabels(string Team1, string Team2, string Effects, string Weakness, string Resistance, string EnemyDetails, string ClearedAt, string ClearTime);
 
 
 /// <summary>左侧一个赛期（Starward <c>ListView_ShiyuDefense</c> 的 <c>ShiyuDefenseInfo</c> / v2）。</summary>
@@ -326,7 +389,7 @@ public sealed partial class ShiyuDefensePeriodItem : ObservableObject
         }
         else if (info is ShiyuDefenseInfoV2 v2)
         {
-            V2 = new ShiyuDefenseV2Item(v2);
+            V2 = new ShiyuDefenseV2Item(v2, labels);
             DateText = v2.BeginTime.LocalDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             EndDateText = v2.EndTime.LocalDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             RatingLetter = string.IsNullOrEmpty(v2.MaxRating) ? "?" : v2.MaxRating;
@@ -368,6 +431,8 @@ public sealed partial class ShiyuDefensePeriodItem : ObservableObject
     public string BeginTimeText => DateText;
 
     public string RatingLetter { get; }
+
+    public IBrush RatingBrush => ShiyuDefensePageViewModel.RatingBrush(RatingLetter);
 
     public string TimesText { get; } = "";
 
@@ -428,6 +493,10 @@ public sealed partial class ShiyuFloorItem : ObservableObject
 
     public string EffectsLabel => Labels.Effects;
 
+    public string EnemyLabel => Labels.EnemyDetails;
+
+    public string ClearTimeLabel => Labels.ClearTime;
+
     public ShiyuDefenseFloorDetail Floor { get; }
 
     public List<ShiyuBuffItem> Buffs { get; }
@@ -437,6 +506,8 @@ public sealed partial class ShiyuFloorItem : ObservableObject
     public string ZoneName => Floor.ZoneName ?? "";
 
     public string RatingLetter => string.IsNullOrEmpty(Floor.Rating) ? "?" : Floor.Rating;
+
+    public IBrush RatingBrush => ShiyuDefensePageViewModel.RatingBrush(Floor.Rating);
 
     public string ChallengeTimeText => Floor.FloorChallengeTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
 
@@ -456,6 +527,7 @@ public sealed partial class ShiyuNodeItem : ObservableObject
         Buddy = node.Buddy is null ? null : new ShiyuBuddyItem(node.Buddy);
         Monsters = node.MonsterInfo?.List?.Select(x => new ShiyuMonsterItem(x, labels)).ToList() ?? [];
         ClearTimeText = ShiyuDefensePageViewModel.PerformancesTime(node.BattleTime);
+        ClearTimeLabel = labels.ClearTime;
     }
 
     public ShiyuDefenseNode Node { get; }
@@ -469,23 +541,34 @@ public sealed partial class ShiyuNodeItem : ObservableObject
     public bool HasMonsters => Monsters.Count > 0;
 
     public string ClearTimeText { get; }
+
+    public string ClearTimeLabel { get; }
 }
 
 
 /// <summary>v2 详情（第五防线概要 + 第五/第四防线节点）。</summary>
 public sealed partial class ShiyuDefenseV2Item : ObservableObject
 {
-    public ShiyuDefenseV2Item(ShiyuDefenseInfoV2 info)
+    public ShiyuDefenseV2Item(ShiyuDefenseInfoV2 info, ShiyuLabels labels)
     {
         Info = info;
-        Fifth = info.FifthLayerDetail?.LayerChallenges?.Select(x => new ShiyuV2ChallengeItem(x)).ToList() ?? [];
-        Fourth = info.FourthLayerDetail?.LayerChallenges?.Select(x => new ShiyuV2ChallengeItem(x)).ToList() ?? [];
+        Labels = labels;
+        Fifth = info.FifthLayerDetail?.LayerChallenges?.Select(x => new ShiyuV2ChallengeItem(x, labels)).ToList() ?? [];
+        Fourth = info.FourthLayerDetail?.LayerChallenges?.Select(x => new ShiyuV2ChallengeItem(x, labels)).ToList() ?? [];
         FourthBuff = info.FourthLayerDetail?.Buff is { } buff ? new ShiyuBuffItem(buff) : null;
-        FourthChallengeTimeText = info.FourthLayerDetail?.ChallengeTime is { } time && time != DateTime.MinValue
-            ? time.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+        var fourthTime = info.FourthLayerDetail?.ChallengeTime ?? DateTime.MinValue;
+        if (fourthTime == DateTime.MinValue)
+        {
+            fourthTime = info.Brief?.ChallengeTime ?? DateTime.MinValue;
+        }
+
+        FourthChallengeTimeText = fourthTime != DateTime.MinValue
+            ? fourthTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
             : "";
         FourthRatingLetter = string.IsNullOrEmpty(info.FourthLayerDetail?.Rating) ? "" : info.FourthLayerDetail.Rating;
     }
+
+    public ShiyuLabels Labels { get; }
 
     public ShiyuDefenseInfoV2 Info { get; }
 
@@ -507,11 +590,19 @@ public sealed partial class ShiyuDefenseV2Item : ObservableObject
 
     public string RankPercentText => ShiyuDefensePageViewModel.RankPercentText(Info.Brief?.RankPercent ?? 0);
 
+    public IBrush RankPercentBrush => ShiyuDefensePageViewModel.RankPercentBrush(Info.Brief?.RankPercent ?? 0);
+
+    public string RatingLetter => Info.Brief?.Rating ?? "";
+
+    public IBrush RatingBrush => ShiyuDefensePageViewModel.RatingBrush(RatingLetter);
+
     public string ChallengeTimeText => Info.Brief?.ChallengeTime is { } time && time != DateTime.MinValue
         ? time.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
         : "";
 
     public bool HasChallengeTime => !string.IsNullOrEmpty(ChallengeTimeText);
+
+    public bool HasClearedAt => HasChallengeTime;
 
     public string BattleTimeText => Info.Brief?.BattleTime > 0
         ? ShiyuDefensePageViewModel.PerformancesTime(Info.Brief.BattleTime)
@@ -524,9 +615,12 @@ public sealed partial class ShiyuDefenseV2Item : ObservableObject
 /// <summary>v2 一个防线节点。</summary>
 public sealed partial class ShiyuV2ChallengeItem : ObservableObject
 {
-    public ShiyuV2ChallengeItem(ShiyuDefenseV2FourthLayerChallengeInfo challenge)
+    public ShiyuV2ChallengeItem(ShiyuDefenseV2FourthLayerChallengeInfo challenge, ShiyuLabels labels)
     {
         Challenge = challenge;
+        ClearTimeLabel = labels.ClearTime;
+        ClearedAtLabel = labels.ClearedAt;
+        EffectsLabel = labels.Effects;
         Avatars = challenge.AvatarList?.Select(x => new ShiyuAvatarItem(x)).ToList() ?? [];
         Buddy = challenge.Buddy is null ? null : new ShiyuBuddyItem(challenge.Buddy);
         if (challenge is ShiyuDefenseV2FifthLayerChallengeInfo fifth)
@@ -537,10 +631,19 @@ public sealed partial class ShiyuV2ChallengeItem : ObservableObject
             ChallengeTimeText = fifth.ChallengeTime != DateTime.MinValue
                 ? fifth.ChallengeTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
                 : "";
+            MonsterPicUrl = fifth.MonsterPic;
         }
 
         BattleTimeText = challenge.BattleTime > 0 ? ShiyuDefensePageViewModel.PerformancesTime(challenge.BattleTime) : "";
     }
+
+    public string ClearTimeLabel { get; }
+
+    public string ClearedAtLabel { get; }
+
+    public string EffectsLabel { get; }
+
+    public string? MonsterPicUrl { get; }
 
     public ShiyuDefenseV2FourthLayerChallengeInfo Challenge { get; }
 
@@ -558,15 +661,22 @@ public sealed partial class ShiyuV2ChallengeItem : ObservableObject
 
     public string RatingLetter { get; } = "";
 
+    public IBrush RatingBrush => ShiyuDefensePageViewModel.RatingBrush(RatingLetter);
+
     public bool HasRating => !string.IsNullOrEmpty(RatingLetter);
 
     public string ChallengeTimeText { get; } = "";
 
     public bool HasChallengeTime => !string.IsNullOrEmpty(ChallengeTimeText);
 
+    public bool HasClearedAt => HasChallengeTime;
+
     public string BattleTimeText { get; } = "";
 
     public bool HasBattleTime => !string.IsNullOrEmpty(BattleTimeText);
+
+    [ObservableProperty]
+    private Bitmap? _monsterPic;
 }
 
 
