@@ -64,7 +64,10 @@ public partial class GachaPage : StarwardPage
             ?? (CaptureMode.UigfExport is null ? null : "genshin")
             ?? (CaptureMode.GachaExport is null ? null : "genshin")
             ?? (CaptureMode.GachaImport is null ? null : "genshin");
-        _viewModel = new GachaPageViewModel(context, seed is "zzz" or "genshin" ? seed : null);
+        _viewModel = new GachaPageViewModel(
+            context,
+            seed is "zzz" or "genshin" ? seed : null,
+            CaptureMode.Enabled ? new Launch.Database.GachaLogStore(CaptureMode.CreateDatabase()) : null);
         DataContext = _viewModel;
 
         if (seed is "zzz" or "genshin")
@@ -195,7 +198,7 @@ public partial class GachaPage : StarwardPage
             return;
         }
 
-        var window = new Uigf4GachaWindow(Context);
+        var window = new Uigf4GachaWindow(Context, _viewModel.ArchiveStore);
 
         if (CaptureMode.UigfWindow)
         {

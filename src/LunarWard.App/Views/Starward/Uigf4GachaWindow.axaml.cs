@@ -29,10 +29,10 @@ public sealed partial class Uigf4GachaWindow : Window
     private readonly Uigf4GachaWindowViewModel _viewModel;
 
 
-    public Uigf4GachaWindow(PageContext context)
+    public Uigf4GachaWindow(PageContext context, GachaLogStore? store = null)
     {
         InitializeComponent();
-        var store = GachaLogStore.OpenDefault(context.Services.Paths.DataHome);
+        store ??= GachaLogStore.OpenDefault(context.Services.Paths.DataHome);
         _viewModel = new Uigf4GachaWindowViewModel(new Uigf4Service(store, ReadVersion()));
         DataContext = _viewModel;
 

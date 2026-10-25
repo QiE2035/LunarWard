@@ -163,6 +163,29 @@ internal static class CaptureMode
     public static bool Enabled => Path is not null;
 
 
+    /// <summary>
+    /// 自检用的独立数据库（<c>$TMP/lunarward-capture/capture.db</c>）：每次启动先删掉，
+    /// 这样 <c>--gacha-seed</c> 等自检的样例记录不会写进用户的
+    /// <c>~/.local/share/lunarward/LunarWardDatabase.db</c>。
+    /// </summary>
+    public static LunarWard.Launch.Database.LunarWardDatabase CreateDatabase()
+    {
+        string dir = System.IO.Path.Join(System.IO.Path.GetTempPath(), "lunarward-capture");
+        Directory.CreateDirectory(dir);
+        string file = System.IO.Path.Join(dir, "capture.db");
+        // 连接池可能还握着上一次的文件句柄：先清池再删（含 -wal / -shm），否则新库会建在已删除的 inode 上。
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+        foreach (string suffix in new[] { "", "-wal", "-shm" })
+        {
+            if (File.Exists(file + suffix))
+            {
+                File.Delete(file + suffix);
+            }
+        }
+        return new LunarWard.Launch.Database.LunarWardDatabase(file);
+    }
+
+
     /// <summary>渲染窗口到 PNG 并退出。</summary>
     public static void Capture(Window window)
     {

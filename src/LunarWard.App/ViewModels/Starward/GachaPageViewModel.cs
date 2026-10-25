@@ -57,10 +57,11 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     private bool _disposed;
 
 
-    public GachaPageViewModel(PageContext context, string? gameKindOverride = null) : base(context)
+    public GachaPageViewModel(PageContext context, string? gameKindOverride = null, GachaLogStore? store = null) : base(context)
     {
         _gameDirectory = ProfileConfig.ExpandPath(Profile.Profile.Path);
-        _archiveStore = GachaLogStore.OpenDefault(context.Services.Paths.DataHome);
+        // 自检截图可以注入临时库，避免样例记录写进用户数据
+        _archiveStore = store ?? GachaLogStore.OpenDefault(context.Services.Paths.DataHome);
         // 自检（--gacha-seed zzz）需要在没装绝区零的机器上也算 ZZZ 版式
         _gameKind = gameKindOverride ?? Profile.Profile.Game;
 
@@ -232,16 +233,14 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     /// <summary>
     /// UIGF v4 导入导出是否可用。
     /// </summary>
-    /// <remarks>
-    /// <c>LunarWard.Core</c> 目前还没有 UIGF 读写实现（见 <c>docs/05-ROADMAP.md</c>），
-    /// 按契约把入口做成禁用并注明"待接"，不伪造功能。
-    /// </remarks>
+    /// <remarks>UIGF v4.2 窗口已移植（导出/导入都接在 SQLite 存档上）。</remarks>
     public bool IsUigfAvailable => true;
 
     public string UigfHint => Strings["Gacha.UigfHint"];
 
-    /// <summary>本地抽卡存档（UIGF 窗口共用同一个文件）。</summary>
+    /// <summary>页面共用的存档（UIGF 窗口传同一个实例，自检时两边看到同一份数据）。</summary>
     public GachaLogStore ArchiveStore => _archiveStore;
+
 
     /// <summary>当前页面绑定的游戏 kind（<c>genshin</c> / <c>starrail</c> / <c>zzz</c>）。</summary>
     public string GameKind => _gameKind;

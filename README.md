@@ -72,6 +72,7 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --gacha-export <path>（把样例记录按 UIGF v3.0 导出到该路径）、
 #                 --gacha-import <path>（读回 UIGF v3.0 / JSON 并合并，做往返自检）、
 #                 --uigf-window（UIGF v4.2 导出/导入窗口，自动用原神样例存档；加 --uigf-import 切到导入页）、
+#                 自检一律使用临时库 $TMP/lunarward-capture/capture.db，不写用户的 LunarWardDatabase.db、
 #                 --predownload-dialog（预下载确认框；加 --predownload-dialog-unavailable 看不可用态）、
 | `--dx12-intro` | 打开 DX12「效果详情」引导弹窗并截图 |
 #                 --launcher-setting-dialog + --settings-section basic|arguments|background|packages|network
