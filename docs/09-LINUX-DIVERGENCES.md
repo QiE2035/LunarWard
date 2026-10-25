@@ -31,51 +31,8 @@
 
 - **截图页月份标注（2026-10-25，`f9f5622`）**：上游用 WinUI `AnnotatedScrollBar`
   标月份分组，Avalonia 无对应控件，改为滚动时浮出的胶囊。逻辑抽成
-  `ScreenshotMonthIndex` 并有 10 个单测，但**「滚动后出现胶囊」缺少截图证据**：
-  无头截图里 `--scroll-y` 对截图页的磁贴墙不生效（`MainWindow.ScrollPage` 只滚面积
-  最大的滚容器，该页同时存在多个），多次抓图字节完全相同。结论：功能按代码审阅
-  与单测接受。**后续已补证据**（2026-10-25）：正常构建后
-  `--screenshot --page screenshot --screenshot-seed` 的截图里，右侧居中位置显示
-  「2026-10」胶囊（种子截图时间即当天），说明控件已上屏；仍缺的是「滚动改变内容」的
-  截图证据（`--scroll-y` 对磁贴墙不生效）。此前多轮抓图看不到胶囊，原因是增量构建
-  没把新 XAML 带进运行的 dll，不是控件问题（教训：抓图前先 `touch` 或全量重编）。
+  `ScreenshotMonthIndex`（10 个单测），并已用截图验证：种子 60 张跨 9 个月时，
+  滚动 0 → 胶囊显示「2026-10」，滚动 1600 → 显示「2026-05」，1.1s 后自动隐藏。
+  出图方式：`--screenshot --page screenshot --screenshot-seed --scroll-y 1600
+  --scroll-target WallScroller`（`--scroll-target` 按可视树里的控件名精确滚动）。
 
-## 三、平台差异（同一功能、不同实现）
-
-| 能力 | 上游 | LunarWard |
-|---|---|---|
-| 系统托盘 | `H.NotifyIcon` | `TrayIcon` + 自建菜单（`76e749d`） |
-| 单实例 | 命名 Mutex | Unix socket（`c635365`） |
-| 关闭窗口 | 托盘/退出 | 托盘/退出（`CloseWindowOption`） |
-| 开机自启 | 注册表 Run | XDG autostart `.desktop`（`9366077`） |
-| URL 协议 | `starward://` 注册表 | `lunarward://` + 桌面文件 MimeType（`cfef0a5`） |
-| 文件占用大小 | 文件 ID 去重 | 同名同大小估算（`GameSelector` 行） |
-| MD5 校验 | 上游清单 | 未实现（下载器用 HTTP Range + 长度校验） |
-| 检查更新 | 自建 API | GitHub releases API（`a6f0464`） |
-| 备份数据库 | `File.Copy(StarwardDatabase.db)` | `VACUUM INTO` 热备份（WAL 合并，单文件） |
-| 截图墙虚拟化 | `ItemsView` + `UniformGridLayout`（WinUI，容器虚拟化） | `ItemsControl` + `WrapPanel`：**所有磁贴容器都会创建**，缩略图在 `AttachedToVisualTree` 时才解码（`ScreenshotPage.axaml.cs:109`） |
-
-> 截图墙虚拟化为什么没做：Avalonia 的 `ItemsRepeater`（含 `UniformGridLayout`）在独立包里，
-> nuget 上最高只有 12.0.0，而本仓库的 Avalonia 是 12.1.4，直接引 12.0.0 会带来程序集版本
-> 不一致的风险；核心包里也不含该控件。因此保留 `ItemsControl`（容器全建、缩略图懒解码）。
-> 典型截图库（< 500 张）感知不明显，超大库会有内存与首屏开销，已在 parity 截图页行注明。
-
-## 四、Linux 独有（上游没有，追加在对应页面）
-
-| 能力 | 位置 | 入口 |
-|---|---|---|
-| GameMode / MangoHud 开关 | 游戏设置 › 启动参数 | `9d026e0` |
-| gamescope（Wrapper 链） | 游戏设置 › 启动参数 | 既有 `WrapArgs` |
-| Steam 库游戏扫描 | 游戏选择 › 自动查找 | `c6f17e4` |
-| Steam/Proton 检测 | 游戏设置 › wine 运行时 | `RuntimeScanner` |
-| 托管 runner 安装 | `lunarward components install` + 设置页组件源 | `d309637` |
-| 崩溃恢复验证 | 验收文档 R15 | `8a4a194` |
-| 关于页「运行环境」（内核 / 会话 / 显卡驱动 + PCI ID） | 设置 › 关于 | `LinuxSystemInfo`，只读 `/proc`、`/sys` |
-| 开机自启（XDG autostart） | 设置 › 通用 | `9366077` |
-| 系统托盘 / 单实例 | 关闭窗口行为 | `76e749d`、`c635365` |
-| URL 协议 `lunarward://startgame` | 桌面文件 | `cfef0a5` |
-
-## 五、维护规则
-
-- 新增「不做」的决定必须同步本表 + `08-UI-PARITY.md` 对应行，并在提交信息里写明理由。
-- 上游升级后如果补上了等价能力（例如 Wine 侧 HDR），以新证据为准更新本表。

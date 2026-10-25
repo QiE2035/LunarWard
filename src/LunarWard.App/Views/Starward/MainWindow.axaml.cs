@@ -186,8 +186,10 @@ public partial class MainWindow : Window
     /// </summary>
     private void ScrollPage(double y)
     {
+        // 页面控件在自己的 namescope 里，Window.FindControl 找不到，按名字在可视树里找
         if (CaptureMode.ScrollTarget is { Length: > 0 } target
-            && this.FindControl<ScrollViewer>(target) is { } named)
+            && this.GetVisualDescendants().OfType<ScrollViewer>()
+                .FirstOrDefault(x => x.Name == target) is { } named)
         {
             named.Offset = new Avalonia.Vector(0, y);
             return;

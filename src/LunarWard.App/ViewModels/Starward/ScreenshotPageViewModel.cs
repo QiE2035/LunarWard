@@ -80,7 +80,7 @@ public sealed partial class ScreenshotPageViewModel : StarwardPageViewModel
         string root = System.IO.Path.Join(
             System.IO.Path.GetTempPath(), "lw-shot-seed", "ScreenShot");
         System.IO.Directory.CreateDirectory(root);
-        if (System.IO.Directory.GetFiles(root, "*.png").Length >= 4)
+        if (System.IO.Directory.GetFiles(root, "*.png").Length >= 60)
         {
             return System.IO.Path.GetDirectoryName(root);
         }
@@ -92,7 +92,9 @@ public sealed partial class ScreenshotPageViewModel : StarwardPageViewModel
             (Avalonia.Media.Color.Parse("#FFC75F"), Avalonia.Media.Color.Parse("#D65DB1")),
             (Avalonia.Media.Color.Parse("#2C73D2"), Avalonia.Media.Color.Parse("#008E9B")),
         };
-        for (int i = 0; i < gradients.Length; i++)
+        // 60 张、跨 9 个月：磁贴墙能滚出跨月分组，月份胶囊才有可验证的证据
+        var now = DateTimeOffset.Now;
+        for (int i = 0; i < 60; i++)
         {
             using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(
                 new Avalonia.PixelSize(1920, 1080), new Avalonia.Vector(96, 96));
@@ -104,16 +106,22 @@ public sealed partial class ScreenshotPageViewModel : StarwardPageViewModel
                     EndPoint = new Avalonia.RelativePoint(1, 1, Avalonia.RelativeUnit.Relative),
                     GradientStops =
                     {
-                        new Avalonia.Media.GradientStop(gradients[i].From, 0),
-                        new Avalonia.Media.GradientStop(gradients[i].To, 1),
+                        new Avalonia.Media.GradientStop(gradients[i % gradients.Length].From, 0),
+                        new Avalonia.Media.GradientStop(gradients[i % gradients.Length].To, 1),
                     },
                 };
                 context.FillRectangle(brush,
                     new Avalonia.Rect(0, 0, 1920, 1080));
             }
-            using var stream = System.IO.File.Create(
-                System.IO.Path.Join(root, $"seed-{i + 1}.png"));
-            bitmap.Save(stream, new Avalonia.Media.Imaging.PngBitmapEncoderOptions());
+            string file = System.IO.Path.Join(root, $"seed-{i + 1:00}.png");
+            using (var stream = System.IO.File.Create(file))
+            {
+                bitmap.Save(stream, new Avalonia.Media.Imaging.PngBitmapEncoderOptions());
+            }
+
+            // 每 7 张退一个月：0-6 当月、7-13 上月、14-19 上上月
+            DateTime stamp = now.AddMonths(-(i / 7)).AddDays(-(i % 7)).DateTime;
+            System.IO.File.SetLastWriteTime(file, stamp);
         }
         return System.IO.Path.GetDirectoryName(root);
     }
