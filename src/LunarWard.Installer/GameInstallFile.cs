@@ -144,9 +144,9 @@ internal class GameInstallFile
             Size = file.Size,
             MD5 = file.Md5,
         };
-        if (file.Patches.FirstOrDefault(x => x.Tag == localVersion) is SophonPatchInfo sophonPatchInfo)
+        // 上游 SophonPatchInfo.Patch 可能为 null（清单里只给元数据时），用递归模式一并判空。
+        if (file.Patches.FirstOrDefault(x => x.Tag == localVersion) is SophonPatchInfo { Patch: { } patch })
         {
-            SophonPatch patch = sophonPatchInfo.Patch;
             result.Patch = new GameInstallFilePatch
             {
                 Id = patch.Id,

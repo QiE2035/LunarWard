@@ -57,19 +57,19 @@ public class ShiyuDefenseMonster
     /// 怪物图片
     /// </summary>
     [JsonPropertyName("icon_url")]
-    public string IconUrl { get; set; }
+    public string? IconUrl { get; set; }
 
     /// <summary>
     /// 图标图片
     /// </summary>
     [JsonPropertyName("race_icon")]
-    public string RaceIcon { get; set; }
+    public string? RaceIcon { get; set; }
 
     /// <summary>
     /// 背景图片
     /// </summary>
     [JsonPropertyName("bg_icon")]
-    public string BgIcon { get; set; }
+    public string? BgIcon { get; set; }
 
 
     [JsonExtensionData]

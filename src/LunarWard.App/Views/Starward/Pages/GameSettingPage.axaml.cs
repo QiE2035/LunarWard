@@ -39,7 +39,7 @@ public partial class GameSettingPage : StarwardPage
         _viewModel.OnNavigatedTo();
 
         // Starward InitializeResolutionItem：按显示器尺寸过滤分辨率下拉。
-        if (TopLevel.GetTopLevel(this)?.Screens.Primary is { } screen)
+        if (TopLevel.GetTopLevel(this)?.Screens?.Primary is { } screen)
         {
             _viewModel.SetDisplayBounds(screen.Bounds.Width, screen.Bounds.Height);
         }

@@ -164,13 +164,17 @@ public class GenshinBeyondGachaTests
             Item(4, 3, 2000, 3, "丙", itemId: 500),
         ]);
 
-        var items = service.GetGachaItemStats(Uid);
+        var items = service.GetGachaItemStats(Uid)
+                    ?? throw new InvalidOperationException("GetGachaItemStats 不应返回 null");
 
         // 500 出现 3 次（两抽 1000 + 一抽 2000），600 出现 1 次；4★ 排最前
         Assert.Equal(2, items.Count);
-        Assert.Equal(600, items[0].ItemId);
-        Assert.Equal(1, items[0].Count);
-        Assert.Equal(500, items[1].ItemId);
+        // 列表元素类型可空（分组键缺失时会跳过），这里按契约断言非空。
+        var famous = items[0]!;
+        var common = items[1]!;
+        Assert.Equal(600, famous.ItemId);
+        Assert.Equal(1, famous.Count);
+        Assert.Equal(500, common.ItemId);
         Assert.Equal(3, items[1].Count);
     }
 

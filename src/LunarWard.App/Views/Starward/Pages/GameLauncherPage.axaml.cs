@@ -239,17 +239,22 @@ public partial class GameLauncherPage : StarwardPage
     /// </summary>
     private void StartRealInstallForCapture(string installPath)
     {
-        GameId? gameId = GameId.FromGameBiz(new GameBiz(_viewModel.GameBiz));
+        if (_viewModel is not { } vm)
+        {
+            return;
+        }
+
+        GameId? gameId = GameId.FromGameBiz(new GameBiz(vm.GameBiz));
         if (gameId is null)
         {
-            Console.Error.WriteLine($"INSTALL_REAL_FAIL 未知区服：{_viewModel.GameBiz}");
+            Console.Error.WriteLine($"INSTALL_REAL_FAIL 未知区服：{vm.GameBiz}");
             return;
         }
 
         Directory.CreateDirectory(installPath);
-        _ = _viewModel.BeginInstallAsync(new GameInstallRequest
+        _ = vm.BeginInstallAsync(new GameInstallRequest
         {
-            GameBiz = _viewModel.GameBiz,
+            GameBiz = vm.GameBiz,
             GameId = gameId.Id,
             InstallPath = installPath,
             Operation = GameInstallOperation.Install,
@@ -259,8 +264,8 @@ public partial class GameLauncherPage : StarwardPage
         if (CaptureMode.InstallInfoPopup)
         {
             // 真实下载下把「游戏信息 / 下载进度」卡片也展开，一张图同时验证两者
-            _viewModel.ActionButtonPointerOver = true;
-            _viewModel.IsGameInfoPopupOpen = true;
+            vm.ActionButtonPointerOver = true;
+            vm.IsGameInfoPopupOpen = true;
         }
     }
 

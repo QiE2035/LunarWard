@@ -378,7 +378,7 @@ public partial class GamePackageService
                     patches.AddRange(patchManifest.Patches);
                     if (patchManifest.DeleteTags.FirstOrDefault(x => x.Tag == localVersion) is SophonPatchDeleteTag deleteTag)
                     {
-                        deletes.AddRange(deleteTag.DeleteCollection.DeleteFiles);
+                        deletes.AddRange(deleteTag.DeleteCollection?.DeleteFiles ?? []);
                     }
                     foreach (SophonPatchFile item in patchManifest.Patches)
                     {

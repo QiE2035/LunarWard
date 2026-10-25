@@ -13,12 +13,14 @@
       是环境问题而非代码问题；审计本身仍开着，真实漏洞（NU1901–NU1904）照常报。
     -->
     <!--
-      只压两类：① 上游 Starward.Core 继承来的可空性警告（逐条修违背"只改三处"约束，
-      已登记为审计 M-06 待办）；② NU1900（离线/镜像环境下取不到漏洞库，属环境噪音，
-      NU1901–NU1904 真实漏洞仍会报）。CA1416（平台 API）不再压制——实测放开后本仓库
-      0 处命中，压着只会掩盖将来误用 Windows API 的问题。
+      NoWarn 只剩三族，其余全部放开：
+      ① CS8618：上游 Starward.Core 的模型属性大量未初始化，逐条修违背"只改三处"约束（审计 M-06 待办）；
+      ② CA1416：本项目只发布 Linux 版本，但分析器按跨平台假设报 Unix-only API（`File.SetUnixFileMode`
+         等 10 处，均为 Linux 专用逻辑/测试）；ET 平台标注留待后续用 `[SupportedOSPlatform("linux")]` 收敛；
+      ③ NU1900：离线/镜像环境取不到漏洞库的环境噪音，NU1901–NU1904 真实漏洞仍会报。
+      CS8600/CS8602/CS8603/CS8604/CS8625 已于 2026-10-25 全量修完（9 处），不再压制。
     -->
-    <NoWarn>$(NoWarn);CS8618;CS8600;CS8602;CS8603;CS8604;CS8625;NU1900</NoWarn>
+    <NoWarn>$(NoWarn);CS8618;CA1416;NU1900</NoWarn>
     <EnableWindowsTargeting>false</EnableWindowsTargeting>
 
   </PropertyGroup>
