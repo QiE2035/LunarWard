@@ -214,3 +214,14 @@
 
 验证：`dotnet test LunarWard.slnx` → **537 / 31 / 27** 全过（批次 A 新增 6 个测试）。
 批次 B/C/D/E 未开始。
+
+## 九、批次 C（死代码与机械清理）进度 — 2026-10-25 17:10
+
+| 条目 | 提交 | 内容 |
+|---|---|---|
+| DC-01 死模块 | `bd2f9d8` | 删 `src/LunarWard.Core/Metadata/`（8 文件 520 行，0 外部引用） |
+| DC-02/PS-05a 双份卸载 | `47a5af6` | 删 `Installer/GameUninstallService.cs`(187 行) 与只服务它的 `UninstallGameRequest/Response` |
+| DC-13/PS-07 死包 | `36f94a9` | 删 6 个零引用包；Serilog 本体改显式 4.2.0 |
+
+验证：build 0 警告；`dotnet test` 537 + 31 + 27 = 595 全过。
+未做：`IFileLock/FlockFileLock`、`Libc` 零引用 P/Invoke、`GameRegistry` 常量、14 个无绑定成员、三个旧窗口归档、`HardLink`/`statx` 上提、命名整理、常量抽取。
