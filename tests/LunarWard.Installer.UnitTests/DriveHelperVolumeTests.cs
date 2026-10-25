@@ -15,6 +15,10 @@ namespace LunarWard.Installer.UnitTests;
 /// </summary>
 public class DriveHelperVolumeTests
 {
+    /// <summary>可用空间的允许漂移：1 MiB（两次 statvfs 之间卷可能被写入）。</summary>
+    private const long AvailableSpaceTolerance = 1024 * 1024;
+
+
     /// <summary>本机确实存在、且大概率位于不同挂载点的一组路径。</summary>
     private static IEnumerable<string> CandidatePaths()
     {
@@ -65,10 +69,18 @@ public class DriveHelperVolumeTests
     }
 
 
-    /// <summary>可用空间必须与 <see cref="DriveInfo.AvailableFreeSpace"/> 一致。</summary>
+    /// <summary>
+    /// 可用空间必须与 <see cref="DriveInfo.AvailableFreeSpace"/> 一致。
+    ///
+    /// <para>两次 <c>statvfs</c> 之间卷可能真的被写入（CI 的 overlay 根卷与其他作业共享，
+    /// 实测同一次运行里差过 4 KiB），所以允许 <see cref="AvailableSpaceTolerance"/> 的漂移；
+    /// 单位错误（把 MB 当字节）仍会被抓出来。</para>
+    /// </summary>
     [Fact]
     public void GetDriveAvailableSpace_MatchesDriveInfoDirectly()
     {
+        var mismatches = new List<string>();
+
         foreach (var path in CandidatePaths().Where(Directory.Exists))
         {
             long direct;
@@ -81,8 +93,14 @@ public class DriveHelperVolumeTests
                 continue;
             }
 
-            Assert.Equal(direct, DriveHelper.GetDriveAvailableSpace(path));
+            var actual = DriveHelper.GetDriveAvailableSpace(path);
+            if (Math.Abs(direct - actual) > AvailableSpaceTolerance)
+            {
+                mismatches.Add($"{path}: DriveInfo={direct}, DriveHelper={actual}");
+            }
         }
+
+        Assert.Empty(mismatches);
     }
 
 
@@ -154,7 +172,9 @@ public class DriveHelperVolumeTests
             return;
         }
 
-        Assert.Equal(expected, DriveHelper.GetDriveAvailableSpace(missing));
+        var actual = DriveHelper.GetDriveAvailableSpace(missing);
+        Assert.True(Math.Abs(expected - actual) <= AvailableSpaceTolerance,
+                    $"expected ~{expected}, got {actual}");
         Assert.Equal(new DriveInfo(Path.GetTempPath()).DriveFormat, DriveHelper.GetDriveFormat(missing));
     }
 

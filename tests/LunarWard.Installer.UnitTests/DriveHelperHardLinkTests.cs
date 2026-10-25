@@ -23,19 +23,30 @@ public class DriveHelperHardLinkTests
                                       [MarshalAs(UnmanagedType.LPUTF8Str)] string newPath);
 
 
+    /// <summary>Linux 的 <c>EXDEV</c>（errno 18）—— 唯一能说明"跨卷"的失败原因。</summary>
+    private const int Exdev = 18;
+
+
     /// <summary>用真实的 <c>link(2)</c> 判断两个目录之间能否硬链接。</summary>
-    private static bool CanReallyHardLink(string dirA, string dirB)
+    private static bool CanReallyHardLink(string dirA, string dirB) => TryHardLink(dirA, dirB) == 0;
+
+
+    /// <summary>
+    /// 真的调用一次 <c>link(2)</c>：成功返回 0，失败返回 errno；
+    /// 连探针文件都写不进去时返回 <c>-1</c>（判不了，既非成功也非跨卷）。
+    /// </summary>
+    private static int TryHardLink(string dirA, string dirB)
     {
         var source = Path.Combine(dirA, "lunarward-hl-source-" + Guid.NewGuid().ToString("N"));
         var target = Path.Combine(dirB, "lunarward-hl-target-" + Guid.NewGuid().ToString("N"));
         try
         {
             File.WriteAllText(source, "probe");
-            return SysLink(source, target) == 0;
+            return SysLink(source, target) == 0 ? 0 : Marshal.GetLastWin32Error();
         }
         catch (Exception)
         {
-            return false;
+            return -1;
         }
         finally
         {
@@ -76,13 +87,18 @@ public class DriveHelperHardLinkTests
     /// <summary>
     /// 同卷判定必须与真实 <c>link(2)</c> 一致 —— 这是本组测试的核心。
     ///
-    /// <para>特别覆盖 btrfs 子卷：它们在 <c>mountinfo</c> 里共享同一个 <c>major:minor</c>，
-    /// 但跨子卷 <c>link(2)</c> 返回 EXDEV（本机实测 <c>/home</c> → <c>/var</c>）。
-    /// 只用 mountinfo 的实现在这里会失败。</para>
+    /// <para><b>只有两个目录都可写时 <c>link(2)</c> 的失败才有意义。</b>
+    /// 目标目录不可写时 <c>link(2)</c> 在跨卷检查之前就返回 EACCES（errno 13）：
+    /// CI 的 runner 上 <c>/var</c>、<c>/home</c> 是 root 755，于是"真链接失败 + 同卷判定为 true"
+    /// 被误当成回归（2026-10-25 CI 连续 4 次红）。因此这里先验证两侧可写，
+    /// 再要求失败原因必须是 EXDEV，否则一律跳过。</para>
+    ///
+    /// <para>跨卷用例用 <c>/dev/shm</c>（独立的 tmpfs 实例，st_dev 与 <c>/tmp</c> 必然不同）。
+    /// 它总是可写，所以在 CI 上也能真正验证"跨卷必须判为不同卷"。</para>
     /// </summary>
     [Theory]
     [InlineData("/tmp", "/tmp")]
-    [InlineData("/tmp", "/var")]
+    [InlineData("/tmp", "/dev/shm")]
     [InlineData("/tmp", "/home")]
     [InlineData("/home", "/var")]
     [InlineData("/home", "/home")]
@@ -93,23 +109,20 @@ public class DriveHelperHardLinkTests
             return;
         }
 
-        bool reallyLinkable;
-        try
-        {
-            reallyLinkable = CanReallyHardLink(pathA, pathB);
-        }
-        catch (Exception)
+        // 两侧都必须真正可写，否则 link(2) 的失败来自权限而非卷边界
+        if (!CanReallyHardLink(pathA, pathA) || !CanReallyHardLink(pathB, pathB))
         {
             return;
         }
 
-        // 只有在写入权限也没问题的前提下才能比较（否则 link 失败与"跨卷"无关）
-        if (!CanReallyHardLink(pathA, pathA))
+        var errno = TryHardLink(pathA, pathB);
+        if (errno != 0 && errno != Exdev)
         {
+            // ENOSPC / EMLINK / EPERM … 同样与卷无关，不能当判定基准
             return;
         }
 
-        Assert.Equal(reallyLinkable, DriveHelper.IsSameVolume(pathA, pathB));
+        Assert.Equal(errno == 0, DriveHelper.IsSameVolume(pathA, pathB));
     }
 
 
