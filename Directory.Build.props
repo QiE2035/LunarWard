@@ -15,12 +15,12 @@
     <!--
       NoWarn 只剩三族，其余全部放开：
       ① CS8618：上游 Starward.Core 的模型属性大量未初始化，逐条修违背"只改三处"约束（审计 M-06 待办）；
-      ② CA1416：本项目只发布 Linux 版本，但分析器按跨平台假设报 Unix-only API（`File.SetUnixFileMode`
-         等 10 处，均为 Linux 专用逻辑/测试）；ET 平台标注留待后续用 `[SupportedOSPlatform("linux")]` 收敛；
+      ② CA1416：仅剩主程序 `EnvironmentShellViewModel` 的 `File.SetUnixFileMode` 已用
+         `OperatingSystem.IsLinux()` 守卫；测试程序集整体标注 `[assembly: SupportedOSPlatform("linux")]`。
       ③ NU1900：离线/镜像环境取不到漏洞库的环境噪音，NU1901–NU1904 真实漏洞仍会报。
       CS8600/CS8602/CS8603/CS8604/CS8625 已于 2026-10-25 全量修完（9 处），不再压制。
     -->
-    <NoWarn>$(NoWarn);CS8618;CA1416;NU1900</NoWarn>
+    <NoWarn>$(NoWarn);CS8618;NU1900</NoWarn>
     <EnableWindowsTargeting>false</EnableWindowsTargeting>
 
   </PropertyGroup>

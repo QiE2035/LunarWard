@@ -99,7 +99,10 @@ public sealed partial class EnvironmentShellViewModel : ObservableObject
         AtomicFile.WriteAllText(path, ExportScript);
         try
         {
-            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            if (OperatingSystem.IsLinux())
+            {
+                File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            }
         }
         catch (Exception)
         {
