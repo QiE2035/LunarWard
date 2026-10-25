@@ -42,6 +42,12 @@
 | MD5 校验 | 上游清单 | 未实现（下载器用 HTTP Range + 长度校验） |
 | 检查更新 | 自建 API | GitHub releases API（`a6f0464`） |
 | 备份数据库 | `File.Copy(StarwardDatabase.db)` | `VACUUM INTO` 热备份（WAL 合并，单文件） |
+| 截图墙虚拟化 | `ItemsView` + `UniformGridLayout`（WinUI，容器虚拟化） | `ItemsControl` + `WrapPanel`：**所有磁贴容器都会创建**，缩略图在 `AttachedToVisualTree` 时才解码（`ScreenshotPage.axaml.cs:109`） |
+
+> 截图墙虚拟化为什么没做：Avalonia 的 `ItemsRepeater`（含 `UniformGridLayout`）在独立包里，
+> nuget 上最高只有 12.0.0，而本仓库的 Avalonia 是 12.1.4，直接引 12.0.0 会带来程序集版本
+> 不一致的风险；核心包里也不含该控件。因此保留 `ItemsControl`（容器全建、缩略图懒解码）。
+> 典型截图库（< 500 张）感知不明显，超大库会有内存与首屏开销，已在 parity 截图页行注明。
 
 ## 四、Linux 独有（上游没有，追加在对应页面）
 
