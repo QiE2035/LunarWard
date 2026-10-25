@@ -40,7 +40,7 @@ public class DeadlyAssaultInfo
     /// 试炼模式节点
     /// </summary>
     [JsonPropertyName("list")]
-    public List<DeadlyAssaultNode> AllNodes { get; set; }
+    public List<DeadlyAssaultNode> AllNodes { get; set; } = [];
 
 
     [JsonPropertyName("has_data")]
@@ -81,7 +81,7 @@ public class DeadlyAssaultInfo
     /// 绝境模式节点
     /// </summary>
     [JsonPropertyName("hard_list")]
-    public List<DeadlyAssaultNode> HardNodes { get; set; }
+    public List<DeadlyAssaultNode> HardNodes { get; set; } = [];
 
     /// <summary>
     /// 绝境模式当前排名，以0.01%为单位

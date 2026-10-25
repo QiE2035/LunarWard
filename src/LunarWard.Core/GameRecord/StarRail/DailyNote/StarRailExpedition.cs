@@ -13,7 +13,7 @@ public class StarRailExpedition
     /// 委托角色头像 url
     /// </summary>
     [JsonPropertyName("avatars")]
-    public List<string> Avatars { get; set; }
+    public List<string> Avatars { get; set; } = [];
 
     /// <summary>
     /// 状态 Ongoing:派遣中 Finished:已完成

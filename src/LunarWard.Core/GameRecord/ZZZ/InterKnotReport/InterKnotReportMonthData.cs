@@ -5,10 +5,10 @@ namespace LunarWard.Core.GameRecord.ZZZ.InterKnotReport;
 public class InterKnotReportMonthData
 {
     [JsonPropertyName("list")]
-    public List<InterKnotReportSummaryAward> List { get; set; }
+    public List<InterKnotReportSummaryAward> List { get; set; } = [];
 
     [JsonPropertyName("income_components")]
-    public List<InterKnotReportIncomeComponent> IncomeComponents { get; set; }
+    public List<InterKnotReportIncomeComponent> IncomeComponents { get; set; } = [];
 }
 
 

@@ -5,7 +5,7 @@ namespace LunarWard.Core.GameRecord.StarRail.ChallengePeak;
 public class ChallengePeakData
 {
     [JsonPropertyName("challenge_peak_records")]
-    public List<ChallengePeakRecord> ChallengePeakRecords { get; set; }
+    public List<ChallengePeakRecord> ChallengePeakRecords { get; set; } = [];
 
     [JsonPropertyName("has_more_boss_record")]
     public bool HasMoreBossRecord { get; set; }

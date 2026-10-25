@@ -16,7 +16,7 @@ public class ShiyuDefenseV2FourthLayerDetail
     public string Rating { get; set; } = null!;
 
     [JsonPropertyName("layer_challenge_info_list")]
-    public List<ShiyuDefenseV2FourthLayerChallengeInfo> LayerChallenges { get; set; }
+    public List<ShiyuDefenseV2FourthLayerChallengeInfo> LayerChallenges { get; set; } = [];
 
 
     [JsonExtensionData]

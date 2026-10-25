@@ -7,7 +7,7 @@ public class ShiyuDefenseNode
 {
 
     [JsonPropertyName("avatars")]
-    public List<ZZZAvatar> Avatars { get; set; }
+    public List<ZZZAvatar> Avatars { get; set; } = [];
 
     [JsonPropertyName("buddy")]
     public ZZZBuddy Buddy { get; set; }
@@ -16,7 +16,7 @@ public class ShiyuDefenseNode
     /// 有利属性
     /// </summary>
     [JsonPropertyName("element_type_list")]
-    public List<int> ElementTypeList { get; set; }
+    public List<int> ElementTypeList { get; set; } = [];
 
     /// <summary>
     /// 敌人

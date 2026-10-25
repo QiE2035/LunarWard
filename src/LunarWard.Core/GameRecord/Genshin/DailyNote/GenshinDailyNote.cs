@@ -83,7 +83,7 @@ public class GenshinDailyNote
     /// 派遣
     /// </summary>
     [JsonPropertyName("expeditions")]
-    public List<GenshinExpedition> Expeditions { get; set; }
+    public List<GenshinExpedition> Expeditions { get; set; } = [];
 
 
     /// <summary>

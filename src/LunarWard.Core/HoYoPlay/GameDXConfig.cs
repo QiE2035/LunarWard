@@ -49,7 +49,7 @@ public class GameDXConfig
 
 
     [JsonPropertyName("support_list")]
-    public List<string> SupportList { get; set; }
+    public List<string> SupportList { get; set; } = [];
 
 }
 
@@ -81,7 +81,7 @@ public class GetDXConfigsRequest
 
 
     [JsonPropertyName("game_ids")]
-    public List<string> GameIds { get; set; }
+    public List<string> GameIds { get; set; } = [];
 
 
     [JsonPropertyName("language")]
@@ -89,7 +89,7 @@ public class GetDXConfigsRequest
 
 
     [JsonPropertyName("gpu_info")]
-    public List<GPUInfo> GPUInfo { get; set; }
+    public List<GPUInfo> GPUInfo { get; set; } = [];
 
 }
 
@@ -101,6 +101,6 @@ internal class GetDXConfigsResponse
 {
 
     [JsonPropertyName("dx_configs")]
-    public List<GameDXConfig> DXConfigs { get; set; }
+    public List<GameDXConfig> DXConfigs { get; set; } = [];
 
 }

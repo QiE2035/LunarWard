@@ -70,7 +70,7 @@ public class StarRailDailyNote
     /// 委托列表
     /// </summary>
     [JsonPropertyName("expeditions")]
-    public List<StarRailExpedition> Expeditions { get; set; }
+    public List<StarRailExpedition> Expeditions { get; set; } = [];
 
 
     /// <summary>

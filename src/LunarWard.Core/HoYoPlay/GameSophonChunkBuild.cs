@@ -21,7 +21,7 @@ public class GameSophonChunkBuild
     /// 文件清单
     /// </summary>
     [JsonPropertyName("manifests")]
-    public List<GameSophonChunkManifest> Manifests { get; set; }
+    public List<GameSophonChunkManifest> Manifests { get; set; } = [];
 
 
 }

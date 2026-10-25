@@ -6,7 +6,7 @@ public class ImaginariumTheaterDetail
 {
 
     [JsonPropertyName("rounds_data")]
-    public List<ImaginariumTheaterRoundsData> RoundsData { get; set; }
+    public List<ImaginariumTheaterRoundsData> RoundsData { get; set; } = [];
 
     /// <summary>
     /// 数据不全，完整数据参考 <see cref="ImaginariumTheaterInfo.Stat"/>
@@ -22,7 +22,7 @@ public class ImaginariumTheaterDetail
     /// 待命角色
     /// </summary>
     [JsonPropertyName("backup_avatars")]
-    public List<ImaginariumTheaterAvatar> BackupAvatars { get; set; }
+    public List<ImaginariumTheaterAvatar> BackupAvatars { get; set; } = [];
 
 
     [JsonPropertyName("fight_statisic")]

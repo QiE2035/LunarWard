@@ -11,7 +11,7 @@ public class ChallengePeakRecord
     public ChallengePeakBossInfo BossInfo { get; set; }
 
     [JsonPropertyName("mob_infos")]
-    public List<ChallengePeakMobInfo> MobInfos { get; set; }
+    public List<ChallengePeakMobInfo> MobInfos { get; set; } = [];
 
     [JsonPropertyName("has_challenge_record")]
     public bool HasChallengeRecord { get; set; }
@@ -23,7 +23,7 @@ public class ChallengePeakRecord
     public ChallengePeakBossRecord BossRecord { get; set; }
 
     [JsonPropertyName("mob_records")]
-    public List<ChallengePeakMobRecord> MobRecords { get; set; }
+    public List<ChallengePeakMobRecord> MobRecords { get; set; } = [];
 
     [JsonPropertyName("boss_stars")]
     public int BossStars { get; set; }

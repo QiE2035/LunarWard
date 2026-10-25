@@ -16,7 +16,7 @@ public class ChallengePeakBossRecord
     public DateTime ChallengeTime { get; set; }
 
     [JsonPropertyName("avatars")]
-    public List<ChallengePeakAvatar> Avatars { get; set; }
+    public List<ChallengePeakAvatar> Avatars { get; set; } = [];
 
     [JsonPropertyName("buff")]
     public ChallengePeakBuff Buff { get; set; }

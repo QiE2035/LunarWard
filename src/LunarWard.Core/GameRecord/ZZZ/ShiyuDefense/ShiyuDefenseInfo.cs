@@ -34,13 +34,13 @@ public class ShiyuDefenseInfo : ShiyuDefenseInfoBase, IJsonOnDeserialized
     /// 评分列表
     /// </summary>
     [JsonPropertyName("rating_list")]
-    public List<ShiyuDefenseRatingTimes> RatingList { get; set; }
+    public List<ShiyuDefenseRatingTimes> RatingList { get; set; } = [];
 
     /// <summary>
     /// 式舆防卫战防线
     /// </summary>
     [JsonPropertyName("all_floor_detail")]
-    public List<ShiyuDefenseFloorDetail> AllFloorDetail { get; set; }
+    public List<ShiyuDefenseFloorDetail> AllFloorDetail { get; set; } = [];
 
     /// <summary>
     /// 最快通关时常，秒

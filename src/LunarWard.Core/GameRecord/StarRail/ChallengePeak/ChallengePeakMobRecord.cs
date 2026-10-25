@@ -16,7 +16,7 @@ public class ChallengePeakMobRecord
     public DateTime ChallengeTime { get; set; }
 
     [JsonPropertyName("avatars")]
-    public List<ChallengePeakAvatar> Avatars { get; set; }
+    public List<ChallengePeakAvatar> Avatars { get; set; } = [];
 
     [JsonPropertyName("round_num")]
     public int RoundNum { get; set; }

@@ -12,10 +12,10 @@ public class StarRailGachaWiki
     public string Language { get; set; } = null!;
 
     [JsonPropertyName("avatar")]
-    public List<StarRailGachaInfo> Avatar { get; set; }
+    public List<StarRailGachaInfo> Avatar { get; set; } = [];
 
     [JsonPropertyName("equipment")]
-    public List<StarRailGachaInfo> Equipment { get; set; }
+    public List<StarRailGachaInfo> Equipment { get; set; } = [];
 
 }
 

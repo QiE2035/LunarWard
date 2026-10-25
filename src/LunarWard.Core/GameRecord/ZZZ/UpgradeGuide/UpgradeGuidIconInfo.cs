@@ -6,11 +6,11 @@ public class UpgradeGuidIconInfo
 {
 
     [JsonPropertyName("avatar_icon")]
-    public Dictionary<int, UpgradeGuidIconInfoItem> AvatarIcon { get; set; }
+    public Dictionary<int, UpgradeGuidIconInfoItem> AvatarIcon { get; set; } = [];
 
 
     [JsonPropertyName("buddy_icon")]
-    public Dictionary<int, UpgradeGuidIconInfoItem> BuddyIcon { get; set; }
+    public Dictionary<int, UpgradeGuidIconInfoItem> BuddyIcon { get; set; } = [];
 
 }
 

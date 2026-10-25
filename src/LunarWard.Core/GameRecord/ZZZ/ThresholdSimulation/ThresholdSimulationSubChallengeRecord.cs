@@ -18,7 +18,7 @@ public class ThresholdSimulationSubChallengeRecord
     public string Star { get; set; } = null!;
 
     [JsonPropertyName("avatar_list")]
-    public List<ZZZAvatar> AvatarList { get; set; }
+    public List<ZZZAvatar> AvatarList { get; set; } = [];
 
     [JsonPropertyName("buddy")]
     public ZZZBuddy Buddy { get; set; }

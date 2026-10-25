@@ -8,7 +8,7 @@ public class SimulatedUniverseBuff
     public SimulatedUniverseBuffType BuffType { get; set; }
 
     [JsonPropertyName("items")]
-    public List<SimulatedUniverseBuffItem> Items { get; set; }
+    public List<SimulatedUniverseBuffItem> Items { get; set; } = [];
 
 
     [JsonExtensionData]

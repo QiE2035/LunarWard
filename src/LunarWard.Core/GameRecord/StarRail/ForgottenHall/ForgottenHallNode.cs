@@ -10,7 +10,7 @@ public class ForgottenHallNode
     public DateTime ChallengeTime { get; set; }
 
     [JsonPropertyName("avatars")]
-    public List<ForgottenHallAvatar> Avatars { get; set; }
+    public List<ForgottenHallAvatar> Avatars { get; set; } = [];
 
 
     [JsonExtensionData]

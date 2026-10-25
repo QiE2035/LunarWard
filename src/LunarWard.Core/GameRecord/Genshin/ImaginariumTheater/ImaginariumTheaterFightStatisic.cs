@@ -33,7 +33,7 @@ public class ImaginariumTheaterFightStatisic
     /// 最快完成演出的队伍
     /// </summary>
     [JsonPropertyName("shortest_avatar_list")]
-    public List<ImaginariumTheaterFightStatisicAvatar> ShortestAvatarList { get; set; }
+    public List<ImaginariumTheaterFightStatisicAvatar> ShortestAvatarList { get; set; } = [];
 
     /// <summary>
     /// 演出总时长（秒）

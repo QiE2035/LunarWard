@@ -33,13 +33,13 @@ public class SpiralAbyssFloor
 
 
     [JsonPropertyName("levels")]
-    public List<SpiralAbyssLevel> Levels { get; set; }
+    public List<SpiralAbyssLevel> Levels { get; set; } = [];
 
     /// <summary>
     /// 地脉异常
     /// </summary>
     [JsonPropertyName("ley_line_disorder")]
-    public List<string> LeyLineDisorder { get; set; }
+    public List<string> LeyLineDisorder { get; set; } = [];
 
 
     [JsonExtensionData]

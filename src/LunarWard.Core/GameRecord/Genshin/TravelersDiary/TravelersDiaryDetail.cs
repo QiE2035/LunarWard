@@ -13,7 +13,7 @@ public class TravelersDiaryDetail : TravelersDiaryBase, IJsonOnDeserialized
 
 
     [JsonPropertyName("list")]
-    public List<TravelersDiaryAwardItem> List { get; set; }
+    public List<TravelersDiaryAwardItem> List { get; set; } = [];
 
 
     /// <summary>

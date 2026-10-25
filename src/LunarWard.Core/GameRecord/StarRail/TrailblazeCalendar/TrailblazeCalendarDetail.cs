@@ -27,7 +27,7 @@ public class TrailblazeCalendarDetail : IJsonOnDeserialized
 
 
     [JsonPropertyName("list")]
-    public List<TrailblazeCalendarDetailItem> List { get; set; }
+    public List<TrailblazeCalendarDetailItem> List { get; set; } = [];
 
 
     [JsonPropertyName("total")]

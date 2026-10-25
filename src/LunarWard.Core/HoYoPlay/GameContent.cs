@@ -20,20 +20,20 @@ public class GameContent
     /// 轮播图
     /// </summary>
     [JsonPropertyName("banners")]
-    public List<GameBanner> Banners { get; set; }
+    public List<GameBanner> Banners { get; set; } = [];
 
     /// <summary>
     /// 资讯
     /// </summary>
     [JsonPropertyName("posts")]
-    public List<GamePost> Posts { get; set; }
+    public List<GamePost> Posts { get; set; } = [];
 
 
     /// <summary>
     /// 媒体分享图标
     /// </summary>
     [JsonPropertyName("social_media_list")]
-    public List<GameSocialMedia> SocialMediaList { get; set; }
+    public List<GameSocialMedia> SocialMediaList { get; set; } = [];
 
 
 }
@@ -127,7 +127,7 @@ public class GameSocialMedia
     /// 更多文字链接
     /// </summary>
     [JsonPropertyName("links")]
-    public List<GameSocialMediaLink> Links { get; set; }
+    public List<GameSocialMediaLink> Links { get; set; } = [];
 
 
     [JsonPropertyName("enable_red_dot")]

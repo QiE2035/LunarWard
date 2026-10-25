@@ -23,7 +23,7 @@ public class InterKnotReportDetail : IJsonOnDeserialized
 
 
     [JsonPropertyName("list")]
-    public List<InterKnotReportDetailItem> List { get; set; }
+    public List<InterKnotReportDetailItem> List { get; set; } = [];
 
     /// <summary>
     /// 当月该类别记录总数

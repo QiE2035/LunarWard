@@ -156,7 +156,7 @@ public class GameConfig
 
 
     [JsonPropertyName("redundant_file_cleanup_paths")]
-    public List<string> RedundantFileCleanupPaths { get; set; }
+    public List<string> RedundantFileCleanupPaths { get; set; } = [];
 
 
     [JsonPropertyName("enable_v2_game_detection")]
@@ -164,7 +164,7 @@ public class GameConfig
 
 
     [JsonPropertyName("related_processes")]
-    public List<string> RelatedProcesses { get; set; }
+    public List<string> RelatedProcesses { get; set; } = [];
 
 
     [JsonPropertyName("enable_ldiff")]

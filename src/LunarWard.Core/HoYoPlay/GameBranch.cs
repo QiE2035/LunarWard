@@ -56,14 +56,14 @@ public class GameBranchPackage
     /// 可使用 LDIFF 更新的游戏版本
     /// </summary>
     [JsonPropertyName("diff_tags")]
-    public List<string> DiffTags { get; set; }
+    public List<string> DiffTags { get; set; } = [];
 
 
     /// <summary>
     /// 
     /// </summary>
     [JsonPropertyName("categories")]
-    public List<GameBranchPackageCategory> Categories { get; set; }
+    public List<GameBranchPackageCategory> Categories { get; set; } = [];
 
 }
 

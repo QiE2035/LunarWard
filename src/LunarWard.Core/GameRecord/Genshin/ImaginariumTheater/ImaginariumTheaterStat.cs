@@ -27,7 +27,7 @@ public class ImaginariumTheaterStat
     /// int[10]，0 未获得明星挑战星章，1 获得明星挑战星章
     /// </summary>
     [JsonPropertyName("get_medal_round_list")]
-    public List<int> GetMedalRoundList { get; set; }
+    public List<int> GetMedalRoundList { get; set; } = [];
 
     /// <summary>
     /// 明星挑战星章数量

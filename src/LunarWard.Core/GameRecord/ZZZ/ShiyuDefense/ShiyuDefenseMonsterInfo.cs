@@ -18,7 +18,7 @@ public class ShiyuDefenseMonsterInfo
     /// 怪物列表
     /// </summary>
     [JsonPropertyName("list")]
-    public List<ShiyuDefenseMonster> List { get; set; }
+    public List<ShiyuDefenseMonster> List { get; set; } = [];
 
 
     [JsonExtensionData]

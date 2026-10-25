@@ -53,7 +53,7 @@ public class ThresholdSimulationMainChallengeRecord
 
 
     [JsonPropertyName("avatar_list")]
-    public List<ZZZAvatar> AvatarList { get; set; }
+    public List<ZZZAvatar> AvatarList { get; set; } = [];
 
 
     [JsonPropertyName("buddy")]
@@ -61,7 +61,7 @@ public class ThresholdSimulationMainChallengeRecord
 
 
     [JsonPropertyName("sub_challenge_record")]
-    public List<ThresholdSimulationSubChallengeRecord> SubChallengeRecords { get; set; }
+    public List<ThresholdSimulationSubChallengeRecord> SubChallengeRecords { get; set; } = [];
 
 
     [JsonExtensionData]

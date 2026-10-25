@@ -42,7 +42,7 @@ public class GamePackageVersion
     /// 增量更新包
     /// </summary>
     [JsonPropertyName("patches")]
-    public List<GamePackageResource> Patches { get; set; }
+    public List<GamePackageResource> Patches { get; set; } = [];
 
 }
 
@@ -64,13 +64,13 @@ public class GamePackageResource
     /// 游戏本体
     /// </summary>
     [JsonPropertyName("game_pkgs")]
-    public List<GamePackageFile> GamePackages { get; set; }
+    public List<GamePackageFile> GamePackages { get; set; } = [];
 
     /// <summary>
     /// 本地化音频资源
     /// </summary>
     [JsonPropertyName("audio_pkgs")]
-    public List<GamePackageFile> AudioPackages { get; set; }
+    public List<GamePackageFile> AudioPackages { get; set; } = [];
 
     /// <summary>
     /// 散装文件前缀，可能是空字符串

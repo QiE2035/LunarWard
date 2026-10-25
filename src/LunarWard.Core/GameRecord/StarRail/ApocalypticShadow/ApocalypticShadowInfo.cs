@@ -46,7 +46,7 @@ public class ApocalypticShadowInfo
     public bool HasData { get; set; }
 
     [JsonPropertyName("all_floor_detail")]
-    public List<ApocalypticShadowFloorDetail> AllFloorDetail { get; set; }
+    public List<ApocalypticShadowFloorDetail> AllFloorDetail { get; set; } = [];
 
     /// <summary>
     /// 第一个是当期，第二个是上期

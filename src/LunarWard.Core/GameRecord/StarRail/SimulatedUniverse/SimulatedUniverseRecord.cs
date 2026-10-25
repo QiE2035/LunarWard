@@ -8,7 +8,7 @@ public class SimulatedUniverseRecord
     public SimulatedUniverseRecordBasic Basic { get; set; }
 
     [JsonPropertyName("records")]
-    public List<SimulatedUniverseRecordItem> Records { get; set; }
+    public List<SimulatedUniverseRecordItem> Records { get; set; } = [];
 
     [JsonPropertyName("has_data")]
     public bool HasData { get; set; }

@@ -7,19 +7,19 @@ public class UpgradeGuideItemList
 
 
     [JsonPropertyName("equip_suit")]
-    public List<UpgradeGuideEquipSuit> EquipSuit { get; set; }
+    public List<UpgradeGuideEquipSuit> EquipSuit { get; set; } = [];
 
 
     [JsonPropertyName("weapon")]
-    public List<UpgradeGuideWeapon> Weapon { get; set; }
+    public List<UpgradeGuideWeapon> Weapon { get; set; } = [];
 
 
     [JsonPropertyName("avatar_list")]
-    public List<UpgradeGuideAvatar> AvatarList { get; set; }
+    public List<UpgradeGuideAvatar> AvatarList { get; set; } = [];
 
 
     [JsonPropertyName("buddy_list")]
-    public List<UpgradeGuideBuddy> BuddyList { get; set; }
+    public List<UpgradeGuideBuddy> BuddyList { get; set; } = [];
 
 
 }

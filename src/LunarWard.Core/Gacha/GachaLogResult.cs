@@ -16,7 +16,7 @@ internal class GachaLogResult<T> where T : GachaLogItem
 
 
     [JsonPropertyName("list")]
-    public List<T> List { get; set; }
+    public List<T> List { get; set; } = [];
 
 
     [JsonPropertyName("region")]

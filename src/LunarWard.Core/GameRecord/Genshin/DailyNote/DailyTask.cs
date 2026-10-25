@@ -31,13 +31,13 @@ public class DailyTask
     /// 委托任务
     /// </summary>
     [JsonPropertyName("task_rewards")]
-    public List<TaskRewardStatus> TaskRewards { get; set; }
+    public List<TaskRewardStatus> TaskRewards { get; set; } = [];
 
     /// <summary>
     /// 历练点
     /// </summary>
     [JsonPropertyName("attendance_rewards")]
-    public List<AttendanceRewardStatus> AttendanceRewards { get; set; }
+    public List<AttendanceRewardStatus> AttendanceRewards { get; set; } = [];
 
     /// <summary>
     /// 历练点可见

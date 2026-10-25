@@ -6,7 +6,7 @@ internal class ImaginariumTheaterWarpper
 {
 
     [JsonPropertyName("data")]
-    public List<ImaginariumTheaterInfo> Data { get; set; }
+    public List<ImaginariumTheaterInfo> Data { get; set; } = [];
 
 
     [JsonPropertyName("is_unlock")]

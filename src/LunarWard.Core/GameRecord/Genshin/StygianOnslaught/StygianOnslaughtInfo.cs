@@ -27,7 +27,7 @@ public class StygianOnslaughtInfo
     /// 赋光之人
     /// </summary>
     [JsonPropertyName("blings")]
-    public List<StygianOnslaughtBlingAvatar> Blings { get; set; }
+    public List<StygianOnslaughtBlingAvatar> Blings { get; set; } = [];
 
 
     [JsonExtensionData]
@@ -59,7 +59,7 @@ internal class StygianOnslaughtWrapper
 {
 
     [JsonPropertyName("data")]
-    public List<StygianOnslaughtInfo> Data { get; set; }
+    public List<StygianOnslaughtInfo> Data { get; set; } = [];
 
 
     [JsonPropertyName("is_unlock")]

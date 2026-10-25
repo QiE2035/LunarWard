@@ -10,19 +10,19 @@ public class ImaginariumTheaterRoundsData
     /// 参演名单
     /// </summary>
     [JsonPropertyName("avatars")]
-    public List<ImaginariumTheaterAvatar> Avatars { get; set; }
+    public List<ImaginariumTheaterAvatar> Avatars { get; set; } = [];
 
     /// <summary>
     /// 神秘收获
     /// </summary>
     [JsonPropertyName("choice_cards")]
-    public List<ImaginariumTheaterBuff> ChoiceCards { get; set; }
+    public List<ImaginariumTheaterBuff> ChoiceCards { get; set; } = [];
 
     /// <summary>
     /// 奇妙助益
     /// </summary>
     [JsonPropertyName("buffs")]
-    public List<ImaginariumTheaterBuff> Buffs { get; set; }
+    public List<ImaginariumTheaterBuff> Buffs { get; set; } = [];
 
     /// <summary>
     /// 获得明星挑战星章
@@ -53,7 +53,7 @@ public class ImaginariumTheaterRoundsData
     /// 敌人
     /// </summary>
     [JsonPropertyName("enemies")]
-    public List<ImaginariumTheaterEnemy> Enemies { get; set; }
+    public List<ImaginariumTheaterEnemy> Enemies { get; set; } = [];
 
     /// <summary>
     /// 辉彩祝福

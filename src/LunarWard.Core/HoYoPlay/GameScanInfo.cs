@@ -16,7 +16,7 @@ public class GameScanInfo
     /// 不同版本的游戏 exe md5
     /// </summary>
     [JsonPropertyName("game_exe_list")]
-    public List<GameScanInfoExe> GameExeList { get; set; }
+    public List<GameScanInfoExe> GameExeList { get; set; } = [];
 
 }
 

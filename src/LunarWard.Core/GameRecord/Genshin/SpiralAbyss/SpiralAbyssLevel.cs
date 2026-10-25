@@ -21,15 +21,15 @@ public class SpiralAbyssLevel
 
 
     [JsonPropertyName("battles")]
-    public List<SpiralAbyssBattle> Battles { get; set; }
+    public List<SpiralAbyssBattle> Battles { get; set; } = [];
 
 
     [JsonPropertyName("top_half_floor_monster")]
-    public List<SpiralAbyssMonster> TopHalfFloorMonster { get; set; }
+    public List<SpiralAbyssMonster> TopHalfFloorMonster { get; set; } = [];
 
 
     [JsonPropertyName("bottom_half_floor_monster")]
-    public List<SpiralAbyssMonster> BottomHalfFloorMonster { get; set; }
+    public List<SpiralAbyssMonster> BottomHalfFloorMonster { get; set; } = [];
 
 
     [JsonIgnore]

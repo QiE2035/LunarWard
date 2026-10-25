@@ -39,7 +39,7 @@ public class InterKnotReportSummary
 
 
     [JsonPropertyName("optional_month")]
-    public List<string> OptionalMonth { get; set; }
+    public List<string> OptionalMonth { get; set; } = [];
 
 
     [JsonPropertyName("role_info")]

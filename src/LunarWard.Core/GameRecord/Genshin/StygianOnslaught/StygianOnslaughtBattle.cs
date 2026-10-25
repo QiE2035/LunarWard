@@ -13,7 +13,7 @@ public class StygianOnslaughtBattle
 
 
     [JsonPropertyName("challenge")]
-    public List<StygianOnslaughtChallenge> Challenge { get; set; }
+    public List<StygianOnslaughtChallenge> Challenge { get; set; } = [];
 
 
     [JsonPropertyName("has_data")]

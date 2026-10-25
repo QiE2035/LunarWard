@@ -25,26 +25,26 @@ public class SimulatedUniverseRecordItem
     /// 通关的角色
     /// </summary>
     [JsonPropertyName("final_lineup")]
-    public List<SimulatedUniverseAvatar> FinalLineup { get; set; }
+    public List<SimulatedUniverseAvatar> FinalLineup { get; set; } = [];
 
     /// <summary>
     /// 祝福类型
     /// </summary>
     [JsonPropertyName("base_type_list")]
-    public List<SimulatedUniverseBuffType> BuffTypeList { get; set; }
+    public List<SimulatedUniverseBuffType> BuffTypeList { get; set; } = [];
 
     [JsonPropertyName("cached_avatars")]
-    public List<SimulatedUniverseAvatar> CachedAvatars { get; set; }
+    public List<SimulatedUniverseAvatar> CachedAvatars { get; set; } = [];
 
 
     [JsonPropertyName("buffs")]
-    public List<SimulatedUniverseBuff> Buffs { get; set; }
+    public List<SimulatedUniverseBuff> Buffs { get; set; } = [];
 
     /// <summary>
     /// 奇物
     /// </summary>
     [JsonPropertyName("miracles")]
-    public List<SimulatedUniverseMiracleItem> Miracles { get; set; }
+    public List<SimulatedUniverseMiracleItem> Miracles { get; set; } = [];
 
     /// <summary>
     /// 难度

@@ -32,7 +32,7 @@ public class GameInfo : GameId
     /// 服务器信息，暂时仅崩坏三国际服在使用
     /// </summary>
     [JsonPropertyName("game_server_configs")]
-    public List<GameServerConfig> GameServerConfigs { get; set; }
+    public List<GameServerConfig> GameServerConfigs { get; set; } = [];
 
 }
 

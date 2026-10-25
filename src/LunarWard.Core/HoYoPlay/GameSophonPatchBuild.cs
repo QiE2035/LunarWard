@@ -25,7 +25,7 @@ public class GameSophonPatchBuild
     /// 文件清单
     /// </summary>
     [JsonPropertyName("manifests")]
-    public List<GameSophonPatchManifest> Manifests { get; set; }
+    public List<GameSophonPatchManifest> Manifests { get; set; } = [];
 
 
 }
@@ -79,7 +79,7 @@ public class GameSophonPatchManifest
     /// 文件统计信息，Key 是预下载对应的本地游戏版本
     /// </summary>
     [JsonPropertyName("stats")]
-    public Dictionary<string, GameSophonManifestStats> Stats { get; set; }
+    public Dictionary<string, GameSophonManifestStats> Stats { get; set; } = [];
 
 
 }

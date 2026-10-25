@@ -11,7 +11,7 @@ public class ShiyuDefenseV2FourthLayerChallengeInfo
     public int BattleTime { get; set; }
 
     [JsonPropertyName("avatar_list")]
-    public List<ZZZAvatar> AvatarList { get; set; }
+    public List<ZZZAvatar> AvatarList { get; set; } = [];
 
     [JsonPropertyName("buddy")]
     public ZZZBuddy Buddy { get; set; }

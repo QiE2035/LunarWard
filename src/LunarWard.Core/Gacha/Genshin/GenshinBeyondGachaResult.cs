@@ -12,6 +12,6 @@ internal class GenshinBeyondGachaResult
 
 
     [JsonPropertyName("list")]
-    public List<GenshinBeyondGachaItem> List { get; set; }
+    public List<GenshinBeyondGachaItem> List { get; set; } = [];
 
 }

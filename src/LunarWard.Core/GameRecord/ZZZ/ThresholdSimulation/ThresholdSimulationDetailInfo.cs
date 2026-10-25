@@ -21,7 +21,7 @@ public class ThresholdSimulationDetailInfo
     /// BOSS 前节点
     /// </summary>
     [JsonPropertyName("main_challenge_record_list")]
-    public List<ThresholdSimulationMainChallengeRecord> MainChallengeRecordList { get; set; }
+    public List<ThresholdSimulationMainChallengeRecord> MainChallengeRecordList { get; set; } = [];
 
     /// <summary>
     /// 账号信息

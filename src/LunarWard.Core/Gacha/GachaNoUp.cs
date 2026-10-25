@@ -584,6 +584,6 @@ public class GachaNoUpItem
 
     public string Name { get; set; } = null!;
 
-    public List<(DateTime Start, DateTime End)> NoUpTimes { get; set; }
+    public List<(DateTime Start, DateTime End)> NoUpTimes { get; set; } = [];
 
 }

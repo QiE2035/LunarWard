@@ -56,7 +56,7 @@ public class TrailblazeCalendarMonthData
     /// 分组统计
     /// </summary>
     [JsonPropertyName("group_by")]
-    public List<TrailblazeCalendarMonthDataGroupBy> GroupBy { get; set; }
+    public List<TrailblazeCalendarMonthDataGroupBy> GroupBy { get; set; } = [];
 
 
     [JsonExtensionData]

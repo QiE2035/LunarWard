@@ -14,7 +14,7 @@ public class GameDeprecatedFileConfig
 
 
     [JsonPropertyName("deprecated_files")]
-    public List<GameDeprecatedFile> DeprecatedFiles { get; set; }
+    public List<GameDeprecatedFile> DeprecatedFiles { get; set; } = [];
 
 }
 

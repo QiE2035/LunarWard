@@ -37,19 +37,19 @@ public class DeadlyAssaultNode
     /// Boss
     /// </summary>
     [JsonPropertyName("boss")]
-    public List<DeadlyAssaultBoss> Boss { get; set; }
+    public List<DeadlyAssaultBoss> Boss { get; set; } = [];
 
     /// <summary>
     /// Buff
     /// </summary>
     [JsonPropertyName("buffer")]
-    public List<DeadlyAssaultBuff> Buff { get; set; }
+    public List<DeadlyAssaultBuff> Buff { get; set; } = [];
 
     /// <summary>
     /// 出战角色
     /// </summary>
     [JsonPropertyName("avatar_list")]
-    public List<ZZZAvatar> Avatars { get; set; }
+    public List<ZZZAvatar> Avatars { get; set; } = [];
 
     /// <summary>
     /// 出战邦布

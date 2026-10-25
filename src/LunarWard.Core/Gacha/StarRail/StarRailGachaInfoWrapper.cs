@@ -6,6 +6,6 @@ internal class StarRailGachaInfoWrapper
 {
 
     [JsonPropertyName("list")]
-    public List<StarRailGachaInfo> List { get; set; }
+    public List<StarRailGachaInfo> List { get; set; } = [];
 }
 

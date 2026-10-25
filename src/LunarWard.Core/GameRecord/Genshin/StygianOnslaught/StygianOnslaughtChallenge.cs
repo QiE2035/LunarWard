@@ -17,11 +17,11 @@ public class StygianOnslaughtChallenge
 
 
     [JsonPropertyName("teams")]
-    public List<StygianOnslaughtAvatar> Teams { get; set; }
+    public List<StygianOnslaughtAvatar> Teams { get; set; } = [];
 
 
     [JsonPropertyName("best_avatar")]
-    public List<StygianOnslaughtBestAvatar> BestAvatar { get; set; }
+    public List<StygianOnslaughtBestAvatar> BestAvatar { get; set; } = [];
 
 
     [JsonPropertyName("monster")]

@@ -28,7 +28,7 @@ public class ShiyuDefenseFloorDetail
     /// buff
     /// </summary>
     [JsonPropertyName("buffs")]
-    public List<ShiyuDefenseBuff> Buffs { get; set; }
+    public List<ShiyuDefenseBuff> Buffs { get; set; } = [];
 
     /// <summary>
     /// 第一队

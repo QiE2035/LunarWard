@@ -61,7 +61,7 @@ public class TravelersDiaryMonthData
     /// 原石获取来源分组统计
     /// </summary>
     [JsonPropertyName("group_by")]
-    public List<TravelersDiaryPrimogemsMonthGroupStats> PrimogemsGroupBy { get; set; }
+    public List<TravelersDiaryPrimogemsMonthGroupStats> PrimogemsGroupBy { get; set; } = [];
 
 
     [JsonExtensionData]

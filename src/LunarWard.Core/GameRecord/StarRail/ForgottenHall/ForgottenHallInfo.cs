@@ -38,7 +38,7 @@ public class ForgottenHallInfo
     public bool HasData { get; set; }
 
     [JsonPropertyName("all_floor_detail")]
-    public List<ForgottenHallFloorDetail> AllFloorDetail { get; set; }
+    public List<ForgottenHallFloorDetail> AllFloorDetail { get; set; } = [];
 
     [JsonPropertyName("groups")]
     public List<ForgottenHallMeta>? Metas { get; set; }

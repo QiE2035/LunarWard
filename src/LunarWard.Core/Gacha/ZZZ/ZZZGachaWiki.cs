@@ -12,6 +12,6 @@ public class ZZZGachaWiki
     public string Language { get; set; } = null!;
 
     [JsonPropertyName("list")]
-    public List<ZZZGachaInfo> List { get; set; }
+    public List<ZZZGachaInfo> List { get; set; } = [];
 
 }

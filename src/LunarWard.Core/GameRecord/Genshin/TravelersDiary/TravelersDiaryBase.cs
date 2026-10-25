@@ -40,7 +40,7 @@ public abstract class TravelersDiaryBase
     /// 可查询月份
     /// </summary>
     [JsonPropertyName("optional_month")]
-    public List<int> OptionalMonth { get; set; }
+    public List<int> OptionalMonth { get; set; } = [];
 
     /// <summary>
     /// 获取的数据所在的月份

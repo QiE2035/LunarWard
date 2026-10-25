@@ -43,5 +43,5 @@ public class GameRecordRole
 internal class GameRecordRoleWrapper
 {
     [JsonPropertyName("list")]
-    public List<GameRecordRole> List { get; set; }
+    public List<GameRecordRole> List { get; set; } = [];
 }

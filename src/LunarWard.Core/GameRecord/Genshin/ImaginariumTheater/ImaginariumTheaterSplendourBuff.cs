@@ -10,6 +10,6 @@ public class ImaginariumTheaterSplendourBuff
 
 
     [JsonPropertyName("buffs")]
-    public List<ImaginariumTheaterSplendourBuffItem> Buffs { get; set; }
+    public List<ImaginariumTheaterSplendourBuffItem> Buffs { get; set; } = [];
 
 }

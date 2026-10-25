@@ -24,7 +24,7 @@ public class TrailblazeCalendarSummary : IJsonOnDeserialized
     /// 202304
     /// </summary>
     [JsonPropertyName("optional_month")]
-    public List<string> OptionalMonth { get; set; }
+    public List<string> OptionalMonth { get; set; } = [];
 
     /// <summary>
     /// 发出请求时的月份 202306

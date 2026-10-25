@@ -20,6 +20,6 @@ public class ImaginariumTheaterSplendourBuffItem
     /// 祝福不同等级的效果
     /// </summary>
     [JsonPropertyName("level_effect")]
-    public List<ImaginariumTheaterSplendourBuffEffect> LevelEffect { get; set; }
+    public List<ImaginariumTheaterSplendourBuffEffect> LevelEffect { get; set; } = [];
 
 }

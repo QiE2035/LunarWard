@@ -12,9 +12,9 @@ public class GenshinGachaWiki
     public string Language { get; set; } = null!;
 
     [JsonPropertyName("all_avatar")]
-    public List<GenshinGachaInfo> AllAvatar { get; set; }
+    public List<GenshinGachaInfo> AllAvatar { get; set; } = [];
 
     [JsonPropertyName("all_weapon")]
-    public List<GenshinGachaInfo> AllWeapon { get; set; }
+    public List<GenshinGachaInfo> AllWeapon { get; set; } = [];
 
 }

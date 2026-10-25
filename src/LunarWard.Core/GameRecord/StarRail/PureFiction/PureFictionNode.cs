@@ -11,7 +11,7 @@ public class PureFictionNode
     public DateTime ChallengeTime { get; set; }
 
     [JsonPropertyName("avatars")]
-    public List<PureFictionAvatar> Avatars { get; set; }
+    public List<PureFictionAvatar> Avatars { get; set; } = [];
 
     [JsonPropertyName("buff")]
     public PureFictionBuff Buff { get; set; }

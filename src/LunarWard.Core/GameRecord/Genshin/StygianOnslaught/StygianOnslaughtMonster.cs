@@ -18,11 +18,11 @@ public class StygianOnslaughtMonster
 
 
     [JsonPropertyName("desc")]
-    public List<string> Desc { get; set; }
+    public List<string> Desc { get; set; } = [];
 
 
     [JsonPropertyName("tags")]
-    public List<StygianOnslaughtBestAvatar> Tags { get; set; }
+    public List<StygianOnslaughtBestAvatar> Tags { get; set; } = [];
 
 
     [JsonPropertyName("monster_id")]

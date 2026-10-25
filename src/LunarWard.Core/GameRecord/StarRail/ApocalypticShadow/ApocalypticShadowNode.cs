@@ -11,7 +11,7 @@ public class ApocalypticShadowNode
     public DateTime ChallengeTime { get; set; }
 
     [JsonPropertyName("avatars")]
-    public List<ApocalypticShadowAvatar> Avatars { get; set; }
+    public List<ApocalypticShadowAvatar> Avatars { get; set; } = [];
 
     [JsonPropertyName("buff")]
     public ApocalypticShadowBuff Buff { get; set; }

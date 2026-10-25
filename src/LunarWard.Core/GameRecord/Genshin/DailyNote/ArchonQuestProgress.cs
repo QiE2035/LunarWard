@@ -9,7 +9,7 @@ public class ArchonQuestProgress
 {
 
     [JsonPropertyName("list")]
-    public List<ArchonQuest> List { get; set; }
+    public List<ArchonQuest> List { get; set; } = [];
 
     /// <summary>
     /// 魔神任务是否开启
