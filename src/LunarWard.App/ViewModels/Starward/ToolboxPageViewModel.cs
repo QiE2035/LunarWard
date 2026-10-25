@@ -55,7 +55,7 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
         _server = _gameBiz.EndsWith("_global", StringComparison.Ordinal) ? "global" : "cn";
 
         BuildMenuItems();
-        if (Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO") == "1")
+        if (ToolboxDemo.Enabled)
         {
             // 自检/截图夹具：不联网、不需要真实 cookie（与 Starward x:DesignInstance 同用途）。
             ApplyDemoRole();
@@ -150,7 +150,7 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
     private void SelectMenu(ToolboxMenuItem? item)
     {
         SelectedItem = item;
-        if (item?.Tag is "BattleChronicle" && Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO") != "1")
+        if (item?.Tag is "BattleChronicle" && !ToolboxDemo.Enabled)
         {
             _ = OpenBattleChronicleAsync();
         }

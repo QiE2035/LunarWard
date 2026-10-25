@@ -1,3 +1,4 @@
+using LunarWard.App.Services;
 using System.Collections.ObjectModel;
 using System.Net.Http;
 using Avalonia.Media.Imaging;
@@ -116,7 +117,7 @@ public sealed partial class SpiralAbyssPageViewModel : StarwardPageViewModel
     {
         _initialized = true;
 
-        if (Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO") == "1")
+        if (ToolboxDemo.Enabled)
         {
             ApplyDemoAbyss();
             return;

@@ -128,7 +128,7 @@ public sealed partial class SimulatedUniversePageViewModel : StarwardPageViewMod
     {
         _initialized = true;
 
-        if (Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO") == "1")
+        if (ToolboxDemo.Enabled)
         {
             ApplyDemo();
             return;

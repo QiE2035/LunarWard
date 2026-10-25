@@ -1,3 +1,4 @@
+using LunarWard.App.Services;
 using System.Collections.ObjectModel;
 using System.Net.Http;
 using Avalonia.Media.Imaging;
@@ -144,7 +145,7 @@ public sealed partial class StygianOnslaughtPageViewModel : StarwardPageViewMode
     {
         _initialized = true;
 
-        if (Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO") == "1")
+        if (ToolboxDemo.Enabled)
         {
             ApplyDemo();
             return;

@@ -1,3 +1,4 @@
+using LunarWard.App.Services;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Net.Http;
@@ -127,7 +128,7 @@ public sealed partial class ApocalypticShadowPageViewModel : StarwardPageViewMod
     {
         _initialized = true;
 
-        if (Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO") == "1")
+        if (ToolboxDemo.Enabled)
         {
             ApplyDemo();
             return;

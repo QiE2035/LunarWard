@@ -1,3 +1,4 @@
+using LunarWard.App.Services;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Net.Http;
@@ -57,7 +58,7 @@ public sealed partial class TravelersDiaryPageViewModel : StarwardPageViewModel
     public TravelersDiaryPageViewModel(PageContext context, GameRecordRole role) : base(context)
     {
         _role = role;
-        _demo = string.Equals(Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO"), "1", StringComparison.Ordinal);
+        _demo = ToolboxDemo.Enabled;
         _client = (role.GameBiz ?? "").EndsWith("_global", StringComparison.Ordinal)
             ? new HoyolabClient(Http)
             : new HyperionClient(Http);

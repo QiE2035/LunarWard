@@ -1,3 +1,4 @@
+using LunarWard.App.Services;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Net.Http;
@@ -158,7 +159,7 @@ public sealed partial class ShiyuDefensePageViewModel : StarwardPageViewModel
     /// <summary>首次进入时拉取当期 + 上期（Starward <c>OnNavigatedTo</c>）。</summary>
     public async Task InitializeAsync()
     {
-        if (Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_DEMO") == "1")
+        if (ToolboxDemo.Enabled)
         {
             ApplyDemo();
             return;
