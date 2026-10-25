@@ -336,13 +336,6 @@
           </StackPanel>
         </ScrollViewer>
       </Border>
-
-      <!-- 关闭（Starward 用点空白 / ESC 关闭；这里补一个显式按钮，放在右上不挡启动按钮） -->
-      <Button Classes="overlay"
-              Margin="0,60,24,0"
-              HorizontalAlignment="Right" VerticalAlignment="Top"
-              Content="{Binding Strings[Shell.Close]}"
-              Command="{Binding CloseGameSelectorCommand}" />
     </Grid>
 
     <!--

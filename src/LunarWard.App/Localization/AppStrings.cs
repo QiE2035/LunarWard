@@ -1046,7 +1046,7 @@ public sealed class AppStrings : INotifyPropertyChanged
         ["Settings.General.RegistrySwitcher"] = "基于注册表的游戏账号切换功能",
         ["Settings.General.RegistryUnavailable"] = "账号数据保存在游戏 Wine prefix 的 user.reg 里；切换账号会把选中快照写回该值。开启后，启动器右下角还会出现账号切换条（需先保存过账号）。",
         ["Settings.General.SystemEffectsIntro"] = "为了获得更好的体验，请在系统设置中启用以下功能：",
-        ["Settings.General.SystemEffectsUnavailable"] = "Linux 的透明与动画效果由桌面环境 / 合成器控制，没有 Windows「设置」深链；这里保留 Starward 的说明与链接行位置。",
+        ["Settings.General.SystemEffectsUnavailable"] = "Linux 的透明与动画效果由桌面环境 / 合成器控制，没有 Windows「设置」里的系统效果深链。",
         ["Gacha.PityPlaceholder"] = "保底",
         ["Gacha.Title.Beyond"] = "千星奇域颂愿",
         ["Gacha.OdeStandard"] = "常驻颂愿",
