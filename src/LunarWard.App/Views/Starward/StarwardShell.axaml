@@ -59,12 +59,21 @@
 
     <!--
       Starward Border_OverlayMask：全窗铺一层 CustomAcrylic，只有启动器页不盖
-      （MainView.NavigateTo 里 page is BlankPage or GameLauncherPage → Opacity 0）。
+      （MainView.NavigateTo 里 page is BlankPage or GameLauncherPage → Opacity 0）；
+      其余页面 Opacity 1，靠 250ms 的 Opacity 过渡淡入淡出（上游 ScalarTransition）。
       声明顺序也照 Starward：背景 → 56px 竖条 → mask → 导航 → 内容。
     -->
-    <Border Background="{StaticResource StarAcrylicBrush}"
-            IsVisible="{Binding !IsLauncherSelected}"
-            IsHitTestVisible="False" />
+    <Border x:Name="Border_OverlayMask"
+            Background="{StaticResource StarAcrylicBrush}"
+            Opacity="{Binding OverlayMaskOpacity}"
+            IsHitTestVisible="False">
+      <!-- 上游 Border_OverlayMask.OpacityTransition = 默认 ScalarTransition（250ms 线性） -->
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.25" />
+        </Transitions>
+      </Border.Transitions>
+    </Border>
 
     <!-- ── 左栏（Starward 是一个独立的 CustomAcrylic 竖条；悬停展开到 240px） ── -->
     <Border Width="56" HorizontalAlignment="Left" Background="{StaticResource StarAcrylicBrush}" />

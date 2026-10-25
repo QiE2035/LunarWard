@@ -23,7 +23,7 @@
 | 页面 | Starward 源 | LunarWard 实现 | 状态 | 主要差距 |
 |---|---|---|---|---|
 | 窗口外壳 | `Features/ViewHost/MainWindow.xaml`(35) + `.cs`(268) | `MainWindow.axaml`(45) | ✅ | WinUI 系统标题栏按钮用自己的 46×32 实现；不可缩放/最大化一致 |
-| 主视图 | `MainView.xaml`(152) | `StarwardShell.axaml`(135) | 🟡 | 导航项 7 vs 7（千星奇域颂愿已补上）；无 BlankPage 状态；`Border_OverlayMask` 的淡入淡出用了 IsVisible 切换 |
+| 主视图 | `MainView.xaml`(152) | `StarwardShell.axaml`(135) | 🟡 | 导航项 7 vs 7（千星奇域颂愿已补上）；`Border_OverlayMask` 已按上游改为 `Opacity` 绑定 + 250ms `DoubleTransition`（启动器页 0、其余 1，对应上游 `MainView.NavigateTo`）；`BlankPage` 是上游「未选游戏 / 加载中」的空页，LunarWard 的档案模型始终有当前游戏，没有等价状态（记 N/A，不算缺失） |
 | 左栏 | `MainView.xaml` 的 NavigationView | `NavigationRail.axaml`(129) | ✅ | LeftCompact 56px、40×40、选中 3×16 强调条一致；图标条见下 |
 | 游戏选择 | `GameSelector.xaml`(572) + `.cs`(975) | 外壳内的全屏层 | 🟡 | **已补横排图标条**（悬停当前图标滑出、#60000000 遮罩、当前图标不压暗）；全屏层的未安装游戏列表仍未移植；卡片拖放排序已补（顺序存 `LauncherSettings.GameChoiceOrder`，`DragDrop.DoDragDropAsync` + `DataTransferItem`）；区服 Flyout（悬停卡片弹出 24×24 图标 + 名称 + 「固定」按钮，固定状态存 `LauncherSettings.PinnedGameServers`）已按 `GameSelector.xaml:203-251` 补；卡片悬停「选择游戏服务器」遮罩已按 `GameSelector.xaml:144-186` 补（#D0000000 底 + 强调色 2px 边框 + 48 图标 + 0.167s 淡入）；「已安装游戏实际占用大小」Expander（合计 + 刷新 + 每行图标/名称/容量）已按 `GameSelector.xaml:268-341` 补，同盘重复安装的省空间量是「同名同大小」估算（源码用文件 ID 精确统计） |
 

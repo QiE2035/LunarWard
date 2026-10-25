@@ -181,11 +181,19 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLauncherSelected), nameof(IsGameSettingSelected), nameof(IsScreenshotSelected),
-        nameof(IsGachaSelected), nameof(IsToolboxSelected), nameof(IsSelfQuerySelected), nameof(IsGenshinBeyondGachaSelected), nameof(IsSettingsSelected))]
+        nameof(IsGachaSelected), nameof(IsToolboxSelected), nameof(IsSelfQuerySelected), nameof(IsGenshinBeyondGachaSelected), nameof(IsSettingsSelected),
+        nameof(OverlayMaskOpacity))]
     private ShellPage _currentPage;
 
 
     public bool IsLauncherSelected => CurrentPage == ShellPage.Launcher;
+
+    /// <summary>
+    /// <c>Border_OverlayMask</c> 的不透明度：启动器页为 0（不盖内容），其它页为 1。
+    /// 上游 <c>MainView.NavigateTo</c> 的同一判断（<c>page is BlankPage or GameLauncherPage → 0</c>）；
+    /// LunarWard 没有「未选游戏」的空页状态，因此 <c>BlankPage</c> 分支不存在。
+    /// </summary>
+    public double OverlayMaskOpacity => IsLauncherSelected ? 0 : 1;
 
     public bool IsGameSettingSelected => CurrentPage == ShellPage.GameSetting;
 
