@@ -13,14 +13,12 @@
       是环境问题而非代码问题；审计本身仍开着，真实漏洞（NU1901–NU1904）照常报。
     -->
     <!--
-      NoWarn 只剩三族，其余全部放开：
-      ① CS8618：上游 Starward.Core 的模型属性大量未初始化，逐条修违背"只改三处"约束（审计 M-06 待办）；
-      ② CA1416：仅剩主程序 `EnvironmentShellViewModel` 的 `File.SetUnixFileMode` 已用
-         `OperatingSystem.IsLinux()` 守卫；测试程序集整体标注 `[assembly: SupportedOSPlatform("linux")]`。
-      ③ NU1900：离线/镜像环境取不到漏洞库的环境噪音，NU1901–NU1904 真实漏洞仍会报。
-      CS8600/CS8602/CS8603/CS8604/CS8625 已于 2026-10-25 全量修完（9 处），不再压制。
+      NoWarn 现在只剩 CS8618（上游移植模型的非空引用属性未标注，待单独批次收敛）：
+      CA1416 已通过程序集级 SupportedOSPlatform("linux") + OperatingSystem.IsLinux() 守卫解决；
+      CS8600/8602/8603/8604/8625 已于 2026-10-25 全量修完（9 处）；NU1900 已解除压制。
     -->
-    <NoWarn>$(NoWarn);CS8618;NU1900</NoWarn>
+    <NoWarn>$(NoWarn);CS8618</NoWarn>
+    <!-- NU1900（漏洞库取不到）已不再压制：联机时可正常审计；离线开发用 no-restore 构建。 -->
     <EnableWindowsTargeting>false</EnableWindowsTargeting>
 
   </PropertyGroup>
