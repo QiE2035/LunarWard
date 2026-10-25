@@ -99,9 +99,12 @@ cd packaging && makepkg -si
 ```bash
 lunarward startgame --biz hk4e_cn      # 原神国服；hkrpg_cn / nap_global 等同理
 lunarward "lunarward://startgame/hk4e_cn"   # 同一入口的 URL 协议形式（桌面文件的 %U 会传进来）
+lunarward playtime --biz hk4e_cn --pid 1234           # 盯住外部启动的游戏进程，退出后补记时长
+lunarward "lunarward://playtime?biz=hk4e_cn&pid=1234" # 同上，URL 形式（给 hoYoPlay / 外部启动器调用）
 ```
 
-`lunarward://playtime/<biz>` 对应上游「游戏退出后补记时长」，尚未移植（启动器启动的游戏时长已自动记录）。
+`playtime` 与上游一致：用进程开始/退出时间补一条 `PlayTimeStats`，同一个 pid 只允许一个 watcher
+（`$XDG_CACHE_HOME/lunarward/runtime/playtime-<pid>.lock`），重复调用直接退出。
 
 使用说明见 [USER-GUIDE.md](docs/USER-GUIDE.md)，出问题看
 [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)。

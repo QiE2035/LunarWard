@@ -106,6 +106,24 @@ public sealed class PlayTimeService
     }
 
 
+    /// <summary>
+    /// 记一次「外部启动」的会话（对应上游 <c>playtime --pid</c> 的
+    /// <c>PlayTimeRecordService.LogPlayTimeAsync</c>：用进程开始/退出时间补一条统计）。
+    /// </summary>
+    public void RecordSession(string gameBiz, int pid, DateTimeOffset started, DateTimeOffset exited)
+    {
+        if (exited <= started || string.IsNullOrWhiteSpace(gameBiz))
+        {
+            return;
+        }
+
+        lock (_gate)
+        {
+            _store.Save(gameBiz, pid, started.ToUnixTimeMilliseconds(), exited.ToUnixTimeMilliseconds());
+        }
+    }
+
+
     private static PlaySession ToSession(PlayTimeRecord record)
         => new(
             record.GameBiz,

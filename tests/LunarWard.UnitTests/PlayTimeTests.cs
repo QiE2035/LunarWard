@@ -133,4 +133,21 @@ public class PlayTimeTests
         Assert.Equal(7, record.Pid);
         Assert.Equal(start.ToUnixTimeMilliseconds(), record.StartedAt);
     }
+
+    [Fact]
+    public void RecordSession_AppendsExternalSession()
+    {
+        using var temp = new TempDirectory();
+        var service = new PlayTimeService(Paths(temp));
+        var start = DateTimeOffset.Now.AddMinutes(-20);
+
+        // 上游 playtime --pid 子命令：外部启动的游戏退出后补一条统计
+        service.RecordSession("nap_cn", 4321, start, start.AddMinutes(18));
+
+        PlaySession? last = service.LastFor("nap_cn");
+        Assert.NotNull(last);
+        Assert.Equal("nap_cn", last!.GameBiz);
+        Assert.Equal(18, (int)last.Duration.TotalMinutes);
+        Assert.Equal(18, (int)service.TotalFor("nap_cn").TotalMinutes);
+    }
 }

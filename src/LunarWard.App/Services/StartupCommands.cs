@@ -25,6 +25,7 @@ internal static class StartupCommands
     public static bool IsCommand(string[] args)
         => args.Length > 0
            && (args[0].Equals("startgame", StringComparison.OrdinalIgnoreCase)
+               || args[0].Equals("playtime", StringComparison.OrdinalIgnoreCase)
                || args[0].StartsWith("lunarward://", StringComparison.OrdinalIgnoreCase));
 
 
@@ -37,6 +38,11 @@ internal static class StartupCommands
         if (args[0].StartsWith("lunarward://", StringComparison.OrdinalIgnoreCase))
         {
             return await RunUrlAsync(args[0]).ConfigureAwait(false);
+        }
+
+        if (args[0].Equals("playtime", StringComparison.OrdinalIgnoreCase))
+        {
+            return await RunPlayTimeAsync(args).ConfigureAwait(false);
         }
 
         string? biz = ReadArgument(args, "--biz");
@@ -73,10 +79,20 @@ internal static class StartupCommands
 
         if (uri.Host.Equals("playtime", StringComparison.OrdinalIgnoreCase))
         {
-            // 上游由 hoYoPlay 在游戏退出后回调补记时长；LunarWard 的时长来自启动器自己观测的进程，
-            // 外部补记需要的 pid→开始时间映射尚未移植（parity 文档已记）。
-            Console.Error.WriteLine("lunarward://playtime 尚未移植：游戏时长由启动器启动时自动记录");
-            return 4;
+            // lunarward://playtime?biz=hk4e_cn&pid=1234 —— 与 CLI 的 playtime 子命令同一实现
+            var query = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string pair in uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+            {
+                int eq = pair.IndexOf('=');
+                if (eq > 0)
+                {
+                    query[Uri.UnescapeDataString(pair[..eq])] = Uri.UnescapeDataString(pair[(eq + 1)..]);
+                }
+            }
+
+            string bizFromQuery = query.GetValueOrDefault("biz", "");
+            string pidFromQuery = query.GetValueOrDefault("pid", "");
+            return await RunPlayTimeAsync(["playtime", "--biz", bizFromQuery, "--pid", pidFromQuery]).ConfigureAwait(false);
         }
 
         Console.Error.WriteLine($"不支持的 URL：{url}");
@@ -130,6 +146,95 @@ internal static class StartupCommands
         {
             Console.Error.WriteLine(ex.Message);
             return 1;
+        }
+    }
+
+
+    /// <summary>
+    /// <c>playtime --biz &lt;biz&gt; --pid &lt;pid&gt;</c>：盯着外部启动的游戏进程，
+    /// 退出后按「进程开始 → 退出」补一条游戏时长（上游 <c>playtime</c> 子命令的语义）。
+    /// </summary>
+    private static async Task<int> RunPlayTimeAsync(string[] args)
+    {
+        string? biz = ReadArgument(args, "--biz");
+        string? pidText = ReadArgument(args, "--pid");
+        if (string.IsNullOrWhiteSpace(biz) || !int.TryParse(pidText, out int pid) || pid <= 0)
+        {
+            Console.Error.WriteLine("用法：lunarward playtime --biz <biz> --pid <pid>");
+            return 2;
+        }
+
+        try
+        {
+            AppServices.Initialize(XdgPaths.Default);
+            var services = AppServices.Current;
+
+            // 同一个 pid 只允许一个 watcher（上游用 AppInstance 单例锁）
+            string lockPath = Path.Join(
+                services.Paths.CacheHome, "runtime", $"playtime-{pid}.lock");
+            Directory.CreateDirectory(Path.Join(services.Paths.CacheHome, "runtime"));
+            FileStream? guard = null;
+            try
+            {
+                guard = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException)
+            {
+                Console.Error.WriteLine($"pid {pid} 已有 playtime watcher 在记录");
+                return 0;
+            }
+
+            using (guard)
+            {
+                System.Diagnostics.Process process;
+                try
+                {
+                    process = System.Diagnostics.Process.GetProcessById(pid);
+                }
+                catch (ArgumentException)
+                {
+                    Console.Error.WriteLine($"pid {pid} 已退出，无法补记时长");
+                    return 3;
+                }
+
+                DateTimeOffset started = TryStartTime(pid) ?? DateTimeOffset.Now;
+                await process.WaitForExitAsync().ConfigureAwait(false);
+                DateTimeOffset exited = DateTimeOffset.Now;
+                process.Dispose();
+
+                services.PlayTime.RecordSession(biz, pid, started, exited);
+                Console.WriteLine($"PLAYTIME {biz} pid={pid} {(exited - started).TotalMinutes:F1}min");
+            }
+
+            try
+            {
+                File.Delete(lockPath);
+            }
+            catch (IOException)
+            {
+            }
+
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+            return 1;
+        }
+    }
+
+
+    /// <summary>进程开始时间（/proc 读不到时返回 null，退回 now）。</summary>
+    private static DateTimeOffset? TryStartTime(int pid)
+    {
+        try
+        {
+            using var process = System.Diagnostics.Process.GetProcessById(pid);
+            return new DateTimeOffset(process.StartTime);
+        }
+        catch (Exception)
+        {
+            return null;
         }
     }
 
