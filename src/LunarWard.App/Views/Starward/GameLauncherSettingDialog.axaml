@@ -1,15 +1,9 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:loc="using:LunarWard.App.Localization"
-        x:Class="LunarWard.App.Views.Starward.GameLauncherSettingDialog"
-        Title="游戏设置"
-        Width="800" Height="480"
-        CanResize="False"
-        ShowInTaskbar="False"
-        WindowDecorations="None"
-        TransparencyLevelHint="Transparent"
-        Background="Transparent"
-        WindowStartupLocation="CenterOwner">
+<controls:StarwardContentDialog xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                xmlns:controls="using:LunarWard.App.Views.Starward.Controls"
+                                xmlns:loc="using:LunarWard.App.Localization"
+                                x:Class="LunarWard.App.Views.Starward.GameLauncherSettingDialog"
+                                MaxWidth="800">
 
   <!--
     Starward Features/GameLauncher/GameLauncherSettingDialog.xaml（724 行）：
@@ -18,7 +12,7 @@
     Avalonia 没有 NavigationView/FlipView，左侧用 ListBox + 选中态、右侧用四块面板切 IsVisible，
     版式（36 高导航项 / 12 间距 / 40×40 游戏图标 / 36 高路径胶囊）照源码。
   -->
-  <Window.Styles>
+  <controls:StarwardContentDialog.Styles>
     <!-- 源码 DateTimePickerFlyoutButtonStyle：36 高、透明底、悬停浅底、左对齐内容 -->
     <Style Selector="Button.row">
       <Setter Property="Height" Value="36" />
@@ -30,7 +24,7 @@
       <Setter Property="CornerRadius" Value="8" />
     </Style>
     <Style Selector="Button.row:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+      <Setter Property="Background" Value="{DynamicResource StarControlFillHoverBrush}" />
     </Style>
     <Style Selector="ListBoxItem.nav">
       <Setter Property="Height" Value="36" />
@@ -38,29 +32,24 @@
       <Setter Property="CornerRadius" Value="4" />
       <Setter Property="HorizontalContentAlignment" Value="Left" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
-      <Setter Property="Foreground" Value="{StaticResource StarTextSecondary}" />
+      <Setter Property="Foreground" Value="{DynamicResource StarTextSecondary}" />
     </Style>
     <Style Selector="ListBoxItem.nav:selected /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource StarSelectionBrush}" />
+      <Setter Property="Background" Value="{DynamicResource StarSelectionBrush}" />
     </Style>
     <Style Selector="ListBoxItem.nav:selected">
-      <Setter Property="Foreground" Value="{StaticResource StarTextPrimary}" />
+      <Setter Property="Foreground" Value="{DynamicResource StarTextPrimary}" />
     </Style>
-  </Window.Styles>
+  </controls:StarwardContentDialog.Styles>
 
-  <Border Background="{StaticResource StarAcrylicBrush}"
-          CornerRadius="8"
-          BorderThickness="1"
-          BorderBrush="#14FFFFFF"
-          BoxShadow="0 16 48 0 #99000000">
-    <Grid ColumnDefinitions="200,*">
+  <Grid Width="800" Height="480" ColumnDefinitions="200,*">
 
       <!-- ── 左导航（源码 NavigationView PaneHeader + 4 项）──────────── -->
       <StackPanel Margin="16,24,0,0" Spacing="4">
         <TextBlock Text="{Binding [Shell.GameSetting], Source={x:Static loc:AppStrings.Instance}}"
                    Margin="0,0,0,8"
                    FontSize="20"
-                   Foreground="{StaticResource StarTextSecondary}" />
+                   Foreground="{DynamicResource StarTextSecondary}" />
         <ListBox x:Name="NavList" SelectionMode="Single" SelectionChanged="OnNavSelectionChanged">
           <ListBoxItem Classes="nav" Tag="0"
                        Content="{Binding [LauncherSetting.BasicInformation], Source={x:Static loc:AppStrings.Instance}}" />
@@ -99,11 +88,11 @@
                            MaxLines="2"
                            TextTrimming="CharacterEllipsis"
                            TextWrapping="Wrap"
-                           Foreground="{StaticResource StarTextSecondary}" />
+                           Foreground="{DynamicResource StarTextSecondary}" />
                 <TextBlock Grid.Column="1" Classes="icon" Text="&#xE8A7;"
                            FontSize="14"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource StarTextSecondary}" />
+                           Foreground="{DynamicResource StarTextSecondary}" />
               </Grid>
             </Button>
 
@@ -117,12 +106,12 @@
                        FontSize="12"
                        TextWrapping="Wrap"
                        IsVisible="False"
-                       Foreground="{StaticResource StarCautionBrush}"
+                       Foreground="{DynamicResource StarCautionBrush}"
                        Text="{Binding [LauncherSetting.NetworkDriveWarning], Source={x:Static loc:AppStrings.Instance}}" />
 
             <!-- 游戏大小：源码是禁用按钮里两段 Run -->
             <TextBlock x:Name="SizeText" FontSize="12"
-                       Foreground="{StaticResource StarTextSecondary}" IsVisible="False">
+                       Foreground="{DynamicResource StarTextSecondary}" IsVisible="False">
               <Run Text="{Binding [LauncherSetting.Size], Source={x:Static loc:AppStrings.Instance}}" />
               <Run Text=" " />
               <Run x:Name="SizeRun" />
@@ -135,9 +124,9 @@
                     IsVisible="False">
               <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Classes="icon" FontSize="16" Text="&#xE838;"
-                           Foreground="{StaticResource StarTextSecondary}" />
+                           Foreground="{DynamicResource StarTextSecondary}" />
                 <TextBlock VerticalAlignment="Center"
-                           Foreground="{StaticResource StarTextSecondary}"
+                           Foreground="{DynamicResource StarTextSecondary}"
                            Text="{Binding [Launcher.LocateGame], Source={x:Static loc:AppStrings.Instance}}" />
               </StackPanel>
             </Button>
@@ -172,14 +161,14 @@
                             ToolTip.Tip="{Binding [LauncherSetting.UseCmdHint], Source={x:Static loc:AppStrings.Instance}}" />
               <TextBlock Grid.Column="1"
                          VerticalAlignment="Center"
-                         Foreground="{StaticResource StarTextDisabled}"
+                         Foreground="{DynamicResource StarTextDisabled}"
                          Text="{Binding [LauncherSetting.UseCmd], Source={x:Static loc:AppStrings.Instance}}" />
             </Grid>
 
             <!-- 源码 :392-400 的提示段落 -->
             <TextBlock FontSize="12"
                        TextWrapping="Wrap"
-                       Foreground="{StaticResource StarTextTertiary}"
+                       Foreground="{DynamicResource StarTextTertiary}"
                        Text="{Binding [LauncherSetting.AvoidIllegalToolHint], Source={x:Static loc:AppStrings.Instance}}" />
 
             <!-- 一些操作：重新定位 / 修复游戏 -->
@@ -187,12 +176,12 @@
               <Button x:Name="RelocateButton" Classes="row" Width="120"
                       Click="OnRelocateClick">
                 <TextBlock Text="{Binding [LauncherSetting.RelocateGame], Source={x:Static loc:AppStrings.Instance}}"
-                           Foreground="{StaticResource StarAccentBrush}" />
+                           Foreground="{DynamicResource StarAccentBrush}" />
               </Button>
               <Button x:Name="RepairButton" Classes="row" Width="120"
                       Click="OnRepairClick">
                 <TextBlock Text="{Binding [LauncherSetting.RepairGame], Source={x:Static loc:AppStrings.Instance}}"
-                           Foreground="{StaticResource StarAccentBrush}" />
+                           Foreground="{DynamicResource StarAccentBrush}" />
               </Button>
             </StackPanel>
 
@@ -207,9 +196,9 @@
                     Click="OnUninstallClick">
               <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Classes="icon" FontSize="16" Text="&#xE74D;"
-                           Foreground="{StaticResource StarErrorBrush}" />
+                           Foreground="{DynamicResource StarErrorBrush}" />
                 <TextBlock VerticalAlignment="Center"
-                           Foreground="{StaticResource StarErrorBrush}"
+                           Foreground="{DynamicResource StarErrorBrush}"
                            Text="{Binding [LauncherSetting.UninstallGame], Source={x:Static loc:AppStrings.Instance}}" />
               </StackPanel>
             </Button>
@@ -222,7 +211,7 @@
                          VerticalAlignment="Center"
                          FontSize="12"
                          TextWrapping="Wrap"
-                         Foreground="{StaticResource StarCautionBrush}"
+                         Foreground="{DynamicResource StarCautionBrush}"
                          Text="{Binding [LauncherSetting.UninstallGameWarning], Source={x:Static loc:AppStrings.Instance}}" />
               <Button Grid.Column="1"
                       x:Name="ConfirmUninstallButton"
@@ -230,7 +219,7 @@
                       Width="120"
                       Click="OnConfirmUninstallClick">
                 <TextBlock Text="{Binding [LauncherSetting.ConfirmUninstall], Source={x:Static loc:AppStrings.Instance}}"
-                           Foreground="{StaticResource StarErrorBrush}" />
+                           Foreground="{DynamicResource StarErrorBrush}" />
               </Button>
             </Grid>
 
@@ -238,7 +227,7 @@
                        FontSize="12"
                        TextWrapping="Wrap"
                        IsVisible="False"
-                       Foreground="{StaticResource StarErrorBrush}" />
+                       Foreground="{DynamicResource StarErrorBrush}" />
 
             <!--
               选择语音包（源码 Segmented，四段）。整组（标题 + 分段器）在游戏没有语音包目录时隐藏
@@ -250,14 +239,14 @@
                          FontSize="14" />
               <Border Classes="segmented" Height="32" Padding="4"
                       HorizontalAlignment="Left"
-                      Background="{StaticResource StarControlFillBrush}">
+                      Background="{DynamicResource StarControlFillBrush}">
                 <StackPanel x:Name="AudioLanguagePanel" Orientation="Horizontal" Spacing="2" />
               </Border>
             </StackPanel>
 
             <!-- 操作结果 / 错误 -->
             <TextBlock x:Name="StatusText" FontSize="12"
-                       Foreground="{StaticResource StarCautionBrush}"
+                       Foreground="{DynamicResource StarCautionBrush}"
                        TextWrapping="Wrap" IsVisible="False" />
           </StackPanel>
 
@@ -269,7 +258,7 @@
             <Button Classes="row" Height="28" Click="OnSeeMoreArgumentsClick">
               <TextBlock Text="{Binding [LauncherSetting.SeeMoreInformation], Source={x:Static loc:AppStrings.Instance}}"
                          FontSize="12"
-                         Foreground="{StaticResource StarAccentBrush}" />
+                         Foreground="{DynamicResource StarAccentBrush}" />
             </Button>
 
             <TextBlock Text="{Binding [LauncherSetting.AfterStartingGame], Source={x:Static loc:AppStrings.Instance}}"
@@ -293,12 +282,12 @@
                 <TextBlock x:Name="CustomProgramPath"
                            VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis"
-                           Foreground="{StaticResource StarTextSecondary}" />
+                           Foreground="{DynamicResource StarTextSecondary}" />
               </Button>
               <Button Grid.Column="1" Classes="row" Width="88" Click="OnSelectCustomProgramClick">
                 <TextBlock Text="{Binding [LauncherSetting.Select], Source={x:Static loc:AppStrings.Instance}}"
                            HorizontalAlignment="Center"
-                           Foreground="{StaticResource StarAccentBrush}" />
+                           Foreground="{DynamicResource StarAccentBrush}" />
               </Button>
             </Grid>
           </StackPanel>
@@ -313,15 +302,15 @@
             </StackPanel>
             <TextBlock Text="{Binding [LauncherSetting.BgSizeTip], Source={x:Static loc:AppStrings.Instance}}"
                        FontSize="12"
-                       Foreground="{StaticResource StarTextSecondary}"
+                       Foreground="{DynamicResource StarTextSecondary}"
                        TextWrapping="Wrap" />
             <TextBlock x:Name="BackgroundNameText" FontSize="14" />
             <Button Classes="row" Width="120" HorizontalAlignment="Left" Click="OnSelectBackgroundClick">
               <TextBlock Text="{Binding [LauncherSetting.Select], Source={x:Static loc:AppStrings.Instance}}"
-                         Foreground="{StaticResource StarAccentBrush}" />
+                         Foreground="{DynamicResource StarAccentBrush}" />
             </Button>
             <TextBlock x:Name="BackgroundErrorText" FontSize="12"
-                       Foreground="{StaticResource StarErrorBrush}"
+                       Foreground="{DynamicResource StarErrorBrush}"
                        TextWrapping="Wrap" IsVisible="False" />
           </StackPanel>
 
@@ -357,6 +346,5 @@
 
         </StackPanel>
       </ScrollViewer>
-    </Grid>
-  </Border>
-</Window>
+  </Grid>
+</controls:StarwardContentDialog>

@@ -185,6 +185,12 @@ internal static class CaptureMode
     /// <summary>截图前把左栏展开（模拟鼠标悬停）。</summary>
     public static bool ExpandRail { get; set; }
 
+    /// <summary>
+    /// 自检：关闭主窗口时弹出的「最小化到托盘 / 完全退出」询问浮层
+    /// （<c>--close-window-dialog</c>，配合 <c>--screenshot</c>）。
+    /// </summary>
+    public static bool CloseWindowDialog { get; set; }
+
     /// <summary>渲染前等待时间（毫秒）。</summary>
     public static int WaitMilliseconds { get; set; } = 1600;
 

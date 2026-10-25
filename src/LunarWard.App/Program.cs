@@ -75,6 +75,7 @@ internal static class Program
         //   --screenshot-seed / --screenshot-hover  截图页样例数据 / 首块磁贴悬停态
         //   --launcher-setting-dialog         启动器「游戏设置」弹窗（配 --settings-section basic|arguments|background|packages）
         //   --uninstall-warning               设置弹窗「基本信息」页把卸载警告行亮出来（配 --launcher-setting-dialog）
+        //   --close-window-dialog             关闭询问浮层（最小化到托盘 / 完全退出）
         //   --install-real <目录>             真实安装任务（官方 CDN）跑起来再截图，验证进度绑定
         //   --install-info-popup              安装中悬停的「游戏信息 / 下载进度」卡片（配 --install-progress）
         //   --selector-hover                  游戏选择器第一张卡片悬停态（配 --open-selector）
@@ -163,6 +164,7 @@ internal static class Program
             CaptureMode.Tab = ReadArgument(args, "--tab");
             CaptureMode.Language = ReadArgument(args, "--lang");
             CaptureMode.ExpandRail = args.Contains("--expand-rail");
+            CaptureMode.CloseWindowDialog = args.Contains("--close-window-dialog");
             if (int.TryParse(ReadArgument(args, "--scroll-y"), out var scrollY) && scrollY > 0)
             {
                 CaptureMode.ScrollY = scrollY;

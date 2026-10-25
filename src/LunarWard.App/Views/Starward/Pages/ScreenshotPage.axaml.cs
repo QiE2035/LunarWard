@@ -243,7 +243,7 @@ public partial class ScreenshotPage : StarwardPage
 
             _viewModel.ReloadFromDisk();
         };
-        dialog.Show(owner);
+        _ = DialogService.ShowAsync(dialog, owner);
     }
 
 
@@ -333,8 +333,9 @@ public partial class ScreenshotPage : StarwardPage
             string inGame = System.IO.Path.Join(root, "ScreenShot");
             System.IO.Directory.CreateDirectory(inGame);
             var dialog = new ScreenshotFolderManageDialog(inGame, [first, second]);
-            dialog.Show(owner);
-            dialog.CaptureSelf(path, 1200);
+            _ = DialogService.ShowAsync(dialog, owner);
+            await Task.Delay(1200);
+            CaptureMode.Capture(owner);
         });
     }
 }

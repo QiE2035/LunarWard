@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using LunarWard.App.Services;
 using LunarWard.App.Views.Starward;
 
 namespace LunarWard.App.ViewModels.Starward;
@@ -14,16 +15,70 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     private bool _initializing = true;
 
 
-    /// <summary>「最小化到系统托盘」为 true、「完全退出」为 false（映射上游 <c>CloseWindowOption</c>）。</summary>
+    /// <summary>
+    /// 「最小化到系统托盘」（上游 <c>MainWindowCloseOption.Hide</c>）。三选一，未设置 = 每次询问。
+    /// </summary>
     public bool IsCloseToTray
     {
-        get => string.Equals(Services.Config.Launcher.CloseWindowOption, "Hide", StringComparison.OrdinalIgnoreCase);
+        get => CurrentCloseWindowAction == CloseWindowAction.Hide;
         set
         {
-            Services.Config.Launcher.CloseWindowOption = value ? "Hide" : "Exit";
-            Services.Config.Save(Services.Paths.ConfigFile);
-            OnPropertyChanged();
+            if (value)
+            {
+                SetCloseWindowOption(CloseWindowDecision.HideOption);
+            }
         }
+    }
+
+
+    /// <summary>「完全退出」（上游 <c>MainWindowCloseOption.Exit</c>）。</summary>
+    public bool IsCloseToExit
+    {
+        get => CurrentCloseWindowAction == CloseWindowAction.Exit;
+        set
+        {
+            if (value)
+            {
+                SetCloseWindowOption(CloseWindowDecision.ExitOption);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// 「每次关闭时询问」（上游配置为 0 / 未设置时的分支）：关闭时弹
+    /// <see cref="Views.Starward.MainWindowCloseDialog"/>，选完写回配置。
+    /// </summary>
+    public bool IsAskEveryTime
+    {
+        get => CurrentCloseWindowAction == CloseWindowAction.Ask;
+        set
+        {
+            if (value)
+            {
+                SetCloseWindowOption(CloseWindowDecision.AskOption);
+            }
+        }
+    }
+
+
+    private CloseWindowAction CurrentCloseWindowAction
+        => CloseWindowDecision.Parse(Services.Config.Launcher.CloseWindowOption);
+
+
+    /// <summary>写回关闭选项并通知三个单选按钮刷新（选中的那个把 IsChecked 置 true）。</summary>
+    private void SetCloseWindowOption(string option)
+    {
+        if (string.Equals(Services.Config.Launcher.CloseWindowOption, option, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        Services.Config.Launcher.CloseWindowOption = option;
+        Services.Config.Save(Services.Paths.ConfigFile);
+        OnPropertyChanged(nameof(IsCloseToTray));
+        OnPropertyChanged(nameof(IsCloseToExit));
+        OnPropertyChanged(nameof(IsAskEveryTime));
     }
 
 

@@ -15,6 +15,13 @@
   <Application.Styles>
     <FluentTheme />
     <dialogHost:DialogHostStyles />
+    <!--
+      窗口内 ContentDialog（StarwardContentDialog）的隐式 ControlTheme。
+      必须走 StyleInclude：Avalonia 只在样式树（Styles.Resources）里按类型找控件默认主题，
+      放进 Application.Resources 的话 ContentControl 的 Theme 解析不到，模板就不会套用。
+      各对话框的 XAML 根节点都是它，引入这一份即共享同一套浮层外观（标题行 / X / 按钮栏 / 圆角）。
+    -->
+    <StyleInclude Source="avares://LunarWard/Views/Starward/Controls/StarwardContentDialog.axaml" />
     <StyleInclude Source="avares://LunarWard/Styles/Starward.axaml" />
 
     <!--

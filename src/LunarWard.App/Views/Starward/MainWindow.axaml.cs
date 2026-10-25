@@ -16,6 +16,13 @@ namespace LunarWard.App.Views.Starward;
 /// </summary>
 public partial class MainWindow : Window
 {
+    /// <summary>本次会话已确认关闭（问过用户 / 配置为 Exit），避免 OnClosing 再次弹窗。</summary>
+    private bool _closeConfirmed;
+
+    /// <summary>关闭询问浮层是否已经开着（防重入）。</summary>
+    private bool _closeDialogOpen;
+
+
     public MainWindow()
     {
         InitializeComponent();
@@ -179,12 +186,23 @@ public partial class MainWindow : Window
             await Task.Delay(300);
         }
 
-        // 时长统计弹窗：自检时单独截这个窗口（它是独立 Window，主窗口渲染不到）
+        // 关闭询问浮层：自检时直接摆在窗口里（不真的关窗）
+        if (CaptureMode.CloseWindowDialog)
+        {
+            var closeDialog = new MainWindowCloseDialog(trayAvailable: true, currentOption: null);
+            _ = DialogService.ShowAsync(closeDialog, this);
+            await Task.Delay(900);
+            CaptureMode.Capture(this);
+            return;
+        }
+
+        // 时长统计：自检时以窗口内浮层打开，再把主窗口（含浮层）渲成 PNG
         if (string.Equals(CaptureMode.TargetWindow, "playtime", StringComparison.OrdinalIgnoreCase))
         {
             var dialog = new PlayTimeStatsDialog(shell.Services, GameLauncherPageViewModel.GameBizOfProfile(shell.Profile));
-            dialog.Show(this);
-            dialog.CaptureSelf(CaptureMode.Path!, 1200);
+            _ = DialogService.ShowAsync(dialog, this);
+            await Task.Delay(1200);
+            CaptureMode.Capture(this);
             return;
         }
 
@@ -269,8 +287,9 @@ public partial class MainWindow : Window
 
 
     /// <summary>
-    /// 关闭按钮：配置为「最小化到系统托盘」时 cancel 关闭、把窗口藏起来（上游
-    /// <c>MainWindow.AppWindow_Closing</c> 的 <c>Hide</c> 分支）。托盘本身由 App 创建。
+    /// 关闭按钮，对齐上游 <c>Features/ViewHost/MainWindow.xaml.cs:107-136 AppWindow_Closing</c>：
+    /// <c>CloseWindowOption</c> 为 Hide 时取消关闭并藏到托盘、Exit 时真关、
+    /// 未设置（Ask）时先弹 <see cref="MainWindowCloseDialog"/> 问一次并把选择写回配置。
     /// </summary>
     protected override void OnClosing(WindowClosingEventArgs e)
     {
@@ -280,12 +299,76 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (Avalonia.Application.Current is LunarWard.App.App app
-            && string.Equals(AppServices.Current.Config.Launcher.CloseWindowOption, "Hide", StringComparison.OrdinalIgnoreCase)
-            && app.EnsureTray())
+        bool trayAvailable = Avalonia.Application.Current is LunarWard.App.App app && app.EnsureTray();
+        string? configured = AppServices.Current.Config.Launcher.CloseWindowOption;
+
+        if (_closeConfirmed)
         {
-            e.Cancel = true;
-            Hide();
+            return;
+        }
+
+        switch (CloseWindowDecision.Resolve(configured, trayAvailable))
+        {
+            case CloseWindowAction.Hide:
+                e.Cancel = true;
+                Hide();
+                break;
+            case CloseWindowAction.Ask:
+                // 不能在本方法里 await：先取消这次关闭，问完再 Close() 一次。
+                e.Cancel = true;
+                _ = AskThenCloseAsync(trayAvailable);
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    /// <summary>
+    /// 关闭选项为「每次询问」时弹 <see cref="MainWindowCloseDialog"/>；确认后把选择写回配置再关。
+    /// 取消（右上角 X / ESC / 「取消」）则什么都不做，窗口保持原样。
+    /// </summary>
+    private async Task AskThenCloseAsync(bool trayAvailable)
+    {
+        if (_closeDialogOpen)
+        {
+            return;
+        }
+
+        _closeDialogOpen = true;
+        try
+        {
+            var app = AppServices.Current;
+            var dialog = new MainWindowCloseDialog(trayAvailable, app.Config.Launcher.CloseWindowOption);
+            await DialogService.ShowAsync(dialog, this);
+            if (!dialog.Confirmed)
+            {
+                return;
+            }
+
+            app.Config.Launcher.CloseWindowOption = dialog.CloseWindowOption;
+            try
+            {
+                app.Config.Save(app.Paths.ConfigFile);
+            }
+            catch (Exception)
+            {
+                // 写盘失败不阻塞关闭流程：本次选择仍然生效
+            }
+
+            // 选「隐藏到托盘」时直接藏起来，不再走一次 Close()（否则会被 _closeConfirmed 短路）。
+            if (string.Equals(dialog.CloseWindowOption, CloseWindowDecision.HideOption, StringComparison.OrdinalIgnoreCase))
+            {
+                Hide();
+                return;
+            }
+
+            _closeConfirmed = true;
+            Close();
+        }
+        finally
+        {
+            _closeDialogOpen = false;
         }
     }
 

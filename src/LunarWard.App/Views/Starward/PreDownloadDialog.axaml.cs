@@ -2,9 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using LunarWard.App.Localization;
 using LunarWard.App.Services;
+using LunarWard.App.Views.Starward.Controls;
 using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Installer;
@@ -22,7 +22,7 @@ namespace LunarWard.App.Views.Starward;
 /// 源码在 Chord 下载模式下还会额外解一遍 manifest 计算真实体积，这里直接读 package 的 Size 字段
 /// （与 <see cref="InstallGameDialog"/> 同一取舍，已记进 parity 文档）。
 /// </remarks>
-public partial class PreDownloadDialog : Window
+public partial class PreDownloadDialog : StarwardContentDialog
 {
     private static AppStrings Strings => AppStrings.Instance;
 
@@ -56,6 +56,7 @@ public partial class PreDownloadDialog : Window
         _language = "zh-cn";
         _gameId = new GameId();
         _installPath = "";
+        CloseButtonText = Strings["Common.Close"];
     }
 
 
@@ -68,6 +69,7 @@ public partial class PreDownloadDialog : Window
         _language = string.IsNullOrWhiteSpace(Strings.Language) ? "zh-cn" : Strings.Language.ToLowerInvariant();
         _gameId = GameId.FromGameBiz(new GameBiz(gameBiz)) ?? new GameId { GameBiz = gameBiz };
         _installPath = installPath;
+        CloseButtonText = Strings["Common.Close"];
 
         NoPatchesText.Text = Strings["PreDownloadDialog.NoPatches"];
         UnavailableText.Text = Strings["PreDownloadDialog.Unavailable"];
@@ -196,9 +198,6 @@ public partial class PreDownloadDialog : Window
     }
 
 
-    private void OnCloseClick(object? sender, RoutedEventArgs e) => Close();
-
-
     // ── 自检截图（--predownload-dialog）────────────────────────────────
 
     /// <summary>
@@ -222,37 +221,5 @@ public partial class PreDownloadDialog : Window
         UnzipSpaceValue.Text = "24.71 GB";
         AvailableSpaceValue.Text = "455.68 GB";
         StartButton.IsEnabled = true;
-    }
-
-
-    /// <summary>把窗口渲染成 PNG 并退出进程（与其它自检窗口同构，必须在 UI 线程渲染）。</summary>
-    public void CaptureSelf(string path, int delayMs = 400)
-    {
-        Avalonia.Threading.DispatcherTimer.RunOnce(() =>
-        {
-            try
-            {
-                var size = new PixelSize(Math.Max(1, (int)Bounds.Width), Math.Max(1, (int)Bounds.Height));
-                using var bitmap = new RenderTargetBitmap(size, new Vector(96, 96));
-                bitmap.Render(this);
-                using (var stream = File.Create(path))
-                {
-                    bitmap.Save(stream, new PngBitmapEncoderOptions());
-                }
-                Console.WriteLine($"SCREENSHOT_OK {path} {size.Width}x{size.Height}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SCREENSHOT_FAIL {ex.GetType().Name}: {ex.Message}");
-            }
-            finally
-            {
-                if (Application.Current?.ApplicationLifetime
-                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    desktop.Shutdown(0);
-                }
-            }
-        }, TimeSpan.FromMilliseconds(delayMs));
     }
 }
