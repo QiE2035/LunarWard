@@ -4,8 +4,9 @@ using Xunit;
 namespace LunarWard.UnitTests;
 
 /// <summary>
-/// 关闭窗口选项的判定：上游 <c>AppConfig.CloseWindowOption</c> 只有 Hide/Exit，
-/// 0（未设置）表示「每次询问」；托盘不可用时 Hide 必须退化成 Exit，不能静默隐藏。
+/// 关闭窗口选项的判定：上游 <c>AppConfig.CloseWindowOption</c> 落盘只有 Hide/Exit，
+/// 0（未设置）表示「每次询问」（LunarWard 用 <c>Ask</c> 显式表达，也是默认值）；
+/// 托盘不可用时 Hide 必须退化成 Exit，不能静默隐藏。
 /// </summary>
 public class CloseWindowDecisionTests
 {

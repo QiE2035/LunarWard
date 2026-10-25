@@ -115,9 +115,14 @@
 6. **背景**：默认使用当前游戏的官方背景图（HoYoPlay `getGames` 的
    `background`/`backgrounds`），本地自定义背景优先；悬停底部出现切换条；视频背景
    用 LibVLCSharp（已实现），启动游戏时暂停、退出恢复。
-7. **窗口关闭**：与上游一致，通用设置里可选「最小化到系统托盘 / 完全退出」。托盘用
-   Avalonia `TrayIcon`（Linux 上走 StatusNotifier，KDE 默认支持、GNOME 需 AppIndicator
-   扩展）；宿主不可用时自动退回「完全退出」并注明原因。
+7. **窗口关闭**：与上游一致，通用设置里三选一「每次关闭时询问 / 最小化到系统托盘 /
+   完全退出」（`LauncherConfig.CloseWindowOption` = `Ask` / `Hide` / `Exit`，上游
+   `MainWindowCloseOption` 的 0/1/2 同义）。选 Ask 时点关闭先弹
+   `MainWindowCloseDialog`（标题 + 说明 + 两个 RadioButton + 确认/取消），确认后把选择
+   写回配置，下次不再问；上游 `Features/ViewHost/MainWindow.xaml.cs:107-136` 同流程。
+   托盘用 Avalonia `TrayIcon`（Linux 上走 StatusNotifier，KDE 默认支持、GNOME 需
+   AppIndicator 扩展）；宿主不可用时「最小化到系统托盘」单选禁用并提示原因，不会静默
+   隐藏窗口。判定逻辑纯函数化：`Services/CloseWindowDecision.cs`（单测覆盖）。
 8. **动效**：页面切换 167ms 淡入；选择层 167ms 淡入；悬停背景 83ms；不做夸张动画。
 
 ## 5. 页面映射（LunarWard 功能 → Starward 页面）
@@ -145,11 +150,12 @@ src/LunarWard.App/
 │   ├── StarwardIcon.cs                # 可选，图标常量
 │   ├── NavigationRail.axaml           # 56px 导航栏（Lead）
 │   ├── GameSelectorOverlay.axaml      # 全屏游戏选择层（Lead）
-│   ├── DialogHost.axaml               # ContentDialog 等价物（Lead）
 │   └── ToastHost.axaml                # InAppToast 等价物（Lead）
+├── Services/DialogService.cs          # 打开 ContentDialog：防重入 / ESC / 焦点
 ├── Views/Starward/
 │   ├── StarwardShell.axaml            # MainView 等价物（Lead）
 │   ├── MainWindow.axaml               # 1200×676 外壳 + 标题栏（Lead）
+│   ├── Controls/StarwardContentDialog.axaml(.cs)  # ContentDialog 容器（共用）
 │   └── Pages/
 │       ├── GameLauncherPage.axaml     # Lead
 │       ├── GameSettingPage.axaml      # T1
@@ -185,9 +191,55 @@ public partial class GachaPage : UserControl
 
 - 页面切换由 `ShellViewModel.Navigate(ShellPage)` 统一做；页面内跳转调用
   `context.Shell.Navigate(...)`。
-- 弹窗走 `context.Shell.Dialogs.ShowAsync(...)`；Toast 走 `context.Shell.Toast(...)`。
+- 弹窗走 `await DialogService.ShowAsync(dialog, owner)`（`Services/DialogService.cs`）：
+  在 `owner` 的 `dh:DialogHost` 里打开，防重入、ESC 关闭、焦点归还都由它负责；不再
+  `new Window()` 造独立对话框窗口。Toast 走 `context.Shell.Toast(...)`。
 - 页面不得引用旧窗口（`Views/SettingsWindow` 等）；旧窗口在对应页面验收通过后删除。
 - 页面内样式优先局部 `<UserControl.Styles>`，颜色引用 `Starward.axaml` 的资源键。
+
+### 6.1 ContentDialog 容器（`Views/Starward/Controls/StarwardContentDialog.axaml`）
+
+WinUI 的 `ContentDialog` 是**窗口内浮层**，不是独立窗口；Avalonia 没有内建等价物，
+由 `DialogHost.Avalonia` 的 `dh:DialogHost`（`MainWindow.axaml` 最外层，`OverlayBackground`
+= `#66000000` 对应 `ContentDialogSmokeFill`）承载卡片，卡片本体是本项目自己实现的容器：
+
+| 部位 | 规格（对齐 WinUI 默认模板 + 上游各 dialog 的显式覆盖） |
+|---|---|
+| 圆角 / 边框 | `CornerRadius=8`，1px `StarCardStrokeBrush`，`BoxShadow="0 16 48 0 #99000000"` |
+| 背景 | `StarAcrylicBrush`（`#F52C2C2C`，上游 `CustomAcrylicBrush`） |
+| 标题行 | 48px，`FontSize=20`、`SemiBold`，`Margin="24,0,56,0"`；`Title` 为空时整行收起 |
+| 关闭按钮 | 右上 40×40、圆角 4、`Segoe MDL2 E711`，hover 底色 `StarControlFillHoverBrush` |
+| 内容区 | `Content` + `ContentPadding`（默认 0，各 dialog 自己 `Padding=24`） |
+| 按钮栏 | 右对齐、`Spacing=8`、主按钮 `Classes=accent`、次按钮与「关闭」用默认样式 |
+| 尺寸 | `MinWidth=320` / `MaxWidth=548` 默认；宽弹窗自己覆盖（settings 800、install 560、playtime 1008…） |
+| 关闭方式 | ESC、右上 X、底部「关闭」三路都走 `CloseRequested` → `DialogService` 关会话 |
+
+用法（所有弹窗都是「继承容器 + 只写内容」）：
+
+```xml
+<controls:StarwardContentDialog xmlns:controls="using:LunarWard.App.Views.Starward.Controls"
+                                x:Class="LunarWard.App.Views.Starward.PreDownloadDialog"
+                                MaxWidth="400">
+  <Border Width="400" Padding="24">…</Border>
+</controls:StarwardContentDialog>
+```
+
+```csharp
+var dialog = new PreDownloadDialog(services, gameBiz, launcherId, installPath); // : StarwardContentDialog
+dialog.CloseButtonText = AppStrings.Instance["Common.Close"];                   // 需要时设按钮文案
+dialog.PrimaryButtonText = AppStrings.Instance["PreDownloadDialog.Start"];
+dialog.IsPrimaryButtonEnabled = false;                                          // WinUI IsPrimaryButtonEnabled
+dialog.PrimaryButtonClicked += (_, _) => DoWork();
+_ = DialogService.ShowAsync(dialog, this);                                      // this = 页面/窗口（用来找宿主）
+// 关闭后读结果：dialog.Request / dialog.Result / dialog.Confirmed
+```
+
+- 需要「确认/取消」语义的（如 `MainWindowCloseDialog`）：`PrimaryButtonText` +
+  `CloseButtonText` 即可，`CloseButtonClicked` / `CloseRequested` 都表示取消路径。
+- 自检截图（`--launcher-setting-dialog` 等）：打开浮层后 `CaptureMode.Capture(owner)`
+  渲染主窗口，浮层与暗化一起进 PNG（不再有 `.dialog.png` 的独立窗口截图）。
+- 关闭询问浮层的键盘自检：`--screenshot /tmp/esc.png --close-window-dialog --dialog-esc-test`
+  会在打开后合成一次 ESC，打印 `DIALOG_ESC_CLOSED True`（表示 ESC → 会话关闭 → 浮层收起）。
 
 ## 7. 验收
 
@@ -210,3 +262,6 @@ public partial class GachaPage : UserControl
 | 标题栏图标/系统菜单 | WinUI 图标+系统菜单 | 不显示图标 | 无等价 API |
 | 动画 | WinUI 组合动画 | Avalonia Transition 近似 | 实现差异 |
 | 游戏选择器 | 单图标 + 全屏层（HEAD） | 同构，但服务器来源是本地 profile | 数据模型不同 |
+| 弹窗关闭按钮 | 上游只画右上 X（`E711`），无底部按钮栏 | X + 底部「关闭」并列 | 用户反馈「没有关闭方式」；X 保留，底部按钮给键盘/触屏可达性 |
+| 弹窗暗化 | `ContentDialogSmokeFill` 半透明黑 | `DialogHost.OverlayBackground=#66000000` | Avalonia 用 popup 遮罩实现同语义 |
+| 宽弹窗（时长统计 1008） | 独立 640 高窗口 | 窗口内浮层 548 高，内容区可用滚轮 | 主窗口固定 676 高，浮层不能超出；上游同尺寸无法 1:1 塞进来 |

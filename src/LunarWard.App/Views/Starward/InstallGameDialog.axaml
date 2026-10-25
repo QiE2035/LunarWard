@@ -66,12 +66,6 @@
                      Text="{Binding [InstallGameDialog.AutoSubfolder], Source={x:Static loc:AppStrings.Instance}}" />
         </CheckBox>
 
-        <!-- 开始安装（Starward：AccentButtonStyle，右对齐，Margin 0,16,0,0） -->
-        <Button x:Name="StartInstallButton" Margin="0,16,0,0" HorizontalAlignment="Right"
-                Classes="accent" Content="{Binding [InstallGameDialog.Start], Source={x:Static loc:AppStrings.Instance}}"
-                FontSize="14" IsEnabled="False"
-                Click="OnStartInstallClick" />
-
       </StackPanel>
 
       <!-- 硬链接说明（Starward：左下角，SupportedHardLink 时显示） -->

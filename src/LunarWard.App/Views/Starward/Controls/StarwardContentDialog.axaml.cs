@@ -45,6 +45,11 @@ public class StarwardContentDialog : ContentControl
     public static readonly StyledProperty<string?> CloseButtonTextProperty =
         AvaloniaProperty.Register<StarwardContentDialog, string?>(nameof(CloseButtonText));
 
+
+    /// <summary>主按钮是否可用（WinUI 的 <c>IsPrimaryButtonEnabled</c>）；关闭时置 false 可表示「还不能开始」。</summary>
+    public static readonly StyledProperty<bool> IsPrimaryButtonEnabledProperty =
+        AvaloniaProperty.Register<StarwardContentDialog, bool>(nameof(IsPrimaryButtonEnabled), defaultValue: true);
+
     /// <summary>是否显示右上角 X；默认显示（相当于原来每个 dialog 自己画的关闭按钮）。</summary>
     public static readonly StyledProperty<bool> IsCloseButtonVisibleProperty =
         AvaloniaProperty.Register<StarwardContentDialog, bool>(nameof(IsCloseButtonVisible), true);
@@ -130,6 +135,13 @@ public class StarwardContentDialog : ContentControl
         set => SetValue(CloseButtonTextProperty, value);
     }
 
+
+    public bool IsPrimaryButtonEnabled
+    {
+        get => GetValue(IsPrimaryButtonEnabledProperty);
+        set => SetValue(IsPrimaryButtonEnabledProperty, value);
+    }
+
     /// <summary>是否显示右上角 X。</summary>
     public bool IsCloseButtonVisible
     {
@@ -146,6 +158,11 @@ public class StarwardContentDialog : ContentControl
 
     /// <summary>是否已经打开过（用于自检截图判断浮层是否就位）。</summary>
     public bool IsShown { get; private set; }
+
+    private Button? _primaryButton;
+
+    /// <summary>右上角 X（自检/焦点归还用）。</summary>
+    private Button? _closeIconButton;
 
 
     /// <summary>请求关闭当前对话框（X / ESC / 底部关闭按钮都走这里）。</summary>
@@ -232,6 +249,7 @@ public class StarwardContentDialog : ContentControl
             || change.Property == PrimaryButtonTextProperty
             || change.Property == SecondaryButtonTextProperty
             || change.Property == CloseButtonTextProperty
+            || change.Property == IsPrimaryButtonEnabledProperty
             || change.Property == IsCloseButtonVisibleProperty)
         {
             UpdateChromeClasses();
@@ -243,6 +261,8 @@ public class StarwardContentDialog : ContentControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        _primaryButton = e.NameScope.Find<Button>("PrimaryButton");
+        _closeIconButton = e.NameScope.Find<Button>("CloseIconButton");
         UpdateChromeClasses();
     }
 
@@ -261,6 +281,12 @@ public class StarwardContentDialog : ContentControl
         PseudoClasses.Set(":nosecondary", !hasSecondary);
         PseudoClasses.Set(":noclose", !hasClose);
         PseudoClasses.Set(":nobuttons", !hasPrimary && !hasSecondary && !hasClose);
+
+        // 主按钮可用性由对话框决定（例如预下载要等体积算完才允许点）
+        if (_primaryButton is not null)
+        {
+            _primaryButton.IsEnabled = IsPrimaryButtonEnabled;
+        }
     }
 
 

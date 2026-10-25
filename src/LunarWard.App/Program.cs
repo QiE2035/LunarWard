@@ -165,6 +165,7 @@ internal static class Program
             CaptureMode.Language = ReadArgument(args, "--lang");
             CaptureMode.ExpandRail = args.Contains("--expand-rail");
             CaptureMode.CloseWindowDialog = args.Contains("--close-window-dialog");
+            CaptureMode.DialogEscTest = args.Contains("--dialog-esc-test");
             if (int.TryParse(ReadArgument(args, "--scroll-y"), out var scrollY) && scrollY > 0)
             {
                 CaptureMode.ScrollY = scrollY;

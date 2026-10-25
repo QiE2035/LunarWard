@@ -8,7 +8,7 @@
 
   <!-- Starward PlayTimeStatsDialog：1008×564 的内容（上游 ContentDialog 里就是 Grid Width=1008 Height=564），
        亚克力底/圆角/右上角 X 由 StarwardContentDialog 容器提供。 -->
-  <Grid Width="1008" Height="564" RowDefinitions="Auto,*">
+  <Grid Width="1008" Height="548" RowDefinitions="Auto,*">
 
     <!-- 标题（Starward：标题 Margin 24,12,0,0；关闭按钮已收敛到容器右上角） -->
     <Grid Grid.Row="0" Margin="24,12,56,0">
@@ -16,8 +16,9 @@
                  FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
     </Grid>
 
-    <!-- 内容（Starward：Margin 24,12,24,24） -->
-    <StackPanel Grid.Row="1" Margin="24,12,24,24">
+    <!-- 内容（Starward：Margin 24,12,24,24）；主窗口只有 676 高，内容超高时在框内滚动 -->
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="24,12,24,24">
 
       <!-- 统计卡片：3 列 × 2 行，间距 4 -->
       <Grid x:Name="StatCardsGrid" ColumnSpacing="4" RowSpacing="4" />
@@ -50,5 +51,6 @@
                  TextWrapping="Wrap"
                  IsVisible="False" />
     </StackPanel>
+    </ScrollViewer>
   </Grid>
 </controls:StarwardContentDialog>

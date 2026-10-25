@@ -724,7 +724,8 @@ var shell = new ShellSession
 
 | 功能 | 实现 | 说明 |
 |---|---|---|
-| 系统托盘 | `src/LunarWard.App/Services/TrayService.cs` | Avalonia `TrayIcon` + 原生菜单；无 SNI 宿主时回退「完全退出」并写回配置 |
+| 系统托盘 | `src/LunarWard.App/Services/TrayService.cs` | Avalonia `TrayIcon` + 原生菜单；无 SNI 宿主时「最小化到托盘」不可选、回退「完全退出」并写回配置。关闭行为三选一（`Ask` / `Hide` / `Exit`，判定在 `Services/CloseWindowDecision.cs`）；`Ask` 弹 `MainWindowCloseDialog` 并把选择写回 |
+| ContentDialog 容器 | `src/LunarWard.App/Views/Starward/Controls/StarwardContentDialog.axaml(.cs)` + `Services/DialogService.cs` | WinUI `ContentDialog` 的 Avalonia 等价物：游戏设置 / 预下载 / 安装 / DX12 / 时长统计 / 截图文件夹 / 关闭询问 7 个弹窗都是主窗口内浮层，不再有独立 `Window` |
 | 单实例 | `src/LunarWard.App/Services/SingleInstance.cs` | Unix socket；第二次启动把窗口叫回来（`SINGLE_INSTANCE_ACTIVATED`） |
 | CLI `startgame` | `src/LunarWard.App/Services/StartupCommands.cs` | `lunarward startgame --biz hk4e_cn`，不开窗口；桌面快捷方式用 |
 | URL 协议 | 同上 + `.desktop` 的 `x-scheme-handler/lunarward` | `lunarward://startgame/<biz>`、`lunarward://playtime?biz=&pid=` |

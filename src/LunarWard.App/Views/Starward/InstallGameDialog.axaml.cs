@@ -56,6 +56,9 @@ public partial class InstallGameDialog : StarwardContentDialog
         _gameId = new GameId();
         _baseFolder = "";
         CloseButtonText = Strings["Common.Close"];
+        PrimaryButtonText = Strings["InstallGameDialog.Start"];
+        IsPrimaryButtonEnabled = false;
+        PrimaryButtonClicked += (_, _) => OnStartInstallClick(this, EventArgs.Empty);
     }
 
 
@@ -68,6 +71,9 @@ public partial class InstallGameDialog : StarwardContentDialog
         _language = string.IsNullOrWhiteSpace(Strings.Language) ? "zh-cn" : Strings.Language.ToLowerInvariant();
         _gameId = GameId.FromGameBiz(new LunarWard.Core.GameBiz(gameBiz)) ?? new GameId { GameBiz = gameBiz };
         CloseButtonText = Strings["Common.Close"];
+        PrimaryButtonText = Strings["InstallGameDialog.Start"];
+        IsPrimaryButtonEnabled = false;
+        PrimaryButtonClicked += (_, _) => OnStartInstallClick(this, EventArgs.Empty);
         _baseFolder = string.IsNullOrWhiteSpace(initialPath)
             ? Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Games")
             : Path.GetDirectoryName(initialPath.TrimEnd('/')) ?? initialPath;
@@ -118,7 +124,7 @@ public partial class InstallGameDialog : StarwardContentDialog
         AvailableSpaceRun.Text = available > 0 ? FormatGigabytes(available) : "...";
         UnzipSpaceRun.Text = _unzipSpaceBytes > 0 ? FormatGigabytes(_unzipSpaceBytes) : "...";
 
-        StartInstallButton.IsEnabled = error is null && _package is not null;
+        IsPrimaryButtonEnabled = error is null && _package is not null;
     }
 
 
@@ -375,7 +381,7 @@ public partial class InstallGameDialog : StarwardContentDialog
     }
 
 
-    private void OnStartInstallClick(object? sender, RoutedEventArgs e)
+    private void OnStartInstallClick(object? sender, EventArgs e)
     {
         if (_package is null || ValidatePath(_installationPath) is not null)
         {

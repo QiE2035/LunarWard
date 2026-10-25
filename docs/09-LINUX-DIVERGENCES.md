@@ -36,3 +36,18 @@
   出图方式：`--screenshot --page screenshot --screenshot-seed --scroll-y 1600
   --scroll-target WallScroller`（`--scroll-target` 按可视树里的控件名精确滚动）。
 
+## 三、框架层替代（WinUI 控件 → Avalonia 等价物）
+
+| 上游 | LunarWard | 说明 |
+|---|---|---|
+| `ContentDialog`（WinUI 窗口内浮层：标题行 48 / 按钮栏 / 右上 X） | `dh:DialogHost`（`DialogHost.Avalonia 0.12.3`）+ 自研容器 `Views/Starward/Controls/StarwardContentDialog.axaml` | Avalonia 无内建 `ContentDialog`。容器复刻默认模板：圆角 8、1px 描边、`StarAcrylicBrush`、48px 标题行（20px SemiBold）、40×40 `E711` 关闭、右对齐按钮栏、`MinWidth 320` / `MaxWidth 548`（各弹窗按上游显式覆盖 400–1008） |
+| `ContentDialogSmokeFill`（浮层后的暗化） | `DialogHost.OverlayBackground="#66000000"`（`MainWindow.axaml`） | 同一个 popup 层里画遮罩；判据：同像素 RGB 由 (250,238,230) 降到 (194,185,179) |
+| `AcrylicBrush` 真模糊 | 半透明纯色 `#F52C2C2C` | 与 §一 的模糊条目同因（Linux 无跨桌面模糊 API） |
+| `ContentDialog.ShowAsync()` 的异步结果 | `DialogService.ShowAsync(dialog, owner)` + 弹窗公开 `Request` / `Result` / `Confirmed` | 防重入、ESC、焦点归还集中在 `Services/DialogService.cs`；`DialogReentrancyGate`、`CloseWindowDecision` 是纯逻辑（有单测） |
+| 弹窗作为独立 `Window`（历史实现） | 全部收敛成主窗口内浮层 | 顺带消灭「独立窗口在 KWin 里带系统边框」的问题（主窗口 `WindowDecorations=None`，浮层无边框） |
+
+- **窗口无边框（2026-10-25，`fix/ui-dialogs`）**：主窗口 `WindowDecorations="None"` +
+  自绘标题栏，KWin 不再画服务端边框；对话框不再是独立窗口，也不再声明
+  `WindowDecorations` / `TransparencyLevelHint`。
+- **弹窗内容高度上限**：主窗口固定 676 高，原独立窗口里 1008×564 的
+  `PlayTimeStatsDialog` 塞不进浮层，内容区改为在固定高度内滚动（列宽仍 1008）。
