@@ -182,8 +182,9 @@ dotnet test LunarWard.slnx -m:1         # 串行，规避并发下两个集成�
 `~/.local/share/sleepy-launcher/prefix`，用户自己的实例）。不过 `GetPrefixClients`
 （`src/LunarWard.Platform/LinuxProcessTree.cs:94`）是**读 `/proc/<pid>/environ` 里的
 `WINEPREFIX` 精确比较**的，理论上不会把外部 prefix 算成本 sandbox 的客户端；
-所以这条只能解释「残留进程数不对」，不能直接解释断言失败。结论：第三类干扰仍未定论，
-暂按「本机环境噪声」记录，CI 干净环境不受影响。
+所以这条只能解释「残留进程数不对」，不能直接解释断言失败。现状：清掉残留 wine 进程后曾连续 3 轮 27/27，
+但随后又出现过 25/27，说明**尚未根治**；已把两处 5s 等待放宽到 15s（高负载尾风险）。
+复现时先看是否残留 wine 进程，再用 `--logger "console;verbosity=detailed"` 抓失败名。
 
 ## 文档索引
 

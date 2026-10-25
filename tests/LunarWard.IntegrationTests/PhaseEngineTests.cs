@@ -30,7 +30,8 @@ public class PhaseEngineTests
         using var sandbox = new Sandbox();
         var stalePid = sandbox.SpawnStaleClient();
         await Sandbox.WaitUntilAsync(() => sandbox.Processes.GetPrefixClients(sandbox.Prefix).Count > 0,
-            TimeSpan.FromSeconds(5));
+            // 15s：整套测试顺序跑时机器更忙，5s 在慢盘/高负载下会偶发超时
+            TimeSpan.FromSeconds(15));
 
         Assert.NotEmpty(sandbox.Processes.GetPrefixClients(sandbox.Prefix));
 
@@ -402,7 +403,8 @@ public class PhaseEngineTests
         using var sandbox = new Sandbox();
         var stalePid = sandbox.SpawnStaleClient();
         await Sandbox.WaitUntilAsync(() => sandbox.Processes.GetPrefixClients(sandbox.Prefix).Count > 0,
-            TimeSpan.FromSeconds(5));
+            // 15s：整套测试顺序跑时机器更忙，5s 在慢盘/高负载下会偶发超时
+            TimeSpan.FromSeconds(15));
 
         var wine = sandbox.CreateWine(f => f.GameSeconds = 1);
         var plan = sandbox.CreatePlan(wine, b => b.DryRun = true);
