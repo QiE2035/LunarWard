@@ -116,6 +116,7 @@ cd packaging && makepkg -si
 lunarward startgame --biz hk4e_cn      # 原神国服；hkrpg_cn / nap_global 等同理
 lunarward "lunarward://startgame/hk4e_cn"   # 同一入口的 URL 协议形式（桌面文件的 %U 会传进来）
 lunarward --version / --help            # 版本号 / 命令帮助（不启动窗口）
+lunarward --scan-games                    # 扫游戏库（含 Steam 的 steamapps/common），打印 SCAN_GAME/SCAN_TOTAL
 lunarward --start-hidden                # 开机自启：直接藏到系统托盘（需先在设置里选「最小化到系统托盘」）
 lunarward playtime --biz hk4e_cn --pid 1234           # 盯住外部启动的游戏进程，退出后补记时长
 lunarward "lunarward://playtime?biz=hk4e_cn&pid=1234" # 同上，URL 形式（给 hoYoPlay / 外部启动器调用）
