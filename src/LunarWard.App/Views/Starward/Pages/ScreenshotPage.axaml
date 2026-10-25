@@ -17,7 +17,8 @@
         · 每项：圆角 4（:188）、ClipToBounds（:186）、背景 ControlAltFillColorTertiary（:197）
         · 缩略图居中（:194-201）、悬停信息层（#60000000 + 时间 12px #F3F3F3，:206-232）
     空态：StackPanel 居中 Spacing 16 + 160×160 图标 + 16px 次要色文案（源码 153-166 行）。
-    AnnotatedScrollBar（源码 285-312）尚未移植，暂用普通滚动条，见 docs/07 §8。
+    AnnotatedScrollBar（源码 285-312）：Avalonia 无等价控件，改为滚动浮出的月份胶囊
+    （ScreenshotMonthIndex + 本页 OnWallScrollChanged，已验证 2026-10→2026-05，见 docs/09）。
   -->
 
   <UserControl.Resources>
