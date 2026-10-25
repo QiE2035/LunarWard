@@ -82,6 +82,49 @@ public sealed class ScreenshotService
 
 
     /// <summary>
+    /// 列举多个目录里的截图（去重后按时间倒序）。
+    /// </summary>
+    /// <remarks>
+    /// 对应 Starward <c>ScreenshotPage2.xaml.cs</c>：游戏内目录 + <c>GetExternalScreenshotFolder</c>
+    /// 里以 <c>;</c> 分隔的额外目录一起进图库，同名文件只取第一个遇到的那张。
+    /// </remarks>
+    public IReadOnlyList<GameScreenshot> List(IReadOnlyList<string> directories, int max = 500)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var all = new List<GameScreenshot>();
+        foreach (var directory in directories)
+        {
+            if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
+            {
+                continue;
+            }
+
+            try
+            {
+                foreach (var file in new DirectoryInfo(directory).EnumerateFiles())
+                {
+                    if (!ImageExtensions.Contains(file.Extension) || !seen.Add(file.Name))
+                    {
+                        continue;
+                    }
+
+                    all.Add(new GameScreenshot(
+                        file.FullName,
+                        new DateTimeOffset(file.LastWriteTimeUtc, TimeSpan.Zero).ToLocalTime(),
+                        file.Length));
+                }
+            }
+            catch (Exception)
+            {
+                // 单个目录不可读时跳过，其余目录继续
+            }
+        }
+
+        return all.OrderByDescending(x => x.CapturedAt).Take(max).ToList();
+    }
+
+
+    /// <summary>
     /// 从文件名前缀提取 UID（游戏截图命名形如 <c>100000000_2026-10-23_12-00-00.png</c>）。
     /// </summary>
     public static string? ExtractUid(string fileName)

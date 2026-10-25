@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -7,6 +7,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using LunarWard.App.ViewModels.Starward;
+using LunarWard.Installer;
 
 namespace LunarWard.App.Views.Starward.Pages;
 
@@ -24,6 +25,9 @@ public partial class GameLauncherPage : StarwardPage
         DataContext = _viewModel;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         _viewModel.InstallDialogRequested += OnInstallDialogRequested;
+        _viewModel.PredownloadDialogRequested += OnPredownloadDialogRequested;
+        _viewModel.SettingDialogRequested += OnSettingDialogRequested;
+        _viewModel.LocateGameRequested += OnLocateGameRequested;
         DragDrop.SetAllowDrop(RootGrid, true);
         RootGrid.AddHandler(DragDrop.DragEnterEvent, OnRootGridDragOver);
         RootGrid.AddHandler(DragDrop.DragOverEvent, OnRootGridDragOver);
@@ -42,7 +46,24 @@ public partial class GameLauncherPage : StarwardPage
 
         if (CaptureMode.InstallProgress)
         {
-            _viewModel.ShowInstallProgressForCapture();
+            _viewModel.ShowInstallProgressForCapture(
+                CaptureMode.InstallUpdate ? GameInstallOperation.Update : GameInstallOperation.Install);
+        }
+        else if (CaptureMode.InstallUpdate)
+        {
+            _viewModel.ShowUpdateButtonForCapture();
+        }
+
+        if (CaptureMode.Predownload is { Length: > 0 } predownloadState)
+        {
+            _viewModel.ShowPredownloadForCapture(predownloadState);
+        }
+
+        if (CaptureMode.AuthLogin)
+        {
+            // 自检：摆出「已拿到通行证 ID + 一次认证失败」的 Flyout，并顺带把 Popup 单独存一张。
+            _viewModel.AuthLogin.ShowForCapture("Response status code does not indicate success: 401 (Unauthorized).");
+            DispatcherTimer.RunOnce(() => Button_GameAuthLogin.Flyout?.ShowAt(Button_GameAuthLogin), TimeSpan.FromMilliseconds(600));
         }
 
         if (CaptureMode.InstallDialog && CaptureMode.Path is { } dialogPath)
@@ -52,12 +73,157 @@ public partial class GameLauncherPage : StarwardPage
                 await Task.Delay(1000);
                 var dialog = new InstallGameDialog(Context.Services, _viewModel.GameBiz,
                     Context.Shell.CurrentLauncherId, Context.Profile.Profile.Path);
-                dialog.ShowDialog(TopLevel.GetTopLevel(this) as Window ?? throw new InvalidOperationException());
+                _ = dialog.ShowDialog(TopLevel.GetTopLevel(this) as Window ?? throw new InvalidOperationException());
                 dialog.CaptureSelf(dialogPath + ".dialog.png", 2500);
             });
         }
 
+        if (CaptureMode.PredownloadDialog && CaptureMode.Path is { } predownloadPath)
+        {
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.Delay(900);
+                if (TopLevel.GetTopLevel(this) is not Window owner)
+                {
+                    return;
+                }
+                var dialog = new PreDownloadDialog(Context.Services, _viewModel.GameBiz,
+                    Context.Shell.CurrentLauncherId, Context.Profile.Profile.Path, capture: true);
+                dialog.PrepareCapture(CaptureMode.PredownloadDialogUnavailable);
+                dialog.Show(owner);
+                dialog.CaptureSelf(predownloadPath + ".dialog.png", 1200);
+            });
+        }
+
+        if (CaptureMode.Dx12IntroDialog && CaptureMode.Path is { } dx12Path)
+        {
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.Delay(700);
+                if (TopLevel.GetTopLevel(this) is not Window owner)
+                {
+                    return;
+                }
+                var dialog = new DX12IntroDialog();
+                dialog.Show(owner);
+                dialog.CaptureSelf(dx12Path + ".dialog.png", 900);
+            });
+        }
+
+
+        if (CaptureMode.LauncherSettingDialog && CaptureMode.Path is { } settingPath)
+        {
+            int section = CaptureMode.SettingsSection switch
+            {
+                "arguments" => 1,
+                "background" => 2,
+                "packages" => 3,
+                _ => 0,
+            };
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.Delay(900);
+                if (TopLevel.GetTopLevel(this) is not Window owner)
+                {
+                    return;
+                }
+                var dialog = new GameLauncherSettingDialog(Context);
+                dialog.SelectSection(section);
+                if (section == 0 && CaptureMode.SettingsSection == "network")
+                {
+                    dialog.ShowNetworkWarningForCapture();
+                }
+                if (section == 0 && CaptureMode.UninstallWarning)
+                {
+                    dialog.ShowUninstallWarningForCapture();
+                }
+                dialog.Show(owner);
+                dialog.CaptureSelf(settingPath + ".dialog.png", 1800);
+            });
+        }
+
         RebuildPips();
+    }
+
+
+    /// <summary>
+    /// Starward <c>GameLauncherPage.xaml.cs:385 LocateGameAsync</c>：
+    /// 选目录 → 网络驱动器就警告、否则写回配置并刷新按钮状态。
+    /// </summary>
+    private async void OnLocateGameRequested()
+    {
+        if (_viewModel is null || TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        var folders = await owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = _viewModel.Strings["Launcher.LocateGame"],
+            AllowMultiple = false,
+        });
+
+        if (folders.FirstOrDefault()?.TryGetLocalPath() is not { Length: > 0 } path)
+        {
+            return;
+        }
+
+        if (LunarWard.Installer.DriveHelper.GetDriveType(path) is DriveType.Network
+            && !path.StartsWith("//", StringComparison.Ordinal))
+        {
+            _viewModel.ReportStatus(_viewModel.Strings["LauncherSetting.NetworkDriveWarning"]);
+            return;
+        }
+
+        Context.Profile.Profile.Path = path;
+        try
+        {
+            Context.Services.Config.Save(Context.Services.Paths.ConfigFile);
+        }
+        catch (Exception ex)
+        {
+            _viewModel.ReportStatus(ex.Message);
+            return;
+        }
+
+        _viewModel.RefreshInstallPathState();
+    }
+
+
+    /// <summary>
+    /// Starward <c>GameLauncherPage.xaml.cs:912</c>：齿轮弹「游戏设置」对话框。
+    /// </summary>
+    /// <summary>卸载完成后让启动器重新判断「已安装 / 未安装」（源码 UninstallGameAsync 末尾刷新同一个状态机）。</summary>
+    /// <summary>DX12「详情」：弹 <see cref="DX12IntroDialog"/>（源码 <c>Button_Details_Click</c>）。</summary>
+    private async void OnDx12DetailsClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (TopLevel.GetTopLevel(this) is not Avalonia.Controls.Window owner)
+        {
+            return;
+        }
+
+        var dialog = new DX12IntroDialog();
+        await dialog.ShowDialog(owner);
+    }
+
+
+    private void OnGameUninstalled()
+    {
+        _viewModel?.RefreshInstallPathState();
+    }
+
+
+    private void OnSettingDialogRequested()
+    {
+        if (TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        var dialog = new GameLauncherSettingDialog(Context);
+        dialog.SettingsChanged += () => _viewModel?.RefreshNoticeSettings();
+        dialog.GameUninstalled += OnGameUninstalled;
+        dialog.Show(owner);
     }
 
 
@@ -72,11 +238,79 @@ public partial class GameLauncherPage : StarwardPage
             return;
         }
 
-        var dialog = new InstallGameDialog(Context.Services, _viewModel.GameBiz, Context.Shell.CurrentLauncherId, Context.Profile.Profile.Path);
+        var dialog = new InstallGameDialog(
+            Context.Services,
+            _viewModel.GameBiz,
+            Context.Shell.CurrentLauncherId,
+            Context.Profile.Profile.Path);
         await dialog.ShowDialog(owner);
         if (dialog.Request is { } request)
         {
             await _viewModel.BeginInstallAsync(request);
+        }
+    }
+
+
+    /// <summary>
+    /// Starward <c>PredownloadAsync</c> 里的 <c>new PreDownloadDialog(...).ShowAsync()</c>：
+    /// 确认框自己算体积，确认后把 <see cref="GameInstallRequest"/> 交回来起任务。
+    /// </summary>
+    private async void OnPredownloadDialogRequested(PredownloadDialogArgs args)
+    {
+        if (_viewModel is null || TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        var dialog = new PreDownloadDialog(Context.Services, args.GameBiz, args.LauncherId, args.InstallPath);
+        await dialog.ShowDialog(owner);
+        if (dialog.Request is { } request)
+        {
+            await _viewModel.StartPredownloadAsync(request);
+        }
+    }
+
+
+    /// <summary>
+    /// Starward StartGameButton 的 PointerEntered：安装中把状态小字换成「暂停/继续/取消」，
+    /// 并让上方进度卡保持展开。
+    /// </summary>
+    /// <summary>Starward <c>PreDownloadButton.Grid_Root_PointerEntered</c>：悬停换图标并弹下载信息。</summary>
+    private void OnPredownloadPointerEntered(object? sender, PointerEventArgs e)
+    {
+        if (_viewModel is not null)
+        {
+            _viewModel.PredownloadPointerOver = true;
+        }
+    }
+
+
+    private void OnPredownloadPointerExited(object? sender, PointerEventArgs e)
+    {
+        if (_viewModel is not null)
+        {
+            _viewModel.PredownloadPointerOver = false;
+        }
+    }
+
+
+    private void OnStartButtonPointerEntered(object? sender, PointerEventArgs e)
+    {
+        if (_viewModel is not null)
+        {
+            _viewModel.ActionButtonPointerOver = true;
+            _viewModel.IsGameInfoPopupOpen = true;
+        }
+    }
+
+
+    /// <summary>Starward StartGameButton 的 PointerExited。</summary>
+    private void OnStartButtonPointerExited(object? sender, PointerEventArgs e)
+    {
+        if (_viewModel is not null)
+        {
+            _viewModel.ActionButtonPointerOver = false;
+            _viewModel.IsGameInfoPopupOpen = false;
         }
     }
 
@@ -281,6 +515,8 @@ public partial class GameLauncherPage : StarwardPage
         if (_viewModel is not null)
         {
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            _viewModel.InstallDialogRequested -= OnInstallDialogRequested;
+            _viewModel.PredownloadDialogRequested -= OnPredownloadDialogRequested;
             _viewModel.Dispose();
         }
 
@@ -362,11 +598,29 @@ public partial class GameLauncherPage : StarwardPage
     }
 
 
-    private void CaptureFlyout()
+    private void OnGameAuthLoginFlyoutOpened(object? sender, EventArgs e)
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        GameAuthLoginFlyoutRoot.DataContext = _viewModel.AuthLogin;
+        if (CaptureMode.AuthLogin)
+        {
+            DispatcherTimer.RunOnce(() => CaptureFlyoutFrom(GameAuthLoginFlyoutRoot), TimeSpan.FromMilliseconds(800));
+        }
+    }
+
+
+    private void CaptureFlyout() => CaptureFlyoutFrom(DailyNoteFlyoutRoot);
+
+
+    private void CaptureFlyoutFrom(Control anchor)
     {
         try
         {
-            if (TopLevel.GetTopLevel(DailyNoteFlyoutRoot) is not { } root)
+            if (TopLevel.GetTopLevel(anchor) is not { } root)
             {
                 Console.WriteLine("FLYOUT_SHOT_FAIL no popup root");
                 return;

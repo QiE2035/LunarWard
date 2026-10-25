@@ -120,6 +120,28 @@ public sealed class LauncherSettings
     /// </summary>
     public bool EnableGameAccountSwitcher { get; set; }
 
+    /// <summary>是否启用通行证授权登录（Starward <c>AppConfig.EnableLoginAuthTicket</c>）。</summary>
+    public bool? EnableLoginAuthTicket { get; set; }
+
+    /// <summary>
+    /// 启动器 Pivot 里的游戏公告（对应 Starward <c>AppConfig.ShowGameAnnouncement</c>）。
+    /// 关闭后铃铛整个隐藏。
+    /// </summary>
+    public bool ShowGameNotice { get; set; } = true;
+
+    /// <summary>
+    /// 关闭游戏公告的红点提醒（对应 Starward <c>AppConfig.DisableRedDotReminderForGameNotices</c>）。
+    /// </summary>
+    public bool DisableNoticeRedDot { get; set; }
+
+
+    /// <summary>被「固定」的游戏区服（<c>档案id:渠道</c>，Starward <c>GameBizIcon.IsPinned</c>）。</summary>
+    public List<string> PinnedGameServers { get; set; } = [];
+
+
+    /// <summary>游戏选择器的卡片顺序（`档案id` 列表，对应源码拖放排序）。为空表示按目录默认顺序。</summary>
+    public List<string> GameChoiceOrder { get; set; } = [];
+
     public int BackgroundIndex { get; set; }
 
     public string? DefaultRuntime { get; set; }

@@ -52,6 +52,21 @@
       </Setter>
     </Style>
 
+    <Style Selector="Border.tile Image.thumb">
+      <Setter Property="RenderTransform" Value="scale(1)" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <TransformOperationsTransition Property="RenderTransform"
+                                         Duration="0:0:0.6"
+                                         Easing="QuadraticEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+
+    <Style Selector="Border.tile:pointerover Image.thumb">
+      <Setter Property="RenderTransform" Value="scale(1.2)" />
+    </Style>
+
     <Style Selector="Border.tile:pointerover Grid.info">
       <Setter Property="Opacity" Value="1" />
     </Style>
@@ -92,66 +107,12 @@
 
       <!--
         Starward 唯一的按钮（:149）：Command=ManageScreenshotFolderCommand，
-        打开 ScreenshotFolderManageDialog。该对话框尚未移植，Flyout 内是
-        LunarWard 追加的三行（刷新 / 打开目录 / 导出全部），外加目录路径与复制。
+        打开 ScreenshotFolderManageDialog（已移植为 Views/Starward/ScreenshotFolderManageDialog.axaml）。
+        原 Flyout 里的刷新 / 打开目录 / 导出全部保留在磁贴右键菜单里。
       -->
-      <Button x:Name="ManageButton" Content="{Binding Strings[Screenshot.ManageFolders]}">
-        <Button.Flyout>
-          <Flyout Placement="BottomEdgeAlignedRight">
-            <StackPanel Width="320" Spacing="2">
-
-              <!-- 截图目录 + 复制路径（旧页面能力，保留在 Flyout 里） -->
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="8,4,4,2">
-                <TextBlock Grid.Column="0"
-                           Classes="tertiary"
-                           VerticalAlignment="Center"
-                           TextWrapping="Wrap"
-                           Text="{Binding DirectoryDisplay}"
-                           ToolTip.Tip="{Binding DirectoryDisplay}" />
-                <Button Grid.Column="1"
-                        Width="24" Height="24" MinHeight="24"
-                        Padding="0"
-                        Background="Transparent"
-                        Command="{Binding CopyPathCommand}"
-                        ToolTip.Tip="{Binding Strings[Screenshot.CopyPath]}">
-                  <TextBlock Classes="icon" FontSize="12"
-                             Foreground="{StaticResource StarTextTertiary}"
-                             Text="&#xE8C8;" />
-                </Button>
-              </Grid>
-
-              <TextBlock Margin="8,0,8,4"
-                         Classes="tertiary"
-                         TextWrapping="Wrap"
-                         IsVisible="{Binding HasSummary}"
-                         Text="{Binding SummaryText}" />
-
-              <Border Classes="divider" Margin="8,2" />
-
-              <Button Classes="flyout-row" Command="{Binding RefreshCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                  <TextBlock Classes="icon" FontSize="14" Text="&#xE72C;" />
-                  <TextBlock Text="{Binding Strings[Screenshot.Refresh]}" />
-                </StackPanel>
-              </Button>
-
-              <Button Classes="flyout-row" Command="{Binding OpenDirectoryCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                  <TextBlock Classes="icon" FontSize="14" Text="&#xE8B7;" />
-                  <TextBlock Text="{Binding Strings[Screenshot.OpenDirectory]}" />
-                </StackPanel>
-              </Button>
-
-              <Button Classes="flyout-row" Command="{Binding ExportAllCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                  <TextBlock Classes="icon" FontSize="14" Text="&#xE8E5;" />
-                  <TextBlock Text="{Binding Strings[Screenshot.ExportAll]}" />
-                </StackPanel>
-              </Button>
-            </StackPanel>
-          </Flyout>
-        </Button.Flyout>
-      </Button>
+      <Button x:Name="ManageButton"
+              Content="{Binding Strings[Screenshot.ManageFolders]}"
+              Click="OnManageFoldersClick" />
     </StackPanel>
 
     <!-- ══ 磁贴墙（Starward ItemsView，:169-282） ═══════════════════════ -->
@@ -197,7 +158,13 @@
                     背景线程解码到 412 宽（Starward ImageThumbnail 的同一档尺寸），
                     不会一次性解码原图。
                   -->
-                  <Image Source="{Binding Thumbnail}"
+                  <!--
+                    Starward 悬停动画（:240-280）：缩略图 ScaleX/Y → 1.2（X 1s / Y 0.6s，
+                    CircleEase），信息条 opacity → 1（0.6s）；离开时 1s 还原。
+                    Avalonia 用 TransformOperationsTransition 表达同一组时长与缓动。
+                  -->
+                  <Image Classes="thumb"
+                         Source="{Binding Thumbnail}"
                          Stretch="Uniform"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center" />

@@ -51,6 +51,28 @@ public sealed partial class ScreenshotViewModel : ObservableObject
     public string Directory => ScreenshotService.GetDirectory(_gameDirectory, _gameKind);
 
 
+    /// <summary>
+    /// 图库扫描的目录：游戏截图目录在最前，后面是用户在「管理截图文件夹」里加的额外目录。
+    /// </summary>
+    public IReadOnlyList<string> FolderDirectories
+    {
+        get
+        {
+            var list = new List<string> { Directory };
+            foreach (string folder in _profile.Profile.ScreenshotFolders ?? [])
+            {
+                string expanded = ProfileConfig.ExpandPath(folder);
+                if (!string.IsNullOrWhiteSpace(expanded) && System.IO.Directory.Exists(expanded)
+                    && !list.Contains(expanded, StringComparer.Ordinal))
+                {
+                    list.Add(expanded);
+                }
+            }
+            return list;
+        }
+    }
+
+
     [ObservableProperty]
     private ScreenshotItemViewModel? selected;
 
@@ -76,7 +98,7 @@ public sealed partial class ScreenshotViewModel : ObservableObject
         Items.Clear();
         try
         {
-            var list = _screenshots.List(_gameDirectory, _gameKind, MaxDisplayItems);
+            var list = _screenshots.List(FolderDirectories, MaxDisplayItems);
             foreach (var item in list)
             {
                 Items.Add(new ScreenshotItemViewModel(item));

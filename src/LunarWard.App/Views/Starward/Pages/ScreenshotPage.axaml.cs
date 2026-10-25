@@ -3,6 +3,9 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.VisualTree;
+using Avalonia.Media;
 using Avalonia.Threading;
 using LunarWard.App.ViewModels;
 using LunarWard.App.ViewModels.Starward;
@@ -14,8 +17,7 @@ namespace LunarWard.App.Views.Starward.Pages;
 /// </summary>
 /// <remarks>
 /// 页面本身只有三件事需要 code-behind：磁贴宽度补偿（WrapPanel 没有 UniformGridLayout
-/// 的拉伸语义）、磁贴的懒加载/右键菜单、以及点击打开大图（Starward 的
-/// <c>ImageViewWindow2</c> 尚未移植，见 <see cref="OpenInDefaultViewer"/>）。
+/// 的拉伸语义）、磁贴的懒加载/右键菜单、以及点击打开大图（<see cref="ImageViewWindow2"/>）。
 /// </remarks>
 public partial class ScreenshotPage : StarwardPage
 {
@@ -35,11 +37,6 @@ public partial class ScreenshotPage : StarwardPage
         _viewModel = new ScreenshotPageViewModel(context);
         DataContext = _viewModel;
 
-        // Flyout 的内容不在按钮的视觉树里，DataContext 不会自然继承，这里显式挂上。
-        if (ManageButton.Flyout is Flyout { Content: Control content })
-        {
-            content.DataContext = _viewModel;
-        }
     }
 
 
@@ -47,6 +44,8 @@ public partial class ScreenshotPage : StarwardPage
     {
         // 每次进入页面都重新扫目录：玩家可能刚在游戏里截了新图
         _viewModel.ReloadFromDisk();
+        SetupHoverCapture();
+        SetupFolderDialogCapture();
     }
 
 
@@ -140,11 +139,50 @@ public partial class ScreenshotPage : StarwardPage
     }
 
 
+    /// <summary>
+    /// 页头「管理截图文件夹」（Starward <c>ScreenshotPage2.xaml.cs:446-462</c>）：
+    /// 弹对话框，保存后把额外目录写回配置并重扫图库。
+    /// </summary>
+    private void OnManageFoldersClick(object? sender, RoutedEventArgs e)
+    {
+        if (TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        var profile = _viewModel.Context.Profile.Profile;
+        var dialog = new ScreenshotFolderManageDialog(
+            _viewModel.DirectoryPath,
+            profile.ScreenshotFolders ?? []);
+        dialog.Closed += (_, _) =>
+        {
+            if (dialog.Result is not { } folders)
+            {
+                return;
+            }
+
+            profile.ScreenshotFolders = [.. folders];
+            try
+            {
+                _viewModel.Context.Services.Config.Save(_viewModel.Context.Services.Paths.ConfigFile);
+            }
+            catch (Exception ex)
+            {
+                _viewModel.ReportError(ex.Message);
+                return;
+            }
+
+            _viewModel.ReloadFromDisk();
+        };
+        dialog.Show(owner);
+    }
+
+
     private void OnTileTapped(object? sender, TappedEventArgs e)
     {
         if (sender is Control { DataContext: ScreenshotItemViewModel item })
         {
-            OpenInDefaultViewer(item);
+            OpenInImageViewer(item);
         }
     }
 
@@ -154,22 +192,80 @@ public partial class ScreenshotPage : StarwardPage
     /// </summary>
     /// <remarks>
     /// Starward 在这里调用 <c>new ImageViewWindow2().ShowWindowAsync(..., item, Screenshots)</c>
-    /// （ScreenshotPage2.xaml.cs:491-504）：一个支持缩放/拖动/切换上一张下一张的独立窗口。
-    /// LunarWard 尚未移植 ImageViewWindow2，也没有可用的应用内大图窗口，因此临时把
-    /// 图片交给桌面默认查看器（<c>xdg-open</c>）。这只是等价物，不是最终形态。
+    /// （ScreenshotPage2.xaml.cs:491-504）：支持缩放/拖动/上一张下一张的独立窗口。
+    /// LunarWard 已移植为 <see cref="ImageViewWindow2"/>，整份截图集合一起传进去，
+    /// 这样窗口里的左右翻页和图库条才有内容。
     /// </remarks>
-    private void OpenInDefaultViewer(ScreenshotItemViewModel item)
+    private void OpenInImageViewer(ScreenshotItemViewModel item)
     {
-        try
+        if (TopLevel.GetTopLevel(this) is not Window owner)
         {
-            var info = new ProcessStartInfo { FileName = "xdg-open", UseShellExecute = false };
-            info.ArgumentList.Add(item.Screenshot.Path);
-            using var process = Process.Start(info);
+            return;
         }
-        catch (Exception ex)
+
+        var screenshots = _viewModel.Browser.Items.Select(x => x.Screenshot).ToList();
+        var window = new ImageViewWindow2(item.Screenshot, screenshots);
+        window.Show(owner);
+    }
+
+    /// <summary>
+    /// 自检开关 <c>--screenshot-hover</c>：等磁贴生成后，把第一块磁贴置为 <c>:pointerover</c>，
+    /// 截「缩略图放大到 1.2」的效果（没有真实指针事件时唯一能复现该状态的办法）。
+    /// </summary>
+    private void SetupHoverCapture()
+    {
+        if (!CaptureMode.ScreenshotHover)
         {
-            _viewModel.ReportError(string.Format(
-                CultureInfo.CurrentCulture, _viewModel.Strings["Screenshot.OpenFailed"], ex.Message));
+            return;
         }
+
+        _ = Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                await Task.Delay(120);
+                var tile = this.GetVisualDescendants()
+                    .OfType<Border>()
+                    .FirstOrDefault(x => x.Classes.Contains("tile"));
+                if (tile is not null)
+                {
+                    ((IPseudoClasses)tile.Classes).Set(":pointerover", true);
+                    return;
+                }
+            }
+        });
+    }
+
+
+    /// <summary>
+    /// 自检开关 <c>--screenshot-folder-dialog</c>：造两个额外目录，打开「管理截图文件夹」对话框并截图。
+    /// </summary>
+    private void SetupFolderDialogCapture()
+    {
+        if (!CaptureMode.ScreenshotFolderDialog || CaptureMode.Path is not { } path)
+        {
+            return;
+        }
+
+        _ = Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await Task.Delay(700);
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                return;
+            }
+
+            string root = System.IO.Path.Join(System.IO.Path.GetTempPath(), "lw-shot-folders");
+            string first = System.IO.Path.Join(root, "Screenshots-2026");
+            string second = System.IO.Path.Join(root, "Shared", "Screenshots");
+            System.IO.Directory.CreateDirectory(first);
+            System.IO.Directory.CreateDirectory(second);
+
+            string inGame = System.IO.Path.Join(root, "ScreenShot");
+            System.IO.Directory.CreateDirectory(inGame);
+            var dialog = new ScreenshotFolderManageDialog(inGame, [first, second]);
+            dialog.Show(owner);
+            dialog.CaptureSelf(path, 1200);
+        });
     }
 }

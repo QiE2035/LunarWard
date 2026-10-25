@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -8,7 +8,6 @@ using LunarWard.App.Services;
 using LunarWard.App.ViewModels;
 using LunarWard.App.Views;
 using LunarWard.App.Views.Starward;
-using LunarWard.Core;
 using LunarWard.Core.GameNotice;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Games;
@@ -63,9 +62,11 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         ApplyState(_services.LauncherService.State);
         UpdatePlayTime();
         DailyNote = new DailyNoteButtonViewModel(context);
+        AuthLogin = new GameAuthLoginViewModel(context);
 
         _ = LoadContentAsync();
         _ = UpdateNoticeAlertAsync();
+        _ = CheckUpdateAsync();
         RefreshBackgroundImages();
         LoadGameAccounts();
     }
@@ -84,8 +85,11 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
     public bool SupportsDailyNote => true;
 
+    /// <summary>Starward 支持原神 / 星穹铁道 / 绝区零三款游戏的抽卡记录。</summary>
     public bool SupportsGacha => GameBiz.StartsWith("hk4e", StringComparison.Ordinal)
-                                 || GameBiz.StartsWith("nap", StringComparison.Ordinal);
+                                 || GameBiz.StartsWith("nap", StringComparison.Ordinal)
+                                 || GameBiz.StartsWith("nap_cn", StringComparison.Ordinal)
+                                 || GameBiz.StartsWith("zzz", StringComparison.Ordinal);
 
 
     // ── 公告卡 ────────────────────────────────────────────────────────
@@ -264,14 +268,14 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     private bool _isBusy;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsAccentBackground), nameof(StartButtonForeground), nameof(SettingButtonForeground))]
+    [NotifyPropertyChangedFor(nameof(IsAccentBackground), nameof(StartButtonForeground), nameof(SettingButtonForeground), nameof(ShowGameInfoPopup))]
     private bool _isRunning;
 
     /// <summary>
     /// Starward <c>StartGameButton</c>：可点且不是安装中 → 强调色底 + 强调色上的文字
     /// （见 <c>IsAccentColorBackgroundVisible</c> / <c>ActionButtonForeground</c>）。
     /// </summary>
-    public bool IsAccentBackground => IsStartButtonEnabled && !IsRunning && !IsBusy;
+    public bool IsAccentBackground => IsStartButtonEnabled && !IsRunning && !IsBusy && !IsInstalling;
 
     public Avalonia.Media.IBrush StartButtonForeground => IsAccentBackground
         ? Avalonia.Media.Brushes.Black
@@ -280,6 +284,80 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     public Avalonia.Media.IBrush SettingButtonForeground => IsAccentBackground
         ? Avalonia.Media.Brushes.Black
         : Avalonia.Media.Brush.Parse("#FFFFFFFF");
+
+
+    // ── 预下载（Starward PreDownloadButton.xaml）──────────────────────
+
+    /// <summary>
+    /// Starward <c>IsPredownloadButtonEnabled</c> 的来源：HoYoPlay 上带 pre_download 包时才有这颗按钮，
+    /// 且源码把 Visibility 直接绑 enabled——本地版本已追上预下载版本时按钮整颗消失。
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowPredownloadButton))]
+    private bool _isPredownloadAvailable;
+
+    /// <summary>Starward <c>CheckPreDownloadFinishedAsync</c>：本地版本 ≥ 预下载版本。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowPredownloadButton), nameof(PredownloadButtonEnabled),
+        nameof(PredownloadText), nameof(PredownloadInstallStateText), nameof(IsPredownloadPopupOpen))]
+    private bool _isPredownloadFinished;
+
+    /// <summary>Starward 的 <c>PointerOver</c>：悬停换「播放 / 暂停」图标并弹出下载信息。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PredownloadIcon), nameof(IsPredownloadPopupOpen))]
+    private bool _predownloadPointerOver;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PredownloadIcon), nameof(PredownloadText),
+        nameof(PredownloadButtonEnabled), nameof(PredownloadInstallStateText), nameof(IsPredownloadPopupOpen))]
+    private GameInstallState _predownloadState = GameInstallState.Stop;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PredownloadText))]
+    private string _predownloadPercentText = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPredownloadBytes))]
+    private string? _predownloadBytesText;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPredownloadSpeed))]
+    private string? _predownloadSpeedText;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPredownloadRemain))]
+    private string? _predownloadRemainText;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPredownloadError))]
+    private string? _predownloadErrorMessage;
+
+
+    public bool ShowPredownloadButton => IsPredownloadAvailable && !IsPredownloadFinished;
+
+    public bool PredownloadButtonEnabled => PredownloadButtonState.ButtonEnabled(PredownloadState, IsPredownloadFinished);
+
+    /// <summary>Starward <c>GetButtonIcon</c>：下载 EBD3 / 悬停待续播 F5B0 / 悬停暂停 E62E。</summary>
+    public string PredownloadIcon => PredownloadButtonState.Icon(PredownloadState, PredownloadPointerOver);
+
+    /// <summary>Starward <c>GetButtonText</c>：预下载 / 等待中 / 百分比 / 已暂停 / 已完成 / 出错了。</summary>
+    public string PredownloadText
+        => PredownloadButtonState.Text(PredownloadState, IsPredownloadFinished, PredownloadPercentText, key => Strings[key]);
+
+    /// <summary>Popup 里的状态行（Starward <c>GetInstallStateText</c>）。</summary>
+    public string PredownloadInstallStateText
+        => PredownloadButtonState.InstallStateText(PredownloadState, IsPredownloadFinished, key => Strings[key]);
+
+    public bool HasPredownloadBytes => !string.IsNullOrEmpty(PredownloadBytesText);
+
+    public bool HasPredownloadSpeed => !string.IsNullOrEmpty(PredownloadSpeedText);
+
+    public bool HasPredownloadRemain => !string.IsNullOrEmpty(PredownloadRemainText);
+
+    public bool HasPredownloadError => !string.IsNullOrEmpty(PredownloadErrorMessage);
+
+    public bool IsPredownloadPopupOpen
+        => PredownloadButtonState.PopupOpen(PredownloadState, IsPredownloadFinished, PredownloadPointerOver);
 
 
     /// <summary>
@@ -292,6 +370,11 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         get
         {
             var path = ProfileConfig.ExpandPath(_context.Profile.Profile.Path);
+            if (_captureInstalled)
+            {
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(path))
             {
                 return false;
@@ -328,12 +411,73 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
 
     /// <summary>Starward 依据 <c>enable_dx_switch</c> 或已开启的配置显示；这里在已配置游戏路径时显示。</summary>
-    public bool ShowDx12Option => !ShowNotConfigured;
+    private bool _dx12SwitchSupported;
 
 
-    public bool ShowNotConfigured => string.IsNullOrWhiteSpace(
+    /// <summary>
+    /// Starward <c>CheckDX12ConfigAsync</c>：只有已开启、或 HoYoPlay 的 <c>enable_dx_switch</c> 为真时
+    /// 才显示右下角的 DX12 开关（本项取不到配置就不显示）。
+    /// </summary>
+    private async Task CheckDx12ConfigAsync()
+    {
+        try
+        {
+            if (EnableDx12)
+            {
+                _dx12SwitchSupported = true;
+                OnPropertyChanged(nameof(ShowDx12Option));
+                return;
+            }
+
+            var gameId = LunarWard.Core.HoYoPlay.GameId.FromGameBiz(new LunarWard.Core.GameBiz(GameBiz));
+            var launcherId = gameId is null ? null : LunarWard.Core.HoYoPlay.LauncherId.FromGameId(gameId);
+            if (gameId is null || launcherId is null)
+            {
+                return;
+            }
+
+            var configs = await new LunarWard.Core.HoYoPlay.HoYoPlayClient()
+                .GetDXConfigsAsync(launcherId, "zh-cn", [gameId], []);
+            _dx12SwitchSupported = configs.FirstOrDefault(x => x.GameId.Id == gameId.Id)?.EnableDXSwitch is true;
+            OnPropertyChanged(nameof(ShowDx12Option));
+        }
+        catch
+        {
+            // 取不到 DX 配置时保持隐藏（与源码 catch 后不显示一致）
+        }
+    }
+
+
+    public bool ShowDx12Option => !ShowNotConfigured && _dx12SwitchSupported;
+
+
+    public bool ShowNotConfigured => !_captureInstalled && string.IsNullOrWhiteSpace(
         ProfileConfig.ExpandPath(_context.Profile.Profile.Path));
 
+
+    /// <summary>
+    /// 公告铃铛是否显示（Starward <c>AppConfig.ShowGameAnnouncement</c>，默认开）。
+    /// 设置弹窗里的开关会调 <see cref="RefreshNoticeSettings"/> 立即生效。
+    /// </summary>
+    public bool ShowGameNoticeBell => _context.Services.Config.Launcher.ShowGameNotice;
+
+    /// <summary>红点是否被用户关掉（Starward <c>DisableRedDotReminderForGameNotices</c>）。</summary>
+    public bool IsNoticeRedDotDisabled => _context.Services.Config.Launcher.DisableNoticeRedDot;
+
+    /// <summary>设置弹窗改了公告相关开关后刷新铃铛。</summary>
+    public void RefreshNoticeSettings()
+    {
+        OnPropertyChanged(nameof(ShowGameNoticeBell));
+        OnPropertyChanged(nameof(IsNoticeRedDotDisabled));
+        if (IsNoticeRedDotDisabled)
+        {
+            HasNoticeAlert = false;
+        }
+        else
+        {
+            _ = UpdateNoticeAlertAsync();
+        }
+    }
 
     /// <summary>公告铃铛红点：Starward 需要拉 GameNotice，这里用"有公告即亮"的近似。</summary>
     [ObservableProperty]
@@ -357,10 +501,25 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     [RelayCommand]
     private async Task StartGameAsync()
     {
+        // Starward ChangeGameInstallTaskStateAsync：安装中点击按钮 = 暂停 / 继续 / 取消。
+        if (IsInstalling)
+        {
+            ToggleInstall();
+            return;
+        }
+
         // Starward：GameState.InstallGame 时按钮是「安装游戏」，点击打开安装对话框而不是启动游戏。
-        if (!IsGameInstalled && !IsInstalling)
+        if (!IsGameInstalled)
         {
             InstallDialogRequested?.Invoke();
+            return;
+        }
+
+        // Starward：GameState.UpdateGame 时按钮是「更新游戏」，直接按现有安装目录起更新，
+        // 不弹「选择安装路径」对话框（安装目录和语音包都能从已安装的游戏里读出来）。
+        if (NeedsUpdate)
+        {
+            await StartUpdateAsync();
             return;
         }
 
@@ -410,11 +569,12 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         StartButtonText = state switch
         {
             LaunchPhaseState.Idle or LaunchPhaseState.Error when !IsGameInstalled => Strings["InstallGameDialog.Install"],
+            LaunchPhaseState.Idle or LaunchPhaseState.Error when NeedsUpdate => Strings["InstallGameDialog.Update"],
             LaunchPhaseState.Idle or LaunchPhaseState.Error => Strings["Launcher.StartGame"],
             LaunchPhaseState.Running => Strings["Launcher.GameRunning"],
             _ => text,
         };
-        IsStartButtonEnabled = enabled || (state is LaunchPhaseState.Idle or LaunchPhaseState.Error && !IsGameInstalled);
+        IsStartButtonEnabled = enabled || (state is LaunchPhaseState.Idle or LaunchPhaseState.Error && (!IsGameInstalled || NeedsUpdate));
         IsBusy = state is LaunchPhaseState.Prepare or LaunchPhaseState.Launch
             or LaunchPhaseState.AwaitImage or LaunchPhaseState.AwaitReady or LaunchPhaseState.Cleanup;
         IsRunning = state == LaunchPhaseState.Running;
@@ -443,64 +603,376 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     }
 
 
-    // ── 安装 / 更新（Starward StartGameButton 的安装进度弹层）────────────
+    /// <summary>悬停在整颗开始按钮上时打开「游戏信息 / 下载进度」卡片（Starward Popup_GameInfoOrDownloadProgress）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowGameInfoPopup))]
+    private bool _isGameInfoPopupOpen;
+
+
+    /// <summary>只有运行中或安装中才显示这张卡片（源码 PointerEntered 里同一判断）。</summary>
+    public bool ShowGameInfoPopup => IsGameInfoPopupOpen && (IsRunning || IsInstalling);
+
+
+    /// <summary>运行中显示的「进程名 (PID)」。</summary>
+    public string RunningGameInfo => RunningInfo ?? "";
+
+
+    public bool HasDownloadBytes => !string.IsNullOrEmpty(DownloadBytesText);
+
+    public bool HasInstallBytes => !string.IsNullOrEmpty(InstallBytesText);
+
+    public bool HasVerifySpeed => !string.IsNullOrEmpty(VerifySpeedText);
+
+
+    // ── 安装 / 更新（Starward StartGameButton：按钮里的进度圈 / 悬停暂停继续）──
 
     /// <summary>视图订阅它来弹「选择安装路径」对话框（Starward 在页面代码里 ShowAsync）。</summary>
     public event Action? InstallDialogRequested;
 
-    [ObservableProperty]
-    private bool _isInstalling;
 
-    [ObservableProperty]
-    private double _installProgress;
+    /// <summary>
+    /// 视图订阅它来弹预下载确认对话框（Starward <c>PreDownloadDialog</c>，参数是启动器 id / gameBiz / 安装路径）。
+    /// </summary>
+    public event Action<PredownloadDialogArgs>? PredownloadDialogRequested;
 
-    [ObservableProperty]
-    private string _installStatusText = "";
+    /// <summary>视图订阅它来弹「游戏设置」对话框（Starward 在页面代码里 ShowAsync）。</summary>
+    public event Action? SettingDialogRequested;
 
-    [ObservableProperty]
-    private string _installPercentText = "";
+    /// <summary>视图订阅它来开目录选择器（定位游戏）。</summary>
+    public event Action? LocateGameRequested;
 
-    [ObservableProperty]
-    private string _installDetailText = "";
-
-    [ObservableProperty]
-    private bool _installCanResume;
-
-    private GameInstallRequest? _installRequest;
-    private GameInstallState _installState = GameInstallState.Stop;
-
-
-    /// <summary>游戏是否已经装好（目录里能找到 exe）。</summary>
-    public bool IsGameInstalled => !ShowNotConfigured && !ShowLocateGame;
-
-
-    /// <summary>自检截图专用：显示一张假的安装进度卡（不触发真实网络）。</summary>
-    public void ShowInstallProgressForCapture()
+    /// <summary>网络驱动器等需要提示给用户的消息（页面上方的状态行）。</summary>
+    public void ReportStatus(string message)
     {
-        IsInstalling = true;
-        InstallCanResume = false;
-        InstallStatusText = Strings["InstallGameDialog.Installing"];
-        InstallProgress = 46.4;
-        InstallPercentText = "46.4%";
-        InstallDetailText = "4.32 GB / 9.31 GB  18.2 MB/s";
+        StatusText = message;
+        ErrorText = null;
     }
 
 
-    /// <summary>由页面代码在对话框确认后调用：开始下载安装。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAccentBackground), nameof(ShowGameInfoPopup))]
+    private bool _isInstalling;
+
+    /// <summary>Starward <c>InstallState</c>：按钮里的进度圆环与悬停文案都看它。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InstallStateIsPending),
+        nameof(InstallStateIsDownloading),
+        nameof(ButtonDownloadingRemainTimeOpacity),
+        nameof(TextBlockInstallStateOpacity),
+        nameof(TextBlockPointerOverOpacity),
+        nameof(TextBlockInstallStateText),
+        nameof(TextBlockPointerOverText),
+        nameof(InstallStateText))]
+    private GameInstallState _installState = GameInstallState.Stop;
+
+    /// <summary>Starward <c>ActionButtonPointerOver</c>：悬停时把状态行换成「暂停 / 继续 / 取消」。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ButtonDownloadingRemainTimeOpacity),
+        nameof(TextBlockInstallStateOpacity),
+        nameof(TextBlockPointerOverOpacity),
+        nameof(TextBlockInstallStateText),
+        nameof(TextBlockPointerOverText))]
+    private bool _actionButtonPointerOver;
+
+
+    public bool InstallStateIsPending => InstallState is GameInstallState.Waiting;
+
+    public bool InstallStateIsDownloading => InstallState is GameInstallState.Downloading;
+
+    /// <summary>「下载中 + 剩余时间」两行：只在下载中、且鼠标没悬停时显示。</summary>
+    public double ButtonDownloadingRemainTimeOpacity
+        => !ActionButtonPointerOver && InstallState is GameInstallState.Downloading ? 1 : 0;
+
+    /// <summary>「已暂停 / 出错 / 队列中」单行：非下载中、且鼠标没悬停时显示。</summary>
+    public double TextBlockInstallStateOpacity
+        => !ActionButtonPointerOver && InstallState is not GameInstallState.Downloading ? 1 : 0;
+
+    /// <summary>悬停时的「暂停 / 继续 / 取消」。</summary>
+    public double TextBlockPointerOverOpacity => ActionButtonPointerOver ? 1 : 0;
+
+    public string TextBlockInstallStateText => (ActionButtonPointerOver, InstallState) switch
+    {
+        (false, GameInstallState.Waiting) => Strings["StartGameButton.Waiting"],
+        (false, GameInstallState.Decompressing) => Strings["DownloadGamePage.Decompressing"],
+        (false, GameInstallState.Merging) => Strings["DownloadGamePage.Merging"],
+        (false, GameInstallState.Verifying) => Strings["DownloadGamePage.Verifying"],
+        (false, GameInstallState.Paused) => Strings["DownloadGamePage.Paused"],
+        (false, GameInstallState.Error) => Strings["Common.Error"],
+        (false, GameInstallState.Queueing) => Strings["StartGameButton.InQueue"],
+        _ => "",
+    };
+
+    public string TextBlockPointerOverText => (ActionButtonPointerOver, InstallState) switch
+    {
+        (true, GameInstallState.Waiting or GameInstallState.Downloading) => Strings["StartGameButton.Pause"],
+        (true, GameInstallState.Paused or GameInstallState.Error or GameInstallState.Queueing) => Strings["Common.Continue"],
+        (true, GameInstallState.Decompressing or GameInstallState.Merging or GameInstallState.Verifying) => Strings["Common.Cancel"],
+        _ => "",
+    };
+
+    /// <summary>按钮里进度圈下方的状态文案（Starward <c>InstallStateText</c>）。</summary>
+    public string InstallStateText => InstallState switch
+    {
+        GameInstallState.Waiting => Strings["StartGameButton.Waiting"],
+        GameInstallState.Downloading => Strings["DownloadGamePage.Downloading"],
+        GameInstallState.Decompressing => Strings["DownloadGamePage.Decompressing"],
+        GameInstallState.Merging => Strings["DownloadGamePage.Merging"],
+        GameInstallState.Verifying => Strings["DownloadGamePage.Verifying"],
+        GameInstallState.Paused => Strings["DownloadGamePage.Paused"],
+        GameInstallState.Finish => Strings["DownloadGamePage.Finished"],
+        GameInstallState.Error => Strings["DownloadGamePage.SomethingError"],
+        GameInstallState.Queueing => Strings["StartGameButton.InQueue"],
+        _ => "",
+    };
+
+
+    /// <summary>进度圆环中央的整数百分比。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RingSweepAngle))]
+    private int _progressRingValue;
+
+    /// <summary>Avalonia 没有 ProgressRing，用 Arc 的 SweepAngle 画圆环（0~360）。</summary>
+    public double RingSweepAngle => Math.Clamp(ProgressRingValue, 0, 100) * 3.6;
+
+    [ObservableProperty]
+    private string _progressPercentText = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDownloadBytes))]
+    private string? _downloadBytesText;
+
+    [ObservableProperty]
+    private string? _downloadSpeedText;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasInstallBytes))]
+    private string? _installBytesText;
+
+    [ObservableProperty]
+    private string? _installSpeedText;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasVerifySpeed))]
+    private string? _verifySpeedText;
+
+    [ObservableProperty]
+    private string? _remainTimeText;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasInstallError))]
+    private string? _installErrorMessage;
+
+    /// <summary>Starward 在进度卡里用红色小字显示安装错误。</summary>
+    public bool HasInstallError => !string.IsNullOrWhiteSpace(InstallErrorMessage);
+
+
+    private GameInstallRequest? _installRequest;
+
+    /// <summary>自检截图时的安装/更新语义（没有真实 request 时用）。</summary>
+    private GameInstallOperation _captureOperation = GameInstallOperation.Install;
+
+    /// <summary>自检截图时假装游戏已安装（截图机的 profile 里通常没有真实游戏目录）。</summary>
+    private bool _captureInstalled;
+
+
+    /// <summary>游戏是否已经装好（目录里能找到 exe）。</summary>
+    public bool IsGameInstalled => _captureInstalled || (!ShowNotConfigured && !ShowLocateGame);
+
+    /// <summary>本地版本低于 HoYoPlay 最新版本时为 true（Starward <c>GameState.UpdateGame</c>）。</summary>
+    [ObservableProperty]
+    private bool _needsUpdate;
+
+    /// <summary>版本小字（如「5.1.0 → 5.2.0」），只在需要更新时显示。</summary>
+    [ObservableProperty]
+    private string _gameVersionText = "";
+
+    /// <summary>本地已安装版本（读 config.ini）；没有安装时为 null。</summary>
+    public Version? LocalGameVersion { get; private set; }
+
+
+    /// <summary>
+    /// 启动时对照 HoYoPlay 上的最新版本：本地 &lt; 最新 → 按钮变「更新游戏」。
+    /// 失败（离线）时不改状态，保持「开始游戏」。
+    /// </summary>
+    private async Task CheckUpdateAsync()
+    {
+        try
+        {
+            if (!IsGameInstalled)
+            {
+                return;
+            }
+
+            var path = ProfileConfig.ExpandPath(_context.Profile.Profile.Path);
+            var gameId = GameId.FromGameBiz(new GameBiz(GameBiz));
+            if (string.IsNullOrWhiteSpace(path) || gameId is null || string.IsNullOrWhiteSpace(_context.Shell.CurrentLauncherId))
+            {
+                return;
+            }
+
+            LocalGameVersion = await _services.Installer.GetLocalGameVersionAsync(path).ConfigureAwait(true);
+            var package = await _services.Installer.GetGamePackageAsync(
+                _context.Shell.CurrentLauncherId,
+                string.IsNullOrWhiteSpace(Strings.Language) ? "zh-cn" : Strings.Language.ToLowerInvariant(),
+                new GameId { GameBiz = GameBiz, Id = gameId.Id }).ConfigureAwait(true);
+
+            if (package?.Main?.Major?.Version is { } latestText
+                && Version.TryParse(latestText, out var latest)
+                && LocalGameVersion is { } local)
+            {
+                var needsUpdate = latest > local;
+                GameVersionText = needsUpdate ? $"{local} → {latest}" : "";
+                NeedsUpdate = needsUpdate;
+                ApplyState(_services.LauncherService.State);
+                _log.Info($"版本对比：本地 {local}，最新 {latest}，需要更新={needsUpdate}");
+            }
+
+            // 预下载：源码 CheckPreDownloadFinishedAsync 用本地版本和 pre_download 版本比
+            if (package?.PreDownload?.Major?.Version is { Length: > 0 } preText && Version.TryParse(preText, out var pre))
+            {
+                IsPredownloadAvailable = true;
+                IsPredownloadFinished = LocalGameVersion is { } localVersion && localVersion >= pre;
+            }
+            else
+            {
+                IsPredownloadAvailable = false;
+                IsPredownloadFinished = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"检查游戏更新失败（{GameBiz}）：{ex.Message}");
+        }
+    }
+
+
+    /// <summary>自检截图专用：把按钮切到「安装中」并填一份假进度（不触发真实网络）。</summary>
+    public void ShowInstallProgressForCapture(GameInstallOperation operation = GameInstallOperation.Install)
+    {
+        _captureOperation = operation;
+        _captureInstalled = true;
+        OnPropertyChanged(nameof(IsGameInstalled));
+        OnPropertyChanged(nameof(ShowNotConfigured));
+        OnPropertyChanged(nameof(ShowLocateGame));
+        IsInstalling = true;
+        InstallState = GameInstallState.Downloading;
+        ProgressRingValue = 46;
+        ProgressPercentText = "46.4%";
+        DownloadBytesText = "4.32/9.31 GB";
+        DownloadSpeedText = "18.20 MB/s";
+        InstallBytesText = "3.10/6.02 GB";
+        InstallSpeedText = "25.00 MB/s";
+        VerifySpeedText = "42.00 MB/s";
+        RemainTimeText = "00:03:20";
+        InstallErrorMessage = null;
+        ActionButtonPointerOver = CaptureMode.InstallHover;
+        // 悬停整颗按钮 → 打开「游戏信息 / 下载进度」卡片（截图要看得见）
+        IsGameInfoPopupOpen = CaptureMode.InstallHover || CaptureMode.InstallInfoPopup;
+        OnPropertyChanged(nameof(IsAccentBackground));
+    }
+
+
+    /// <summary>
+    /// 自检截图专用：摆出预下载按钮的各种状态（idle / downloading / hover / finished），
+    /// 不触发真实网络（真实可用性靠 <see cref="CheckUpdateAsync" /> 拉 HoYoPlay 包）。
+    /// </summary>
+    public void ShowPredownloadForCapture(string state)
+    {
+        IsPredownloadAvailable = state is not "finished";
+        IsPredownloadFinished = state is "finished";
+        PredownloadState = state switch
+        {
+            "downloading" or "hover" => GameInstallState.Downloading,
+            _ => GameInstallState.Stop,
+        };
+        PredownloadPercentText = "38.6%";
+        PredownloadBytesText = state is "downloading" or "hover" ? "3.51/9.09 GB" : null;
+        PredownloadSpeedText = state is "downloading" or "hover" ? "22.40 MB/s" : null;
+        PredownloadRemainText = state is "downloading" or "hover" ? "00:04:12" : null;
+        PredownloadErrorMessage = null;
+        PredownloadPointerOver = state is "hover";
+    }
+
+
+    /// <summary>自检截图专用：假装游戏已安装且需要更新，按钮切到「更新游戏」（强调色底）。</summary>
+    public void ShowUpdateButtonForCapture()
+    {
+        _captureInstalled = true;
+        NeedsUpdate = true;
+        GameVersionText = "5.1.0 → 5.2.0";
+        OnPropertyChanged(nameof(IsGameInstalled));
+        OnPropertyChanged(nameof(ShowNotConfigured));
+        OnPropertyChanged(nameof(ShowLocateGame));
+        ApplyState(_services.LauncherService.State);
+    }
+
+
+    /// <summary>
+    /// Starward <c>UpdateGameAsync</c>：更新不需要弹「选择安装路径」，
+    /// 直接按现有安装目录 + 已安装语音包开一个 Update 任务。
+    /// </summary>
+    private async Task StartUpdateAsync()
+    {
+        try
+        {
+            var path = ProfileConfig.ExpandPath(_context.Profile.Profile.Path);
+            var gameId = GameId.FromGameBiz(new GameBiz(GameBiz));
+            if (string.IsNullOrWhiteSpace(path) || gameId is null)
+            {
+                return;
+            }
+
+            var audio = await _services.Installer
+                .GetAudioLanguageAsync(new GameId { GameBiz = GameBiz, Id = gameId.Id }, path)
+                .ConfigureAwait(true);
+
+            await BeginInstallAsync(new GameInstallRequest
+            {
+                GameBiz = GameBiz,
+                GameId = gameId.Id,
+                InstallPath = path,
+                Operation = GameInstallOperation.Update,
+                AudioLanguage = audio,
+            });
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Start update game failed", ex);
+        }
+    }
+
+
+    /// <summary>由页面代码在安装对话框确认后调用：开始下载安装。</summary>
     public async Task BeginInstallAsync(GameInstallRequest request)
     {
+        _captureOperation = request.Operation;
         _installRequest = request;
-        IsInstalling = true;
-        InstallCanResume = false;
-        InstallProgress = 0;
-        InstallStatusText = Strings["InstallGameDialog.Installing"];
-        InstallPercentText = "0%";
-        InstallDetailText = "";
+        // 预下载不占用「开始游戏」按钮的安装态（Starward 里两者是独立按钮）
+        IsInstalling = request.Operation is not GameInstallOperation.Predownload;
+        if (request.Operation is GameInstallOperation.Predownload)
+        {
+            PredownloadState = GameInstallState.Waiting;
+            PredownloadPercentText = "0%";
+            PredownloadBytesText = null;
+            PredownloadSpeedText = null;
+            PredownloadRemainText = "--:--:--";
+            PredownloadErrorMessage = null;
+        }
+        InstallState = GameInstallState.Waiting;
+        ProgressRingValue = 0;
+        ProgressPercentText = "0%";
+        DownloadBytesText = null;
+        DownloadSpeedText = null;
+        InstallBytesText = null;
+        InstallSpeedText = null;
+        VerifySpeedText = null;
+        RemainTimeText = "--:--:--";
+        InstallErrorMessage = null;
+        OnPropertyChanged(nameof(IsAccentBackground));
 
         var progress = _services.Installer.StartOrContinue(request);
         ApplyInstallProgress(progress);
-        var task = _services.Installer.CurrentTask;
-        if (task is not null)
+        if (_services.Installer.CurrentTask is { } task)
         {
             // 安装器内部是同步长任务（下载/解压/校验），放到线程池跑，UI 靠 Progress 回调刷新。
             await Task.Run(() => _services.Installer.RunAsync(task)).ConfigureAwait(true);
@@ -508,52 +980,40 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     }
 
 
-    [RelayCommand]
-    private void PauseInstall()
+    /// <summary>
+    /// Starward <c>ChangeGameInstallTaskStateAsync</c>：安装中点击按钮——
+    /// 下载中/等待中 → 暂停；已暂停/出错/队列中 → 继续；解压/合并/校验 → 取消。
+    /// </summary>
+    private void ToggleInstall()
     {
         if (_installRequest is null)
         {
             return;
         }
 
-        ApplyInstallProgress(_services.Installer.Pause(_installRequest));
-    }
-
-
-    [RelayCommand]
-    private void ResumeInstall()
-    {
-        if (_installRequest is null)
+        switch (InstallState)
         {
-            return;
+            case GameInstallState.Waiting or GameInstallState.Downloading:
+                ApplyInstallProgress(_services.Installer.Pause(_installRequest));
+                break;
+
+            case GameInstallState.Paused or GameInstallState.Error or GameInstallState.Queueing:
+                var progress = _services.Installer.StartOrContinue(_installRequest);
+                ApplyInstallProgress(progress);
+                if (_services.Installer.CurrentTask is { } task)
+                {
+                    _ = Task.Run(() => _services.Installer.RunAsync(task));
+                }
+                break;
+
+            case GameInstallState.Decompressing or GameInstallState.Merging or GameInstallState.Verifying:
+                _services.Installer.Stop(_installRequest);
+                _installRequest = null;
+                IsInstalling = false;
+                InstallState = GameInstallState.Stop;
+                ApplyState(_services.LauncherService.State);
+                break;
         }
-
-        var progress = _services.Installer.StartOrContinue(_installRequest);
-        ApplyInstallProgress(progress);
-        if (_services.Installer.CurrentTask is { } task)
-        {
-            _ = Task.Run(() => _services.Installer.RunAsync(task));
-        }
-    }
-
-
-    [RelayCommand]
-    private void CancelInstall()
-    {
-        if (_installRequest is null)
-        {
-            return;
-        }
-
-        _services.Installer.Stop(_installRequest);
-        IsInstalling = false;
-        InstallCanResume = false;
-        InstallStatusText = "";
-        InstallDetailText = "";
-        InstallPercentText = "";
-        InstallProgress = 0;
-        _installRequest = null;
-        ApplyState(_services.LauncherService.State);
     }
 
 
@@ -561,43 +1021,189 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         => Dispatcher.UIThread.Post(() => ApplyInstallProgress(GameInstallProgress.FromTask(context)));
 
 
-    /// <summary>把安装器快照翻成界面文案（Starward 弹层里的百分比/速度/剩余时间）。</summary>
+    /// <summary>
+    /// Starward <c>UpdateGameInstallTaskState</c>：把安装器快照翻成按钮里的
+    /// 百分比 / 速度 / 剩余时间（文案与阈值照抄上游，别改）。
+    /// </summary>
     private void ApplyInstallProgress(GameInstallProgress progress)
     {
-        _installState = (GameInstallState)progress.State;
-        InstallProgress = Math.Clamp(progress.ProgressPercent, 0, 100);
-        InstallPercentText = $"{progress.ProgressPercent:F1}%";
-        InstallCanResume = _installState is GameInstallState.Paused or GameInstallState.Error;
-
-        InstallStatusText = _installState switch
+        // 预下载是「另一颗按钮」，不能碰 StartGameButton 的 IsInstalling / 进度圆环。
+        if (_installRequest?.Operation is GameInstallOperation.Predownload)
         {
-            GameInstallState.Waiting => Strings["InstallGameDialog.Installing"],
-            GameInstallState.Downloading => Strings["InstallGameDialog.Downloading"],
-            GameInstallState.Paused => Strings["InstallGameDialog.Paused"],
-            GameInstallState.Finish => Strings["InstallGameDialog.Completed"],
-            GameInstallState.Error => string.Format(Strings["InstallGameDialog.Failed"], progress.ErrorMessage ?? ""),
-            _ => Strings["InstallGameDialog.Installing"],
-        };
-
-        if (_installState is GameInstallState.Downloading or GameInstallState.Waiting)
-        {
-            var finish = FormatBytes(progress.ProgressDownloadFinishBytes);
-            var total = progress.ProgressDownloadTotalBytes > 0 ? FormatBytes(progress.ProgressDownloadTotalBytes) : "?";
-            var speed = progress.NetworkDownloadSpeed > 0 ? $"{FormatBytes((long)progress.NetworkDownloadSpeed)}/s" : "";
-            InstallDetailText = $"{finish} / {total}  {speed}".Trim();
+            ApplyPredownloadProgress(progress);
+            return;
         }
 
-        if (_installState is GameInstallState.Finish)
+        // 页面切走再切回来时，安装器仍在跑：靠第一份进度快照把「安装中」重新点亮。
+        if (progress.State is not (int)GameInstallState.Stop and not (int)GameInstallState.Finish)
+        {
+            IsInstalling = true;
+        }
+
+        InstallState = (GameInstallState)progress.State;
+        DownloadBytesText = ToBytesText(progress.ProgressDownloadFinishBytes, progress.ProgressDownloadTotalBytes);
+        InstallBytesText = ToBytesText(progress.ProgressWriteFinishBytes, progress.ProgressWriteTotalBytes);
+        InstallErrorMessage = progress.ErrorMessage;
+
+        if (InstallState is GameInstallState.Downloading)
+        {
+            long total = progress.ProgressDownloadTotalBytes;
+            long finish = progress.ProgressDownloadFinishBytes;
+            double value = total > 0 ? (double)finish / total : 0;
+            DownloadSpeedText = ToSpeedText(progress.NetworkDownloadSpeed);
+            InstallSpeedText = ToSpeedText(progress.StorageWriteSpeed);
+            VerifySpeedText = ToSpeedText(progress.StorageReadSpeed);
+            RemainTimeText = ToRemainTimeText(progress.RemainTimeSeconds);
+            if (_captureOperation is GameInstallOperation.Update
+                && progress.DownloadMode is (int)GameInstallDownloadMode.Chunk
+                && progress.ProgressWriteTotalBytes > 0)
+            {
+                value = (double)progress.ProgressWriteFinishBytes / progress.ProgressWriteTotalBytes;
+            }
+
+            ProgressRingValue = (int)(value * 100);
+            ProgressPercentText = $"{value:P1}";
+        }
+        else if (InstallState is GameInstallState.Decompressing or GameInstallState.Merging)
+        {
+            DownloadSpeedText = null;
+            InstallSpeedText = null;
+            VerifySpeedText = null;
+            RemainTimeText = "--:--:--";
+            ProgressRingValue = (int)(progress.ProgressPercent * 100);
+            ProgressPercentText = $"{progress.ProgressPercent:P1}";
+        }
+        else if (InstallState is GameInstallState.Finish)
+        {
+            DownloadSpeedText = null;
+            InstallSpeedText = null;
+            VerifySpeedText = null;
+            RemainTimeText = null;
+            InstallErrorMessage = null;
+            ProgressRingValue = 100;
+            ProgressPercentText = "100%";
+        }
+        else
+        {
+            DownloadSpeedText = null;
+            InstallSpeedText = null;
+            VerifySpeedText = null;
+            RemainTimeText = "--:--:--";
+            ProgressRingValue = (int)(progress.ProgressPercent * 100);
+            ProgressPercentText = $"{progress.ProgressPercent:P1}";
+        }
+
+        if (InstallState is GameInstallState.Finish)
         {
             IsInstalling = false;
             _installRequest = null;
-            InstallDetailText = "";
             OnInstallFinished(progress);
         }
-        else if (_installState is GameInstallState.Stop)
+        else if (InstallState is GameInstallState.Stop)
         {
             IsInstalling = false;
             _installRequest = null;
+        }
+    }
+
+
+    /// <summary>
+    /// Starward <c>PredownloadAsync</c>：有预下载任务就暂停 / 继续，否则先弹
+    /// <c>PreDownloadDialog</c> 确认（带体积估算），确认后由页面回调 <see cref="StartPredownloadAsync"/>。
+    /// </summary>
+    [RelayCommand]
+    private async Task PredownloadAsync()
+    {
+        if (IsPredownloadFinished)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_installRequest is { } request && request.Operation is GameInstallOperation.Predownload)
+            {
+                switch (PredownloadState)
+                {
+                    case GameInstallState.Waiting or GameInstallState.Downloading:
+                        ApplyPredownloadProgress(_services.Installer.Pause(request));
+                        return;
+
+                    case GameInstallState.Paused or GameInstallState.Error or GameInstallState.Queueing:
+                        var resume = _services.Installer.StartOrContinue(request);
+                        ApplyPredownloadProgress(resume);
+                        if (_services.Installer.CurrentTask is { } pending)
+                        {
+                            _ = Task.Run(() => _services.Installer.RunAsync(pending));
+                        }
+                        return;
+                }
+            }
+
+            var path = ProfileConfig.ExpandPath(_context.Profile.Profile.Path);
+            var gameId = GameId.FromGameBiz(new GameBiz(GameBiz));
+            if (string.IsNullOrWhiteSpace(path) || gameId is null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_context.Shell.CurrentLauncherId))
+            {
+                return;
+            }
+            // 源码先弹确认框（含体积估算），确认后再走 BeginInstallAsync
+            PredownloadDialogRequested?.Invoke(new PredownloadDialogArgs(
+                _context.Shell.CurrentLauncherId,
+                GameBiz,
+                path));
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Predownload failed", ex);
+        }
+    }
+
+
+    /// <summary>确认框点「开始预下载」后调用（页面的弹窗回调）。</summary>
+    public Task StartPredownloadAsync(GameInstallRequest request) => BeginInstallAsync(request);
+
+
+    /// <summary>把预下载任务的进度快照翻到按钮 / Popup 上（Starward <c>UpdateGameInstallTaskState</c>）。</summary>
+    private void ApplyPredownloadProgress(GameInstallProgress progress)
+    {
+        PredownloadState = (GameInstallState)progress.State;
+        PredownloadErrorMessage = progress.ErrorMessage;
+
+        long total = progress.ProgressDownloadTotalBytes;
+        long finish = progress.ProgressDownloadFinishBytes;
+        double value = total > 0 ? (double)finish / total : progress.ProgressPercent;
+        PredownloadPercentText = $"{value:P1}";
+        PredownloadBytesText = total > 0 ? PredownloadButtonState.BytesText(finish, total) : null;
+
+        if (PredownloadState is GameInstallState.Paused or GameInstallState.Queueing or GameInstallState.Error)
+        {
+            PredownloadSpeedText = "- KB/s";
+            PredownloadRemainText = "--:--:--";
+        }
+        else if (PredownloadState is GameInstallState.Finish)
+        {
+            PredownloadSpeedText = null;
+            PredownloadRemainText = null;
+            PredownloadErrorMessage = null;
+            IsPredownloadFinished = true;
+            PredownloadState = GameInstallState.Stop;
+            _installRequest = null;
+        }
+        else if (PredownloadState is GameInstallState.Stop)
+        {
+            PredownloadSpeedText = null;
+            PredownloadRemainText = null;
+            _installRequest = null;
+        }
+        else
+        {
+            PredownloadSpeedText = PredownloadButtonState.SpeedText(progress.NetworkDownloadSpeed);
+            PredownloadRemainText = PredownloadButtonState.RemainTimeText(progress.RemainTimeSeconds);
         }
     }
 
@@ -611,12 +1217,48 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             _services.Config.Save(_services.Paths.ConfigFile);
         }
 
+        NeedsUpdate = false;
+        GameVersionText = "";
         OnPropertyChanged(nameof(IsGameInstalled));
         OnPropertyChanged(nameof(ShowNotConfigured));
         OnPropertyChanged(nameof(ShowLocateGame));
         ApplyState(_services.LauncherService.State);
         StatusText = Strings["InstallGameDialog.Completed"];
         _log.Info($"安装完成：{progress.GameBiz} → {progress.InstallPath}");
+    }
+
+
+    private static string? ToBytesText(long finish, long total)
+    {
+        const double MB = 1 << 20;
+        const double GB = 1 << 30;
+        if (total == 0)
+        {
+            return null;
+        }
+
+        return total >= GB
+            ? $"{finish / GB:F2}/{total / GB:F2} GB"
+            : $"{finish / MB:F2}/{total / MB:F2} MB";
+    }
+
+
+    private static string ToSpeedText(long bytes)
+    {
+        const double KB = 1 << 10;
+        const double MB = 1 << 20;
+        return bytes >= MB ? $"{bytes / MB:F2} MB/s" : $"{bytes / KB:F2} KB/s";
+    }
+
+
+    private static string? ToRemainTimeText(long seconds)
+    {
+        if (seconds == 0)
+        {
+            return "--:--:--";
+        }
+
+        return TimeSpan.FromSeconds(seconds).ToString(@"hh\:mm\:ss");
     }
 
 
@@ -975,10 +1617,42 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     public DailyNoteButtonViewModel DailyNote { get; }
 
 
+    // ── 通行证授权登录（Starward GameAuthLoginButton） ─────────────────
+
+    /// <summary>右上角第三个 40×40 按钮：通行证 ID + 授权登录开关。</summary>
+    public GameAuthLoginViewModel AuthLogin { get; }
+
+
     // ── 其他入口 ──────────────────────────────────────────────────────
 
     [RelayCommand]
-    private void OpenGameSettings() => _context.Shell.Navigate(ShellPage.GameSetting);
+    /// <summary>
+    /// 齿轮按钮（Starward <c>StartGameButton.SettingCommand</c>）→ 弹 <c>GameLauncherSettingDialog</c>。
+    /// </summary>
+    private void OpenGameSettings() => SettingDialogRequested?.Invoke();
+
+    /// <summary>
+    /// 按钮下方的「定位游戏 / 配置游戏目录」小字（Starward <c>Hyperlink_LocateGame_Click</c>）：
+    /// 直接开目录选择器，不弹设置对话框。
+    /// </summary>
+    [RelayCommand]
+    private void LocateGame() => LocateGameRequested?.Invoke();
+
+    /// <summary>
+    /// 目录被外部改过（定位游戏、设置对话框的重新定位）后刷新按钮下方的两行提示与版本状态。
+    /// </summary>
+    public void RefreshInstallPathState()
+    {
+        OnPropertyChanged(nameof(ShowLocateGame));
+        OnPropertyChanged(nameof(ShowNotConfigured));
+        OnPropertyChanged(nameof(IsGameInstalled));
+        OnPropertyChanged(nameof(ShowDx12Option));
+        ApplyState(_services.LauncherService.State);
+        _ = CheckUpdateAsync();
+
+        _ = CheckDx12ConfigAsync();
+
+    }
 
 
     /// <summary>
@@ -1014,6 +1688,12 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     /// <summary>官网页面的新公告红点（Starward <c>GameNoticeService.IsNoticeAlertAsync</c>）。</summary>
     private async Task UpdateNoticeAlertAsync()
     {
+        if (_context.Services.Config.Launcher.DisableNoticeRedDot)
+        {
+            HasNoticeAlert = false;
+            return;
+        }
+
         try
         {
             var client = new GameNoticeClient();
@@ -1089,3 +1769,10 @@ public sealed record BackgroundSwitchItem(string Title, string Value)
                            || Value.EndsWith(".webm", StringComparison.OrdinalIgnoreCase)
                            || Value.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase);
 }
+
+
+/// <summary>拉开预下载确认框所需的最小上下文（Starward 直接传 <c>CurrentGameId</c>）。</summary>
+/// <param name="LauncherId">启动器 id（HoYoPlay 接口用）。</param>
+/// <param name="GameBiz">游戏区服标识。</param>
+/// <param name="InstallPath">已安装游戏的目录。</param>
+public sealed record PredownloadDialogArgs(string LauncherId, string GameBiz, string InstallPath);

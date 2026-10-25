@@ -46,6 +46,12 @@ public sealed partial class ScreenshotPageViewModel : StarwardPageViewModel
 
     public ScreenshotPageViewModel(PageContext context) : base(context)
     {
+        // 自检：把「游戏目录」换成临时样例目录（只改内存里的 profile，不落盘）
+        if (CaptureMode.ScreenshotSeed && CreateSeedDirectory() is { } seedDirectory)
+        {
+            context.Profile.Profile.Path = seedDirectory;
+        }
+
         _gameDirectory = ProfileConfig.ExpandPath(context.Profile.Profile.Path);
         _gameKind = context.Profile.Profile.Game;
 
@@ -64,6 +70,54 @@ public sealed partial class ScreenshotPageViewModel : StarwardPageViewModel
     /// 复用旧窗口的截图浏览 VM。磁贴墙直接绑 <c>Browser.Items</c>
     /// （Starward 的 <c>ItemsSource="{x:Bind Screenshots}"</c>）。
     /// </summary>
+    /// <summary>
+    /// 自检开关 <c>--screenshot-seed</c>：生成四张样例图到临时目录并当作游戏截图目录，
+    /// 这样悬停放大、磁贴墙间距都能在无游戏数据的机器上截图验证。
+    /// </summary>
+    private static string? CreateSeedDirectory()
+    {
+        string root = System.IO.Path.Join(
+            System.IO.Path.GetTempPath(), "lw-shot-seed", "ScreenShot");
+        System.IO.Directory.CreateDirectory(root);
+        if (System.IO.Directory.GetFiles(root, "*.png").Length >= 4)
+        {
+            return System.IO.Path.GetDirectoryName(root);
+        }
+
+        var gradients = new (Avalonia.Media.Color From, Avalonia.Media.Color To)[]
+        {
+            (Avalonia.Media.Color.Parse("#FF6B6B"), Avalonia.Media.Color.Parse("#845EC2")),
+            (Avalonia.Media.Color.Parse("#00C9A7"), Avalonia.Media.Color.Parse("#005F73")),
+            (Avalonia.Media.Color.Parse("#FFC75F"), Avalonia.Media.Color.Parse("#D65DB1")),
+            (Avalonia.Media.Color.Parse("#2C73D2"), Avalonia.Media.Color.Parse("#008E9B")),
+        };
+        for (int i = 0; i < gradients.Length; i++)
+        {
+            using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(
+                new Avalonia.PixelSize(1920, 1080), new Avalonia.Vector(96, 96));
+            using (var context = bitmap.CreateDrawingContext())
+            {
+                var brush = new Avalonia.Media.LinearGradientBrush
+                {
+                    StartPoint = new Avalonia.RelativePoint(0, 0, Avalonia.RelativeUnit.Relative),
+                    EndPoint = new Avalonia.RelativePoint(1, 1, Avalonia.RelativeUnit.Relative),
+                    GradientStops =
+                    {
+                        new Avalonia.Media.GradientStop(gradients[i].From, 0),
+                        new Avalonia.Media.GradientStop(gradients[i].To, 1),
+                    },
+                };
+                context.FillRectangle(brush,
+                    new Avalonia.Rect(0, 0, 1920, 1080));
+            }
+            using var stream = System.IO.File.Create(
+                System.IO.Path.Join(root, $"seed-{i + 1}.png"));
+            bitmap.Save(stream, new Avalonia.Media.Imaging.PngBitmapEncoderOptions());
+        }
+        return System.IO.Path.GetDirectoryName(root);
+    }
+
+
     public ScreenshotViewModel Browser => _browser;
 
     /// <summary>截图目录（游戏写入的绝对路径）。</summary>

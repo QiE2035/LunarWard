@@ -1,4 +1,4 @@
-using LunarWard.Core;
+﻿using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using System;
 using System.Collections.Generic;
@@ -81,6 +81,36 @@ public partial class GamePackageService
     private static partial Regex GameVersionRegex();
 
 
+
+
+
+    /// <summary>
+    /// 读取已安装游戏的语音包语言（Starward <c>GetAudioLanguageAsync</c>：
+    /// 读游戏目录里 <c>audio_pkg_scan_dir</c> 指向的清单，逐行匹配语言名）。
+    /// </summary>
+    /// <param name="gameId"></param>
+    /// <param name="installPath"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<AudioLanguage> GetAudioLanguageAsync(GameId gameId, string installPath, CancellationToken cancellationToken = default)
+    {
+        GameConfig? config = await GetGameConfigAsync(gameId, cancellationToken);
+        if (string.IsNullOrWhiteSpace(config?.AudioPackageScanDir))
+        {
+            return AudioLanguage.None;
+        }
+        AudioLanguage flag = AudioLanguage.None;
+        string file = Path.Join(installPath, config.AudioPackageScanDir);
+        if (File.Exists(file))
+        {
+            var lines = await File.ReadAllLinesAsync(file, cancellationToken);
+            if (lines.Any(x => x.Contains("Chinese"))) { flag |= AudioLanguage.Chinese; }
+            if (lines.Any(x => x.Contains("English(US)"))) { flag |= AudioLanguage.English; }
+            if (lines.Any(x => x.Contains("Japanese"))) { flag |= AudioLanguage.Japanese; }
+            if (lines.Any(x => x.Contains("Korean"))) { flag |= AudioLanguage.Korean; }
+        }
+        return flag;
+    }
 
 
 

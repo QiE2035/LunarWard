@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:LunarWard.App.ViewModels.Starward"
              x:Class="LunarWard.App.Views.Starward.Pages.GameLauncherPage"
@@ -78,6 +78,7 @@
                 Margin="0,0,8,0"
                 Background="Transparent"
                 Command="{Binding OpenInGameNoticesCommand}"
+                IsVisible="{Binding ShowGameNoticeBell}"
                 ToolTip.Tip="{Binding Strings[Launcher.GameNotices]}">
           <Panel>
             <TextBlock Classes="icon" FontSize="18" Text="&#xE789;" Foreground="{StaticResource StarTextSecondary}" />
@@ -135,52 +136,95 @@
       </StackPanel>
     </Border>
 
-    <!-- ── 右下：安装进度弹层 + 时长胶囊 + 开始按钮 ─────────────────── -->
-    <StackPanel Margin="0,0,40,40"
-                HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                Spacing="8">
+    <!-- ── 右下：预下载 + 时长胶囊 + 开始按钮（Starward GameLauncherPage.xaml:537-557） ── -->
+    <Grid Margin="0,0,40,40"
+          ColumnDefinitions="Auto,Auto,Auto"
+          ColumnSpacing="12"
+          HorizontalAlignment="Right" VerticalAlignment="Bottom">
 
       <!--
-        Starward StartGameButton 的 Popup_GameInfoOrDownloadProgress：
-        安装/下载时在按钮上方浮出 320 宽的进度卡（状态 + 百分比 + 速度 + 暂停/继续/取消）。
+        预下载（Starward Features/GameInstall/PreDownloadButton.xaml）：
+        44 高、圆角 16、透明底；图标 22 Bold + 文本 16 Bold（文本列 MinWidth 52、居中）。
+        悬停时图标在「下载 / 播放 / 暂停」间切换并弹出下载信息，尺寸照源码 200~240 宽。
       -->
-      <Border Width="320"
-              Padding="16,12"
-              HorizontalAlignment="Right"
-              CornerRadius="8"
-              Background="{StaticResource StarAcrylicBrush}"
-              BorderBrush="{StaticResource StarCardStrokeBrush}"
-              BorderThickness="1"
-              BoxShadow="0 8 16 0 #33000000"
-              IsVisible="{Binding IsInstalling}">
-        <StackPanel Spacing="8">
-          <TextBlock FontWeight="SemiBold" Foreground="{StaticResource StarTextPrimary}"
-                     Text="{Binding InstallStatusText}" TextWrapping="Wrap" />
-          <Grid ColumnDefinitions="*,Auto">
-            <TextBlock Grid.Column="0" FontSize="12" Foreground="{StaticResource StarTextSecondary}"
-                       Text="{Binding InstallDetailText}" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="1" FontSize="12" Foreground="{StaticResource StarTextSecondary}"
-                       Text="{Binding InstallPercentText}" VerticalAlignment="Center" />
+      <Panel x:Name="PredownloadHost"
+             Grid.Column="0"
+             Height="44"
+             IsVisible="{Binding ShowPredownloadButton}">
+        <Button Padding="4,0,8,0"
+                HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                Background="Transparent" BorderThickness="0"
+                CornerRadius="16"
+                IsEnabled="{Binding PredownloadButtonEnabled}"
+                Command="{Binding PredownloadCommand}"
+                PointerEntered="OnPredownloadPointerEntered"
+                PointerExited="OnPredownloadPointerExited">
+          <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="8" VerticalAlignment="Center">
+            <TextBlock Grid.Column="0"
+                       Classes="icon"
+                       FontSize="22" FontWeight="Bold"
+                       Foreground="{StaticResource StarTextPrimary}"
+                       Text="{Binding PredownloadIcon}" />
+            <TextBlock Grid.Column="1"
+                       MinWidth="52"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       FontSize="16" FontWeight="Bold"
+                       Foreground="{StaticResource StarTextPrimary}"
+                       Text="{Binding PredownloadText}" />
           </Grid>
-          <ProgressBar Height="4" Minimum="0" Maximum="100" Value="{Binding InstallProgress}"
-                       Foreground="{StaticResource StarAccentBrush}"
-                       Background="#24FFFFFF" CornerRadius="2" />
-          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-            <Button Content="{Binding Strings[InstallGameDialog.Pause]}"
-                    Command="{Binding PauseInstallCommand}"
-                    IsVisible="{Binding !InstallCanResume}" />
-            <Button Content="{Binding Strings[InstallGameDialog.Resume]}"
-                    Command="{Binding ResumeInstallCommand}"
-                    IsVisible="{Binding InstallCanResume}" />
-            <Button Content="{Binding Strings[InstallGameDialog.Cancel]}"
-                    Command="{Binding CancelInstallCommand}" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
+        </Button>
 
-      <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="12" HorizontalAlignment="Right">
+        <!--
+          下载信息（Starward Popup_DownloadProgress：DesiredPlacement=Top、Padding 20,12、圆角 8）。
+          Avalonia 的 Popup 会另开一层窗口，截图/合成时不便，这里用同层 Border 画在按钮正上方（视觉一致）。
+        -->
+        <Panel IsHitTestVisible="False">
+          <Border MinWidth="200" MaxWidth="240"
+                  Margin="-64,-136,0,0"
+                  Padding="20,12"
+                  HorizontalAlignment="Left" VerticalAlignment="Top"
+                  CornerRadius="8"
+                  IsVisible="{Binding IsPredownloadPopupOpen}"
+                  Background="{StaticResource StarOverlayAcrylicBrush}">
+            <StackPanel>
+              <TextBlock FontSize="14" FontWeight="Bold"
+                         Foreground="{StaticResource StarTextPrimary}"
+                         Text="{Binding PredownloadInstallStateText}" />
 
-      <Border Grid.Column="0"
+              <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="8"
+                          IsVisible="{Binding HasPredownloadBytes}">
+                <TextBlock Classes="icon" FontSize="14" Foreground="{StaticResource StarTextSecondary}" Text="&#xF012;" />
+                <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding PredownloadBytesText}" />
+              </StackPanel>
+
+              <StackPanel Margin="0,4,0,0" Orientation="Horizontal" Spacing="8"
+                          IsVisible="{Binding HasPredownloadSpeed}">
+                <TextBlock Classes="icon" FontSize="14" Foreground="{StaticResource StarTextSecondary}" Text="&#xEC4A;" />
+                <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding PredownloadSpeedText}" />
+              </StackPanel>
+
+              <StackPanel Margin="0,4,0,0" Orientation="Horizontal" Spacing="8"
+                          IsVisible="{Binding HasPredownloadRemain}">
+                <TextBlock Classes="icon" FontSize="14" Foreground="{StaticResource StarTextSecondary}" Text="&#xE917;" />
+                <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding PredownloadRemainText}" />
+              </StackPanel>
+
+              <TextBlock Margin="0,8,0,0"
+                         MaxLines="3"
+                         TextWrapping="Wrap"
+                         FontSize="12"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         Text="{Binding PredownloadErrorMessage}"
+                         IsVisible="{Binding HasPredownloadError}" />
+            </StackPanel>
+          </Border>
+        </Panel>
+      </Panel>
+
+      <Border Grid.Column="1"
               Height="44"
               CornerRadius="22"
               BoxShadow="0 8 16 0 #33000000"
@@ -194,45 +238,101 @@
         </Button>
       </Border>
 
-      <!-- Starward StartGameButton：44 高胶囊，可用时强调色底 -->
-      <Grid Grid.Column="1" Height="44" MinWidth="180">
+      <!--
+        复刻 Starward StartGameButton：44 高胶囊。
+        可用时强调色底（IsAccentBackground），运行中/忙碌时为亚克力底；
+        安装中按钮里换成「进度圆环 + 状态小字」，悬停时小字变成暂停/继续/取消，
+        上方 Popup 显示下载/安装/校验的速度与剩余时间。
+      -->
+      <Grid Grid.Column="2" Height="44" MinWidth="180">
         <Border CornerRadius="22" Background="{StaticResource StarAcrylicBrush}" />
         <Border CornerRadius="22"
                 Background="{StaticResource StarAccentBrush}"
                 IsVisible="{Binding IsAccentBackground}" />
 
-        <Button Padding="0"
-                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                HorizontalContentAlignment="Stretch"
-                Background="Transparent" BorderThickness="0"
-                CornerRadius="22"
-                Command="{Binding StartGameCommand}"
-                IsEnabled="{Binding IsStartButtonEnabled}">
-          <Grid>
-            <Border Width="20" Height="20" Margin="14,0,0,0"
-                    HorizontalAlignment="Left"
-                    CornerRadius="10"
-                    IsVisible="{Binding IsBusy}">
-              <Arc Width="18" Height="18" Stroke="{StaticResource StarTextSecondary}" StrokeThickness="2" StartAngle="0" SweepAngle="270" />
-            </Border>
-            <TextBlock Margin="41,0,53,0"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{Binding StartButtonForeground}"
-                       Text="{Binding StartButtonText}" />
-          </Grid>
-        </Button>
+        <Grid x:Name="StartButtonHost"
+              PointerEntered="OnStartButtonPointerEntered"
+              PointerExited="OnStartButtonPointerExited">
 
-        <!-- 游戏设置齿轮（Starward Button_Setting，前景跟随强调色底） -->
-        <Button Width="44" Height="44" Padding="0"
-                HorizontalAlignment="Right"
-                Background="Transparent" BorderThickness="0" CornerRadius="22"
-                Command="{Binding OpenGameSettingsCommand}"
-                ToolTip.Tip="{Binding Strings[Shell.GameSetting]}">
-          <TextBlock Classes="icon" FontSize="16" Text="&#xE713;" Foreground="{Binding SettingButtonForeground}" />
-        </Button>
+          <Button x:Name="StartButton"
+                  Padding="0"
+                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                  HorizontalContentAlignment="Stretch"
+                  Background="Transparent" BorderThickness="0"
+                  CornerRadius="22"
+                  Command="{Binding StartGameCommand}"
+                  IsEnabled="{Binding IsStartButtonEnabled}">
+            <Grid ColumnDefinitions="Auto,*">
+              <!-- 安装中：左侧进度圆环（Avalonia 无 ProgressRing，用 Arc 画） -->
+              <Grid Grid.Column="0" Width="28" Margin="12,0,0,0"
+                    VerticalAlignment="Center"
+                    IsVisible="{Binding IsInstalling}">
+                <Panel Width="20" Height="20"
+                       HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <Ellipse Width="20" Height="20" Stroke="#33FFFFFF" StrokeThickness="2.5" />
+                  <Arc Width="20" Height="20"
+                       Stroke="{StaticResource StarTextPrimary}"
+                       StrokeThickness="2.5"
+                       StartAngle="-90"
+                       SweepAngle="{Binding RingSweepAngle}" />
+                </Panel>
+              </Grid>
+
+              <!-- 安装中：下载时显示「已下载 / 剩余时间」两行（Starward ButtonDownloadingRemainTime） -->
+              <StackPanel Grid.Column="1"
+                          Margin="8,0,53,0"
+                          VerticalAlignment="Center"
+                          Spacing="0"
+                          IsVisible="{Binding IsInstalling}"
+                          Opacity="{Binding ButtonDownloadingRemainTimeOpacity}">
+                <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding DownloadBytesText}" />
+                <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding RemainTimeText}" />
+              </StackPanel>
+
+              <!-- 安装中：非下载阶段的状态小字（Starward TextBlock_GameState_InstallState） -->
+              <TextBlock Grid.Column="1"
+                         Margin="8,0,53,0"
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                         FontSize="12"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         Opacity="{Binding TextBlockInstallStateOpacity}"
+                         Text="{Binding TextBlockInstallStateText}"
+                         IsVisible="{Binding IsInstalling}" />
+
+              <!-- 安装中悬停：暂停 / 继续 / 取消（Starward TextBlock_GameState_PointerOver） -->
+              <TextBlock Grid.Column="1"
+                         Margin="8,0,53,0"
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                         FontSize="12"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         Opacity="{Binding TextBlockPointerOverOpacity}"
+                         Text="{Binding TextBlockPointerOverText}"
+                         IsVisible="{Binding IsInstalling}" />
+
+              <!-- 非安装：开始游戏 / 更新游戏 / 安装游戏 / 运行时长 -->
+              <TextBlock Grid.Column="1"
+                         Margin="0,0,53,0"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         Foreground="{Binding StartButtonForeground}"
+                         Text="{Binding StartButtonText}"
+                         IsVisible="{Binding !IsInstalling}" />
+            </Grid>
+          </Button>
+
+          <!-- 游戏设置齿轮（Starward Button_Setting，前景跟随强调色底） -->
+          <Button Width="44" Height="44" Padding="0"
+                  HorizontalAlignment="Right"
+                  Background="Transparent" BorderThickness="0" CornerRadius="22"
+                  Command="{Binding OpenGameSettingsCommand}"
+                  ToolTip.Tip="{Binding Strings[Shell.GameSetting]}">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE713;" Foreground="{Binding SettingButtonForeground}" />
+          </Button>
+
+        </Grid>
       </Grid>
-      </Grid>
-    </StackPanel>
+    </Grid>
 
     <!-- 用 DX12 启动（Starward 右下角 CompactCheckBox；Linux 落 profile.enhancements.dx12 → -use-d3d12） -->
     <Border Margin="0,0,44,16"
@@ -243,10 +343,17 @@
             Background="{StaticResource StarOverlayAcrylicBrush}"
             IsVisible="{Binding ShowDx12Option}"
             ToolTip.Tip="{Binding Strings[Launcher.Dx12Hint]}">
-      <CheckBox IsChecked="{Binding EnableDx12, Mode=TwoWay}"
-                Content="{Binding Strings[Launcher.EnableDx12]}"
-                FontSize="12"
-                Foreground="{StaticResource StarTextSecondary}" />
+      <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <CheckBox IsChecked="{Binding EnableDx12, Mode=TwoWay}"
+                  Content="{Binding Strings[Launcher.EnableDx12]}"
+                  FontSize="12"
+                  Foreground="{StaticResource StarTextSecondary}" />
+        <!-- Starward DX12 开关旁的「详情」（DX12IntroDialog.xaml.cs 里 Button_Details_Click） -->
+        <Button Classes="link" Padding="0" FontSize="12"
+                Foreground="{StaticResource StarTextTertiary}"
+                Click="OnDx12DetailsClick"
+                Content="{Binding Strings[Launcher.Dx12Details]}" />
+      </StackPanel>
     </Border>
 
     <!-- 定位游戏 / 未配置（Starward 在按钮正下方一行 12px 小字） -->
@@ -255,7 +362,7 @@
             HorizontalAlignment="Right" VerticalAlignment="Bottom"
             Foreground="{StaticResource StarCautionBrush}"
             IsVisible="{Binding ShowLocateGame}"
-            Command="{Binding OpenGameSettingsCommand}">
+            Command="{Binding LocateGameCommand}">
       <TextBlock FontSize="12" Foreground="{StaticResource StarCautionBrush}">
         <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[Launcher.Installed]}" />
         <Run Text=" " />
@@ -267,7 +374,7 @@
             Margin="0,0,44,18"
             HorizontalAlignment="Right" VerticalAlignment="Bottom"
             IsVisible="{Binding ShowNotConfigured}"
-            Command="{Binding OpenGameSettingsCommand}">
+            Command="{Binding LocateGameCommand}">
       <TextBlock FontSize="12" Foreground="{StaticResource StarCautionBrush}" Text="{Binding Strings[Launcher.ConfigureGame]}" />
     </Button>
 
@@ -276,10 +383,15 @@
       结构照源码：刷新 → 角色行 → 分隔线 → 错误行 → 原神/绝区零分区。
       BH3/星铁分区不出现（LunarWard 不支持；Starward 也按 IsXxxEnabled 隐藏）。
     -->
+    <!--
+      ── 右上侧栏（Starward GameLauncherPage.xaml:658-679：StackPanel Margin 4、Spacing 4）──
+      源码这一列是 云游戏(默认 Collapsed) / 每日便笺 / 通行证授权登录；LunarWard 没有云游戏，只剩后两个。
+    -->
+    <StackPanel Margin="4"
+                HorizontalAlignment="Right" VerticalAlignment="Top"
+                Spacing="4">
     <Button x:Name="Button_DailyNote"
             Classes="icon-button"
-            Margin="4"
-            HorizontalAlignment="Right" VerticalAlignment="Top"
             ToolTip.Tip="{Binding Strings[Main.DailyNote]}">
       <Panel Width="40" Height="40">
         <Border CornerRadius="8" Background="{StaticResource StarOverlayAcrylicBrush}" />
@@ -584,6 +696,63 @@
       </Button.Flyout>
     </Button>
 
+    <!--
+      ── 通行证授权登录（Starward GameAuthLoginButton.xaml：40×40、圆角 8、Flyout LeftEdgeAlignedTop）──
+      可见条件同源码：国服 + cookie 里有 stoken/mid。源码用 icon_hyperion.png / alert.png 两张位图，
+      LunarWard 没有这两张素材，这里用字形代替（差异记录在 parity 文档）。
+    -->
+    <Button x:Name="Button_GameAuthLogin"
+            Classes="icon-button"
+            IsVisible="{Binding AuthLogin.IsVisible}"
+            ToolTip.Tip="{Binding Strings[AuthLogin.Tooltip]}">
+      <Panel Width="40" Height="40">
+        <Border CornerRadius="8" Background="{StaticResource StarOverlayAcrylicBrush}" />
+        <TextBlock Classes="icon" FontSize="20" Text="&#xE77B;" />
+        <!-- 错误角标（源码 alert.png 20×20、Margin 0,-10,-10,0） -->
+        <TextBlock Classes="icon"
+                   FontSize="14"
+                   Margin="0,-10,-10,0"
+                   HorizontalAlignment="Right" VerticalAlignment="Top"
+                   Foreground="{StaticResource StarCautionBrush}"
+                   Text="&#xE7BA;"
+                   IsVisible="{Binding AuthLogin.ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+      </Panel>
+      <Button.Flyout>
+        <Flyout Placement="LeftEdgeAlignedTop" Opened="OnGameAuthLoginFlyoutOpened">
+          <StackPanel x:Name="GameAuthLoginFlyoutRoot"
+                      x:DataType="vm:GameAuthLoginViewModel"
+                      MinWidth="180"
+                      Spacing="12">
+            <!-- 通行证图标 60×60（源码 icon_hyperion.png） -->
+            <Border Width="60" Height="60"
+                    HorizontalAlignment="Center"
+                    CornerRadius="8"
+                    Background="{StaticResource StarControlFillBrush}">
+              <TextBlock Classes="icon"
+                         FontSize="28"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         Text="&#xE77B;" />
+            </Border>
+            <TextBlock HorizontalAlignment="Center" Text="{Binding PassportIdText}" />
+            <TextBlock Foreground="{StaticResource StarTextSecondary}"
+                       Text="{Binding ErrorMessage}"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <Button MinWidth="120"
+                    HorizontalAlignment="Center"
+                    Command="{Binding InitializeGameAuthLoginCommand}"
+                    Content="{Binding Strings[AuthLogin.Reauthenticate]}"
+                    IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <ToggleSwitch HorizontalAlignment="Center"
+                          IsChecked="{Binding EnableLoginAuthTicket, Mode=TwoWay}"
+                          OffContent="{Binding Strings[AuthLogin.Disabled]}"
+                          OnContent="{Binding Strings[AuthLogin.Enabled]}" />
+          </StackPanel>
+        </Flyout>
+      </Button.Flyout>
+    </Button>
+    </StackPanel>
+
     <!-- ── 游戏账号切换（Starward GameAccountSwitcher，Margin 0,0,40,100，40 高亚克力胶囊） ── -->
     <StackPanel IsVisible="{Binding IsAccountSwitcherVisible}"
                 Margin="0,0,40,100"
@@ -678,6 +847,88 @@
                   ToolTip.Tip="{Binding Strings[Launcher.PlayPause]}">
             <TextBlock Classes="icon" Text="{Binding VideoToggleGlyph}" Foreground="{StaticResource StarTextSecondary}" />
           </Button>
+        </StackPanel>
+      </Border>
+    </Panel>
+
+    <!--
+      游戏信息 / 下载进度（Starward StartGameButton 的 Popup_GameInfoOrDownloadProgress，DesiredPlacement=Top、
+      Padding 20,12、圆角 8、MinWidth 200 MaxWidth 260）。悬停整颗按钮时打开：
+      运行中显示「进程名 (PID)」，安装中显示状态 + 百分比 + 剩余时间 + 下载/安装/校验 速度与错误。
+      同层 Border 画在按钮正上方（Avalonia Popup 另开窗口，截图与合成不便）。
+    -->
+    <Panel IsHitTestVisible="False">
+      <Border MinWidth="200" MaxWidth="260"
+          Margin="0,0,40,116"
+          HorizontalAlignment="Right" VerticalAlignment="Bottom"
+          Padding="20,12"
+          CornerRadius="8"
+          IsVisible="{Binding ShowGameInfoPopup}"
+          Background="{StaticResource StarOverlayAcrylicBrush}">
+        <StackPanel>
+    <!-- 运行中：进程名 (PID) -->
+          <TextBlock FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding RunningGameInfo}"
+                 IsVisible="{Binding IsRunning}" />
+
+    <!-- 安装中 -->
+          <StackPanel IsVisible="{Binding IsInstalling}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock FontSize="14" FontWeight="Bold"
+                 Foreground="{StaticResource StarTextPrimary}"
+                 Text="{Binding InstallStateText}" />
+          <TextBlock FontSize="12" VerticalAlignment="Bottom"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding ProgressPercentText}" />
+          <TextBlock Classes="icon" FontSize="12" VerticalAlignment="Bottom"
+                 Foreground="{StaticResource StarTextSecondary}" Text="&#xE917;" />
+          <TextBlock FontSize="12" VerticalAlignment="Bottom"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding RemainTimeText}" />
+        </StackPanel>
+
+        <Border Height="1" Margin="0,8,0,0" Background="{StaticResource StarDividerBrush}" />
+
+        <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="4"
+                IsVisible="{Binding HasDownloadBytes}">
+          <TextBlock Classes="icon" FontSize="12" Foreground="{StaticResource StarTextSecondary}" Text="&#xE896;" />
+          <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding Strings[StartGameButton.Download]}" />
+        </StackPanel>
+        <Grid Width="200" Margin="0,2,0,0" IsVisible="{Binding HasDownloadBytes}">
+          <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}" Text="{Binding DownloadBytesText}" />
+          <TextBlock HorizontalAlignment="Right" FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}" Text="{Binding DownloadSpeedText}" />
+        </Grid>
+
+        <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="4"
+                IsVisible="{Binding HasInstallBytes}">
+          <TextBlock Classes="icon" FontSize="12" Foreground="{StaticResource StarTextSecondary}" Text="&#xF012;" />
+          <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding Strings[StartGameButton.Install]}" />
+        </StackPanel>
+        <Grid Width="200" Margin="0,2,0,0" IsVisible="{Binding HasInstallBytes}">
+          <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}" Text="{Binding InstallBytesText}" />
+          <TextBlock HorizontalAlignment="Right" FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}" Text="{Binding InstallSpeedText}" />
+        </Grid>
+
+        <Grid Width="200" Margin="0,12,0,0" IsVisible="{Binding HasVerifySpeed}">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Classes="icon" FontSize="12" Foreground="{StaticResource StarTextSecondary}" Text="&#xE945;" />
+            <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                   Text="{Binding Strings[StartGameButton.Verify]}" />
+          </StackPanel>
+          <TextBlock HorizontalAlignment="Right" FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}" Text="{Binding VerifySpeedText}" />
+        </Grid>
+
+        <TextBlock Margin="0,8,0,0" MaxLines="3" TextWrapping="Wrap"
+                   FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                   Text="{Binding InstallErrorMessage}"
+                   IsVisible="{Binding HasInstallError}" />
+          </StackPanel>
         </StackPanel>
       </Border>
     </Panel>

@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 
 namespace LunarWard.Installer;
@@ -55,6 +56,14 @@ public sealed class GameInstallController : IDisposable
     public GameInstallContext? CurrentTask => _service.CurrentTask;
 
 
+    /// <summary>
+    /// 已安装游戏的语音包语言（读游戏目录里 <c>audio_pkg_scan_dir</c> 清单）。
+    /// 更新时需要它来挑增量包里的语音包。
+    /// </summary>
+    public Task<AudioLanguage> GetAudioLanguageAsync(GameId gameId, string installPath, CancellationToken cancellationToken = default)
+        => _packages.GetAudioLanguageAsync(gameId, installPath, cancellationToken);
+
+
     /// <summary>本机已安装游戏的版本（读 config.ini，读不到返回 null）。</summary>
     public Task<Version?> GetLocalGameVersionAsync(string installPath) => _packages.GetLocalGameVersionAsync(installPath);
 
@@ -63,6 +72,13 @@ public sealed class GameInstallController : IDisposable
     /// 取游戏安装包的元数据（版本、各语言音频包、压缩/解压大小）。
     /// <paramref name="launcherId"/> 是启动器 id（如 <c>1Z8W5NHUQb</c>）。
     /// </summary>
+    /// <summary>
+    /// 把 <c>config.ini</c> 里的语音包开关改成 <paramref name="language"/>（Starward 的「选择语音包」）。
+    /// </summary>
+    public Task SetAudioLanguageAsync(GameId gameId, string installPath, AudioLanguage language, CancellationToken cancellationToken = default)
+        => _packages.SetAudioLanguageAsync(gameId, installPath, language, cancellationToken);
+
+
     public async Task<GamePackage?> GetGamePackageAsync(
         string launcherId,
         string language,
