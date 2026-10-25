@@ -170,10 +170,10 @@ dotnet test LunarWard.slnx              # 三个测试项目并行跑（本地�
 dotnet test LunarWard.slnx -m:1         # 串行，规避并发下两个集成用例的偶发冲突
 ```
 
-`scripts/ci.sh` 与 CI 都是**分项目串行**执行的，不受影响。已知在 `-m` 并行模式下
-`IntegrationTests` 的 `I10_AfterGameExit_ClientsConvergeToEmpty` 与
-`AcceptanceTests.Report_HasSevenPhasesAndFullChain` 会因共享临时资源偶发失败（单独跑全过），
-尚未定位到具体共享点。
+`scripts/ci.sh` 与 CI 都是**分项目串行**执行的，串行跑法始终可用。
+此前 `-m` 并行时 `IntegrationTests` 偶发失败已定位并修复：`FakeWine` 的 cc 编译产物用了
+固定文件名（`<tmp>/lunarward-it-native/*`），多个测试同时首次调用 helper 时会读到写了一半的
+二进制；现在编译用独占文件锁串行化，并先写 `.tmp` 再原子改名。
 
 ## 文档索引
 

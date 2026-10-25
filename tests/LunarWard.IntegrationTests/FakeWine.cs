@@ -97,16 +97,26 @@ public static class NativeHelper
         Directory.CreateDirectory(cacheDir);
         var output = Path.Join(cacheDir, outputName);
 
-        // 已编译且比源文件新 → 直接复用
+        // 多个测试集会在同一个进程/不同进程里并发请求同一个 helper：编译必须串行。
+        // 用独占文件锁当互斥量；拿不到锁就等（最多 120 秒）。
+        using var gate = AcquireCompileLock(output);
+        if (gate is null)
+        {
+            return null;
+        }
+
+        // 已编译且比源文件新 → 直接复用（在锁内判断，避免拿到写了一半的文件）
         if (File.Exists(output) && File.GetLastWriteTimeUtc(output) >= File.GetLastWriteTimeUtc(source))
         {
             return output;
         }
 
+        var staged = output + "." + Environment.ProcessId + ".tmp";
+
         var psi = new ProcessStartInfo
         {
             FileName = cc,
-            ArgumentList = { "-O1", "-o", output, source },
+            ArgumentList = { "-O1", "-o", staged, source },
             UseShellExecute = false,
             RedirectStandardError = true,
             RedirectStandardOutput = true,
@@ -119,13 +129,40 @@ public static class NativeHelper
 
         var stderr = process.StandardError.ReadToEnd();
         process.WaitForExit(TimeSpan.FromSeconds(60));
-        if (process.ExitCode != 0 || !File.Exists(output))
+        if (process.ExitCode != 0 || !File.Exists(staged))
         {
             Console.Error.WriteLine($"[fakeproc] cc failed: {stderr}");
+            try { File.Delete(staged); } catch (IOException) { }
             return null;
         }
 
+        File.Move(staged, output, overwrite: true);
         return output;
+    }
+
+
+    /// <summary>
+    /// 编译互斥：同一个 helper 只允许一个进程编译，其余等待。
+    /// 返回 <c>null</c> 表示等锁超时（调用方应跳过而不是用坏文件）。
+    /// </summary>
+    private static FileStream? AcquireCompileLock(string output)
+    {
+        var lockPath = output + ".lock";
+        var deadline = DateTime.UtcNow.AddSeconds(120);
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                return new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException)
+            {
+                Thread.Sleep(50);
+            }
+        }
+
+        Console.Error.WriteLine($"[fakeproc] 等待编译锁超时：{lockPath}");
+        return null;
     }
 
 
