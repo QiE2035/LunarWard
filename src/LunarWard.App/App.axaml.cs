@@ -154,6 +154,8 @@ public partial class App : Application
 
         desktop.Exit += (_, _) =>
         {
+            // 把 WAL 合并回主库，避免明文凭据留在 0644 的 -wal 里（见 LunarWardDatabase.Checkpoint）。
+            LunarWard.Launch.Database.LunarWardDatabase.CheckpointDefault(AppServices.Current.Paths.DataHome);
             Services.SingleInstance.Dispose();
             _tray?.Dispose();
             _tray = null;

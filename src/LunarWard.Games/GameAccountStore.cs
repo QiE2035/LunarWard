@@ -171,20 +171,11 @@ public sealed class GameAccountStore
     }
 
 
-    /// <summary>把库文件权限收紧到 0600（凭据文件，与上游「只在本机」口径一致）。</summary>
-    private void LimitPermissions()
-    {
-        try
-        {
-            File.SetUnixFileMode(
-                _database.Path,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite);
-        }
-        catch (Exception)
-        {
-            // 非 Unix 文件系统（或没有权限）时保持默认；数据本身仍只在本机。
-        }
-    }
+    /// <summary>
+    /// 把库文件权限收紧到 0600（凭据文件，与上游「只在本机」口径一致）。
+    /// 具体实现与侧车文件处理见 <see cref="LunarWardDatabase.LimitPermissions"/>。
+    /// </summary>
+    private void LimitPermissions() => _database.LimitPermissions();
 
 
     private static GameAccountSnapshot Read(Microsoft.Data.Sqlite.SqliteDataReader reader)

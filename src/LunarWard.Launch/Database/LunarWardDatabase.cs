@@ -38,7 +38,11 @@ public sealed class LunarWardDatabase
             Directory.CreateDirectory(dir);
         }
         _connectionString = $"Data Source={Path}";
+
+        // 库里有账号 cookie / 抽卡 authkey：建库前收紧目录，建库后收紧主库与侧车文件。
+        LimitPermissions();
         Initialize();
+        LimitPermissions();
     }
 
 
@@ -49,7 +53,83 @@ public sealed class LunarWardDatabase
     {
         var connection = new SqliteConnection(_connectionString);
         connection.Open();
+
+        // WAL 模式下 SQLite 会在连接打开时新建 -wal / -shm；它们不继承主库权限，
+        // 按 umask 得 0644，凭据明文会落在这里。每次开连接都收紧一次（幂等）。
+        LimitSidecarPermissions();
         return connection;
+    }
+
+
+    /// <summary>
+    /// 把主库文件收紧到 0600（凭据文件，与上游「只在本机」口径一致）。
+    /// </summary>
+    public void LimitPermissions() => TrySetOwnerOnly(Path);
+
+
+    /// <summary>把 <c>-wal</c> / <c>-shm</c> 收紧到 0600；文件不存在时跳过。</summary>
+    public void LimitSidecarPermissions()
+    {
+        TrySetOwnerOnly(Path + "-wal");
+        TrySetOwnerOnly(Path + "-shm");
+    }
+
+
+    /// <summary>
+    /// 退出前把 WAL 合并回主库（<c>TRUNCATE</c> 会连带删除 <c>-wal</c> / <c>-shm</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 不 checkpoint 的话，最近一次写入的明文凭据会留在 0644 的侧车文件里直到下次打开；
+    /// 这一步让「退出后目录里只剩一个 0600 的库」。
+    /// </remarks>
+    public void Checkpoint()
+    {
+        try
+        {
+            using SqliteConnection connection = new(_connectionString);
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+            command.ExecuteNonQuery();
+        }
+        catch (Exception)
+        {
+            // 校验/收尾失败不影响退出；最坏情况是侧车文件留着，权限已在打开时收紧。
+        }
+    }
+
+
+    /// <summary>
+    /// 退出钩子：对默认库做一次 checkpoint（不存在则跳过，不创建空库）。
+    /// </summary>
+    public static void CheckpointDefault(string dataHome)
+    {
+        string path = System.IO.Path.Combine(dataHome, FileName);
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        new LunarWardDatabase(path).Checkpoint();
+    }
+
+
+    /// <summary>文件存在时收紧到 0600；不支持 chmod 的环境静默跳过。</summary>
+    private static void TrySetOwnerOnly(string path)
+    {
+        try
+        {
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+        catch (Exception)
+        {
+            // 非 Unix 文件系统（或没有权限）时保持默认；数据本身仍只在本机。
+        }
     }
 
 

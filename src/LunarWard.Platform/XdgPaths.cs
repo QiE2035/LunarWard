@@ -118,6 +118,29 @@ public sealed class XdgPaths : IXdgPaths
                  })
         {
             Directory.CreateDirectory(dir);
+
+            // 目录里有 cookie / 抽卡 authkey / 账号快照：只允许属主进入。
+            // 之前只 CreateDirectory，落到 umask 默认的 0755，同机其他用户可解目录名；
+            // WAL 侧车文件更是 0644（见 LunarWardDatabase.LimitSidecarPermissions）。
+            TrySetOwnerOnly(dir);
+        }
+    }
+
+
+    /// <summary>
+    /// 把目录收紧到 0700；非 Unix 文件系统上静默跳过（测试用的临时目录同样适用）。
+    /// </summary>
+    private static void TrySetOwnerOnly(string dir)
+    {
+        try
+        {
+            File.SetUnixFileMode(
+                dir,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+        catch (Exception)
+        {
+            // 非 Unix 文件系统 / 不支持 chmod 的挂载点：保持默认权限。
         }
     }
 }
