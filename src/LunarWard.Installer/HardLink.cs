@@ -1,5 +1,6 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using LunarWard.Platform.Unix;
 
 namespace LunarWard.Installer;
 
@@ -10,10 +11,9 @@ namespace LunarWard.Installer;
 /// 只有 <c>File.CreateSymbolicLink</c> / <c>File.ResolveLinkTarget</c>，
 /// <b>没有</b>创建硬链接的 API，所以只能直接调 libc。</para>
 ///
-/// <para>本项目约定"所有 P/Invoke 集中在 <c>LunarWard.Platform</c>"，
-/// 但本任务只允许改 <c>src/LunarWard.Installer/</c>，且 <c>Platform.Unix.Libc</c>
-/// 是 <c>internal</c>。这里放一份最小实现；后续若允许改 Platform，
-/// 应上提为 <c>LunarWard.Platform.Unix.Libc.Link</c>。</para>
+/// <para>P/Invoke 声明已按项目约定上提到 <c>LunarWard.Platform.Unix.Libc.Link</c>
+/// （Platform 通过 <c>InternalsVisibleTo</c> 对本程序集开放）；本类只保留
+/// 语义包装（预检查、建目录、errno 翻译）。</para>
 /// </summary>
 public static class HardLink
 {
@@ -26,11 +26,6 @@ public static class HardLink
     public const int EROFS = 30;
     public const int ENOSYS = 38;
     public const int EOPNOTSUPP = 95;
-
-
-    [DllImport("libc", EntryPoint = "link", SetLastError = true)]
-    private static extern int SysLink([MarshalAs(UnmanagedType.LPUTF8Str)] string oldPath,
-                                     [MarshalAs(UnmanagedType.LPUTF8Str)] string newPath);
 
 
     /// <summary>
@@ -55,7 +50,7 @@ public static class HardLink
                 Directory.CreateDirectory(directory);
             }
 
-            if (SysLink(targetPath, linkPath) == 0)
+            if (Libc.Link(targetPath, linkPath) == 0)
             {
                 return true;
             }
