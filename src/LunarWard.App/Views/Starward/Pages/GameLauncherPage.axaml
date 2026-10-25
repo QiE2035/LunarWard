@@ -95,10 +95,16 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:PostItemViewModel">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,0,8">
-                  <TextBlock Grid.Column="0"
-                             VerticalAlignment="Center"
-                             Text="{Binding Title}"
-                             TextTrimming="CharacterEllipsis" />
+                  <!-- Starward 用 TextBlock + Hyperlink（NavigateUri）打开公告详情 -->
+                  <HyperlinkButton Grid.Column="0"
+                                   VerticalAlignment="Center"
+                                   Padding="0"
+                                   Background="Transparent"
+                                   BorderThickness="0"
+                                   Foreground="{StaticResource StarTextPrimary}"
+                                   NavigateUri="{Binding Link}"
+                                   Content="{Binding Title}"
+                                   ToolTip.Tip="{Binding Link}" />
                   <TextBlock Grid.Column="1"
                              VerticalAlignment="Center"
                              Foreground="{StaticResource StarTextSecondary}"
