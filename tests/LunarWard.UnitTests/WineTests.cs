@@ -489,6 +489,34 @@ public class PlanFactoryTests
             Assert.True(CommandTemplate.ContainsPost("x %post%"));
         }
     }
+
+
+    [Fact]
+    public void SetWrapper_KeepsGameModeOutsideMangoHud()
+    {
+        var profile = new ProfileConfig();
+
+        profile.SetWrapper("mangohud", true);
+        profile.SetWrapper("gamemoderun", true);
+        Assert.Equal(["gamemoderun", "mangohud"], profile.Wrappers);
+
+        profile.SetWrapper("gamemoderun", false);
+        Assert.Equal(["mangohud"], profile.Wrappers);
+
+        profile.SetWrapper("mangohud", false);
+        Assert.Empty(profile.Wrappers);
+    }
+
+
+    [Fact]
+    public void SetWrapper_PreservesUserWrappersOrder()
+    {
+        var profile = new ProfileConfig { Wrappers = ["custom-a", "custom-b"] };
+
+        profile.SetWrapper("gamemoderun", true);
+        profile.SetWrapper("mangohud", true);
+        Assert.Equal(["gamemoderun", "mangohud", "custom-a", "custom-b"], profile.Wrappers);
+    }
 }
 
 

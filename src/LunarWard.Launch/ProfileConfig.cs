@@ -39,6 +39,32 @@ public sealed class ProfileConfig
     /// <summary>有序包装器链（外层在前），例如 <c>["gamemoderun"]</c>。</summary>
     public List<string> Wrappers { get; set; } = [];
 
+    /// <summary>
+    /// 开关一个性能包装器（LunarWard 的 Linux 扩展：<c>gamemoderun</c> / <c>mangohud</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 顺序约定：<c>gamemoderun</c> 永远最外层，<c>mangohud</c> 紧贴其内，用户自定义的其它
+    /// 包装器保持原相对顺序 —— 与 <c>LaunchPlanFactory</c> 拼接 <c>wrappers + wine</c> 的方式一致。
+    /// </remarks>
+    public void SetWrapper(string name, bool enabled)
+    {
+        Wrappers.Remove(name);
+        if (!enabled)
+        {
+            return;
+        }
+
+        if (name == "gamemoderun")
+        {
+            Wrappers.Insert(0, name);
+        }
+        else
+        {
+            int gameMode = Wrappers.IndexOf("gamemoderun");
+            Wrappers.Insert(gameMode >= 0 ? gameMode + 1 : 0, name);
+        }
+    }
+
     public List<ExternalProgram> ExternalPrograms { get; set; } = [];
 
     /// <summary>

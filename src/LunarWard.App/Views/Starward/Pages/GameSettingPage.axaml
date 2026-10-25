@@ -450,6 +450,34 @@
                      Margin="0,8,0,0"
                      Text="{Binding Strings[GameSetting.ArgumentsHint]}" />
 
+          <!-- ── Linux 性能包装器（上游没有；Linux 独有） ─────────── -->
+          <TextBlock Classes="section"
+                     Margin="0,20,0,0"
+                     Text="{Binding Strings[GameSetting.LinuxTools]}" />
+
+          <TextBlock Classes="description"
+                     Margin="0,8,0,0"
+                     Text="{Binding Strings[GameSetting.LinuxToolsHint]}" />
+
+          <StackPanel Margin="0,8,0,0" Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <ToggleSwitch IsChecked="{Binding UseGameMode, Mode=TwoWay}"
+                            OffContent="{Binding Strings[GameSetting.GameMode]}"
+                            OnContent="{Binding Strings[GameSetting.GameMode]}" />
+              <TextBlock Classes="description"
+                         VerticalAlignment="Center"
+                         Text="{Binding GameModeStatus}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <ToggleSwitch IsChecked="{Binding UseMangoHud, Mode=TwoWay}"
+                            OffContent="{Binding Strings[GameSetting.MangoHud]}"
+                            OnContent="{Binding Strings[GameSetting.MangoHud]}" />
+              <TextBlock Classes="description"
+                         VerticalAlignment="Center"
+                         Text="{Binding MangoHudStatus}" />
+            </StackPanel>
+          </StackPanel>
+
         </StackPanel>
 
         <!-- ══════════════════════════════════════════════════════════

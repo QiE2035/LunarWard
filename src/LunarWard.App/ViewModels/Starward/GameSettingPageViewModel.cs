@@ -941,6 +941,61 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
     }
 
 
+    // ── Linux 性能包装器（上游没有；LunarWard 的 ProfileConfig.Wrappers 扩展） ──
+
+    /// <summary>是否用 <c>gamemoderun</c> 启动（写进 profile 的包装器链）。</summary>
+    public bool UseGameMode
+    {
+        get => Profile.Profile.Wrappers.Contains("gamemoderun");
+        set
+        {
+            if (!_loading)
+            {
+                SetWrapper("gamemoderun", value);
+            }
+        }
+    }
+
+
+    /// <summary>是否用 <c>mangohud</c> 启动（写进 profile 的包装器链）。</summary>
+    public bool UseMangoHud
+    {
+        get => Profile.Profile.Wrappers.Contains("mangohud");
+        set
+        {
+            if (!_loading)
+            {
+                SetWrapper("mangohud", value);
+            }
+        }
+    }
+
+
+    /// <summary>本机是否装了 gamemoderun（只影响提示文字，不阻止开关）。</summary>
+    public string GameModeStatus => global::LunarWard.Platform.UnixProcessLauncher.Which("gamemoderun") is null
+        ? Strings["GameSetting.GameModeMissing"]
+        : Strings["GameSetting.GameModeFound"];
+
+
+    public string MangoHudStatus => global::LunarWard.Platform.UnixProcessLauncher.Which("mangohud") is null
+        ? Strings["GameSetting.MangoHudMissing"]
+        : Strings["GameSetting.MangoHudFound"];
+
+
+    /// <summary>
+    /// 维护包装器链（外层在前）：<c>gamemoderun</c> 永远最外层，<c>mangohud</c> 紧贴它，
+    /// 其余用户自定义包装器保持原顺序。对应 <c>LaunchPlanFactory</c> 的 <c>Wrappers</c>。
+    /// </summary>
+    private void SetWrapper(string name, bool enabled)
+    {
+        Profile.Profile.SetWrapper(name, enabled);
+        SetDirty(true);
+        RefreshPlan();
+        OnPropertyChanged(nameof(UseGameMode));
+        OnPropertyChanged(nameof(UseMangoHud));
+    }
+
+
     /// <summary><see cref="NumericUpDown.Value"/> 是 <c>decimal?</c>，这里做一次边界收敛。</summary>
     [ObservableProperty]
     private decimal? _readyGraceMsValue = 6000;
