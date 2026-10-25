@@ -51,3 +51,18 @@
   `WindowDecorations` / `TransparencyLevelHint`。
 - **弹窗内容高度上限**：主窗口固定 676 高，原独立窗口里 1008×564 的
   `PlayTimeStatsDialog` 塞不进浮层，内容区改为在固定高度内滚动（列宽仍 1008）。
+
+## 四、字体与背景（2026-10-25，`fix/ui-parity-pass`）
+
+| 上游 | LunarWard | 说明 / 理由 |
+|---|---|---|
+| `Segoe UI`（系统字体，Windows） | `Inter` → `Noto Sans CJK SC` → `Microsoft YaHei UI` → `Noto Sans JP` → `Segoe UI` | 对齐 Windows 的笔画粗细与字宽；Linux 上不再依赖用户装 wps 的 Segoe UI。`Avalonia.Fonts.Inter`（OFL）随包分发，`Program.cs` 里 `FontManagerOptions.DefaultFamilyName` 与 fallback 链同步改 |
+| `Segoe Fluent Icons` | `Segoe MDL2 Assets`（本机包，`fc-match` 已验证） | 上游 Fluent Icons 在 Linux 不可分发；全仓字形只使用 MDL2 码位。若某处引用了 Fluent 新增码位（E62E/EBD3/E917/F012），Avalonia 会回退到系统字体，评审截图时会看到「字形变了」 |
+| `MediaPlayerElement`（WinUI，硬件解码） | `LibVLCSharp` + `VideoView`（原生子窗口） | 官方动态背景直接流播 `https`（LibVLC 自带缓存），不先落盘；`VideoView` 单实例复用、切静态图时卸载，避免原生窗口残影/黑块 |
+| 背景切换条 60px 区显示 | 同左，且**只在可选项 > 1 时出现**（与上游 `Count > 1` 一致） | 背景来源见 07 §2：官方接口图/视频 + 版本海报 + 本地目录 |
+| 公告 Banner `FlipView` 滚轮翻页 | 手写 `PointerWheelChanged` → 上一页/下一页 | Avalonia 无 `FlipView`；上游 FlipView 的触摸/滚轮切换用等价手势复刻 |
+
+- **文字抗锯齿**：Windows 用 ClearType 子像素渲染，Avalonia 默认也是子像素，截图里能在
+  「开始游戏」「图标字形」边缘看到 RGB 彩边。本轮在 `MainWindow.axaml` 用
+  `TextOptions.TextRenderingMode="Antialias"` 强制灰度抗锯齿——这是**有意偏离**上游的
+  唯一一处视觉差异，换来与 Windows 截图并排比对时不出现彩色毛边。

@@ -49,7 +49,8 @@
   （`HorizontalContentAlignment=Stretch` + 图标 `VerticalAlignment=Center`）；
   选中态 = `#14FFFFFF` 背景 + 左侧 3×16 的 `#CBAD8E` 圆角竖条；悬停 `#0AFFFFFF`；
   悬停 500ms 后在右侧弹出文字 Flyout。
-- 图标：Segoe Fluent Icons（本机由 `Segoe MDL2 Assets` 兜底），字号 16 / 20。
+- 图标：**只用 `Segoe MDL2 Assets` 码位**（`Segoe Fluent Icons` 在 Linux 不可分发；
+  上游 Segoe Fluent 的 4 个新增码位在 MDL2 里缺失，用到时按 MDL2 近似字形取）。字号 16 / 20。
 
 ## 2. 启动器页（复刻重点）
 
@@ -62,17 +63,19 @@
 | 游戏选择层 | 全屏 `#80000000`、Padding 68,80,0,0；**每款游戏一张卡**（192×108、`#40000000`、圆角 8、UniformToFill 缩略图），区服收在卡片内；点卡片才弹区服 Flyout（Bottom/Transient），单区服直接切换；悬停显示「选择游戏服务器」；点空白 / ESC / 右上关闭 |
 | 已安装游戏 | 卡片下方 Expander（MinWidth 820、`#0DFFFFFF` 圆角 8）：占用大小 + 硬链接节省 + 自动查找 + 刷新，展开为每区服一行（图标/游戏名/区服角标/区服名/容量/路径） |
 | 公告卡 | 左 60、底 40，380×304，圆角 8，`CustomAcrylic`；上半 Banner 176 高，下半 Pivot 124 高 |
-| 公告卡 Banner | `UniformToFill`，圆角 8；悬停右下角显示 `1/3` 计数；点击打开链接 |
+| 公告卡 Banner | `UniformToFill`，圆角 8；悬停右下角显示 `1/3` 计数；**滚轮上一页/下一页**（上游 FlipView 行为）；点击打开链接 |
 | 公告卡 Pivot | 表头 `活动 / 公告 / 资讯`，16px Bold，header 高 36，左右 margin 12，选中下划线 3px 圆角；右侧公告铃铛按钮（E789）带红点 |
-| 公告列表 | 行高约 27，标题（14）左、日期（14，次要色）右；行距 8；超出滚动 |
+| 公告列表 | 行高约 27，标题（14，`HyperlinkButton` 可点）左、日期（14，次要色）右；行距 8；超出滚动 |
 | 时长胶囊 | 右下，底 40，高 44，圆角 22，`CustomOverlayAcrylic`；时钟图标 20 + `635h 16m`；点击弹出时长统计 |
 | 时长统计弹窗 | `PlayTimeStatsDialog.xml` 1008 宽亚克力卡：6 张统计卡（总时长/每日平均/最长连续/最长单次/单日最长/上次启动，内边距 12,10，标题 12、数值 18、次要行 11），`最近 15 天 / 12 周 / 12 个月` 分段 + 右对齐区间总计时长，柱状图（高 132，纵轴 3 等分刻度、圆角柱、悬停提示），近一年日历热力图（52 周、周一起始、左侧周一/周日、底部月份） |
 | 开始游戏 | 右下，底 40，最小宽 180、高 44，圆角 22，`CustomAcrylic`；文本居中，右侧 44×44 设置齿轮（E713） |
 | 开始游戏状态 | 空闲「开始游戏」；运行中「游戏正在运行」+ 已运行时长；忙时左侧 ProgressRing 20 |
 | 便笺按钮 | 右上角 40×40、圆角 8、`CustomOverlayAcrylic`；点击打开 `DailyNoteButton` 的 Flyout（刷新/角色行/原神或绝区零分区），不是跳页 |
 | 账号切换 | 右下，开始按钮上方 100px，右侧 40px；头像 40×40 圆角 4 + 悬停列表 |
-| 背景切换条 | 悬停底部 60px 高渐变区时出现：PipsPager 圆点 + 图库/复制/另存为/播放按钮 |
+| 背景切换条 | 背景数 > 1 且悬停底部 60px 区时出现：可点圆点 + 图库/复制/另存为/播放按钮；滚轮切上一张/下一张 |
 | 公告/Update Toast | 底部居中，宽 ≤600，距底 72 |
+
+背景来源（`BackgroundCatalog`）：官方接口 `getAllGameBasicInfo` 的 `backgrounds`（图片 + `type=BACKGROUND_TYPE_VIDEO` 的官方动态背景，LibVLC 直接流播 https）→ 游戏素材版本海报 → `~/.cache/lunarward/background` 下的本地图片/视频；切换条只在可选项 > 1 时出现。
 
 ## 3. 视觉 token
 
@@ -89,8 +92,8 @@
 | `CardStroke` | `#14FFFFFF` | 1px 描边 |
 | `SystemFillColorCaution` | `#FFB900` | 警告 |
 | `SystemFillColorSuccess` | `#6CCB5F` | 成功 |
-| 字体 | `Segoe UI`（本机 wps 包） | 正文 14；次要 12–13；标题 20 Bold；Pivot 16 Bold |
-| 图标字体 | `Segoe Fluent Icons, Segoe MDL2 Assets` | 缺失时退到 PathIcon 场景不使用 |
+| 字体 | `Inter`（`Avalonia.Fonts.Inter`，OFL）→ `Noto Sans CJK SC` → `Microsoft YaHei UI` → `Noto Sans JP` → `Segoe UI` | 正文 14；次要 12–13；标题 20 Bold；Pivot 16 Bold。Linux 上不再依赖 wps 的 Segoe UI |
+| 图标字体 | `Segoe MDL2 Assets`（`Program.cs` FontManagerOptions 兜底链末位） | 全仓字形只允许落在 MDL2 码位；缺字形时 Avalonia 会回退到系统字体，需在评审时目检 |
 | 圆角 | 4 / 8 / 22 | 控件 / 卡片 / 胶囊 |
 
 **原则**：星式控件用显式 `ControlTheme` 或局部样式实现，不改 Fluent 全局主题；
