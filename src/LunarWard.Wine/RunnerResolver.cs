@@ -117,14 +117,20 @@ public sealed class RunnerResolver
     private (string, string, IReadOnlyDictionary<string, string>, string) ResolveProton(RunnerSource.Proton proton)
     {
         var dir = Path.Join(proton.SteamLibraryPath, "steamapps", "common", proton.ProtonName);
-        // 默认 WineBinary 模式（D9）：直接调 dist/bin/wine，不走 proton run 脚本
-        var wine = Path.Join(dir, "dist", "bin", "wine");
-        if (!File.Exists(wine))
+        // 默认 WineBinary 模式（D9）：直接调 Proton 自带的 wine，不走 proton run 脚本。
+        // Proton 9 及以前是 dist/bin/wine，Proton 10 / Experimental 改成 files/bin/wine。
+        foreach (string rootName in (string[])["dist", "files"])
         {
-            throw new RuntimeNotFoundException(proton.ProtonName, $"找不到 Proton wine 二进制：{wine}");
+            var wine = Path.Join(dir, rootName, "bin", "wine");
+            if (File.Exists(wine))
+            {
+                return (wine, Path.Join(dir, rootName), new Dictionary<string, string>(),
+                    $"Proton {proton.ProtonName} ({wine})");
+            }
         }
 
-        return (wine, Path.Join(dir, "dist"), new Dictionary<string, string>(), $"Proton {proton.ProtonName} ({wine})");
+        throw new RuntimeNotFoundException(proton.ProtonName,
+            $"找不到 Proton wine 二进制：{Path.Join(dir, "dist", "bin", "wine")} 或 files/bin/wine");
     }
 
 

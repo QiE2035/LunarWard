@@ -214,6 +214,27 @@ public class RunnerResolverTests
 
 
     [Fact]
+    public void Proton10_FilesBinWine_IsAlsoSupported()
+    {
+        var (resolver, _, temp) = Create();
+        using (temp)
+        {
+            var library = temp.Combine("steam");
+            var files = Path.Join(library, "steamapps", "common", "Proton - Experimental", "files", "bin");
+            Directory.CreateDirectory(files);
+            var wine = Path.Join(files, "wine");
+            File.WriteAllText(wine, "#!/bin/sh\necho wine-10.0\n");
+            File.SetUnixFileMode(wine, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+
+            var resolved = resolver.Resolve(new RunnerSource.Proton(library, "Proton - Experimental"));
+
+            // Proton 10 把 dist/ 改名成 files/：两种布局都要认
+            Assert.Equal(wine, resolved.WineBinary);
+        }
+    }
+
+
+    [Fact]
     public void Custom_DirectoryInput_FindsBinWine()
     {
         var (resolver, _, temp) = Create();

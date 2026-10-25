@@ -8,8 +8,10 @@
 | # | 场景 | 结果 | 证据 |
 |---|---|---|---|
 | R1 | 官方国服启动 | ✅ | 见下 |
+| R8 | 系统 wine | ⏳ | 本机 PATH 里没有 wine（只有 sleepy-launcher 借用与 Steam Proton） |
+| R10 | Proton（WineBinary） | ✅（启动到 WineDevice） | 见下 |
 | R12 | 退出无残留 | ✅（部分） | 见下 |
-| R2–R11、R13–R15 | 见说明 | ⏳ | 需 B 站账号 / 额外 runner / 视频资源等前置 |
+| R2–R7、R9、R11、R13–R15 | 见说明 | ⏳ | 需 B 站账号 / 托管 runner 安装 / 视频资源等前置 |
 
 ## R1 — 官方国服启动
 
@@ -26,6 +28,19 @@ STARTED hk4e_cn pid=699177
   `PostLaunch`（0 个自动程序）→ `Running` → `Cleanup`
 
 判定：登录界面出现（AwaitReady 命中 WineDevice），符合通过标准。
+
+## R10 — Proton 直接调 wine（Proton 10 / Experimental 的 files/bin 布局）
+
+- 先在配置里临时加一个 `Proton` runtime（`steam_library_path=/home/qie2035/.local/share/Steam`，
+  `proton_name=Proton - Experimental`）并设为默认，跑完立刻还原配置（`/tmp/lw-config-backup.json`）。
+- 实测 `startgame --biz hk4e_cn`：`Launch` 相位用的是
+  `…/Proton - Experimental/files/bin/wine`（**Proton 10 的新布局**），`AwaitReady` 69ms 命中 **WineDevice**，
+  `success=true`。
+- 但游戏本体随后以 **退出码 5** 结束（12s），属于「脱离 Steam 运行时直接调 Proton wine」的已知限制，
+  不影响「安装器/启动器能起游戏进程」这一判定；如实记录，不粉饰。
+- 顺带发现并修掉一个真实缺陷：`RunnerResolver.ResolveProton` 以前只认 `dist/bin/wine`（Proton ≤9），
+  遇到 Proton 10 的 `files/bin/wine` 会直接抛「找不到 Proton wine 二进制」。现在两种布局都认，
+  新增单测 `Proton10_FilesBinWine_IsAlsoSupported`。
 
 ## R12 — 退出无残留（部分）
 
