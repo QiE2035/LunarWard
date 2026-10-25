@@ -126,6 +126,11 @@ prefix。是否提供扫描/导入？
 
 **推荐**：首期做"扫描游戏目录"（简单），导入配置放二期。
 
+**状态（2026-10-25）**：已实现 `GameScanner`：扫描 `~/games`、`~/Games`、`~/Genshin`、
+`~/ZenlessZoneZero`、`~/.local/share/{sleepy-launcher,anime-game-launcher,lunarward/games}`，
+以及 **Steam 库的 `steamapps/common`**（标准路径 + `libraryfolders.vdf` 里的额外库，
+与 Proton 运行时扫描共用同一份库目录解析）。导入别人的 `config.json` 仍不做。
+
 ---
 
 ## Q7. 双主题的默认值

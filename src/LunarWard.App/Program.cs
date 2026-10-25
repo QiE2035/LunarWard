@@ -32,6 +32,20 @@ internal static class Program
             return;
         }
 
+        // 游戏库扫描：打印找到的已安装游戏（含 Steam 库），不启动窗口。
+        if (args.Contains("--scan-games"))
+        {
+            var scanner = new Services.GameScanner(LunarWard.Platform.XdgPaths.Default);
+            var games = scanner.Scan();
+            foreach (var game in games)
+            {
+                Console.WriteLine($"SCAN_GAME {game.Definition.Kind}|{game.Definition.Edition}|{game.Directory}");
+            }
+
+            Console.WriteLine($"SCAN_TOTAL {games.Count}");
+            return;
+        }
+
         // 单实例：第二次启动只把已运行的窗口叫回来（托盘隐藏后尤其需要）。
         // 截图自检与 CLI 子命令不走这条，避免 CI 里并发截图互相抢占。
         bool isolated = args.Contains("--screenshot")
@@ -70,6 +84,7 @@ internal static class Program
         //   --uigf-import                     配合 --uigf-window，直接切到导入页并灌样例文件
         //   --gacha-export <path>             把样例记录按 UIGF v3.0 / SRGF v1.0 导出到该路径
         //   --gacha-excel <path>              把样例记录按 Starward 的 Excel 模板导出到该路径
+        //   --scan-games                      扫描游戏库并打印结果（含 Steam 的 steamapps/common）
         //   --start-hidden                    启动后藏到托盘（开机自启用，对应上游 --hide）
         //   --quit-after <ms>                 启动 N 毫秒后自动退出（自检用）
         //   --tray-test                       试建系统托盘并验证「关闭 = 隐藏」，打印 TRAY_OK / TRAY_FAIL

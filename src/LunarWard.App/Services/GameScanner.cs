@@ -38,8 +38,8 @@ public sealed class GameScanner
         get
         {
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            return
-            [
+            var roots = new List<string>
+            {
                 Path.Join(home, "games"),
                 Path.Join(home, "Games"),
                 Path.Join(home, "Genshin"),
@@ -47,7 +47,25 @@ public sealed class GameScanner
                 Path.Join(home, ".local", "share", "sleepy-launcher"),
                 Path.Join(home, ".local", "share", "anime-game-launcher"),
                 Path.Join(home, ".local", "share", "lunarward", "games"),
-            ];
+            };
+
+            // Steam 库：原神/星铁/绝区零在以 Steam 方式安装/接管时落在 steamapps/common 下。
+            // 标准路径直接拼，非默认库从 libraryfolders.vdf 拿（与 Proton 扫描共用同一份解析）。
+            roots.AddRange(SteamGameRoots(home));
+            return roots;
+        }
+    }
+
+
+    /// <summary>Steam 库里的 <c>steamapps/common</c> 目录（标准路径 + libraryfolders.vdf 的额外库）。</summary>
+    private static IEnumerable<string> SteamGameRoots(string home)
+    {
+        yield return Path.Join(home, ".steam", "steam", "steamapps", "common");
+        yield return Path.Join(home, ".local", "share", "Steam", "steamapps", "common");
+
+        foreach (var library in RuntimeScanner.SteamLibraries())
+        {
+            yield return Path.Join(library, "steamapps", "common");
         }
     }
 
@@ -70,6 +88,21 @@ public sealed class GameScanner
         foreach (var (dir, path) in ReadOtherLauncherPaths())
         {
             TryAdd(dir, path, result);
+        }
+
+        return result.Values.OrderBy(x => x.Definition.Kind).ThenBy(x => x.Directory).ToList();
+    }
+
+
+    /// <summary>
+    /// 只扫一个根目录（自检/单测用；<see cref="Scan"/> 是它 + 已知来源的合并）。
+    /// </summary>
+    public IReadOnlyList<DetectedGame> ScanRoot(string root, int maxDepth = 3)
+    {
+        var result = new Dictionary<string, DetectedGame>(StringComparer.Ordinal);
+        if (Directory.Exists(root))
+        {
+            ScanDirectory(root, 0, maxDepth, result);
         }
 
         return result.Values.OrderBy(x => x.Definition.Kind).ThenBy(x => x.Directory).ToList();
