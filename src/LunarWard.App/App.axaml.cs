@@ -24,6 +24,13 @@ public partial class App : Application
 
 
     /// <summary>
+    /// 正在真正退出进程（托盘菜单「退出」/ <c>--quit-after</c>）。此时主窗口 <c>OnClosing</c>
+    /// 必须直接放行，不能再按关闭选项弹询问或隐藏到托盘。
+    /// </summary>
+    internal bool IsExiting { get; private set; }
+
+
+    /// <summary>
     /// 按需创建托盘（用户在设置里刚把关闭行为改成「隐藏到托盘」时，重启前也能用）。
     /// </summary>
     internal bool EnsureTray()
@@ -38,8 +45,16 @@ public partial class App : Application
             return false;
         }
 
-        _tray = Services.TrayService.TryCreate(window, () => desktop.Shutdown());
+        _tray = Services.TrayService.TryCreate(window, () => ExitFromTray(desktop));
         return _tray is not null;
+    }
+
+
+    /// <summary>托盘菜单「退出」：先标记真正退出，再关窗，避免被「每次询问 / 隐藏到托盘」拦住。</summary>
+    private void ExitFromTray(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        IsExiting = true;
+        desktop.Shutdown();
     }
 
 
@@ -82,7 +97,7 @@ public partial class App : Application
         if (CaptureMode.TrayTest)
         {
             AppServices.Current.Config.Launcher.CloseWindowOption = "Hide";
-            _tray = Services.TrayService.TryCreate(window, () => desktop.Shutdown());
+            _tray = Services.TrayService.TryCreate(window, () => ExitFromTray(desktop));
             Console.WriteLine(_tray is null ? "TRAY_FAIL" : "TRAY_OK");
 
             // 再验证「关闭 = 隐藏」：2 秒后调 Close，窗口应仍存活且不可见，然后主动退出。
@@ -103,7 +118,7 @@ public partial class App : Application
             _ = Task.Run(async () =>
             {
                 await Task.Delay(CaptureMode.QuitAfterMilliseconds);
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => ExitFromTray(desktop));
             });
         }
 
@@ -129,7 +144,7 @@ public partial class App : Application
             AppServices.Current.Config.Launcher.CloseWindowOption, "Hide", StringComparison.OrdinalIgnoreCase);
         if (!CaptureMode.Enabled && (closeToTray || CaptureMode.StartHidden))
         {
-            _tray = Services.TrayService.TryCreate(window, () => desktop.Shutdown());
+            _tray = Services.TrayService.TryCreate(window, () => ExitFromTray(desktop));
             if (_tray is null)
             {
                 // 桌面没有 SNI 宿主：把配置改回「完全退出」，设置页显示的就是实际行为。

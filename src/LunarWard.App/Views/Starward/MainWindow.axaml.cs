@@ -299,6 +299,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        // 托盘「退出」/ --quit-after：这是真的退进程，跳过关闭选项的询问与隐藏
+        if (Avalonia.Application.Current is LunarWard.App.App { IsExiting: true })
+        {
+            return;
+        }
+
         bool trayAvailable = Avalonia.Application.Current is LunarWard.App.App app && app.EnsureTray();
         string? configured = AppServices.Current.Config.Launcher.CloseWindowOption;
 
