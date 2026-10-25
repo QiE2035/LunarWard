@@ -3,6 +3,7 @@ using LunarWard.Launch;
 using LunarWard.Platform;
 using LunarWard.Wine;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace LunarWard.IntegrationTests;
 
@@ -16,6 +17,10 @@ namespace LunarWard.IntegrationTests;
 [Collection("phase-engine")]
 public class AcceptanceTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public AcceptanceTests(ITestOutputHelper output) => _output = output;
+
     private static LaunchEngine CreateEngine(Sandbox sandbox)
         => new(sandbox.Processes, sandbox.Controller, sandbox.Launcher, sandbox.PrefixManager, sandbox.Xdg);
 
@@ -126,10 +131,13 @@ public class AcceptanceTests
         var plan = sandbox.CreatePlan(wine);
         var result = await CreateEngine(sandbox).RunAsync(plan);
 
+        _output.WriteLine($"acceptance run: success={result.Success} error={result.Error?.Message} error_type={result.Error?.GetType().Name}");
         Assert.True(result.Success, result.Error?.Message);
 
         var report = LaunchReport.From(plan, result);
         var json = JsonSerializer.Serialize(report);
+        _output.WriteLine($"report env={report.Env.Count} plan env={plan.Env.Count} sources={report.EnvSources.Count} runner={report.Runtime?.Runner?.Kind}/{report.Runtime?.Runner?.Resolved}");
+        _output.WriteLine(json);
         Assert.Contains("Prepare", json);
         Assert.Contains("AwaitReady", json);
         Assert.Contains("\"env_sources\"", json);
