@@ -1,3 +1,4 @@
+using LunarWard.App.Services;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia;

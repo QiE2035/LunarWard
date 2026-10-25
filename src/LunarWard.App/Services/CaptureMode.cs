@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 
-namespace LunarWard.App;
+namespace LunarWard.App.Services;
 
 /// <summary>自检模式状态（<c>--screenshot</c>）。</summary>
 internal static class CaptureMode
