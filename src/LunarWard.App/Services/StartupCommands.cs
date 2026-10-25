@@ -11,10 +11,11 @@ namespace LunarWard.App.Services;
 /// </summary>
 /// <remarks>
 /// <para>
-/// 上游支持 <c>starward startgame --biz hk4e_cn</c>（桌面快捷方式/外部程序直接启动游戏）、
-/// <c>rpc</c>（Discord Rich Presence，未移植）、<c>playtime --pid</c>（游戏退出后补记账）、
-/// <c>starward://</c> 协议。Linux 上桌面入口同样需要「不打开窗口、直接启动游戏」的入口，
-/// 所以先移植 <c>startgame</c>；其余子命令仍按缺口记在 parity 文档里。
+/// 上游支持的子命令这里都已移植：<c>startgame --biz</c>（桌面快捷方式/外部程序直接启动游戏）、
+/// <c>playtime --biz --pid</c>（等进程退出后补记账，含 <c>/proc</c> 启动时间与 pid 锁）、
+/// <c>lunarward://startgame|playtime</c> 协议、<c>components list|install</c>（组件索引，
+/// 兼 R9 真机验收）、<c>install-smoke</c>（安装器真机下载自检）。<c>rpc</c>（Discord Rich
+/// Presence）上游走 Windows 命名管道，未移植。
 /// </para>
 /// <para>
 /// 这里不创建 Avalonia 应用：<see cref="AppServices"/> 可以在任何线程构建，
@@ -214,7 +215,7 @@ internal static class StartupCommands
     /// </summary>
     /// <remarks>
     /// 桌面文件已经把 <c>x-scheme-handler/lunarward</c> 注册给本程序；这里只处理
-    /// <c>startgame</c>（启动游戏）与 <c>playtime</c>（未移植，明确报错而不静默失败）。
+    /// <c>startgame</c>（启动游戏）与 <c>playtime</c>（补记账，与 CLI 同一实现）。
     /// </remarks>
     private static async Task<int> RunUrlAsync(string url)
     {

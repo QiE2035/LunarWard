@@ -22,14 +22,14 @@ namespace LunarWard.App.ViewModels.Starward;
 /// </para>
 /// <para>
 /// 视图结构严格照 Starward 源码：标题（20 Bold，左 24）+ 右侧「管理截图文件夹」按钮，
-/// 内容区是 <c>ItemsView</c> 磁贴墙（UniformGridLayout）。Starward 的
-/// <c>ScreenshotFolderManageDialog</c>（管理截图文件夹对话框）尚未移植，按钮的 Flyout
-/// 里放 LunarWard 追加的三行操作，见视图注释。
+/// 内容区是 <c>ItemsView</c> 磁贴墙（UniformGridLayout）。「管理截图文件夹」按钮打开
+/// 1:1 移植的 <see cref="Views.Starward.ScreenshotFolderManageDialog"/>（增删额外目录、
+/// 保存后写 <c>ProfileConfig.ScreenshotFolders</c> 并重扫）。
 /// </para>
 /// </remarks>
 public sealed partial class ScreenshotPageViewModel : StarwardPageViewModel
 {
-    /// <summary>操作反馈（导出/复制）停留时间。Starward 用 InAppToast，本页还没有 ToastHost。</summary>
+    /// <summary>页面内操作反馈（导出/复制）停留时间；同时会用外壳的 <see cref="Services.InAppToast"/> 弹一条。</summary>
     private static readonly TimeSpan FeedbackDuration = TimeSpan.FromSeconds(3.5);
 
 
@@ -342,6 +342,7 @@ public sealed partial class ScreenshotPageViewModel : StarwardPageViewModel
         ErrorText = null;
         ActionText = message;
         RestartFeedbackTimer();
+        LunarWard.App.Services.InAppToast.Success(Strings["Screenshot.Title"], message);
     }
 
 

@@ -21,7 +21,8 @@ namespace LunarWard.App.ViewModels.Starward;
 /// 角色通过 <see cref="GameRecordClient.GetGameRolesAsync"/> 实时拉取。
 /// </para>
 /// <para>
-/// 战绩子页（深境螺旋 / 式舆防卫战…）尚未移植：点菜单项只显示"尚未移植"的占位，
+/// 战绩子页（深境螺旋 / 幻想真境剧诗 / 幽境危战 / 绳网月报 / 危局强袭战）已移植，
+/// 未覆盖的页（如部分绝区零子页）点菜单项仍显示"尚未移植"占位，
 /// 不伪造数据；未选中时与 Starward 一样是空白 Frame。
 /// </para>
 /// <para>
