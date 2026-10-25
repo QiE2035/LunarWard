@@ -53,10 +53,35 @@ dotnet run --project src/LunarWard.App
 
 # 4. 无头自检（渲染一帧 Starward 界面到 PNG 后退出，用于 CI）
 dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
-#    逐页出图：--page launcher|game-setting|screenshot|gacha|toolbox|settings
-#    其它自检开关：--open-selector（打开游戏选择层）、--game-icons（展开游戏图标条）、
+#    逐页出图：--page launcher|game-setting|screenshot|gacha|toolbox|self-query|genshin-beyond|settings
+#    工具箱演示数据：LUNARWARD_TOOLBOX_DEMO=1（不联网、不写用户数据），
+#                   LUNARWARD_TOOLBOX_GAME=starrail 可切到崩铁菜单，配合 --tab <序号> 选中子页
+#    其它自检开关：--open-selector（打开游戏选择层）、--selector-hover（卡片悬停遮罩）、
+#                 --selector-flyout（弹出区服列表，Flyout 是独立 Popup，不进主窗口截图）、
+#                 --game-icons（展开游戏图标条）、
 #                 --open-daily-note（打开每日便笺 Flyout）、
 #                 --install-dialog（打开安装路径对话框）、--install-progress（显示安装进度弹层）、
+#                 --install-update（按钮切到「更新游戏」；与 --install-progress 同用时用更新语义）、
+#                 --install-hover（安装进度自检时假装鼠标悬停在按钮上）、
+#                 --predownload <idle|downloading|hover|finished>（摆出预下载按钮/信息卡/完成后隐藏）、
+#                 --window image-viewer（截图片查看器；可加 --image-viewer-gallery / --image-viewer-info）、
+#                 --screenshot-folder-dialog（截「管理截图文件夹」对话框）、
+#                 --screenshot-seed / --screenshot-hover（截图页样例数据 / 首块磁贴悬停放大）、
+#                 --gacha-seed zzz|genshin（抽卡页样例记录，便于截 ZZZ 统计卡）、
+#                 --gacha-delete-dialog（抽卡页「删除指定时间段」对话框，自动用 ZZZ 样例数据）、
+#                 --gacha-export <path>（把样例记录按 UIGF v3.0 导出到该路径）、
+#                 --gacha-import <path>（读回 UIGF v3.0 / JSON 并合并，做往返自检）、
+#                 --uigf-window（UIGF v4.2 导出/导入窗口，自动用原神样例存档；加 --uigf-import 切到导入页）、
+#                 --predownload-dialog（预下载确认框；加 --predownload-dialog-unavailable 看不可用态）、
+| `--dx12-intro` | 打开 DX12「效果详情」引导弹窗并截图 |
+#                 --launcher-setting-dialog + --settings-section basic|arguments|background|packages|network
+#                 --launcher-setting-dialog + --settings-section basic --uninstall-warning（卸载确认区）
+#                     （截启动器「游戏设置」弹窗；network 亮网络驱动器警告）、
+#                 --auth-login（右上角通行证授权登录按钮切到可见 + 失败态，并单独出 Flyout 图 *.flyout.png）、
+#                 --page self-query（账号记录页）、--selfquery-select（自动选中第一行类型）、
+#                 --selfquery-url（打开「输入 URL」对话框并单独出图 *.dialog.png）、
+#                 --beyond-seed（千星奇域颂愿自检时写入样例记录，出统计卡）、
+#                 --beyond-pane（展开材料统计 Pane）、--beyond-second-tab（切到第二个页签）、
 #                 --tab <n>（工具箱第 n 个战绩菜单）、--lang en-US、
 #                 --settings-section <about|general|download|files|screenshot|hotkey|gamepad|advanced|toolbox>、
 #                 --window playtime（打开游戏时长统计弹窗再截图）、
