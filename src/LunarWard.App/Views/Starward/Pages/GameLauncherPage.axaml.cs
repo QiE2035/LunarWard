@@ -255,6 +255,13 @@ public partial class GameLauncherPage : StarwardPage
             Operation = GameInstallOperation.Install,
             AudioLanguage = AudioLanguage.None,
         });
+
+        if (CaptureMode.InstallInfoPopup)
+        {
+            // 真实下载下把「游戏信息 / 下载进度」卡片也展开，一张图同时验证两者
+            _viewModel.ActionButtonPointerOver = true;
+            _viewModel.IsGameInfoPopupOpen = true;
+        }
     }
 
 
