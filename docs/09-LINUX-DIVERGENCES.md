@@ -29,6 +29,13 @@
 | 千星奇域远程图标 | 远程 PNG | 文字首字占位 |
 | 应用图标 | `Assets/AppIcon.ico` | 生成的 `lunarward.ico`（占位） |
 
+- **截图页月份标注（2026-10-25，`f9f5622`）**：上游用 WinUI `AnnotatedScrollBar`
+  标月份分组，Avalonia 无对应控件，改为滚动时浮出的胶囊。逻辑抽成
+  `ScreenshotMonthIndex` 并有 10 个单测，但**「滚动后出现胶囊」缺少截图证据**：
+  无头截图里 `--scroll-y` 对截图页的磁贴墙不生效（`MainWindow.ScrollPage` 只滚面积
+  最大的滚容器，该页同时存在多个），多次抓图字节完全相同。结论：功能按代码审阅
+  与单测接受，界面效果待手动验证。
+
 ## 三、平台差异（同一功能、不同实现）
 
 | 能力 | 上游 | LunarWard |
