@@ -26,7 +26,7 @@ public sealed class GenshinBeyondGachaService
     public GenshinBeyondGachaService(GenshinBeyondGachaClient? client = null, GenshinBeyondGachaStore? store = null, string? databaseFile = null)
     {
         _client = client ?? new GenshinBeyondGachaClient();
-        _store = store ?? new GenshinBeyondGachaStore(new GachaDatabase(databaseFile ?? throw new ArgumentNullException(nameof(databaseFile), "必须提供数据库路径")));
+        _store = store ?? new GenshinBeyondGachaStore(new LunarWardDatabase(databaseFile ?? throw new ArgumentNullException(nameof(databaseFile), "必须提供数据库路径")));
     }
 
 

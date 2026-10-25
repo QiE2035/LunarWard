@@ -37,15 +37,15 @@ public sealed class GachaLogStore
     private const string TimeFormat = "yyyy-MM-dd HH:mm:ss";
 
 
-    private readonly GachaDatabase _database;
+    private readonly LunarWardDatabase _database;
 
 
-    public GachaLogStore(GachaDatabase database) => _database = database;
+    public GachaLogStore(LunarWardDatabase database) => _database = database;
 
 
     /// <summary>按数据目录打开默认库（<c>&lt;DataHome&gt;/LunarWardDatabase.db</c>）。</summary>
     public static GachaLogStore OpenDefault(string dataHome)
-        => new(new GachaDatabase(Path.Join(dataHome, GachaDatabase.FileName)));
+        => new(new LunarWardDatabase(Path.Join(dataHome, LunarWardDatabase.FileName)));
 
 
     /// <summary>Starward 的表名（<c>GachaTableName</c>）。</summary>

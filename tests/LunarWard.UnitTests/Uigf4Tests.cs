@@ -24,7 +24,7 @@ public sealed class Uigf4Tests : IDisposable
     {
         Directory.CreateDirectory(_dir);
         _file = Path.Join(_dir, "LunarWardDatabase.db");
-        _store = new GachaLogStore(new GachaDatabase(_file));
+        _store = new GachaLogStore(new LunarWardDatabase(_file));
         _service = new Uigf4Service(_store, "9.9.9");
     }
 

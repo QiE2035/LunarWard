@@ -18,7 +18,7 @@ public sealed class GachaLogStoreTests : IDisposable
     public GachaLogStoreTests()
     {
         Directory.CreateDirectory(_dir);
-        _store = new GachaLogStore(new GachaDatabase(Path.Join(_dir, GachaDatabase.FileName)));
+        _store = new GachaLogStore(new LunarWardDatabase(Path.Join(_dir, LunarWardDatabase.FileName)));
     }
 
 

@@ -20,23 +20,23 @@ public class GenshinBeyondGachaTests
 
     private static GenshinBeyondGachaService CreateService(out string file)
     {
-        file = Path.Join(Path.GetTempPath(), $"lw-beyond-{Guid.NewGuid():N}", GachaDatabase.FileName);
+        file = Path.Join(Path.GetTempPath(), $"lw-beyond-{Guid.NewGuid():N}", LunarWardDatabase.FileName);
         return new GenshinBeyondGachaService(databaseFile: file);
     }
 
 
     private static GenshinBeyondGachaStore CreateStore(out string file)
     {
-        file = Path.Join(Path.GetTempPath(), $"lw-beyond-{Guid.NewGuid():N}", GachaDatabase.FileName);
-        return new GenshinBeyondGachaStore(new GachaDatabase(file));
+        file = Path.Join(Path.GetTempPath(), $"lw-beyond-{Guid.NewGuid():N}", LunarWardDatabase.FileName);
+        return new GenshinBeyondGachaStore(new LunarWardDatabase(file));
     }
 
 
     /// <summary>同一个文件上建 store 与 service（service 每次调用都会重新读文件）。</summary>
     private static (GenshinBeyondGachaStore Store, GenshinBeyondGachaService Service) CreateBoth()
     {
-        var file = Path.Join(Path.GetTempPath(), $"lw-beyond-{Guid.NewGuid():N}", GachaDatabase.FileName);
-        return (new GenshinBeyondGachaStore(new GachaDatabase(file)), new GenshinBeyondGachaService(databaseFile: file));
+        var file = Path.Join(Path.GetTempPath(), $"lw-beyond-{Guid.NewGuid():N}", LunarWardDatabase.FileName);
+        return (new GenshinBeyondGachaStore(new LunarWardDatabase(file)), new GenshinBeyondGachaService(databaseFile: file));
     }
 
 

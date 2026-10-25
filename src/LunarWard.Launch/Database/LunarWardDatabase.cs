@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 namespace LunarWard.Launch.Database;
 
 /// <summary>
-/// 抽卡记录数据库（Starward <c>Features/Database/DatabaseService</c> 的最小等价物）。
+/// 本地数据库（Starward <c>Features/Database/DatabaseService</c> 的等价物，逐表补齐）。
 /// </summary>
 /// <remarks>
 /// <para>
@@ -18,7 +18,7 @@ namespace LunarWard.Launch.Database;
 /// 里各自有独立的 JSON / 文件实现，不在本类范围内。
 /// </para>
 /// </remarks>
-public sealed class GachaDatabase
+public sealed class LunarWardDatabase
 {
     /// <summary>数据库文件名（Starward 是 <c>StarwardDatabase.db</c>）。</summary>
     public const string FileName = "LunarWardDatabase.db";
@@ -28,7 +28,7 @@ public sealed class GachaDatabase
 
 
     /// <param name="path">数据库文件路径（父目录自动创建）。</param>
-    public GachaDatabase(string path)
+    public LunarWardDatabase(string path)
     {
         Path = System.IO.Path.GetFullPath(path);
         string? dir = System.IO.Path.GetDirectoryName(Path);
@@ -54,7 +54,8 @@ public sealed class GachaDatabase
 
     /// <summary>
     /// 建表（幂等）。DDL 与 Starward 的 <c>DatabaseService.Sql_v1</c>（抽卡表）、
-    /// <c>Sql_v9</c>（ZZZ 表）、<c>Sql_v12</c>（GachaLogUrl）、<c>Sql_v16</c>/<c>Sql_v17</c>
+    /// <c>Sql_v7</c>（账号记录 <c>GenshinQueryItem</c> / <c>StarRailQueryItem</c>）、
+    /// <c>Sql_v9</c>（ZZZ 表 + <c>ZZZQueryItem</c>）、<c>Sql_v12</c>（GachaLogUrl）、<c>Sql_v16</c>/<c>Sql_v17</c>
     /// （千星奇域颂愿的 <c>GenshinBeyondGachaItem</c> / <c>GenshinBeyondGachaInfo</c>）逐字一致。
     /// </summary>
     private void Initialize()
@@ -157,6 +158,74 @@ public sealed class GachaDatabase
                 Icon TEXT
             );
             CREATE INDEX IF NOT EXISTS IX_GenshinBeyondGachaInfo_Name ON GenshinBeyondGachaInfo (Name);
+
+            -- 账号记录（Starward Sql_v7 / Sql_v9 的 QueryItem 三表，列/索引逐字照抄）
+            CREATE TABLE IF NOT EXISTS GenshinQueryItem
+            (
+                Uid      INTEGER NOT NULL,
+                Id       INTEGER NOT NULL,
+                AddNum   INTEGER NOT NULL,
+                Reason   TEXT,
+                DateTime TEXT,
+                Type     INTEGER NOT NULL,
+                Icon     TEXT,
+                Level    INTEGER NOT NULL,
+                Quality  INTEGER NOT NULL,
+                Name     TEXT,
+                PRIMARY KEY (Uid, Id)
+            );
+            CREATE INDEX IF NOT EXISTS IX_GenshinQueryItem_Id ON GenshinQueryItem (Id);
+            CREATE INDEX IF NOT EXISTS IX_GenshinQueryItem_AddNum ON GenshinQueryItem (AddNum);
+            CREATE INDEX IF NOT EXISTS IX_GenshinQueryItem_Reason ON GenshinQueryItem (Reason);
+            CREATE INDEX IF NOT EXISTS IX_GenshinQueryItem_DateTime ON GenshinQueryItem (DateTime);
+            CREATE INDEX IF NOT EXISTS IX_GenshinQueryItem_Type ON GenshinQueryItem (Type);
+
+            CREATE TABLE IF NOT EXISTS StarRailQueryItem
+            (
+                Id              INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                Uid             INTEGER NOT NULL,
+                Type            INTEGER NOT NULL,
+                Action          TEXT,
+                AddNum          INTEGER NOT NULL,
+                Time            TEXT,
+                RelicName       TEXT,
+                RelicLevel      INTEGER NOT NULL,
+                RelicRarity     INTEGER NOT NULL,
+                EquipmentName   TEXT,
+                EquipmentLevel  INTEGER NOT NULL,
+                EquipmentRarity INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_StarRailQueryItem_Uid ON StarRailQueryItem (Uid);
+            CREATE INDEX IF NOT EXISTS IX_StarRailQueryItem_Type ON StarRailQueryItem (Type);
+            CREATE INDEX IF NOT EXISTS IX_StarRailQueryItem_Action ON StarRailQueryItem (Action);
+            CREATE INDEX IF NOT EXISTS IX_StarRailQueryItem_AddNum ON StarRailQueryItem (AddNum);
+            CREATE INDEX IF NOT EXISTS IX_StarRailQueryItem_Time ON StarRailQueryItem (Time);
+
+            CREATE TABLE IF NOT EXISTS ZZZQueryItem
+            (
+                Id           INTEGER NOT NULL,
+                Uid          INTEGER NOT NULL,
+                Type         INTEGER NOT NULL,
+                Reason       TEXT,
+                AddNum       INTEGER NOT NULL,
+                DateTime     TEXT,
+                EquipName    TEXT,
+                EquipRarity  INTEGER NOT NULL,
+                EquipLevel   INTEGER NOT NULL,
+                WeaponName   TEXT,
+                WeaponRarity INTEGER NOT NULL,
+                WeaponLevel  INTEGER NOT NULL,
+                ClientIp     TEXT,
+                ActionName   TEXT,
+                CardType     INTEGER NOT NULL,
+                ItemName     TEXT,
+                PRIMARY KEY (Uid, Id)
+            );
+            CREATE INDEX IF NOT EXISTS IX_ZZZQueryItem_Id ON ZZZQueryItem (Id);
+            CREATE INDEX IF NOT EXISTS IX_ZZZQueryItem_Type ON ZZZQueryItem (Type);
+            CREATE INDEX IF NOT EXISTS IX_ZZZQueryItem_Reason ON ZZZQueryItem (Reason);
+            CREATE INDEX IF NOT EXISTS IX_ZZZQueryItem_AddNum ON ZZZQueryItem (AddNum);
+            CREATE INDEX IF NOT EXISTS IX_ZZZQueryItem_DateTime ON ZZZQueryItem (DateTime);
             """;
         command.ExecuteNonQuery();
     }

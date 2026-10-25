@@ -29,15 +29,15 @@ public sealed class GenshinBeyondGachaStore
     private const string TimeFormat = "yyyy-MM-dd HH:mm:ss";
 
 
-    private readonly GachaDatabase _database;
+    private readonly LunarWardDatabase _database;
 
 
-    public GenshinBeyondGachaStore(GachaDatabase database) => _database = database;
+    public GenshinBeyondGachaStore(LunarWardDatabase database) => _database = database;
 
 
     /// <summary>按数据目录打开默认库（<c>&lt;DataHome&gt;/LunarWardDatabase.db</c>）。</summary>
     public static GenshinBeyondGachaStore OpenDefault(string dataHome)
-        => new(new GachaDatabase(Path.Join(dataHome, GachaDatabase.FileName)));
+        => new(new LunarWardDatabase(Path.Join(dataHome, LunarWardDatabase.FileName)));
 
 
     // ── 记录 ────────────────────────────────────────────────────────────
