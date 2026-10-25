@@ -1291,9 +1291,23 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     private string _playTimeText = "";
 
 
+    /// <summary>档案 → 区服字符串（如 <c>hk4e_cn</c>），与上游 <c>PlayTimeStats.GameBiz</c> 同口径。</summary>
+    public static string GameBizOfProfile(ProfileItemViewModel profileItem) => GameBizOfProfile(profileItem.Profile);
+
+    public static string GameBizOfProfile(ProfileConfig profile)
+    {
+        var definition = Games.GameCatalog.Get(
+            profile.Game,
+            string.Equals(profile.Edition, "Global", StringComparison.OrdinalIgnoreCase)
+                ? Games.GameEdition.Global
+                : Games.GameEdition.China);
+        return definition?.GameBiz ?? "hk4e_cn";
+    }
+
+
     public void UpdatePlayTime()
     {
-        var total = _services.PlayTime.TotalFor(_context.Profile.Id);
+        var total = _services.PlayTime.TotalFor(GameBizOfProfile(_context.Profile));
         PlayTimeText = total <= TimeSpan.Zero
             ? "0h 0m"
             : $"{(int)total.TotalHours}h {total.Minutes}m";

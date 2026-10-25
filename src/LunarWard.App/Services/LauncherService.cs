@@ -200,10 +200,16 @@ public sealed class LauncherService : IDisposable
 
             LastResult = result;
 
-            // 时长统计：复用相位引擎的起止时间（docs/05-ROADMAP.md §3.3）
+            // 时长统计：复用相位引擎的起止时间（docs/05-ROADMAP.md §3.3）；
+            // 存储与上游一致按区服（GameBiz）记，PlayTimeStats 表
             if (result.Success)
             {
-                _services.PlayTime.Record(profileId, result);
+                var definition = Games.GameCatalog.Get(
+                    profile.Game,
+                    string.Equals(profile.Edition, "Global", StringComparison.OrdinalIgnoreCase)
+                        ? Games.GameEdition.Global
+                        : Games.GameEdition.China);
+                _services.PlayTime.Record(definition?.GameBiz ?? "hk4e_cn", result.GamePid ?? 0, result);
             }
 
             SetState(result.Success ? LaunchPhaseState.Idle : LaunchPhaseState.Error);

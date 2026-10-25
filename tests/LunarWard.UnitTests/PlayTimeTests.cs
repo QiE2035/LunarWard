@@ -1,11 +1,14 @@
-using System.Text.Json;
 using LunarWard.Launch;
+using LunarWard.Launch.Database;
 using LunarWard.Platform;
 using Xunit;
 
 namespace LunarWard.UnitTests;
 
-/// <summary>游戏时长统计（复用相位引擎的起止时间）。</summary>
+/// <summary>
+/// 游戏时长统计（复用相位引擎的起止时间）。存储已从自造的 <c>playtime.json</c>
+/// 改为 Starward 同款 SQLite 表 <c>PlayTimeStats</c>（见 <see cref="PlayTimeStore" />）。
+/// </summary>
 public class PlayTimeTests
 {
     private static XdgPaths Paths(TempDirectory temp)
@@ -24,21 +27,22 @@ public class PlayTimeTests
 
 
     [Fact]
-    public void Record_AccumulatesTotalPerProfile()
+    public void Record_AccumulatesTotalPerGameBiz()
     {
         using var temp = new TempDirectory();
         var paths = Paths(temp);
         var service = new PlayTimeService(paths);
 
         var start = DateTimeOffset.Now;
-        service.Record("genshin-cn", Result(start, start.AddMinutes(30)));
-        service.Record("genshin-cn", Result(start.AddHours(1), start.AddHours(1).AddMinutes(45)));
-        service.Record("zzz-cn", Result(start, start.AddMinutes(10)));
+        service.Record("hk4e_cn", 0, Result(start, start.AddMinutes(30)));
+        service.Record("hk4e_cn", 0, Result(start.AddHours(1), start.AddHours(1).AddMinutes(45)));
+        service.Record("nap_cn", 0, Result(start, start.AddMinutes(10)));
 
-        Assert.Equal(TimeSpan.FromMinutes(75), service.TotalFor("genshin-cn"));
-        Assert.Equal(TimeSpan.FromMinutes(10), service.TotalFor("zzz-cn"));
+        Assert.Equal(TimeSpan.FromMinutes(75), service.TotalFor("hk4e_cn"));
+        Assert.Equal(TimeSpan.FromMinutes(10), service.TotalFor("nap_cn"));
         Assert.Equal(TimeSpan.Zero, service.TotalFor("nope"));
-        Assert.Equal(3, service.Sessions.Count);
+        Assert.Equal(2, service.Sessions("hk4e_cn").Count);
+        Assert.Single(service.Sessions("nap_cn"));
     }
 
 
@@ -50,11 +54,12 @@ public class PlayTimeTests
         var start = DateTimeOffset.Now;
 
         var first = new PlayTimeService(paths);
-        first.Record("p", Result(start, start.AddMinutes(20)));
+        first.Record("hkrpg_cn", 1234, Result(start, start.AddMinutes(20)));
 
+        // 新实例（新连接）读同一个库
         var second = new PlayTimeService(paths);
-        Assert.Equal(TimeSpan.FromMinutes(20), second.TotalFor("p"));
-        Assert.Equal(ReadySignal.WineDevice.ToString(), second.LastFor("p")?.ReadySignal);
+        Assert.Equal(TimeSpan.FromMinutes(20), second.TotalFor("hkrpg_cn"));
+        Assert.NotNull(second.LastFor("hkrpg_cn"));
     }
 
 
@@ -64,15 +69,15 @@ public class PlayTimeTests
         using var temp = new TempDirectory();
         var service = new PlayTimeService(Paths(temp));
 
-        service.Record("p", new LaunchResult { Success = true });
-        service.Record("p", new LaunchResult
+        service.Record("hk4e_cn", 0, new LaunchResult { Success = true });
+        service.Record("hk4e_cn", 0, new LaunchResult
         {
             Success = true,
             StartedAt = DateTimeOffset.Now,
             ExitedAt = DateTimeOffset.Now.AddMinutes(-1),
         });
 
-        Assert.Empty(service.Sessions);
+        Assert.Empty(service.Sessions("hk4e_cn"));
     }
 
 
@@ -83,63 +88,49 @@ public class PlayTimeTests
         var service = new PlayTimeService(Paths(temp));
         var start = DateTimeOffset.Now;
 
-        service.Record("p", Result(start, start.AddMinutes(1)));
-        service.Record("p", Result(start.AddHours(2), start.AddHours(2).AddMinutes(1)));
+        service.Record("hk4e_cn", 0, Result(start, start.AddMinutes(1)));
+        service.Record("hk4e_cn", 0, Result(start.AddHours(2), start.AddHours(2).AddMinutes(1)));
 
-        Assert.True(service.Sessions[0].StartedAt > service.Sessions[1].StartedAt);
+        var sessions = service.Sessions("hk4e_cn");
+        Assert.True(sessions[0].StartedAt > sessions[1].StartedAt);
     }
 
 
     [Fact]
-    public void CorruptStore_IsBackedUpAndReset()
+    public void Record_SameSessionTwice_IsOneRow()
     {
         using var temp = new TempDirectory();
-        var paths = Paths(temp);
-        Directory.CreateDirectory(paths.DataHome);
-        File.WriteAllText(Path.Join(paths.DataHome, "playtime.json"), "{ not json ");
-
-        var service = new PlayTimeService(paths);
-        Assert.Empty(service.Sessions);
-        Assert.Single(Directory.GetFiles(paths.DataHome, "playtime.json.bad-*"));
-    }
-
-
-    [Fact]
-    public void Store_PreservesUnknownFields()
-    {
-        using var temp = new TempDirectory();
-        var paths = Paths(temp);
-        Directory.CreateDirectory(paths.DataHome);
-        var store = Path.Join(paths.DataHome, "playtime.json");
-        File.WriteAllText(store, """
-        {
-          "schema_version": 1,
-          "future_field": [1, 2, 3],
-          "sessions": []
-        }
-        """);
-
-        var service = new PlayTimeService(paths);
+        var service = new PlayTimeService(Paths(temp));
         var start = DateTimeOffset.Now;
-        service.Record("p", Result(start, start.AddMinutes(5)));
+        var result = Result(start, start.AddMinutes(15));
 
-        Assert.Contains("future_field", File.ReadAllText(store));
+        service.Record("hk4e_cn", 42, result);
+        service.Record("hk4e_cn", 42, result);
+
+        // 上游 PlayTimeStats 的唯一索引是 (GameBiz, StartTime, Pid)
+        Assert.Single(service.Sessions("hk4e_cn"));
+        Assert.Equal(TimeSpan.FromMinutes(15), service.TotalFor("hk4e_cn"));
     }
 
 
     [Fact]
-    public void Store_IsValidJsonAndAtomic()
+    public void Record_WritesIntoStarwardSchema_NotJsonFile()
     {
         using var temp = new TempDirectory();
         var paths = Paths(temp);
         var service = new PlayTimeService(paths);
         var start = DateTimeOffset.Now;
-        service.Record("p", Result(start, start.AddMinutes(5)));
+        service.Record("hk4e_cn", 7, Result(start, start.AddMinutes(5)));
 
-        var text = File.ReadAllText(Path.Join(paths.DataHome, "playtime.json"));
-        Assert.False(File.Exists(Path.Join(paths.DataHome, "playtime.json.tmp")));
-        using var document = JsonDocument.Parse(text);
-        Assert.True(document.RootElement.TryGetProperty("sessions", out var sessions));
-        Assert.Equal(1, sessions.GetArrayLength());
+        // 不再产生 playtime.json
+        Assert.False(File.Exists(Path.Join(paths.DataHome, "playtime.json")));
+        // 落在与抽卡同一个库的 PlayTimeStats 表
+        Assert.True(File.Exists(Path.Join(paths.DataHome, LunarWardDatabase.FileName)));
+
+        var store = PlayTimeStore.OpenDefault(paths.DataHome);
+        PlayTimeRecord record = Assert.Single(store.GetAll());
+        Assert.Equal("hk4e_cn", record.GameBiz);
+        Assert.Equal(7, record.Pid);
+        Assert.Equal(start.ToUnixTimeMilliseconds(), record.StartedAt);
     }
 }

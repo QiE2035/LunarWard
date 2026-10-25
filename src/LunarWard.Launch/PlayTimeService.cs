@@ -1,18 +1,21 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using LunarWard.Launch.Database;
 using LunarWard.Platform;
 
 namespace LunarWard.Launch;
 
-/// <summary>一次游戏会话。</summary>
+/// <summary>一次已结算的游戏会话（<see cref="PlayTimeRecord"/> 的展示视图）。</summary>
+/// <param name="GameBiz">游戏区服，如 <c>hk4e_cn</c>（上游 <c>PlayTimeStats.GameBiz</c>）。</param>
+/// <param name="StartedAt">开始时间。</param>
+/// <param name="EndedAt">结束时间。</param>
+/// <param name="GameExitCode">退出码（库里不存，读取时恒为 null）。</param>
+/// <param name="ReadySignal">结束信号（库里不存，读取时恒为 null）。</param>
 public sealed record PlaySession(
-    string ProfileId,
+    string GameBiz,
     DateTimeOffset StartedAt,
     DateTimeOffset EndedAt,
     int? GameExitCode,
     string? ReadySignal)
 {
-    [JsonIgnore]
     public TimeSpan Duration => EndedAt - StartedAt;
 }
 
@@ -27,151 +30,87 @@ public sealed record PlaySession(
 /// <see cref="LaunchResult.ExitedAt"/>，不需要额外的进程监视。
 /// </para>
 /// <para>
-/// 存储：<c>$XDG_DATA_HOME/lunarward/playtime.json</c>，原子写、未知字段保留。
+/// 存储：与抽卡记录同一个 SQLite 库 <c>&lt;DataHome&gt;/LunarWardDatabase.db</c>，
+/// 表结构照抄 Starward 的 <c>PlayTimeStats</c>（见 <see cref="PlayTimeStore"/>）。
+/// 之前这里是自造的 <c>playtime.json</c>，已按「本地记录存储一律与上游一致用 SQLite」改掉。
 /// </para>
 /// </remarks>
 public sealed class PlayTimeService
 {
-    private static readonly JsonSerializerOptions Options = new()
-    {
-        WriteIndented = true,
-        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-    };
-
-
-    private readonly IXdgPaths _paths;
-
     private readonly object _gate = new();
 
-    private PlayTimeStore _store;
+    private readonly PlayTimeStore _store;
 
 
-    public PlayTimeService(IXdgPaths paths)
+    public PlayTimeService(IXdgPaths paths, PlayTimeStore? store = null)
     {
-        _paths = paths;
-        _store = Load();
+        _store = store ?? PlayTimeStore.OpenDefault(paths.DataHome);
     }
 
 
-    public string StorePath => Path.Join(_paths.DataHome, "playtime.json");
-
-
-    /// <summary>全部会话（按开始时间倒序）。</summary>
-    public IReadOnlyList<PlaySession> Sessions
-    {
-        get
-        {
-            lock (_gate)
-            {
-                return _store.Sessions.OrderByDescending(x => x.StartedAt).ToList();
-            }
-        }
-    }
-
-
-    /// <summary>某 profile 的总时长。</summary>
-    public TimeSpan TotalFor(string profileId)
+    /// <summary>某区服的全部会话（按开始时间倒序）。</summary>
+    public IReadOnlyList<PlaySession> Sessions(string gameBiz)
     {
         lock (_gate)
         {
-            return TimeSpan.FromTicks(
-                _store.Sessions.Where(x => x.ProfileId == profileId).Sum(x => x.Duration.Ticks));
-        }
-    }
-
-
-    /// <summary>某 profile 最近一次会话。</summary>
-    public PlaySession? LastFor(string profileId)
-    {
-        lock (_gate)
-        {
-            return _store.Sessions.Where(x => x.ProfileId == profileId)
+            return _store.GetAll(gameBiz)
+                .Select(ToSession)
                 .OrderByDescending(x => x.StartedAt)
-                .FirstOrDefault();
+                .ToList();
         }
     }
 
 
-    /// <summary>记录一次会话（只记录成功且有起止时间的）。</summary>
-    public void Record(string profileId, LaunchResult result)
+    /// <summary>某区服的总时长。</summary>
+    public TimeSpan TotalFor(string gameBiz)
+    {
+        lock (_gate)
+        {
+            return TimeSpan.FromTicks(_store.GetAll(gameBiz).Sum(x => (x.EndedAt - x.StartedAt) * 10_000));
+        }
+    }
+
+
+    /// <summary>某区服最近一次会话。</summary>
+    public PlaySession? LastFor(string gameBiz)
+    {
+        lock (_gate)
+        {
+            PlayTimeRecord? last = _store.GetAll(gameBiz).OrderByDescending(x => x.StartedAt).FirstOrDefault();
+            return last is null ? null : ToSession(last);
+        }
+    }
+
+
+    /// <summary>
+    /// 记一次启动：<paramref name="gameBiz"/> 来自当前档案（如 <c>hk4e_cn</c>），
+    /// <paramref name="pid"/> 为游戏进程号（未知时传 0，唯一索引仍按区服+开始时间去重）。
+    /// </summary>
+    public void Record(string gameBiz, int pid, LaunchResult result)
     {
         if (result.StartedAt is not { } started || result.ExitedAt is not { } exited)
         {
             return;
         }
 
-        if (exited <= started)
+        if (exited <= started || string.IsNullOrWhiteSpace(gameBiz))
         {
             return;
         }
 
         lock (_gate)
         {
-            _store.Sessions.Add(new PlaySession(
-                profileId, started, exited, result.GameExitCode, result.Signal?.ToString()));
-
-            // 上限 5000 条；再多对统计没有意义
-            if (_store.Sessions.Count > 5000)
-            {
-                _store.Sessions = _store.Sessions
-                    .OrderByDescending(x => x.StartedAt)
-                    .Take(5000)
-                    .ToList();
-            }
-
-            Save();
+            // 上游 PlayTimeStats 存 Unix 毫秒；唯一索引 (GameBiz, StartTime, Pid) 保证重复结算不重复
+            _store.Save(gameBiz, pid, started.ToUnixTimeMilliseconds(), exited.ToUnixTimeMilliseconds());
         }
     }
 
 
-    private PlayTimeStore Load()
-    {
-        try
-        {
-            if (File.Exists(StorePath))
-            {
-                return JsonSerializer.Deserialize<PlayTimeStore>(File.ReadAllText(StorePath), Options)
-                       ?? new PlayTimeStore();
-            }
-        }
-        catch (JsonException)
-        {
-            // 损坏：备份后重建
-            try
-            {
-                File.Move(StorePath, $"{StorePath}.bad-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}", overwrite: true);
-            }
-            catch (Exception)
-            {
-                // ignore
-            }
-        }
-
-        return new PlayTimeStore();
-    }
-
-
-    private void Save()
-    {
-        try
-        {
-            AtomicFile.WriteAllText(StorePath, JsonSerializer.Serialize(_store, Options));
-        }
-        catch (Exception)
-        {
-            // 统计失败不影响启动
-        }
-    }
-
-
-    private sealed class PlayTimeStore
-    {
-        public int SchemaVersion { get; set; } = 1;
-
-        public List<PlaySession> Sessions { get; set; } = [];
-
-        [JsonExtensionData]
-        public Dictionary<string, JsonElement>? ExtensionData { get; set; }
-    }
+    private static PlaySession ToSession(PlayTimeRecord record)
+        => new(
+            record.GameBiz,
+            DateTimeOffset.FromUnixTimeMilliseconds(record.StartedAt),
+            DateTimeOffset.FromUnixTimeMilliseconds(record.EndedAt),
+            null,
+            null);
 }

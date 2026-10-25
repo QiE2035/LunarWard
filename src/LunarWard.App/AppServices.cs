@@ -33,7 +33,10 @@ public sealed class AppServices
         Background = new Services.BackgroundService(paths);
         Announcements = new Services.AnnouncementService(paths);
         Scanner = new Services.GameScanner(paths);
-        PlayTime = new Launch.PlayTimeService(paths);
+        // 自检截图用临时库，避免在用户的 LunarWardDatabase.db 里建表/写时长
+        PlayTime = CaptureMode.Enabled
+            ? new Launch.PlayTimeService(paths, new Launch.Database.PlayTimeStore(CaptureMode.CreateDatabase()))
+            : new Launch.PlayTimeService(paths);
         ComponentInstaller = new Wine.ComponentInstaller(paths);
         Localization.AppStrings.Instance.Language = Localization.AppStrings.Normalize(Config.Launcher.Language);
         Installer = new LunarWard.Installer.GameInstallController(new Services.InstallerLogAdapter(Log));

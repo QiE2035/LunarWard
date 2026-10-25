@@ -264,6 +264,34 @@ public sealed class LunarWardDatabase
             CREATE INDEX IF NOT EXISTS IX_ZZZQueryItem_Reason ON ZZZQueryItem (Reason);
             CREATE INDEX IF NOT EXISTS IX_ZZZQueryItem_AddNum ON ZZZQueryItem (AddNum);
             CREATE INDEX IF NOT EXISTS IX_ZZZQueryItem_DateTime ON ZZZQueryItem (DateTime);
+
+            -- 游戏时长：照抄上游 DatabaseService.cs:339-352（Sql_v2）与 :1045-1055（v21）。
+            -- PlayTimeItem 是上游的「进程采样」表，LunarWard 不写（见 PlayTimeStore 注释）；
+            -- 建出来只为表结构与上游一致。
+            CREATE TABLE IF NOT EXISTS PlayTimeItem
+            (
+                TimeStamp INTEGER PRIMARY KEY,
+                GameBiz   TEXT    NOT NULL,
+                Pid       INTEGER NOT NULL,
+                State     INTEGER NOT NULL,
+                CursorPos INTEGER NOT NULL,
+                Message   TEXT
+            );
+            CREATE INDEX IF NOT EXISTS IX_PlayTimeItem_GameBiz ON PlayTimeItem (GameBiz);
+            CREATE INDEX IF NOT EXISTS IX_PlayTimeItem_Pid ON PlayTimeItem (Pid);
+            CREATE INDEX IF NOT EXISTS IX_PlayTimeItem_State ON PlayTimeItem (State);
+
+            CREATE TABLE IF NOT EXISTS PlayTimeStats
+            (
+                Id           INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                GameBiz      TEXT    NOT NULL,
+                Pid          INTEGER NOT NULL,
+                StartTime    INTEGER NOT NULL,
+                EndTime      INTEGER NOT NULL,
+                Interruption INTEGER NOT NULL DEFAULT 0,
+                Type         INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_PlayTimeStats_GameBiz_StartTime_Pid ON PlayTimeStats (GameBiz, StartTime, Pid);
             """;
         command.ExecuteNonQuery();
     }

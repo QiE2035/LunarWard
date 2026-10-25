@@ -17,7 +17,7 @@ public readonly record struct PlayTimeSpan(long Start, long End)
 /// </summary>
 /// <remarks>
 /// <para>只做纯计算：输入会话区间，输出卡片数字与图表数据。数据来源是
-/// <see cref="PlayTimeService" />（<c>playtime.json</c>）里已结束的会话。</para>
+/// <see cref="PlayTimeService" />（SQLite <c>PlayTimeStats</c> 表）里已结束的会话。</para>
 /// <para>与 Starward 一致：总时长 / 启动次数（会话数）/ 每日平均 / 游玩天数 /
 /// 最长连续天数 / 最长单次 / 单日最长 / 上一次游玩（关闭 60 秒后的那次）。</para>
 /// </remarks>
@@ -128,11 +128,11 @@ public sealed class PlayTimeStats
 
 
     /// <summary>从 <see cref="PlayTimeService" /> 的会话记录构建统计（只取指定 profile 且已结束的会话）。</summary>
-    public static PlayTimeStats FromSessions(IEnumerable<PlaySession> sessions, string profileId, DateTimeOffset? now = null)
+    public static PlayTimeStats FromSessions(IEnumerable<PlaySession> sessions, string gameBiz, DateTimeOffset? now = null)
     {
         ArgumentNullException.ThrowIfNull(sessions);
         var spans = sessions
-            .Where(x => string.Equals(x.ProfileId, profileId, StringComparison.Ordinal))
+            .Where(x => string.Equals(x.GameBiz, gameBiz, StringComparison.Ordinal))
             .Where(x => x.EndedAt > x.StartedAt)
             .OrderBy(x => x.StartedAt)
             .Select(x => new PlayTimeSpan(x.StartedAt.ToUnixTimeMilliseconds(), x.EndedAt.ToUnixTimeMilliseconds()))

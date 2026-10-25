@@ -17,7 +17,7 @@ namespace LunarWard.App.Views.Starward;
 /// 15 天 / 12 周 / 12 月可切换柱状图、最近一年日历热力图。
 /// </summary>
 /// <remarks>
-/// 数据只来自本机 <c>playtime.json</c>（<see cref="PlayTimeService" />），
+/// 数据只来自本机 SQLite 库的 <c>PlayTimeStats</c> 表（<see cref="PlayTimeService" />），
 /// 派生口径与 Starward 相同（见 <see cref="PlayTimeStats" />）。
 /// </remarks>
 public partial class PlayTimeStatsDialog : Window
@@ -35,13 +35,13 @@ public partial class PlayTimeStatsDialog : Window
     }
 
 
-    public PlayTimeStatsDialog(AppServices services, string profileId)
+    public PlayTimeStatsDialog(AppServices services, string gameBiz)
     {
         InitializeComponent();
 
         _stats = services is null
             ? PlayTimeStats.FromSpans([])
-            : PlayTimeStats.FromSessions(services.PlayTime.Sessions, profileId);
+            : PlayTimeStats.FromSessions(services.PlayTime.Sessions(gameBiz), gameBiz);
 
         BuildStatCards();
         if (int.TryParse(Environment.GetEnvironmentVariable("LUNARWARD_PLAYTIME_RANGE"), out int range)

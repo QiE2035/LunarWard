@@ -552,7 +552,7 @@ public partial class GameLauncherPage : StarwardPage
 
     private void OnPlayTimeClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var dialog = new PlayTimeStatsDialog(Context.Services, Context.Profile.Id);
+        var dialog = new PlayTimeStatsDialog(Context.Services, GameLauncherPageViewModel.GameBizOfProfile(Context.Profile));
         if (TopLevel.GetTopLevel(this) is Window owner)
         {
             dialog.Show(owner);

@@ -159,7 +159,7 @@ public partial class MainWindow : Window
         // 时长统计弹窗：自检时单独截这个窗口（它是独立 Window，主窗口渲染不到）
         if (string.Equals(CaptureMode.TargetWindow, "playtime", StringComparison.OrdinalIgnoreCase))
         {
-            var dialog = new PlayTimeStatsDialog(shell.Services, shell.Profile.Id);
+            var dialog = new PlayTimeStatsDialog(shell.Services, GameLauncherPageViewModel.GameBizOfProfile(shell.Profile));
             dialog.Show(this);
             dialog.CaptureSelf(CaptureMode.Path!, 1200);
             return;

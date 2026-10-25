@@ -727,7 +727,7 @@ var shell = new ShellSession
 | 公告 / 版本亮点 | 同上 |
 | 安装/更新/修复 | `LunarWard.Installer`（移植 `Starward.RPC`） |
 | 账号切换 | 重写（Wine 下切 `user.reg` 的 `[Software\miHoYo\...]` 段） |
-| 游戏时长 | ✅ 已实现：`LunarWard.Launch/PlayTimeService.cs`，复用相位引擎的起止时间，存 `playtime.json` |
+| 游戏时长 | ✅ 已实现：`LunarWard.Launch/PlayTimeService.cs`，复用相位引擎的起止时间，存 Starward 同款 SQLite 表 `PlayTimeStats`（`<DataHome>/LunarWardDatabase.db`，`Database/PlayTimeStore.cs`） |
 | 截图 | 重写路径逻辑（监视截图目录） |
 | 画质设置 | **P1 只读**（registry 里是二进制 blob，Wine 下在 `user.reg` 的 hex 中） |
 | URL Protocol | `.desktop` 的 `MimeType=x-scheme-handler/lunarward;` |
