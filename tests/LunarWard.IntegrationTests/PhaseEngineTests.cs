@@ -390,6 +390,8 @@ public class PhaseEngineTests
 
         using var sandbox = new Sandbox();
         var wine = sandbox.CreateWine(f => f.GameSeconds = 1);
+        // RunningSettle 是「等 prefix 客户端收敛」的**上限**，客户端退干净就提前跳出；
+        // 假 wine 只活 1s，这里给 10s 是为了整套顺序跑时高负载下仍有余量。
         var plan = sandbox.CreatePlan(wine, b => b.RunningSettle = TimeSpan.FromSeconds(10));
 
         var result = await CreateEngine(sandbox).RunAsync(plan);

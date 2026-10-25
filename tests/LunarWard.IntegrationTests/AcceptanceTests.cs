@@ -75,6 +75,7 @@ public class AcceptanceTests
 
         using var sandbox = new Sandbox();
         var wine = sandbox.CreateWine(f => f.GameSeconds = 1);
+        // 同 I10：这是收敛等待的上限，不是固定延时（客户端提前退干净就跳出）。
         var plan = sandbox.CreatePlan(wine, b => b.RunningSettle = TimeSpan.FromSeconds(10));
 
         var result = await CreateEngine(sandbox).RunAsync(plan);
