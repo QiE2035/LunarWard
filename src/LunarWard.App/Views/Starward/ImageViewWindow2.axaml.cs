@@ -304,11 +304,12 @@ public partial class ImageViewWindow2 : Window
         {
             File.Delete(item.Path);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
 #if DEBUG
             Debug.WriteLine($"[ImageView2] 删除失败：{ex}");
 #endif
+            _ = ex; // Release 下 DEBUG 段不参与编译，显式消费避免 CS0168
         }
 
         var index = _viewModel.SelectedIndex;
@@ -472,11 +473,12 @@ public partial class ImageViewWindow2 : Window
         {
             Process.Start(new ProcessStartInfo(fileName, argument) { UseShellExecute = true });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
 #if DEBUG
             Debug.WriteLine($"[ImageView2] 打开失败：{ex}");
 #endif
+            _ = ex; // Release 下 DEBUG 段不参与编译，显式消费避免 CS0168
         }
     }
 

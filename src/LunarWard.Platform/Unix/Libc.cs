@@ -79,10 +79,6 @@ internal static partial class Libc
     public static partial nint Write(int fd, IntPtr buffer, nint count);
 
 
-    [DllImport("libc", EntryPoint = "execvp", SetLastError = true)]
-    public static extern int ExecVp(string file, IntPtr[] argv);
-
-
     // TIOCSWINSZ：窗口大小变更，用于 SIGWINCH
     public static nuint TIOCSWINSZ => OperatingSystem.IsLinux() ? 0x5414u : 0;
 }
