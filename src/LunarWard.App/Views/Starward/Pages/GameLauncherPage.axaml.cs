@@ -7,6 +7,8 @@ using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using LunarWard.App.ViewModels.Starward;
+using LunarWard.Core;
+using LunarWard.Core.HoYoPlay;
 using LunarWard.Installer;
 
 namespace LunarWard.App.Views.Starward.Pages;
@@ -48,6 +50,10 @@ public partial class GameLauncherPage : StarwardPage
         {
             _viewModel.ShowInstallProgressForCapture(
                 CaptureMode.InstallUpdate ? GameInstallOperation.Update : GameInstallOperation.Install);
+        }
+        else if (CaptureMode.InstallRealPath is { Length: > 0 } realInstallPath)
+        {
+            StartRealInstallForCapture(realInstallPath);
         }
         else if (CaptureMode.InstallUpdate)
         {
@@ -224,6 +230,31 @@ public partial class GameLauncherPage : StarwardPage
         dialog.SettingsChanged += () => _viewModel?.RefreshNoticeSettings();
         dialog.GameUninstalled += OnGameUninstalled;
         dialog.Show(owner);
+    }
+
+
+    /// <summary>
+    /// 自检：用真实安装任务填「开始游戏」按钮的进度（<c>--install-real &lt;目录&gt;</c>）。
+    /// 与安装对话框确认后走同一条 <see cref="GameLauncherPageViewModel.BeginInstallAsync"/>。
+    /// </summary>
+    private void StartRealInstallForCapture(string installPath)
+    {
+        GameId? gameId = GameId.FromGameBiz(new GameBiz(_viewModel.GameBiz));
+        if (gameId is null)
+        {
+            Console.Error.WriteLine($"INSTALL_REAL_FAIL 未知区服：{_viewModel.GameBiz}");
+            return;
+        }
+
+        Directory.CreateDirectory(installPath);
+        _ = _viewModel.BeginInstallAsync(new GameInstallRequest
+        {
+            GameBiz = _viewModel.GameBiz,
+            GameId = gameId.Id,
+            InstallPath = installPath,
+            Operation = GameInstallOperation.Install,
+            AudioLanguage = AudioLanguage.None,
+        });
     }
 
 

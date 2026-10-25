@@ -74,6 +74,7 @@ internal static class Program
         //   --screenshot-seed / --screenshot-hover  截图页样例数据 / 首块磁贴悬停态
         //   --launcher-setting-dialog         启动器「游戏设置」弹窗（配 --settings-section basic|arguments|background|packages）
         //   --uninstall-warning               设置弹窗「基本信息」页把卸载警告行亮出来（配 --launcher-setting-dialog）
+        //   --install-real <目录>             真实安装任务（官方 CDN）跑起来再截图，验证进度绑定
         //   --install-info-popup              安装中悬停的「游戏信息 / 下载进度」卡片（配 --install-progress）
         //   --selector-hover                  游戏选择器第一张卡片悬停态（配 --open-selector）
         //   --selector-flyout                 游戏选择器第一张卡片的区服列表（配 --open-selector）
@@ -124,6 +125,7 @@ internal static class Program
             CaptureMode.ShowDragOverlay = args.Contains("--drag-overlay");
             CaptureMode.InstallDialog = args.Contains("--install-dialog");
             CaptureMode.InstallProgress = args.Contains("--install-progress");
+            CaptureMode.InstallRealPath = ReadArgument(args, "--install-real");
             CaptureMode.InstallUpdate = args.Contains("--install-update");
             CaptureMode.InstallHover = args.Contains("--install-hover");
             CaptureMode.Predownload = ReadArgument(args, "--predownload");

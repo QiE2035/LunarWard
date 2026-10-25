@@ -95,6 +95,9 @@ internal static class CaptureMode
     /// <summary>截图前强制显示安装进度弹层（假数据，自检版式）。</summary>
     public static bool InstallProgress { get; set; }
 
+    /// <summary>自检：用真实安装任务（真实 CDN 下载）填安装进度（<c>--install-real &lt;目录&gt;</c>）。</summary>
+    public static string? InstallRealPath { get; set; }
+
     /// <summary>安装器自检走「更新游戏」语义（标题/按钮/完成文案）。</summary>
     public static bool InstallUpdate { get; set; }
 
