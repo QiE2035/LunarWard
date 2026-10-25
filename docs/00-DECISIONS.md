@@ -349,3 +349,39 @@ $ dotnet sln Probe.slnx add Lib/Lib.csproj  # → <Project Path="Lib/Lib.csproj"
 不需要 Starward 那样的 x86/x64/ARM64 矩阵。
 
 详见 `02-ARCHITECTURE.md` 的「解决方案文件格式」一节。
+
+---
+
+## D14. 移植流程：先复制上游文件，再改
+
+**决策**：复用 Starward 源码时，**先把上游源文件原样复制**进本仓库，再在复制品上做必要修改；
+不允许"读一遍上游、凭理解重写一份"。复制用 `scripts/port-from-starward.sh`（内部是
+`cp --reflink=auto`，见全局规则），文件顶部保留来源注释。
+
+**理由**（需求方 m00761、m01033）：
+1. 直接复制能保留上游的字段名、注释、SQL、边界处理，减少"看起来一样、细节不同"的漂移。
+2. 省输出 token：改一份现成文件比从零生成短得多——这一点直接影响多轮移植的成本。
+3. 改动可审计：复制件 + 少量 `// 上游：` 注释，review 时能看清每处偏离。
+
+**落地要求**：
+- 复制前先 `dotnet build` 确认基线是绿的；复制后先编译、再逐处改。
+- 每处偏离上游都留注释：`// 上游：...；这里改为 ...，因为 ...`。
+- 同一轮里"复制 + 改"的提交与纯新写代码的提交分开写提交信息（见提交规范）。
+- 反例：把上游 SQL 表结构"按记忆重写"成 JSON 文件——本项目已经因此返工过一次
+  （抽卡存储，见 D15 与 `docs/08-UI-PARITY.md` 抽卡页行）。
+
+---
+
+## D15. 本地存储与上游一致：SQLite，不用自造 JSON
+
+**决策**：需要落盘的记录（抽卡、账号记录、游戏记录明细等）一律用 Starward 同款 SQLite
+（`<DataHome>/LunarWardDatabase.db`，表名列名主键索引照抄上游 DDL），**不再用按功能
+自造的 JSON 文件**。UI 偏好类配置（窗口位置、开关）仍用 JSON 配置，不在此列。
+
+**理由**（需求方 m00761）：JSON 换实现导致字段、去重语义、语言列、URL 表都与上游不同，
+后续接 UIGF / 统计 / 删除时反复对不齐；SQLite 与上游同表同 SQL，移植成本最低。
+
+**已迁移**：抽卡三游戏记录 + `GachaLogUrl`（`Launch/Database/GachaLogStore.cs`）、
+千星奇域颂愿三表（`Launch/Database/GenshinBeyondGachaStore.cs`）。
+**待迁移**：`Core/SelfQuery/SelfQueryStore.cs`（账号记录）、星铁旅历明细
+`TrailblazeCalendarPageViewModel` 的月份缓存、截图索引等其余 JSON 存储。
