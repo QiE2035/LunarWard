@@ -124,4 +124,38 @@ public sealed class GameAccountStoreTests : IDisposable
         Assert.Single(_store.GetAll());
         Assert.Null(_store.Get(drop.Sha256));
     }
+
+    [Fact]
+    public void MigrateLegacyJson_ImportsRowsAndRenamesFile()
+    {
+        string json = Path.Join(_dir, "accounts.json");
+        File.WriteAllText(json, """
+            [
+              {
+                "sha256": "ABC",
+                "gameBiz": "hk4e_cn",
+                "uid": 100000001,
+                "name": "旧存档",
+                "value": "AQID",
+                "time": "2026-10-24T20:00:00+08:00"
+              }
+            ]
+            """);
+
+        Assert.True(_store.MigrateLegacyJson(_dir));
+
+        GameAccountSnapshot loaded = _store.Get("ABC")!;
+        Assert.Equal("旧存档", loaded.Name);
+        Assert.Equal(100000001, loaded.Uid);
+        Assert.Equal(new byte[] { 1, 2, 3 }, loaded.Value);
+        Assert.False(File.Exists(json));
+        Assert.True(File.Exists(json + ".migrated"));
+    }
+
+
+    [Fact]
+    public void MigrateLegacyJson_NoFile_ReturnsFalse()
+    {
+        Assert.False(_store.MigrateLegacyJson(_dir));
+    }
 }

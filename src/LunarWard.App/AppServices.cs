@@ -31,6 +31,22 @@ public sealed class AppServices
         Log = new Services.LogService(paths);
         LauncherService = new Services.LauncherService(this);
         Background = new Services.BackgroundService(paths);
+        // 旧版 accounts.json 一次性导入 GameAccount 表（上游没有这个文件，属于兼容迁移）；
+        // 截图自检用临时库，不迁移用户账号。
+        if (!CaptureMode.Enabled)
+        {
+            try
+            {
+                new LunarWard.Games.GameAccountStore(new LunarWard.Launch.Database.LunarWardDatabase(
+                    System.IO.Path.Join(paths.DataHome, LunarWard.Launch.Database.LunarWardDatabase.FileName)))
+                    .MigrateLegacyJson(paths.DataHome);
+            }
+            catch (Exception)
+            {
+                // 迁移失败不影响启动
+            }
+        }
+
         Announcements = new Services.AnnouncementService(paths);
         Scanner = new Services.GameScanner(paths);
         // 自检截图用临时库，避免在用户的 LunarWardDatabase.db 里建表/写时长

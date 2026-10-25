@@ -1,3 +1,4 @@
+using System.Text.Json;
 using LunarWard.Launch.Database;
 
 namespace LunarWard.Games;
@@ -41,6 +42,53 @@ public sealed class GameAccountStore
     /// </summary>
     public static GameAccountStore OpenDefault(string dataHome)
         => new(new LunarWardDatabase(Path.Join(dataHome, LunarWardDatabase.FileName)));
+
+
+    /// <summary>
+    /// 把旧版（LunarWard 早期实现）的 <c>accounts.json</c> 导入 <c>GameAccount</c> 表。
+    /// </summary>
+    /// <remarks>
+    /// 上游没有这个文件（它一直用数据库），这是 LunarWard 自己多出来的存储；升级时自动导入
+    /// 并改名为 <c>accounts.json.migrated</c>（不直接删，便于用户回滚）。文件不存在或坏掉都
+    /// 静默跳过 —— 启动路径不能因为一个旧文件报错。
+    /// </remarks>
+    /// <returns>是否发现并处理了旧文件。</returns>
+    public bool MigrateLegacyJson(string dataHome)
+    {
+        string json = Path.Join(dataHome, "accounts.json");
+        if (!File.Exists(json))
+        {
+            return false;
+        }
+
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            foreach (GameAccountSnapshot account in
+                     JsonSerializer.Deserialize<List<GameAccountSnapshot>>(File.ReadAllText(json), options) ?? [])
+            {
+                if (!string.IsNullOrWhiteSpace(account.Sha256))
+                {
+                    Save(account);
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // 旧文件损坏：不动它，也不影响启动；用户仍可手工排查。
+            return false;
+        }
+
+        try
+        {
+            File.Move(json, json + ".migrated", overwrite: true);
+        }
+        catch (IOException)
+        {
+        }
+
+        return true;
+    }
 
 
     /// <summary>读全部已保存账号（按保存时间倒序），可按区服过滤。</summary>
