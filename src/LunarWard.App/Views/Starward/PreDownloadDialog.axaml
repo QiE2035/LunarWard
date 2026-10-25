@@ -59,16 +59,6 @@
                            IsVisible="False" />
             </StackPanel>
 
-            <Button x:Name="StartButton"
-                    Grid.Row="3"
-                    Margin="0,20,0,0"
-                    HorizontalAlignment="Right"
-                    Classes="accent"
-                    FontSize="14"
-                    IsEnabled="False"
-                    Content="{Binding [PreDownloadDialog.Start], Source={x:Static loc:AppStrings.Instance}}"
-                    Click="OnStartClick" />
-
             <!--  不兼容提醒（源码默认折叠，这里同样默认折叠）  -->
             <StackPanel x:Name="IncompatibilityPanel"
                         Grid.Row="4"

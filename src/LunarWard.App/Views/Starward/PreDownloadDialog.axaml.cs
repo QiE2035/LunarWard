@@ -57,6 +57,9 @@ public partial class PreDownloadDialog : StarwardContentDialog
         _gameId = new GameId();
         _installPath = "";
         CloseButtonText = Strings["Common.Close"];
+        PrimaryButtonText = Strings["PreDownloadDialog.Start"];
+        IsPrimaryButtonEnabled = false;
+        PrimaryButtonClicked += (_, _) => OnStartClick(this, EventArgs.Empty);
     }
 
 
@@ -70,6 +73,9 @@ public partial class PreDownloadDialog : StarwardContentDialog
         _gameId = GameId.FromGameBiz(new GameBiz(gameBiz)) ?? new GameId { GameBiz = gameBiz };
         _installPath = installPath;
         CloseButtonText = Strings["Common.Close"];
+        PrimaryButtonText = Strings["PreDownloadDialog.Start"];
+        IsPrimaryButtonEnabled = false;
+        PrimaryButtonClicked += (_, _) => OnStartClick(this, EventArgs.Empty);
 
         NoPatchesText.Text = Strings["PreDownloadDialog.NoPatches"];
         UnavailableText.Text = Strings["PreDownloadDialog.Unavailable"];
@@ -158,14 +164,14 @@ public partial class PreDownloadDialog : StarwardContentDialog
             ? (IBrush?)Application.Current?.FindResource("StarCautionBrush") ?? Brushes.OrangeRed
             : (IBrush?)Application.Current?.FindResource("StarTextSecondaryBrush") ?? Brushes.Gray;
 
-        StartButton.IsEnabled = size > 0 && unzip > 0 && !string.IsNullOrWhiteSpace(_localVersion);
+        IsPrimaryButtonEnabled = size > 0 && unzip > 0 && !string.IsNullOrWhiteSpace(_localVersion);
     }
 
 
     private void ShowUnavailable()
     {
         UnavailableText.IsVisible = true;
-        StartButton.IsEnabled = false;
+        IsPrimaryButtonEnabled = false;
     }
 
 
@@ -182,9 +188,9 @@ public partial class PreDownloadDialog : StarwardContentDialog
     private static string FormatBytes(long bytes) => bytes <= 0 ? "..." : $"{bytes / 1024d / 1024 / 1024:F2} GB";
 
 
-    private void OnStartClick(object? sender, RoutedEventArgs e)
+    private void OnStartClick(object? sender, EventArgs e)
     {
-        StartButton.IsEnabled = false;
+        IsPrimaryButtonEnabled = false;
         Request = new GameInstallRequest
         {
             GameBiz = _gameBiz,
@@ -213,13 +219,13 @@ public partial class PreDownloadDialog : StarwardContentDialog
             AvailableSpaceValue.Text = "...";
             UnavailableText.IsVisible = true;
             NoPatchesText.IsVisible = true;
-            StartButton.IsEnabled = false;
+            IsPrimaryButtonEnabled = false;
             return;
         }
 
         PackageSizeValue.Text = "18.63 GB";
         UnzipSpaceValue.Text = "24.71 GB";
         AvailableSpaceValue.Text = "455.68 GB";
-        StartButton.IsEnabled = true;
+        IsPrimaryButtonEnabled = true;
     }
 }
