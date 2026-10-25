@@ -148,8 +148,12 @@ public sealed class LauncherSettings
     public List<string> PinnedGameServers { get; set; } = [];
 
 
-    /// <summary>游戏选择器的卡片顺序（`档案id` 列表，对应源码拖放排序）。为空表示按目录默认顺序。</summary>
+    /// <summary>游戏选择器的卡片顺序（游戏 kind 列表，如 <c>genshin,zzz</c>；对应源码拖放排序）。为空表示按目录默认顺序。</summary>
     public List<string> GameChoiceOrder { get; set; } = [];
+
+
+    /// <summary>左上角区服图标条是否固定常驻（Starward <c>AppConfig.IsGameBizSelectorPinned</c>）。</summary>
+    public bool GameIconsPinned { get; set; }
 
     public int BackgroundIndex { get; set; }
 
