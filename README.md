@@ -1,13 +1,15 @@
 # LunarWard
 
+[![CI](https://github.com/QiE2035/LunarWard/actions/workflows/ci.yml/badge.svg)](https://github.com/QiE2035/LunarWard/actions/workflows/ci.yml)
+
 Linux 下的《原神》/《绝区零》启动器，定位是 **Starward 在 Linux 的重实现**。
 
 不是 AGL（an-anime-team 的 `anime-games-launcher`）的改造，也不是从零造轮子——
 而是在 **复用 `Starward.Core` 全部 API/模型层** 的前提下，重写平台相关的启动、
 运行时管理与 UI 视图。
 
-> 当前状态：**已实现（M0–M7 完成，M8 移植完成待真机验证）**。
-> 解决方案 0 warning / 0 error，334 个测试全通过（276 单元 + 31 安装器 + 27 集成），
+> 当前状态：**已实现（M0–M7 完成，M8 移植完成并做过真机下载烟测，M9 全部接入）**。
+> 解决方案 0 warning / 0 error，584 个测试全通过（526 单元 + 31 安装器 + 27 集成），
 > UI 已按 Starward 逐页复刻（见下节）。真机验收 R1–R15 的完成情况见
 > [acceptance-2026-10-23.md](docs/acceptance-2026-10-23.md)。
 
