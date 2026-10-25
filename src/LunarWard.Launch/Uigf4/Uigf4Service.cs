@@ -2,6 +2,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LunarWard.Launch.Database;
+using LunarWard.Launch.Gacha;
 
 namespace LunarWard.Launch.Uigf4;
 
@@ -15,26 +16,51 @@ namespace LunarWard.Launch.Uigf4;
 /// 的算法与上游逐行一致；导入时保留用户的时区偏移输入，把记录时间整体平移后再落盘。
 /// </para>
 /// <para>
-/// 千星奇域（<c>hk4e_ugc</c>）只解析成一行并标记 <see cref="Uigf4ImportArchive.Unsupported"/>：
-/// 它的抽卡存档是 Starward 的 <c>GenshinBeyondGachaItem</c> 表，LunarWard 尚未移植，因此导入时明确拒绝而不是静默丢弃。
+/// 千星奇域（<c>hk4e_ugc</c>）走 <see cref="GenshinBeyondGachaStore"/>（Starward 的
+/// <c>GenshinBeyondGachaItem</c> 表），导出与导入都与上游一致。
 /// </para>
 /// </remarks>
 public sealed class Uigf4Service
 {
+    /// <summary>千星奇域在导出列表里的游戏标记（上游用 <c>IsGenshinBeyond</c> 布尔区分）。</summary>
+    public const string BeyondGame = "genshin-beyond";
+
+
     private readonly GachaLogStore _store;
+
+    private readonly GenshinBeyondGachaStore? _beyond;
 
     private readonly string _appVersion;
 
 
-    public Uigf4Service(GachaLogStore store, string appVersion)
+    public Uigf4Service(GachaLogStore store, string appVersion, GenshinBeyondGachaStore? beyond = null)
     {
         _store = store;
         _appVersion = appVersion;
+        _beyond = beyond;
     }
 
 
-    /// <summary>导出列表的数据源（每个「游戏 + UID」一行）。</summary>
-    public IReadOnlyList<GachaArchiveSummary> GetArchives() => _store.GetSummaries();
+    /// <summary>导出列表的数据源（每个「游戏 + UID」一行，千星奇域单独成行）。</summary>
+    public IReadOnlyList<GachaArchiveSummary> GetArchives()
+    {
+        List<GachaArchiveSummary> list = [.. _store.GetSummaries()];
+        if (_beyond is not null)
+        {
+            foreach (long uid in _beyond.GetUids())
+            {
+                List<Gacha.GenshinBeyondGachaItemEx> items = _beyond.GetItems(uid);
+                if (items.Count == 0)
+                {
+                    continue;
+                }
+                Core.Gacha.Genshin.GenshinBeyondGachaItem last = items.OrderBy(x => x.Id).Last();
+                list.Add(new GachaArchiveSummary(
+                    BeyondGame, uid, items.Count, null, last.Time, last.ItemName, last.OpGachaType));
+            }
+        }
+        return list;
+    }
 
 
     /// <summary>导出文件名（上游是 <c>Starward_UIGF_{时间}.json</c>，这里换成应用自己的名字）。</summary>
@@ -72,10 +98,46 @@ public sealed class Uigf4Service
                 case GachaLogStore.Zzz:
                     file.ZzzArchives!.Add(BuildArchive(archive));
                     break;
+                case BeyondGame:
+                    file.GenshinBeyondArchives!.Add(BuildBeyondArchive(archive));
+                    break;
             }
         }
 
         return JsonSerializer.Serialize(file, JsonOptions);
+    }
+
+
+    private Uigf4Archive<Uigf4GenshinBeyondItem> BuildBeyondArchive(GachaArchiveSummary summary)
+    {
+        if (_beyond is null)
+        {
+            throw new InvalidOperationException("GenshinBeyondGachaStore is required for hk4e_ugc export.");
+        }
+        var archive = new Uigf4Archive<Uigf4GenshinBeyondItem>
+        {
+            Uid = summary.Uid,
+            Timezone = GuessTimezone(summary.Uid),
+            Lang = NormalizeLang(summary.Lang),
+        };
+        foreach (var item in _beyond.GetItems(summary.Uid).OrderBy(x => x.Id))
+        {
+            archive.List.Add(new Uigf4GenshinBeyondItem
+            {
+                Uid = item.Uid,
+                Id = item.Id,
+                Region = item.Region ?? "",
+                OpGachaType = item.OpGachaType,
+                ScheduleId = item.ScheduleId,
+                ItemId = item.ItemId,
+                ItemType = item.ItemType,
+                Name = item.ItemName,
+                RankType = item.RankType,
+                IsUp = item.IsUp,
+                Time = item.Time.ToString("yyyy-MM-dd HH:mm:ss"),
+            });
+        }
+        return archive;
     }
 
 
@@ -231,19 +293,23 @@ public sealed class Uigf4Service
                 Uid = x.Uid,
                 GachaType = x.OpGachaType,
                 ItemId = x.ItemId,
-                Count = x.Count,
+                Count = 1,
                 Time = ParseTime(x.Time),
                 Name = x.Name,
                 ItemType = x.ItemType,
                 RankType = x.RankType,
+                Region = x.Region,
+                ScheduleId = x.ScheduleId,
+                IsUp = x.IsUp,
             }).ToList();
             result.Add(new Uigf4ImportArchive
             {
-                Game = GachaLogStore.Genshin,
+                Game = BeyondGame,
                 Uid = archive.Uid,
+                // 上游导入千星奇域时不给默认时区（GachaUidArchiveDisplay.Timezone 默认 0），由用户按需改。
+                Timezone = 0,
                 Lang = NormalizeLang(archive.Lang),
                 Items = items,
-                Unsupported = true,
             });
         }
         return result;
@@ -305,6 +371,11 @@ public sealed class Uigf4Service
                 Uigf4ImportErrorKind.UnsupportedSection, uid: archive.Uid, field: "hk4e_ugc");
         }
 
+        if (archive.Game == BeyondGame)
+        {
+            return ImportBeyond(archive);
+        }
+
         var records = new List<GachaRecord>(archive.Items.Count);
         bool missingName = false;
         foreach (var item in archive.Items)
@@ -329,6 +400,67 @@ public sealed class Uigf4Service
 
         _store.Merge(archive.Game, records, archive.Lang);
         return new Uigf4ImportResult(!missingName);
+    }
+
+
+    /// <summary>
+    /// 千星奇域导入（上游 <c>UIGFGachaService.ImportForGenshinBeyond</c>：校验后整条写
+    /// <c>GenshinBeyondGachaItem</c>）。
+    /// </summary>
+    private Uigf4ImportResult ImportBeyond(Uigf4ImportArchive archive)
+    {
+        if (_beyond is null)
+        {
+            throw new Uigf4ImportException(
+                Uigf4ImportErrorKind.UnsupportedSection, uid: archive.Uid, field: "hk4e_ugc");
+        }
+
+        var items = new List<GenshinBeyondGachaItemEx>(archive.Items.Count);
+        foreach (GachaArchiveItem item in archive.Items)
+        {
+            if (item.Id == 0)
+            {
+                throw new Uigf4ImportException(Uigf4ImportErrorKind.MissingField, uid: archive.Uid, field: "id");
+            }
+            if (item.ItemId == 0)
+            {
+                throw new Uigf4ImportException(Uigf4ImportErrorKind.MissingField, uid: archive.Uid, field: "item_id");
+            }
+            if (item.GachaType == 0)
+            {
+                throw new Uigf4ImportException(Uigf4ImportErrorKind.MissingField, uid: archive.Uid, field: "op_gacha_type");
+            }
+            if (item.Time < new DateTime(2025, 10, 1))
+            {
+                throw new Uigf4ImportException(Uigf4ImportErrorKind.MissingField, uid: archive.Uid, field: "time");
+            }
+            if (item.RankType == 0)
+            {
+                throw new Uigf4ImportException(Uigf4ImportErrorKind.MissingField, uid: archive.Uid, field: "rank_type");
+            }
+            if (item.Uid != 0 && item.Uid != archive.Uid)
+            {
+                throw new Uigf4ImportException(
+                    Uigf4ImportErrorKind.UidMismatch, uid: archive.Uid, expectedUid: archive.Uid,
+                    foundUid: item.Uid, field: "uid");
+            }
+            items.Add(new GenshinBeyondGachaItemEx
+            {
+                Id = item.Id,
+                Uid = item.Uid == 0 ? archive.Uid : item.Uid,
+                Region = item.Region,
+                OpGachaType = item.GachaType,
+                ScheduleId = item.ScheduleId,
+                ItemType = item.ItemType,
+                ItemId = item.ItemId,
+                ItemName = item.Name,
+                RankType = item.RankType,
+                IsUp = item.IsUp,
+                Time = item.Time.AddHours(archive.Timezone),
+            });
+        }
+        _beyond.InsertItems(items);
+        return new Uigf4ImportResult(true);
     }
 
 

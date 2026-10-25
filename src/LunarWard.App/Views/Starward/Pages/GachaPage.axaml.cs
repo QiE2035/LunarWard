@@ -58,6 +58,11 @@ public partial class GachaPage : StarwardPage
     public GachaPage(PageContext context) : base(context)
     {
         InitializeComponent();
+        if (CaptureMode.BeyondSeed)
+        {
+            // 自检：UIGF 导出列表里的千星奇域行需要这份样例（写进同一个临时库）。
+            GenshinBeyondGachaPage.SeedSampleData();
+        }
         var seed = CaptureMode.GachaSeed
             ?? (CaptureMode.GachaDeleteDialog ? "zzz" : null)
             ?? (CaptureMode.UigfWindow ? "genshin" : null)

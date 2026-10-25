@@ -21,7 +21,8 @@ namespace LunarWard.App.Views.Starward;
 /// </para>
 /// <para>
 /// 差异：上游窗口不设尺寸（WinUI 默认），这里沿用本仓库对话框的 800×600；
-/// 千星奇域（<c>hk4e_ugc</c>）区段只解析不写入，界面上勾选框禁用并说明原因。
+/// 千星奇域（<c>hk4e_ugc</c>）与上游一致：读 <c>GenshinBeyondGachaItem</c> 表、单独成行，
+/// 导出/导入都走同一个 <c>GenshinBeyondGachaStore</c>。
 /// </para>
 /// </remarks>
 public sealed partial class Uigf4GachaWindow : Window
@@ -32,8 +33,18 @@ public sealed partial class Uigf4GachaWindow : Window
     public Uigf4GachaWindow(PageContext context, GachaLogStore? store = null)
     {
         InitializeComponent();
+        if (CaptureMode.BeyondSeed)
+        {
+            // 自检：让导出列表里出现千星奇域行（样例写进同一个临时库）。
+            Views.Starward.Pages.GenshinBeyondGachaPage.SeedSampleData();
+        }
         store ??= GachaLogStore.OpenDefault(context.Services.Paths.DataHome);
-        _viewModel = new Uigf4GachaWindowViewModel(new Uigf4Service(store, ReadVersion()));
+        _viewModel = new Uigf4GachaWindowViewModel(new Uigf4Service(
+            store,
+            ReadVersion(),
+            CaptureMode.Enabled
+                ? CaptureMode.CreateBeyondStore()
+                : Launch.Database.GenshinBeyondGachaStore.OpenDefault(context.Services.Paths.DataHome)));
         DataContext = _viewModel;
 
         _viewModel.ExportRequested += OnExportRequested;

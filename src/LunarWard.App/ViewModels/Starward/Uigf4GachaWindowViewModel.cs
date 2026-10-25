@@ -301,6 +301,7 @@ public sealed partial class Uigf4GachaWindowViewModel : ObservableObject
         GachaLogStore.Genshin => "原神",
         GachaLogStore.StarRail => "星穹铁道",
         GachaLogStore.Zzz => "绝区零",
+        Uigf4Service.BeyondGame => "千星奇域",
         _ => kind,
     };
 }

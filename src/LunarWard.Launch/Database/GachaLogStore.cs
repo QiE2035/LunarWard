@@ -362,6 +362,15 @@ public sealed class GachaArchiveItem
     /// <summary>星铁 SRGF 的 <c>gacha_id</c>（其它游戏恒为 0）。</summary>
     public int GachaId { get; set; }
 
+    /// <summary>千星奇域：服务器区服（<c>cn_gf01</c> 等）。</summary>
+    public string Region { get; set; } = "";
+
+    /// <summary>千星奇域：活动期次 id。</summary>
+    public int ScheduleId { get; set; }
+
+    /// <summary>千星奇域：是否 UP（<c>is_up</c>）。</summary>
+    public int IsUp { get; set; }
+
     public int Count { get; set; } = 1;
 
     /// <summary>服务器时区的时间（导出时原样写进 UIGF 的 <c>time</c>）。</summary>

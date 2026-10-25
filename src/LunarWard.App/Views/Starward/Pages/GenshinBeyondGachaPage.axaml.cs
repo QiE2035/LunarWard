@@ -140,7 +140,7 @@ public partial class GenshinBeyondGachaPage : StarwardPage
     {
         try
         {
-            var file = Path.Join(AppServices.Current.Paths.DataHome, LunarWardDatabase.FileName);
+            string file = CaptureMode.ResolveDatabaseFile(AppServices.Current.Paths.DataHome);
             var store = new GenshinBeyondGachaStore(new LunarWardDatabase(file));
             const long uid = 100000001;
 

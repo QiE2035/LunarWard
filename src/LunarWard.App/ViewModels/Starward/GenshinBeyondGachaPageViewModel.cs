@@ -38,7 +38,7 @@ public sealed partial class GenshinBeyondGachaPageViewModel : StarwardPageViewMo
     {
         _gameDirectory = LunarWard.Launch.ProfileConfig.ExpandPath(Profile.Profile.Path);
 
-        var file = Path.Join(Services.Paths.DataHome, LunarWardDatabase.FileName);
+        string file = CaptureMode.ResolveDatabaseFile(Services.Paths.DataHome);
         _service = new GenshinBeyondGachaService(databaseFile: file);
 
         UidList = [];

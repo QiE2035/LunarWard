@@ -1,6 +1,7 @@
 using System.Text.Json;
 using LunarWard.Launch;
 using LunarWard.Launch.Database;
+using LunarWard.Launch.Gacha;
 using LunarWard.Launch.Uigf4;
 using Xunit;
 
@@ -17,6 +18,8 @@ public sealed class Uigf4Tests : IDisposable
 
     private readonly GachaLogStore _store;
 
+    private readonly GenshinBeyondGachaStore _beyond;
+
     private readonly Uigf4Service _service;
 
 
@@ -24,8 +27,10 @@ public sealed class Uigf4Tests : IDisposable
     {
         Directory.CreateDirectory(_dir);
         _file = Path.Join(_dir, "LunarWardDatabase.db");
-        _store = new GachaLogStore(new LunarWardDatabase(_file));
-        _service = new Uigf4Service(_store, "9.9.9");
+        var database = new LunarWardDatabase(_file);
+        _store = new GachaLogStore(database);
+        _beyond = new GenshinBeyondGachaStore(database);
+        _service = new Uigf4Service(_store, "9.9.9", _beyond);
     }
 
 
@@ -250,7 +255,7 @@ public sealed class Uigf4Tests : IDisposable
 
 
     [Fact]
-    public void UgcSectionParsesButImportIsRefused()
+    public void UgcSectionImportsIntoGenshinBeyondStore()
     {
         string path = Path.Join(_dir, "ugc.json");
         File.WriteAllText(path, """
@@ -258,7 +263,8 @@ public sealed class Uigf4Tests : IDisposable
           "info": { "version": "v4.2" },
           "hk4e_ugc": [
             { "uid": 100000001, "timezone": 8, "list": [
-              { "uid": 100000001, "id": 1, "op_gacha_type": 1000, "item_id": 1, "count": 1,
+              { "uid": 100000001, "id": 1, "region": "cn_gf01", "op_gacha_type": 1000,
+                "schedule_id": 7, "item_id": 1, "is_up": 1,
                 "time": "2026-01-02 03:04:05", "name": "奇域", "item_type": "角色", "rank_type": 4 }
             ] }
           ]
@@ -266,10 +272,56 @@ public sealed class Uigf4Tests : IDisposable
         """);
 
         var archive = Assert.Single(_service.ParseFile(path));
-        Assert.True(archive.Unsupported);
+        Assert.Equal(Uigf4Service.BeyondGame, archive.Game);
+        Assert.False(archive.Unsupported);
 
-        var ex = Assert.Throws<Uigf4ImportException>(() => _service.Import(archive));
-        Assert.Equal(Uigf4ImportErrorKind.UnsupportedSection, ex.Kind);
+        var result = _service.Import(archive);
+        Assert.True(result.Success);
+
+        var item = Assert.Single(_beyond.GetItems(100000001));
+        Assert.Equal(1, item.Id);
+        Assert.Equal(1000, item.OpGachaType);
+        Assert.Equal(7, item.ScheduleId);
+        Assert.Equal("奇域", item.ItemName);
+        Assert.Equal(1, item.IsUp);
+        Assert.Equal(new DateTime(2026, 1, 2, 3, 4, 5), item.Time);
+    }
+
+
+    [Fact]
+    public void ExportIncludesGenshinBeyondArchive()
+    {
+        _beyond.InsertItems(
+        [
+            new GenshinBeyondGachaItemEx
+            {
+                Id = 2,
+                Uid = 100000001,
+                Region = "cn_gf01",
+                OpGachaType = 1000,
+                ScheduleId = 7,
+                ItemType = "角色",
+                ItemId = 9,
+                ItemName = "奇域",
+                RankType = 4,
+                IsUp = 1,
+                Time = new DateTime(2026, 1, 2, 3, 4, 5),
+            },
+        ]);
+
+        var summaries = _service.GetArchives();
+        var summary = Assert.Single(summaries, x => x.Game == Uigf4Service.BeyondGame);
+        Assert.Equal(100000001, summary.Uid);
+        Assert.Equal(1, summary.Count);
+
+        string json = _service.BuildJson([summary]);
+        using var document = JsonDocument.Parse(json);
+        var item = document.RootElement.GetProperty("hk4e_ugc")[0].GetProperty("list")[0];
+        Assert.Equal("2", item.GetProperty("id").GetString());
+        Assert.Equal("1000", item.GetProperty("op_gacha_type").GetString());
+        Assert.Equal("7", item.GetProperty("schedule_id").GetString());
+        Assert.Equal("1", item.GetProperty("is_up").GetString());
+        Assert.Equal("2026-01-02 03:04:05", item.GetProperty("time").GetString());
     }
 
 

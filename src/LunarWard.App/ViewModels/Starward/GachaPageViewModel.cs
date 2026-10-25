@@ -334,7 +334,13 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     {
         try
         {
-            string json = new Uigf4Service(_archiveStore, "self-test").BuildJson(_archiveStore.GetSummaries());
+            var service = new Uigf4Service(
+                _archiveStore,
+                "self-test",
+                CaptureMode.Enabled
+                    ? CaptureMode.CreateBeyondStore()
+                    : Launch.Database.GenshinBeyondGachaStore.OpenDefault(AppServices.Current.Paths.DataHome));
+            string json = service.BuildJson(service.GetArchives());
             Platform.AtomicFile.WriteAllText(path, json);
             ErrorText = null;
             StatusText = string.Format(Strings["Gacha.Uigf.Exported"], path);

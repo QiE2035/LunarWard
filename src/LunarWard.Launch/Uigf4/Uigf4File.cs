@@ -154,7 +154,7 @@ public sealed class Uigf4GenshinItem : Uigf4GachaItem
 }
 
 
-/// <summary>千星奇域记录（<c>hk4e_ugc</c>）：只用于读取上游导出的文件。</summary>
+/// <summary>千星奇域记录（<c>hk4e_ugc</c>）：字段照上游 <c>GenshinBeyondGachaItem</c>。</summary>
 public sealed class Uigf4GenshinBeyondItem
 {
     [JsonPropertyName("uid")]
@@ -199,11 +199,13 @@ public sealed class Uigf4GenshinBeyondItem
     public int RankType { get; set; }
 
 
+    [JsonPropertyName("is_up")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
+    public int IsUp { get; set; }
+
+
+    /// <summary>服务器时区的时间，<c>yyyy-MM-dd HH:mm:ss</c>。</summary>
     [JsonPropertyName("time")]
     public string Time { get; set; } = "";
 
-
-    [JsonPropertyName("count")]
-    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
-    public int Count { get; set; } = 1;
 }
