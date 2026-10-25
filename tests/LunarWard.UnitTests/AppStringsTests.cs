@@ -128,4 +128,46 @@ public class AppStringsTests
         var values = AppStrings.AllKeys.Select(k => AppStrings.Instance[k]).ToList();
         Assert.All(values, v => Assert.False(string.IsNullOrWhiteSpace(v)));
     }
+
+    /// <summary>
+    /// 两个字典内部都不允许重复键（审计 CO-01）。Dictionary 的索引器初始化会静默覆盖，
+    /// 重复时后写的那份永远不会生效，运行时也看不出问题——只能解析源码。
+    /// </summary>
+    [Fact]
+    public void Source_HasNoDuplicateKeysInEitherDictionary()
+    {
+        var root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Join(root, "LunarWard.slnx")))
+        {
+            root = Directory.GetParent(root)?.FullName
+                ?? throw new InvalidOperationException("找不到仓库根目录");
+        }
+        var lines = File.ReadAllLines(Path.Join(root, "src", "LunarWard.App", "Localization", "AppStrings.cs"));
+        var spans = new List<(int Start, int End)>();
+        var starts = lines.Select((line, index) => (line, index))
+            .Where(x => x.line.Contains("Dictionary<string, string>", StringComparison.Ordinal))
+            .Select(x => x.index).ToList();
+        for (var i = 0; i < starts.Count; i++)
+        {
+            spans.Add((starts[i], i + 1 < starts.Count ? starts[i + 1] : lines.Length));
+        }
+
+        var keyPattern = new System.Text.RegularExpressions.Regex("^\\s*\\[\"([^\"]+)\"\\]\\s*=");
+        var duplicates = new List<string>();
+        foreach (var (start, end) in spans)
+        {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            for (var i = start; i < end; i++)
+            {
+                var match = keyPattern.Match(lines[i]);
+                if (match.Success && !seen.Add(match.Groups[1].Value))
+                {
+                    duplicates.Add($"{match.Groups[1].Value}（第 {i + 1} 行）");
+                }
+            }
+        }
+
+        Assert.True(duplicates.Count == 0, "发现重复键：" + string.Join(", ", duplicates));
+    }
+
 }
