@@ -4,7 +4,6 @@ using Avalonia.Threading;
 using LunarWard.App.Services;
 using LunarWard.App.ViewModels;
 using LunarWard.App.ViewModels.Starward;
-using LibVLCSharp.Avalonia;
 
 namespace LunarWard.App.Views.Starward;
 

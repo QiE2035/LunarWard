@@ -16,7 +16,7 @@
       <Setter Property="Width" Value="40" />
       <Setter Property="HorizontalAlignment" Value="Left" />
       <Setter Property="Margin" Value="8,2" />
-      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
 
       <Setter Property="Height" Value="40" />
       <Setter Property="MinHeight" Value="40" />
@@ -47,25 +47,10 @@
   <Grid RowDefinitions="52,*,Auto">
 
     <!--
-      当前游戏图标：点击 = 打开全屏游戏选择层；悬停 = 滑出横排游戏图标条
-      （Starward GameSelector 的 Border_CurrentGameIcon，外层 56 宽，与图标条无缝相接）。
+      Starward PaneCustomContent：52px 空条。当前游戏图标已经移到 StarwardShell
+      的 GameIconsHost（它要和右侧横排图标条连成一体），左栏这里留空。
     -->
-    <Border Grid.Row="0"
-            Background="Transparent"
-            PointerEntered="OnGameIconPointerEntered"
-            PointerExited="OnGameIconPointerExited">
-      <Button Classes="rail"
-              Margin="8,10,8,2"
-              Background="Transparent"
-              Command="{Binding OpenGameSelectorCommand}"
-              ToolTip.Tip="{Binding Strings[Shell.SelectGame]}">
-        <Panel Width="40" Height="40">
-          <Border CornerRadius="8" ClipToBounds="True" Background="#33FFFFFF" />
-          <Image Width="40" Height="40" Source="{Binding CurrentGameIcon}" Stretch="UniformToFill" />
-          <TextBlock Classes="icon" FontSize="20" Text="&#xE8A9;" IsVisible="{Binding !HasGameIcon}" />
-        </Panel>
-      </Button>
-    </Border>
+    <Border Grid.Row="0" Height="52" />
 
     <!-- 菜单项：顺序与 Starward MainView 一致 -->
     <StackPanel Grid.Row="1" Margin="0,8,0,0" Spacing="2">

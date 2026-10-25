@@ -75,6 +75,7 @@ internal static class Program
         //   --screenshot-seed / --screenshot-hover  截图页样例数据 / 首块磁贴悬停态
         //   --launcher-setting-dialog         启动器「游戏设置」弹窗（配 --settings-section basic|arguments|background|packages）
         //   --uninstall-warning               设置弹窗「基本信息」页把卸载警告行亮出来（配 --launcher-setting-dialog）
+        //   --close-window-dialog             关闭询问浮层（最小化到托盘 / 完全退出）
         //   --install-real <目录>             真实安装任务（官方 CDN）跑起来再截图，验证进度绑定
         //   --install-info-popup              安装中悬停的「游戏信息 / 下载进度」卡片（配 --install-progress）
         //   --selector-hover                  游戏选择器第一张卡片悬停态（配 --open-selector）
@@ -163,6 +164,9 @@ internal static class Program
             CaptureMode.Tab = ReadArgument(args, "--tab");
             CaptureMode.Language = ReadArgument(args, "--lang");
             CaptureMode.ExpandRail = args.Contains("--expand-rail");
+            CaptureMode.BackgroundPath = ReadArgument(args, "--background");
+            CaptureMode.CloseWindowDialog = args.Contains("--close-window-dialog");
+            CaptureMode.DialogEscTest = args.Contains("--dialog-esc-test");
             if (int.TryParse(ReadArgument(args, "--scroll-y"), out var scrollY) && scrollY > 0)
             {
                 CaptureMode.ScrollY = scrollY;
@@ -222,15 +226,24 @@ internal static class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            // 拉丁字形沿用 Starward 的 Segoe UI；缺字时回退到随应用分发的 Inter，
+            // 保证未安装 Segoe UI 的机器上度量仍然稳定。
+            .WithInterFont()
             // Starward 在 Windows 上靠系统字体回退把中文交给「微软雅黑」渲染；
-            // Avalonia/Skia 不做隐式回退，这里显式给出回退链，效果与 Windows 一致。
+            // Avalonia/Skia 不做隐式回退，这里显式给出回退链。
+            //
+            // 顺序有意义：CJK 优先 Noto Sans CJK SC（全字重），再退到微软雅黑。
+            // 后者在 Linux 上通常来自 WPS 字体包且只有 Regular，标题会发虚、
+            // 与 Windows 观感不符（见 docs/09-LINUX-DIVERGENCES.md）。
             .With(new FontManagerOptions
             {
                 DefaultFamilyName = "Segoe UI",
                 FontFallbacks =
                 [
-                    new FontFallback { FontFamily = new FontFamily("Microsoft YaHei UI") },
+                    new FontFallback { FontFamily = new FontFamily("Inter") },
                     new FontFallback { FontFamily = new FontFamily("Noto Sans CJK SC") },
+                    new FontFallback { FontFamily = new FontFamily("Microsoft YaHei UI") },
+                    new FontFallback { FontFamily = new FontFamily("Noto Sans CJK JP") },
                     new FontFallback { FontFamily = new FontFamily("Segoe MDL2 Assets") },
                     new FontFallback { FontFamily = new FontFamily("Segoe Fluent Icons") },
                 ],

@@ -39,6 +39,13 @@ internal static class CaptureMode
     public static string? SettingsSection { get; set; }
 
 
+    /// <summary>
+    /// 自检：强制把背景切到指定文件（<c>--background &lt;path&gt;</c>），用于验证视频背景
+    /// 的帧回调链路（Wayland 下没有原生子窗口，只能靠截图里的帧确认）。
+    /// </summary>
+    public static string? BackgroundPath { get; set; }
+
+
     /// <summary>截「游戏设置」弹窗时点亮卸载警告行（<c>--uninstall-warning</c>）。</summary>
     public static bool UninstallWarning { get; set; }
 
@@ -184,6 +191,18 @@ internal static class CaptureMode
 
     /// <summary>截图前把左栏展开（模拟鼠标悬停）。</summary>
     public static bool ExpandRail { get; set; }
+
+    /// <summary>
+    /// 自检：关闭主窗口时弹出的「最小化到托盘 / 完全退出」询问浮层
+    /// （<c>--close-window-dialog</c>，配合 <c>--screenshot</c>）。
+    /// </summary>
+    public static bool CloseWindowDialog { get; set; }
+
+    /// <summary>
+    /// 自检：浮层打开后合成一次 ESC，验证「ESC = 关闭」的键盘路径确实关掉了会话
+    /// （<c>--dialog-esc-test</c>，配 <c>--close-window-dialog --screenshot</c>）。
+    /// </summary>
+    public static bool DialogEscTest { get; set; }
 
     /// <summary>渲染前等待时间（毫秒）。</summary>
     public static int WaitMilliseconds { get; set; } = 1600;

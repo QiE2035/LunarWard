@@ -1,0 +1,32 @@
+<controls:StarwardContentDialog xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                xmlns:controls="using:LunarWard.App.Views.Starward.Controls"
+                                x:Class="LunarWard.App.Views.Starward.MainWindowCloseDialog"
+                                MaxWidth="548">
+  <!--
+    复刻 Starward Features/ViewHost/MainWindowCloseDialog.xaml：
+      ContentDialog(Title=ExperienceSettingPage_CloseWindowOption,
+                    PrimaryButtonText=Common_Confirm, CloseButtonText=Common_Cancel, DefaultButton=Primary)
+      内容 = 提示行 + RadioButtons(最小化到系统托盘 / 完全退出)
+
+    上游向 Windows 注册表/托盘隐藏；LunarWard 的托盘是 StatusNotifier，可能不存在，
+    所以托盘不可用时「最小化到系统托盘」置灰（对应 docs/09-LINUX-DIVERGENCES.md 的差异项）。
+  -->
+  <StackPanel Margin="24,20,24,8" Spacing="12">
+    <TextBlock x:Name="HintText"
+               FontSize="12"
+               TextWrapping="Wrap"
+               Foreground="{DynamicResource StarTextSecondary}" />
+
+    <StackPanel Spacing="8">
+      <RadioButton x:Name="HideRadio" GroupName="CloseWindowOption" />
+      <RadioButton x:Name="ExitRadio" GroupName="CloseWindowOption" />
+    </StackPanel>
+
+    <TextBlock x:Name="NoTrayHintText"
+               FontSize="12"
+               TextWrapping="Wrap"
+               IsVisible="False"
+               Foreground="{DynamicResource StarCautionBrush}" />
+  </StackPanel>
+</controls:StarwardContentDialog>

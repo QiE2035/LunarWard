@@ -6,7 +6,6 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using LunarWard.App.ViewModels;
 using LunarWard.App.ViewModels.Starward;
-using LibVLCSharp.Avalonia;
 
 namespace LunarWard.App.Views.Starward;
 
@@ -17,7 +16,7 @@ namespace LunarWard.App.Views.Starward;
 public partial class StarwardShell : UserControl
 {
     private readonly Dictionary<ShellPage, StarwardPage> _pages = [];
-    private VideoView? _videoView;
+    private VideoBackgroundPlayer? _videoPlayer;
 
     public StarwardShell()
     {
@@ -53,6 +52,8 @@ public partial class StarwardShell : UserControl
             vm.GameSelectorVisibilityChanged += OnGameSelectorVisibilityChanged;
             vm.VideoBackgroundRequested -= OnVideoBackgroundRequested;
             vm.VideoBackgroundRequested += OnVideoBackgroundRequested;
+            vm.VideoBackgroundCleared -= OnVideoBackgroundCleared;
+            vm.VideoBackgroundCleared += OnVideoBackgroundCleared;
             if (vm.VideoBackgroundPath is { } videoPath)
             {
                 OnVideoBackgroundRequested(this, videoPath);
@@ -78,6 +79,7 @@ public partial class StarwardShell : UserControl
             vm.GameChanged -= OnGameChanged;
             vm.GameSelectorVisibilityChanged -= OnGameSelectorVisibilityChanged;
             vm.VideoBackgroundRequested -= OnVideoBackgroundRequested;
+            vm.VideoBackgroundCleared -= OnVideoBackgroundCleared;
         }
     }
 
@@ -131,34 +133,53 @@ public partial class StarwardShell : UserControl
     }
 
 
-    private void OnVideoBackgroundRequested(object? sender, string path)
+    private async void OnVideoBackgroundRequested(object? sender, string path)
     {
         try
         {
             var background = ViewModel?.Services.Background;
-            if (background is null || !background.IsVlcAvailable)
+            if (background is null || !background.IsVideoAvailable)
             {
                 return;
             }
 
-            var player = background.EnsurePlayer(() => { });
-            if (player is null)
+            // ffmpeg 子进程解码 → WriteableBitmap。不用 VideoView：Wayland 下没有可嵌入的
+            // X11 子窗口（黑屏），而且 VLC 的编解码依赖用户装齐 vlc-plugin-* 包。
+            _videoPlayer ??= new VideoBackgroundPlayer();
+            background.AttachPlayer(_videoPlayer);
+            VideoBackgroundHost.Content = _videoPlayer.View;
+            if (!await _videoPlayer.StartAsync(path, ViewModel?.Log).ConfigureAwait(true))
             {
-                return;
+                // 拿不到帧就回退官方静态图，别留黑屏。
+                _videoPlayer.Stop();
+                VideoBackgroundHost.Content = null;
+                ViewModel?.Log.Warn($"动态背景无法播放，回退静态图：{path}");
+                if (ViewModel is { } vm)
+                {
+                    await vm.ShowStaticBackgroundAsync(vm.Assets.For()?.Background).ConfigureAwait(true);
+                }
             }
-
-            _videoView = new VideoView
-            {
-                MediaPlayer = player,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
-            };
-            VideoBackgroundHost.Content = _videoView;
-            background.PlayLoop(path);
         }
         catch (Exception ex)
         {
             ViewModel?.Log.Warn($"视频背景挂载失败：{ex.Message}");
+        }
+    }
+
+
+    private void OnVideoBackgroundCleared(object? sender, EventArgs e)
+    {
+        try
+        {
+            VideoBackgroundHost.Content = null;
+            _videoPlayer?.Dispose();
+            _videoPlayer = null;
+            ViewModel?.Services.Background.AttachPlayer(null);
+            ViewModel?.Services.Background.Stop();
+        }
+        catch (Exception ex)
+        {
+            ViewModel?.Log.Warn($"视频背景卸载失败：{ex.Message}");
         }
     }
 
@@ -269,7 +290,7 @@ public partial class StarwardShell : UserControl
         _dragPress = null;
         var format = DataFormat.CreateStringApplicationFormat("lunarward/game-choice");
         var item = new DataTransferItem();
-        item.Set(format, choice.SourceProfileId);
+        item.Set(format, choice.Kind);
         var data = new DataTransfer();
         data.Add(item);
         await DragDrop.DoDragDropAsync(press, data, DragDropEffects.Move);
@@ -298,28 +319,9 @@ public partial class StarwardShell : UserControl
             return;
         }
 
-        if (e.DataTransfer.TryGetValue(DataFormat.CreateStringApplicationFormat("lunarward/game-choice")) is { } sourceId)
+        if (e.DataTransfer.TryGetValue(DataFormat.CreateStringApplicationFormat("lunarward/game-choice")) is { } sourceKind)
         {
-            shell.MoveGameChoice(sourceId, shell.GameChoices.IndexOf(target));
-        }
-    }
-
-
-    /// <summary>悬停卡片弹出区服列表（源码 <c>Grid_GameBizDisplay_PointerEntered</c>）。</summary>
-    private void OnGameChoicePointerEntered(object? sender, PointerEventArgs e)
-    {
-        if (sender is Control card && card.ContextFlyout is { } flyout)
-        {
-            flyout.ShowAt(card);
-        }
-    }
-
-
-    private void OnGameChoicePointerExited(object? sender, PointerEventArgs e)
-    {
-        if (sender is Control card && card.ContextFlyout is Flyout flyout)
-        {
-            flyout.Hide();
+            shell.MoveGameChoice(sourceKind, shell.GameChoices.IndexOf(target));
         }
     }
 
@@ -345,12 +347,51 @@ public partial class StarwardShell : UserControl
     }
 
 
-    private async void OnGameChoiceTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    /// <summary>
+    /// 点卡片：单区服直接切；多区服在卡片下方弹区服 flyout
+    /// （源码 <c>Grid_GameBizDisplay_Tapped</c>，Placement=Bottom / Transient）。
+    /// hover **不** 弹 flyout——那是之前闪烁的根因，hover 只做高亮（XAML 里的 choiceHover）。
+    /// </summary>
+    private void OnGameChoiceTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Control { DataContext: GameChoiceViewModel choice } && ViewModel is { } vm)
+        if (sender is not Control { DataContext: GameChoiceViewModel choice } card || ViewModel is not { } vm)
         {
-            await Dispatcher.UIThread.InvokeAsync(async () => await vm.ChooseGameAsync(choice));
+            return;
         }
+
+        e.Handled = true;
+
+        if (vm.ChooseGame(choice))
+        {
+            return;
+        }
+
+        if (card.ContextFlyout is PopupFlyoutBase flyout)
+        {
+            flyout.Placement = PlacementMode.Bottom;
+            flyout.ShowMode = FlyoutShowMode.Transient;
+            flyout.ShowAt(card);
+        }
+    }
+
+
+    /// <summary>左上角当前游戏图标：指针进入滑出图标条（源码 <c>Border_CurrentGameIcon_PointerEntered</c>）。</summary>
+    private void OnCurrentGameIconPointerEntered(object? sender, PointerEventArgs e)
+        => ViewModel?.ShowGameIcons();
+
+
+    /// <summary>
+    /// 指针离开当前游戏图标：向右移入图标条时不收（源码 <c>Border_CurrentGameIcon_PointerExited</c>
+    /// 的 <c>position.X &gt; ActualSize.X - 1</c> 判断），其余情况收起。
+    /// </summary>
+    private void OnCurrentGameIconPointerExited(object? sender, PointerEventArgs e)
+    {
+        if (sender is Control icon && e.GetPosition(icon).X > icon.Bounds.Width - 1)
+        {
+            return;
+        }
+
+        ViewModel?.HideGameIcons();
     }
 
 

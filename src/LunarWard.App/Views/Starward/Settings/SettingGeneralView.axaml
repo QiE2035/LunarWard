@@ -66,14 +66,21 @@
                  Classes="section"
                  Text="{Binding Strings[Settings.General.CloseWindowOption]}" />
 
-      <!-- GeneralSetting.xaml:41-54（上游 Hide/Exit 两项；托盘用 Avalonia TrayIcon≈H.NotifyIcon） -->
+      <!--
+        GeneralSetting.xaml:41-54：上游 Hide/Exit 两项，配置为 0 时等于「每次询问」。
+        这里把三种都做成选项（上游只能通过 MainWindowCloseDialog 写成 Hide/Exit，没有「问」的入口）。
+        托盘用 Avalonia TrayIcon ≈ H.NotifyIcon。
+      -->
       <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="24">
         <RadioButton GroupName="CloseWindowOption"
                      IsChecked="{Binding IsCloseToTray, Mode=TwoWay}"
                      Content="{Binding Strings[Settings.General.MinimizeToTray]}" />
         <RadioButton GroupName="CloseWindowOption"
-                     IsChecked="{Binding IsCloseToTray, Converter={x:Static BoolConverters.Not}}"
+                     IsChecked="{Binding IsCloseToExit, Mode=TwoWay}"
                      Content="{Binding Strings[Settings.General.ExitCompletely]}" />
+        <RadioButton GroupName="CloseWindowOption"
+                     IsChecked="{Binding IsAskEveryTime, Mode=TwoWay}"
+                     Content="{Binding Strings[Settings.General.AskEveryTime]}" />
       </StackPanel>
 
       <TextBlock Margin="0,6,0,0"

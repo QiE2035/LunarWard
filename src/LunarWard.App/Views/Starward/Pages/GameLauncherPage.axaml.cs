@@ -36,6 +36,7 @@ public partial class GameLauncherPage : StarwardPage
         RootGrid.AddHandler(DragDrop.DragOverEvent, OnRootGridDragOver);
         RootGrid.AddHandler(DragDrop.DragLeaveEvent, OnRootGridDragLeave);
         RootGrid.AddHandler(DragDrop.DropEvent, OnRootGridDrop);
+        _viewModel.BackgroundImages.CollectionChanged += (_, _) => RebuildPips();
         _viewModel.RefreshBackgroundImages();
         if (CaptureMode.ShowBackgroundBar)
         {
@@ -73,19 +74,24 @@ public partial class GameLauncherPage : StarwardPage
             DispatcherTimer.RunOnce(() => Button_GameAuthLogin.Flyout?.ShowAt(Button_GameAuthLogin), TimeSpan.FromMilliseconds(600));
         }
 
-        if (CaptureMode.InstallDialog && CaptureMode.Path is { } dialogPath)
+        if (CaptureMode.InstallDialog && CaptureMode.Path is not null)
         {
             _ = Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 await Task.Delay(1000);
+                if (TopLevel.GetTopLevel(this) is not Window owner)
+                {
+                    return;
+                }
                 var dialog = new InstallGameDialog(Context.Services, _viewModel.GameBiz,
                     Context.Shell.CurrentLauncherId, Context.Profile.Profile.Path);
-                _ = dialog.ShowDialog(TopLevel.GetTopLevel(this) as Window ?? throw new InvalidOperationException());
-                dialog.CaptureSelf(dialogPath + ".dialog.png", 2500);
+                _ = DialogService.ShowAsync(dialog, owner);
+                await Task.Delay(2500);
+                CaptureMode.Capture(owner);
             });
         }
 
-        if (CaptureMode.PredownloadDialog && CaptureMode.Path is { } predownloadPath)
+        if (CaptureMode.PredownloadDialog && CaptureMode.Path is not null)
         {
             _ = Dispatcher.UIThread.InvokeAsync(async () =>
             {
@@ -97,12 +103,13 @@ public partial class GameLauncherPage : StarwardPage
                 var dialog = new PreDownloadDialog(Context.Services, _viewModel.GameBiz,
                     Context.Shell.CurrentLauncherId, Context.Profile.Profile.Path, capture: true);
                 dialog.PrepareCapture(CaptureMode.PredownloadDialogUnavailable);
-                dialog.Show(owner);
-                dialog.CaptureSelf(predownloadPath + ".dialog.png", 1200);
+                _ = DialogService.ShowAsync(dialog, owner);
+                await Task.Delay(1200);
+                CaptureMode.Capture(owner);
             });
         }
 
-        if (CaptureMode.Dx12IntroDialog && CaptureMode.Path is { } dx12Path)
+        if (CaptureMode.Dx12IntroDialog && CaptureMode.Path is not null)
         {
             _ = Dispatcher.UIThread.InvokeAsync(async () =>
             {
@@ -112,13 +119,14 @@ public partial class GameLauncherPage : StarwardPage
                     return;
                 }
                 var dialog = new DX12IntroDialog();
-                dialog.Show(owner);
-                dialog.CaptureSelf(dx12Path + ".dialog.png", 900);
+                _ = DialogService.ShowAsync(dialog, owner);
+                await Task.Delay(900);
+                CaptureMode.Capture(owner);
             });
         }
 
 
-        if (CaptureMode.LauncherSettingDialog && CaptureMode.Path is { } settingPath)
+        if (CaptureMode.LauncherSettingDialog && CaptureMode.Path is not null)
         {
             int section = CaptureMode.SettingsSection switch
             {
@@ -144,8 +152,9 @@ public partial class GameLauncherPage : StarwardPage
                 {
                     dialog.ShowUninstallWarningForCapture();
                 }
-                dialog.Show(owner);
-                dialog.CaptureSelf(settingPath + ".dialog.png", 1800);
+                _ = DialogService.ShowAsync(dialog, owner);
+                await Task.Delay(1800);
+                CaptureMode.Capture(owner);
             });
         }
 
@@ -210,7 +219,7 @@ public partial class GameLauncherPage : StarwardPage
         }
 
         var dialog = new DX12IntroDialog();
-        await dialog.ShowDialog(owner);
+        await DialogService.ShowAsync(dialog, owner);
     }
 
 
@@ -220,7 +229,7 @@ public partial class GameLauncherPage : StarwardPage
     }
 
 
-    private void OnSettingDialogRequested()
+    private async void OnSettingDialogRequested()
     {
         if (TopLevel.GetTopLevel(this) is not Window owner)
         {
@@ -230,7 +239,7 @@ public partial class GameLauncherPage : StarwardPage
         var dialog = new GameLauncherSettingDialog(Context);
         dialog.SettingsChanged += () => _viewModel?.RefreshNoticeSettings();
         dialog.GameUninstalled += OnGameUninstalled;
-        dialog.Show(owner);
+        await DialogService.ShowAsync(dialog, owner);
     }
 
 
@@ -287,7 +296,7 @@ public partial class GameLauncherPage : StarwardPage
             _viewModel.GameBiz,
             Context.Shell.CurrentLauncherId,
             Context.Profile.Profile.Path);
-        await dialog.ShowDialog(owner);
+        await DialogService.ShowAsync(dialog, owner);
         if (dialog.Request is { } request)
         {
             await _viewModel.BeginInstallAsync(request);
@@ -307,7 +316,7 @@ public partial class GameLauncherPage : StarwardPage
         }
 
         var dialog = new PreDownloadDialog(Context.Services, args.GameBiz, args.LauncherId, args.InstallPath);
-        await dialog.ShowDialog(owner);
+        await DialogService.ShowAsync(dialog, owner);
         if (dialog.Request is { } request)
         {
             await _viewModel.StartPredownloadAsync(request);
@@ -361,7 +370,8 @@ public partial class GameLauncherPage : StarwardPage
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(GameLauncherPageViewModel.SelectedBackgroundIndex))
+        if (e.PropertyName is nameof(GameLauncherPageViewModel.SelectedBackgroundIndex)
+            or nameof(GameLauncherPageViewModel.ShowBackgroundBar))
         {
             RebuildPips();
         }
@@ -599,11 +609,7 @@ public partial class GameLauncherPage : StarwardPage
         var dialog = new PlayTimeStatsDialog(Context.Services, GameLauncherPageViewModel.GameBizOfProfile(Context.Profile));
         if (TopLevel.GetTopLevel(this) is Window owner)
         {
-            dialog.Show(owner);
-        }
-        else
-        {
-            dialog.Show();
+            _ = DialogService.ShowAsync(dialog, owner);
         }
     }
 
@@ -615,6 +621,29 @@ public partial class GameLauncherPage : StarwardPage
 
 
     private void OnBannerTapped(object? sender, TappedEventArgs e) => _viewModel?.OpenBannerLinkCommand.Execute(null);
+
+
+    /// <summary>
+    /// 公告卡滚轮翻页（Starward 用 FlipView，鼠标滚轮即翻页；这里是单张 Image + 计时器，
+    /// 需要显式接住滚轮，见用户反馈「左下角轮播的图片滚轮无翻页」）。
+    /// </summary>
+    private void OnBannerPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        if (_viewModel is null || _viewModel.Banners.Count == 0)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        if (e.Delta.Y > 0)
+        {
+            _viewModel.PreviousBanner();
+        }
+        else if (e.Delta.Y < 0)
+        {
+            _viewModel.NextBanner();
+        }
+    }
 
 
     private void OnBackgroundBarPointerEntered(object? sender, PointerEventArgs e) => _viewModel?.OnBackgroundBarPointerEnter();

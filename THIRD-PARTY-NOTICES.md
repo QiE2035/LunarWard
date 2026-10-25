@@ -67,27 +67,16 @@ tr -d '\r' < ~/.nuget/packages/<id>/<ver>/<id>.nuspec | grep -oiE '<license[^>]*
 |---|---|---|
 | `CommunityToolkit.Mvvm` | 8.4.2 | **MIT** |
 
-### 2.3 视频背景（LGPL 链路）
+### 2.3 视频背景（系统 `ffmpeg` 命令）
 
-| 组件 | 版本 | 许可 |
-|---|---|---|
-| `LibVLCSharp` | 3.10.2 | **LGPL-2.1-or-later** |
-| `LibVLCSharp.Avalonia` | 3.10.2 | **LGPL-2.1-or-later** |
-| **`libvlc`（系统动态库，不随包分发）** | 本机 3.0.24 | **LGPL-2.1-or-later**（VLC core）；Arch 包 `libvlc` 元数据同时标注 `GPL-2.0-or-later` |
+视频背景**不含任何第三方库**：LunarWard 通过 `Process` 调用系统 `ffmpeg`，
+把视频解码成 BGRA 原始帧后自己画到 `WriteableBitmap` 上。
 
-**LGPL 合规说明**：
-
-- `LibVLCSharp` 是**动态链接** `libvlc.so` 的托管封装，我们不修改它，也不静态链接。
-  因此 **LGPL-2.1+ 的传染性不适用于 LunarWard 自身**（LunarWard 保持 MIT）。
-- `libvlc` 由**发行版**提供（Arch: `vlc` / `libvlc`；Debian: `libvlc5`；
-  Fedora: `vlc-libs`），**LunarWard 的发行包不包含任何 VLC 二进制**。
-  用户自行安装，属于运行时依赖而非分发物。
-- 若用户启用视频背景，LunarWard 与 `libvlc` 之间是运行时动态加载关系。
-  用户可自行替换系统 `libvlc` 版本，无需重新编译 LunarWard——这正是 LGPL 要求的
-  "可替换性"，已满足。
-- 若某个发行版要求随包分发 `libvlc`，则该发行包必须同时提供 LGPL 全文与
-  `libvlc` 的完整源码获取方式，且**不得**使用 GPL 插件模块之外的静态链接形式。
-  这是打包者（如 AUR 维护者）的责任，本仓库的 `packaging/` 不打包 VLC。
+- `ffmpeg` 由用户 / 发行版提供（Arch: `ffmpeg` 包；Debian/Ubuntu: `ffmpeg`；
+  Fedora: `ffmpeg-free` / `ffmpeg`），**LunarWard 的发行包不分发 ffmpeg 二进制**。
+- 与 `ffmpeg` 之间只有「命令行调用 + stdout 管道」的进程边界，没有链接、
+  没有修改，属于运行时可选依赖。
+- 探测不到 `ffmpeg` 时只显示静态背景，不会崩溃。
 
 ### 2.4 终端控件及其传递依赖
 

@@ -6,6 +6,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using LunarWard.App.ViewModels.Starward;
+using LunarWard.App.Views.Starward.Controls;
 
 namespace LunarWard.App.Views.Starward;
 
@@ -23,7 +24,7 @@ namespace LunarWard.App.Views.Starward;
 /// 只复制目标里还没有的文件。结果文案与上游同一句。
 /// </para>
 /// </remarks>
-public sealed partial class ScreenshotFolderManageDialog : Window
+public sealed partial class ScreenshotFolderManageDialog : StarwardContentDialog
 {
     private readonly ScreenshotFolderManageDialogViewModel _viewModel;
 
@@ -33,6 +34,7 @@ public sealed partial class ScreenshotFolderManageDialog : Window
         InitializeComponent();
         _viewModel = new ScreenshotFolderManageDialogViewModel("", []);
         DataContext = _viewModel;
+        Title = _viewModel.Strings["Screenshot.ManageFolders"];
     }
 
 
@@ -41,6 +43,7 @@ public sealed partial class ScreenshotFolderManageDialog : Window
         InitializeComponent();
         _viewModel = new ScreenshotFolderManageDialogViewModel(inGameDirectory, externalFolders);
         DataContext = _viewModel;
+        Title = _viewModel.Strings["Screenshot.ManageFolders"];
     }
 
 
@@ -182,37 +185,4 @@ public sealed partial class ScreenshotFolderManageDialog : Window
             // 没有 xdg-open 时静默忽略
         }
     }
-
-
-    /// <summary>自检截图：渲染本窗口到 PNG 后退出（独立 Window，主窗口截不到）。</summary>
-    public void CaptureSelf(string path, int delayMs)
-    {
-        DispatcherTimer.RunOnce(() =>
-        {
-            try
-            {
-                var size = new PixelSize(Math.Max(1, (int)Bounds.Width), Math.Max(1, (int)Bounds.Height));
-                using var bitmap = new RenderTargetBitmap(size, new Vector(96, 96));
-                bitmap.Render(this);
-                using (var stream = File.Create(path))
-                {
-                    bitmap.Save(stream, new PngBitmapEncoderOptions());
-                }
-                Console.WriteLine($"SCREENSHOT_OK {path} {size.Width}x{size.Height}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SCREENSHOT_FAIL {ex.GetType().Name}: {ex.Message}");
-            }
-            finally
-            {
-                if (Application.Current?.ApplicationLifetime
-                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    desktop.Shutdown(0);
-                }
-            }
-        }, TimeSpan.FromMilliseconds(delayMs));
-    }
-
 }

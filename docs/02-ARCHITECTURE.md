@@ -12,7 +12,7 @@
 | INI | `Microsoft.Extensions.Configuration.Ini` | 10.0.11 | Starward 已在用 |
 | HTTP | `System.Net.Http` + `Polly` | 内建 / 8.8.0 | 沿用 Starward 的重试策略 |
 | 解压 | `ZstdSharp.Port` | 0.8.8 | 沿用 Starward |
-| 视频背景 | **`LibVLCSharp.Avalonia`** | 3.10.2 | 见 `04-FEATURES.md` §5.4 |
+| 视频背景 | **系统 `ffmpeg` 命令**（子进程解帧） | 运行时探测 | 见 `04-FEATURES.md` §5.4 |
 | 终端 | `Iciclecreek.Avalonia.Terminal` | 4.1.0 | M0 实测选定（Q3） |
 | Markdown | `Markdig` | 1.4.2 | 应用内公告渲染 |
 | VDF（Steam） | **不引入库** | — | Q2 退化方案：标准路径 + 只抓 `"path"` 行 |
@@ -40,7 +40,7 @@ GTK4/libadwaita 用的是 Adwaita 语言，与 Starward 根本不是一个风格
 | 问题 | GirCore 方案 | Avalonia 方案 |
 |---|---|---|
 | 环境 shell 的终端 | `GirCore.Vte-2.91` **在 NuGet 不存在**，需手写 ~300 行 `libvte` P/Invoke | `RoyalApps.RoyalTerminal.Avalonia` / `Iciclecreek.Avalonia.Terminal` 等现成控件 |
-| 循环视频背景 | `gtk::MediaFile` 依赖 `gtk4paintablesink`（由独立包 `gst-plugin-gtk4` 提供），需软探测 + 回退 | `LibVLCSharp.Avalonia`，不依赖系统 GStreamer 插件 |
+| 循环视频背景 | `gtk::MediaFile` 依赖 `gtk4paintablesink`（由独立包 `gst-plugin-gtk4` 提供），需软探测 + 回退 | `ffmpeg -f rawvideo` 子进程解帧 → `WriteableBitmap`（X11 / Wayland 通用，不依赖 GStreamer / VLC） |
 
 ### 唯一 GirCore 占优的地方
 
@@ -471,8 +471,7 @@ UI 层按类型给出不同的可交互提示：
 |---|---|---|
 | Starward | **MIT** | 可自由 fork/移植，保留版权声明 |
 | Avalonia | **MIT** | 无 |
-| `LibVLCSharp.Avalonia` | LGPL-2.1+ | 动态链接 VLC，无传染 |
-| VLC (libvlc) | LGPL-2.1+ | 运行时依赖 |
+| `ffmpeg` | LGPL/GPL（发行版打包） | 只以子进程调用，不链接、不分发 |
 | `Hk4eTouch` | AGPL-3.0 | **不打包**（用户自备），规避 |
 | `ZZZ-touch-unlocker` | **无 LICENSE** | **不打包** |
 | an-anime-team 组件 | 各自上游许可 | 仅下载，不随包分发 |

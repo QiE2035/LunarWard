@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using LunarWard.App.Localization;
 using LunarWard.App.Services;
+using LunarWard.App.Views.Starward.Controls;
 using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Installer;
@@ -22,7 +23,7 @@ namespace LunarWard.App.Views.Starward;
 /// <c>main.major</c> 各包体积之和；这里沿用同一口径（压缩包 + 音频包的解压体积）。
 /// 成功点「开始安装」后由调用方（启动器页）启动 <see cref="GameInstallController"/>。
 /// </remarks>
-public partial class InstallGameDialog : Window
+public partial class InstallGameDialog : StarwardContentDialog
 {
     private static AppStrings Strings => AppStrings.Instance;
 
@@ -54,6 +55,10 @@ public partial class InstallGameDialog : Window
         _language = "zh-cn";
         _gameId = new GameId();
         _baseFolder = "";
+        CloseButtonText = Strings["Common.Close"];
+        PrimaryButtonText = Strings["InstallGameDialog.Start"];
+        IsPrimaryButtonEnabled = false;
+        PrimaryButtonClicked += (_, _) => OnStartInstallClick(this, EventArgs.Empty);
     }
 
 
@@ -65,6 +70,10 @@ public partial class InstallGameDialog : Window
         _launcherId = launcherId;
         _language = string.IsNullOrWhiteSpace(Strings.Language) ? "zh-cn" : Strings.Language.ToLowerInvariant();
         _gameId = GameId.FromGameBiz(new LunarWard.Core.GameBiz(gameBiz)) ?? new GameId { GameBiz = gameBiz };
+        CloseButtonText = Strings["Common.Close"];
+        PrimaryButtonText = Strings["InstallGameDialog.Start"];
+        IsPrimaryButtonEnabled = false;
+        PrimaryButtonClicked += (_, _) => OnStartInstallClick(this, EventArgs.Empty);
         _baseFolder = string.IsNullOrWhiteSpace(initialPath)
             ? Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Games")
             : Path.GetDirectoryName(initialPath.TrimEnd('/')) ?? initialPath;
@@ -115,7 +124,7 @@ public partial class InstallGameDialog : Window
         AvailableSpaceRun.Text = available > 0 ? FormatGigabytes(available) : "...";
         UnzipSpaceRun.Text = _unzipSpaceBytes > 0 ? FormatGigabytes(_unzipSpaceBytes) : "...";
 
-        StartInstallButton.IsEnabled = error is null && _package is not null;
+        IsPrimaryButtonEnabled = error is null && _package is not null;
     }
 
 
@@ -328,7 +337,12 @@ public partial class InstallGameDialog : Window
 
     private async void OnChangePathClick(object? sender, RoutedEventArgs e)
     {
-        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        if (TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+        {
+            return;
+        }
+
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = Strings["InstallGameDialog.SelectPath"],
             AllowMultiple = false,
@@ -367,7 +381,7 @@ public partial class InstallGameDialog : Window
     }
 
 
-    private void OnStartInstallClick(object? sender, RoutedEventArgs e)
+    private void OnStartInstallClick(object? sender, EventArgs e)
     {
         if (_package is null || ValidatePath(_installationPath) is not null)
         {
@@ -383,42 +397,5 @@ public partial class InstallGameDialog : Window
             AudioLanguage = _audioLanguages.Count > 0 ? _audioLanguage : AudioLanguage.None,
         };
         Close();
-    }
-
-
-    private void OnCloseClick(object? sender, RoutedEventArgs e) => Close();
-
-
-    /// <summary>自检截图：渲染本对话框到 PNG 后退出（独立 Window，主窗口截不到）。</summary>
-    public void CaptureSelf(string path, int delayMs)
-    {
-        Avalonia.Threading.DispatcherTimer.RunOnce(() =>
-        {
-            try
-            {
-                var size = new Avalonia.PixelSize(
-                    Math.Max(1, (int)Bounds.Width),
-                    Math.Max(1, (int)Bounds.Height));
-                using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(size, new Avalonia.Vector(96, 96));
-                bitmap.Render(this);
-                using (var stream = File.Create(path))
-                {
-                    bitmap.Save(stream, new Avalonia.Media.Imaging.PngBitmapEncoderOptions());
-                }
-                Console.WriteLine($"SCREENSHOT_OK {path} {size.Width}x{size.Height}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SCREENSHOT_FAIL {ex.GetType().Name}: {ex.Message}");
-            }
-            finally
-            {
-                if (Avalonia.Application.Current?.ApplicationLifetime
-                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    desktop.Shutdown(0);
-                }
-            }
-        }, TimeSpan.FromMilliseconds(delayMs));
     }
 }

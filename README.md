@@ -9,7 +9,7 @@ Linux 下的《原神》/《绝区零》启动器，定位是 **Starward 在 Lin
 运行时管理与 UI 视图。
 
 > 当前状态：**已实现（M0–M7 完成，M8 移植完成并做过真机下载烟测，M9 全部接入）**。
-> 解决方案 0 warning / 0 error，632 个测试全通过（569 单元 + 36 安装器 + 27 集成），
+> 解决方案 0 warning / 0 error，670 个测试全通过（607 单元 + 36 安装器 + 27 集成），
 > UI 已按 Starward 逐页复刻（见下节）。真机验收 R1–R15 的完成情况见
 > [acceptance-2026-10-23.md](docs/acceptance-2026-10-23.md)。
 
@@ -44,7 +44,7 @@ git clone <repo> && cd lunarward
 
 # 1. 工具链
 dotnet --version          # 需 10.x
-# 可选：libvlc（动态背景）、hdiffpatch（差量更新）、7zip（解包安装）
+# 可选：ffmpeg（动态背景）、hdiffpatch（差量更新）、7zip（解包安装）
 
 # 2. 构建与测试
 dotnet build LunarWard.slnx
@@ -96,6 +96,8 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --launcher-setting-dialog + --settings-section basic|arguments|background|packages|network
 #                 --launcher-setting-dialog + --settings-section basic --uninstall-warning（卸载确认区）
 #                     （截启动器「游戏设置」弹窗；network 亮网络驱动器警告）、
+#                 --close-window-dialog（关闭主窗口时的「最小化到托盘 / 完全退出」询问浮层；
+#                     加 --dialog-esc-test 合成一次 ESC，验证键盘关闭路径，输出 DIALOG_ESC_CLOSED）、
 #                 --auth-login（右上角通行证授权登录按钮切到可见 + 失败态，并单独出 Flyout 图 *.flyout.png）、
 #                 --page self-query（账号记录页）、--selfquery-select（自动选中第一行类型）、
 #                 --selfquery-url（打开「输入 URL」对话框并单独出图 *.dialog.png）、
@@ -292,7 +294,7 @@ LUNARWARD_REAL_WINE=1 dotnet test tests/LunarWard.IntegrationTests \
 | 解包 | `SharpSevenZip` | 外部 `7z` + BCL `ZipFile` | SharpSevenZip 的 native 只有 Windows |
 | 差量补丁 | `Snap.HPatch` | 外部 `hpatchz` | 同上（nupkg 只有 `runtimes/win-x64/native`） |
 | gRPC | 进度服务端流 | 进程内 `IProgress<T>` + 100ms ticker | 不需要跨进程 |
-| 视频背景 | `LibVLCSharp` 真机播放 | 已实现，但本机 `libvlc_new` 返回 NULL（缺 VLC 插件包）→ **回退静态图** | Arch 上 `libvlc` 与 `vlc` 是分开的包 |
+| 视频背景 | `ffmpeg` 子进程解码 → `WriteableBitmap` | 已实现（X11 / Wayland 通用）；缺 `ffmpeg` 时**回退静态图** | 不用 VLC：`VideoView` 依赖原生 X11 子窗口（Wayland 黑屏），且 Arch 把 VLC 拆成 `vlc-plugin-*` 后常缺解码器 |
 | 托管组件下载 | an-anime-team 索引 + git 同步 | ✅ 已实现，但**不引 git**：直接下载 `components.json` 与分组 JSON（`ComponentInstaller`） | 少一个外部依赖 |
 | 沙箱 | namespace 隔离 | 只记录配置 | 首期不做 |
 | prefix 初始化 | 直接 `wineboot -u` | **必须**加 `WINEDLLOVERRIDES=mscoree,mshtml=` | 否则卡在 wine-mono 下载提示（实测 2分32秒 vs 8秒） |

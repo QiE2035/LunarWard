@@ -17,7 +17,7 @@ license=('MIT')
 depends=('dotnet-runtime>=10.0')
 makedepends=('dotnet-sdk>=10.0')
 optdepends=(
-  'vlc: 动态背景（视频背景需要 libvlc 与 VLC 插件包，Arch 上二者分开）'
+  'ffmpeg: 动态背景（视频背景用 ffmpeg 解帧，X11 / Wayland 通用）'
   'hdiffpatch: 差量更新（提供 hpatchz，缺失时回退全量下载）'
   '7zip: 解包安装（提供 7z/7za，缺失时仅能解普通 .zip）'
 )

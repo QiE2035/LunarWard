@@ -113,10 +113,10 @@ public sealed class LauncherSettings
     public string Behavior { get; set; } = "Hide";
 
     /// <summary>
-    /// 主窗口关闭行为（对应上游 <c>AppConfig.CloseWindowOption</c>）：
-    /// <c>Hide</c> 最小化到系统托盘、<c>Exit</c> 完全退出。
+    /// 主窗口关闭行为（对应上游 <c>AppConfig.CloseWindowOption</c> / <c>MainWindowCloseOption</c>）：
+    /// <c>Ask</c> 每次关闭时询问（上游 0，默认）、<c>Hide</c> 最小化到系统托盘、<c>Exit</c> 完全退出。
     /// </summary>
-    public string CloseWindowOption { get; set; } = "Exit";
+    public string CloseWindowOption { get; set; } = "Ask";
 
     /// <summary><c>Modern</c> | <c>Classic</c>。</summary>
     public string Style { get; set; } = "Modern";
@@ -148,8 +148,12 @@ public sealed class LauncherSettings
     public List<string> PinnedGameServers { get; set; } = [];
 
 
-    /// <summary>游戏选择器的卡片顺序（`档案id` 列表，对应源码拖放排序）。为空表示按目录默认顺序。</summary>
+    /// <summary>游戏选择器的卡片顺序（游戏 kind 列表，如 <c>genshin,zzz</c>；对应源码拖放排序）。为空表示按目录默认顺序。</summary>
     public List<string> GameChoiceOrder { get; set; } = [];
+
+
+    /// <summary>左上角区服图标条是否固定常驻（Starward <c>AppConfig.IsGameBizSelectorPinned</c>）。</summary>
+    public bool GameIconsPinned { get; set; }
 
     public int BackgroundIndex { get; set; }
 

@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:LunarWard.App.ViewModels.Starward"
         xmlns:sw="using:LunarWard.App.Views.Starward"
+        xmlns:dh="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
         x:Class="LunarWard.App.Views.Starward.MainWindow"
         x:DataType="vm:ShellViewModel"
         Title="LunarWard"
@@ -11,6 +12,8 @@
         WindowStartupLocation="CenterScreen"
         Background="#FF1E1E1E"
         ExtendClientAreaToDecorationsHint="False"
+        WindowDecorations="None"
+        TextOptions.TextRenderingMode="Antialias"
         FontFamily="{StaticResource StarFontFamily}">
 
   <!--
@@ -20,7 +23,13 @@
       · 窗口右上角是三个 46×32 的标题栏按钮（最小化 / 最大化-禁用 / 关闭）
       · 背景图与内容都画到 y=0，标题栏压在背景上
   -->
-  <Grid RowDefinitions="48,*">
+  <!--
+    最外层 DialogHost：Windows/WinUI 里 ContentDialog 是"窗口内的浮层"，不是独立窗口；
+    Avalonia 没有内建等价物，这里用 DialogHost.Avalonia 提供同一语义
+    （暗化底层内容 + 居中卡片 + 圆角/阴影；OverlayBackground 对应 WinUI ContentDialogSmokeFill #66000000），对话框内容本身仍是普通 UserControl。
+  -->
+  <dh:DialogHost x:Name="RootDialogHost" CloseOnClickAway="False" OverlayBackground="#66000000">
+    <Grid RowDefinitions="48,*">
 
     <!-- 内容层：从 y=0 开始，被标题栏覆盖（背景铺满整窗，和 Starward 一致） -->
     <sw:StarwardShell x:Name="Shell" Grid.Row="0" Grid.RowSpan="2" />
@@ -33,13 +42,11 @@
         <Button Classes="caption-button" Click="OnMinimizeClick" ToolTip.Tip="{Binding Strings[Shell.Minimize]}">
           <TextBlock Classes="icon" FontSize="10" Text="&#xE921;" />
         </Button>
-        <Button Classes="caption-button" IsEnabled="False" ToolTip.Tip="{Binding Strings[Shell.Maximize]}">
-          <TextBlock Classes="icon" FontSize="10" Text="&#xE922;" />
-        </Button>
         <Button Classes="caption-close" Click="OnCloseClick" ToolTip.Tip="{Binding Strings[Shell.Close]}">
           <TextBlock Classes="icon" FontSize="10" Text="&#xE8BB;" />
         </Button>
       </StackPanel>
     </Grid>
-  </Grid>
+    </Grid>
+  </dh:DialogHost>
 </Window>

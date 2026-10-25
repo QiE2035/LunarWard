@@ -134,7 +134,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
 
     [RelayCommand]
-    private void NextBanner()
+    public void NextBanner()
     {
         if (Banners.Count == 0)
         {
@@ -142,6 +142,18 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         }
 
         CurrentBannerIndex = (CurrentBannerIndex + 1) % Banners.Count;
+    }
+
+
+    /// <summary>上一张公告（Starward FlipView 的向左翻页）。</summary>
+    public void PreviousBanner()
+    {
+        if (Banners.Count == 0)
+        {
+            return;
+        }
+
+        CurrentBannerIndex = (CurrentBannerIndex - 1 + Banners.Count) % Banners.Count;
     }
 
 
@@ -1314,23 +1326,71 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     private bool _hasVideoBackground;
 
 
+    private bool _backgroundImagesLoaded;
+
+
+    /// <summary>
+    /// 刷新可切换背景（官方接口图/官方动态背景 + 版本海报 + 本地背景目录）。
+    /// </summary>
+    /// <remarks>
+    /// 对照 Starward <c>BackgroundService.GetGameBackgroundsAsync</c> 与
+    /// <c>GameLauncherPage.BackgroundImages</c>。接口失败时退化为海报 + 本地文件，不阻塞启动。
+    /// </remarks>
     public void RefreshBackgroundImages()
     {
-        BackgroundImages.Clear();
+        _ = LoadBackgroundImagesAsync();
+    }
+
+
+    public async Task LoadBackgroundImagesAsync(bool force = false)
+    {
+        if (_backgroundImagesLoaded && !force)
+        {
+            return;
+        }
+
+        _backgroundImagesLoaded = true;
+
+        IReadOnlyList<BackgroundEntry> entries;
         var art = _context.Shell.Assets.For();
-        if (art?.Background is { } official)
+        var launcherId = _context.Shell.CurrentLauncherId;
+        if (CaptureMode.BackgroundPath is { Length: > 0 } forcedBackground)
         {
-            BackgroundImages.Add(new BackgroundSwitchItem("官方背景", official));
+            // 自检专用：强制指定背景（验证视频帧回调链路），不影响正常运行。
+            entries = BackgroundCatalog.Merge([], null, BackgroundCatalog.FromFiles([forcedBackground]));
+        }
+        else if (string.IsNullOrWhiteSpace(launcherId))
+        {
+            entries = BackgroundCatalog.Merge([], art?.Background,
+                BackgroundCatalog.FromFiles(_services.Background.Discover()
+                    .SelectMany(x => new[] { x.ImagePath, x.VideoPath })
+                    .OfType<string>()));
+        }
+        else
+        {
+            entries = await _services.Background
+                .LoadCatalogAsync(launcherId, GameBiz, art?.Background)
+                .ConfigureAwait(true);
         }
 
-        foreach (var item in _services.Background.Discover())
+        BackgroundImages.Clear();
+        foreach (var entry in entries)
         {
-            BackgroundImages.Add(new BackgroundSwitchItem(item.Title ?? Path.GetFileName(item.ImagePath ?? item.VideoPath ?? ""),
-                item.ImagePath ?? item.VideoPath ?? ""));
+            BackgroundImages.Add(new BackgroundSwitchItem(
+                entry.Title,
+                entry.Value,
+                entry.ImageSource,
+                entry.VideoSource,
+                entry.Kind == BackgroundKind.Official));
         }
 
+        ShowBackgroundBar = BackgroundImages.Count > 1;
         HasVideoBackground = BackgroundImages.Any(x => x.IsVideo);
-        SelectedBackgroundIndex = 0;
+
+        if (BackgroundImages.Count > 0)
+        {
+            await SelectBackgroundAsync(0).ConfigureAwait(true);
+        }
     }
 
 
@@ -1502,21 +1562,19 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
         SelectedBackgroundIndex = index;
         var item = BackgroundImages[index];
-        if (item.IsVideo)
+
+        if (item.IsVideo && _services.Background.IsVideoAvailable && _services.Config.Launcher.VideoBackground)
         {
-            BackgroundRequested?.Invoke(this, item.Value);
+            _context.Shell.ShowVideoBackground(item.VideoSource ?? item.Value);
             return;
         }
 
-        if (await _context.Shell.Assets.BitmapAsync(item.Value).ConfigureAwait(true) is { } bitmap)
-        {
-            _context.Shell.BackgroundImage = bitmap;
-        }
+        // 静态图，或视频不可用（VLC 缺失/关闭动态背景）时用兜底图
+        var imageSource = item.ImageSource
+            ?? (item.IsVideo ? _context.Shell.Assets.For()?.Background : item.Value);
+        await _context.Shell.ShowStaticBackgroundAsync(imageSource).ConfigureAwait(true);
     }
 
-
-    /// <summary>视图挂载视频背景。</summary>
-    public event EventHandler<string>? BackgroundRequested;
 
 
     // ── 游戏账号切换（Starward GameAccountSwitcher） ────────────────────
@@ -1757,11 +1815,14 @@ public sealed class LauncherAccountItem(GameAccountSnapshot snapshot)
 }
 
 
-public sealed record BackgroundSwitchItem(string Title, string Value)
+public sealed record BackgroundSwitchItem(
+    string Title,
+    string Value,
+    string? ImageSource = null,
+    string? VideoSource = null,
+    bool IsOfficial = false)
 {
-    public bool IsVideo => Value.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)
-                           || Value.EndsWith(".webm", StringComparison.OrdinalIgnoreCase)
-                           || Value.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase);
+    public bool IsVideo => !string.IsNullOrWhiteSpace(VideoSource) || BackgroundCatalog.IsSupportedVideo(Value);
 }
 
 

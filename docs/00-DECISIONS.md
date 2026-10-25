@@ -77,7 +77,7 @@ GTK4/libadwaita 的 Adwaita 语言反而与 Starward 不匹配。
 | 问题 | GirCore 方案 | Avalonia 方案 |
 |---|---|---|
 | 环境 shell 的终端 | `GirCore.Vte-2.91` **在 NuGet 不存在**，需手写 ~300 行 `libvte` P/Invoke | `Iciclecreek.Avalonia.Terminal` 4.1.0 / `RoyalApps.RoyalTerminal.Avalonia` 0.6.3 / `AvaloniaTerminal` 1.0.0 |
-| 循环视频背景 | `gtk::MediaFile` 依赖 `gtk4paintablesink`（独立包 `gst-plugin-gtk4` 提供） | `LibVLCSharp.Avalonia` 3.10.2，不依赖系统 GStreamer 插件 |
+| 循环视频背景 | `gtk::MediaFile` 依赖 `gtk4paintablesink`（独立包 `gst-plugin-gtk4` 提供）；`LibVLCSharp.Avalonia` 的 `VideoView` 依赖原生 X11 子窗口，Wayland 下黑屏 | `ffmpeg -f rawvideo` 子进程解帧 → `WriteableBitmap`，只要求 PATH 上有 `ffmpeg` |
 
 ### 新增的两个风险（如实记录）
 
@@ -101,7 +101,7 @@ GTK4/libadwaita 的 Adwaita 语言反而与 Starward 不匹配。
 | `Avalonia` | 稳定版 **12.1.4**（2026-10-09） |
 | `Avalonia.Desktop` / `Avalonia.Themes.Fluent` | 12.1.4 |
 | `Avalonia.Controls.ItemsRepeater` | 12.0.0 |
-| `LibVLCSharp.Avalonia` | 3.10.2 |
+| `ffmpeg`（系统命令） | 运行时探测 |
 | 许可 | **MIT** |
 | 维护 | GitHub `AvaloniaUI/Avalonia` 31,698★，**2026-10-22 仍在推送** |
 | 目标框架 | `net10.0` 原生支持 |

@@ -1,5 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
              x:Class="LunarWard.App.App"
              RequestedThemeVariant="Dark">
 
@@ -7,10 +8,38 @@
     主题顺序与 Starward 一致：先 WinUI 基础主题（Avalonia Fluent），再叠 Starward 覆盖层。
     Starward.axaml 只覆盖颜色/圆角/字体层级，不重画控件模板（模板沿用 Fluent，
     与 WinUI 的 DefaultButtonStyle 同源）。
+
+    DialogHostStyles 放在 Starward.axaml 之前：对话框的容器样式由 DialogHost 提供，
+    但里面的文字/按钮仍走 Starward 覆盖层（与主界面同一套 token）。
   -->
   <Application.Styles>
     <FluentTheme />
+    <dialogHost:DialogHostStyles />
+    <!--
+      窗口内 ContentDialog（StarwardContentDialog）的隐式 ControlTheme。
+      必须走 StyleInclude：Avalonia 只在样式树（Styles.Resources）里按类型找控件默认主题，
+      放进 Application.Resources 的话 ContentControl 的 Theme 解析不到，模板就不会套用。
+      各对话框的 XAML 根节点都是它，引入这一份即共享同一套浮层外观（标题行 / X / 按钮栏 / 圆角）。
+    -->
+    <StyleInclude Source="avares://LunarWard/Views/Starward/Controls/StarwardContentDialog.axaml" />
     <StyleInclude Source="avares://LunarWard/Styles/Starward.axaml" />
+
+    <!--
+      WinUI 的焦点视觉只在键盘导航时出现；Avalonia 默认会在鼠标点击后也画虚线框。
+      去掉装饰器，焦点仍可通过 :focus-visible 的控件模板高亮（见 Starward.axaml）。
+    -->
+    <Style Selector="Button">
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+    </Style>
+    <Style Selector="ToggleButton">
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+    </Style>
+    <Style Selector="ToggleSwitch">
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+    </Style>
   </Application.Styles>
 
 </Application>

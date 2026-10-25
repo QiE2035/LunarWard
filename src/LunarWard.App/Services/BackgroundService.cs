@@ -13,30 +13,32 @@ public sealed record BackgroundItem(string? VideoPath, string? ImagePath, string
 
 
 /// <summary>
-/// 动态背景：视频用 <c>LibVLCSharp</c>，失败时静默回退静态图。
+/// 动态背景：视频交给 <see cref="VideoBackgroundPlayer"/>（<c>ffmpeg</c> 子进程），
+/// 不可用时静默回退静态图。
 /// </summary>
 /// <remarks>
 /// <para>
-/// 见 <c>docs/04-FEATURES.md</c> §5.4。关键点：VLC 的 <c>EndReached</c> 回调在线程池
-/// 线程上触发，必须 <c>Dispatcher.UIThread.Post</c> 回 UI 线程再重播，否则会死锁；
-/// 不能依赖 <c>MediaPlayer</c> 自带的 loop 标志。
+/// 见 <c>docs/04-FEATURES.md</c> §5.4。原来用 <c>LibVLCSharp</c>，但
+/// <c>VideoView</c> 依赖原生 X11 子窗口（Wayland 下背景全黑），而 Arch 系发行版把 VLC
+/// 拆成 <c>vlc-plugin-*</c> 多个包，缺 <c>vlc-plugin-ffmpeg</c> 时连 H.264 都解不了。
+/// 改用 <c>ffmpeg</c> 子进程后与合成器、VLC 打包方式都解耦。
 /// </para>
 /// <para>
-/// 本机实测：<c>libvlc</c> 的 <c>libvlc_new</c> 在缺少 VLC 插件包时返回 null
-/// （Arch 上 <c>libvlc</c> 与 <c>vlc</c> 是两个包）。因此<b>必须</b>软探测并回退。
+/// ffmpeg 是软依赖：探测不到就只显示静态背景，不抛异常。
 /// </para>
 /// </remarks>
 public sealed class BackgroundService : IDisposable
 {
     private readonly IXdgPaths _paths;
 
-    private LibVLCSharp.Shared.LibVLC? _libVlc;
+    private readonly HttpClient _http = new()
+    {
+        Timeout = TimeSpan.FromSeconds(15),
+    };
 
-    private LibVLCSharp.Shared.MediaPlayer? _player;
+    private static readonly Lazy<bool> Ffmpeg = new(ProbeFfmpeg);
 
-    private bool _probed;
-
-    private bool _available;
+    private VideoBackgroundPlayer? _activePlayer;
 
 
     public BackgroundService(IXdgPaths paths)
@@ -45,142 +47,87 @@ public sealed class BackgroundService : IDisposable
     }
 
 
-    /// <summary>VLC 是否可用（探测结果缓存）。</summary>
-    public bool IsVlcAvailable
-    {
-        get
-        {
-            if (!_probed)
-            {
-                _probed = true;
-                _available = ProbeVlc(out _);
-            }
-
-            return _available;
-        }
-    }
+    /// <summary>视频背景是否可用（探测结果缓存）。</summary>
+    public bool IsVideoAvailable => Ffmpeg.Value;
 
 
+    /// <summary>视频背景不可用时的原因（用于 UI 提示安装命令）。</summary>
     public string? ProbeError { get; private set; }
 
 
-    /// <summary>探测 <c>libvlc</c> 是否可用，以及失败原因（用于 UI 提示安装命令）。</summary>
-    public static bool ProbeVlc(out string? error)
+    /// <summary>探测 <c>ffmpeg</c> 是否在 <c>PATH</c> 上。</summary>
+    public static bool IsFfmpegAvailable => Ffmpeg.Value;
+
+
+    private static bool ProbeFfmpeg()
     {
-        error = null;
         try
         {
-            LibVLCSharp.Shared.Core.Initialize();
-            using var lib = new LibVLCSharp.Shared.LibVLC("--no-audio", "--quiet");
-            return true;
+            using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ffmpeg", "-version")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            });
+            if (process is null)
+            {
+                return false;
+            }
+
+            process.StandardOutput.ReadToEnd();
+            process.WaitForExit(3000);
+            return process.HasExited && process.ExitCode == 0;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            error = ex.Message;
             return false;
         }
     }
 
 
-    /// <summary>当前播放器（可能为 null）。</summary>
-    public LibVLCSharp.Shared.MediaPlayer? Player => _player;
+    /// <summary>登记当前活跃的播放器（由外壳创建），供暂停/停止用。</summary>
+    public void AttachPlayer(VideoBackgroundPlayer? player)
+    {
+        _activePlayer = player;
+        if (player is null)
+        {
+            ProbeError = null;
+        }
+        else if (!Ffmpeg.Value)
+        {
+            ProbeError = "未找到 ffmpeg";
+        }
+    }
+
+
+    /// <summary>暂停并释放视频背景（切回静态图时用）。</summary>
+    public void Stop() => _activePlayer?.Stop();
 
 
     /// <summary>
-    /// 为给定条目创建播放器。失败返回 <c>null</c>（调用方回退到静态图）。
+    /// 本地路径 → <c>file://</c>，远端地址原样返回。
     /// </summary>
-    public LibVLCSharp.Shared.MediaPlayer? EnsurePlayer(Action replayRequested)
+    /// <remarks>
+    /// <c>new Uri("/tmp/a.mp4")</c> 在 .NET 里会抛「URI 格式无法确定」，
+    /// 必须先用 <see cref="Uri.TryCreate(string, UriKind, out Uri)"/> 判断绝对地址。
+    /// </remarks>
+    private static Uri ToMediaUri(string path)
     {
-        if (!IsVlcAvailable)
+        if (Uri.TryCreate(path, UriKind.Absolute, out var absolute))
         {
-            return null;
+            return absolute;
         }
 
-        if (_player is not null)
-        {
-            return _player;
-        }
-
-        try
-        {
-            _libVlc = new LibVLCSharp.Shared.LibVLC("--no-audio", "--quiet", "--no-video-title-show");
-            _player = new LibVLCSharp.Shared.MediaPlayer(_libVlc)
-            {
-                Mute = true,
-                EnableHardwareDecoding = true,
-            };
-            _player.EndReached += (_, _) =>
-            {
-                // 必须回 UI 线程再重播
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    try
-                    {
-                        replayRequested();
-                        _player?.Play();
-                    }
-                    catch (Exception)
-                    {
-                        // ignore
-                    }
-                });
-            };
-            return _player;
-        }
-        catch (Exception ex)
-        {
-            ProbeError = ex.Message;
-            _available = false;
-            return null;
-        }
+        return new Uri(Path.GetFullPath(path));
     }
 
 
-    /// <summary>播放一个本地视频文件（循环）。</summary>
-    public void PlayLoop(string videoPath)
-    {
-        var player = EnsurePlayer(() => { });
-        if (player is null || _libVlc is null)
-        {
-            return;
-        }
-
-        try
-        {
-            player.Play(new LibVLCSharp.Shared.Media(_libVlc, new Uri(videoPath)));
-        }
-        catch (Exception ex)
-        {
-            ProbeError = ex.Message;
-        }
-    }
+    /// <summary>游戏 Running 时暂停（省 CPU：SIGSTOP）。</summary>
+    public void Pause() => _activePlayer?.Pause();
 
 
-    /// <summary>游戏 Running 时暂停（省 GPU / 解码器）。</summary>
-    public void Pause()
-    {
-        try
-        {
-            _player?.Pause();
-        }
-        catch (Exception)
-        {
-            // ignore
-        }
-    }
-
-
-    public void Resume()
-    {
-        try
-        {
-            _player?.Play();
-        }
-        catch (Exception)
-        {
-            // ignore
-        }
-    }
+    public void Resume() => _activePlayer?.Resume();
 
 
     /// <summary>背景缓存目录。</summary>
@@ -219,21 +166,65 @@ public sealed class BackgroundService : IDisposable
     }
 
 
+    /// <summary>
+    /// 加载可切换背景：官方接口（图 + 官方动态视频）→ 版本海报 → 本地背景目录。
+    /// </summary>
+    /// <param name="launcherId">启动器 id（<c>HoYoPlayClient</c> 用），如 <c>jGHFHHS</c>。</param>
+    /// <param name="gameBiz">游戏区服标识，如 <c>hk4e_cn</c>。</param>
+    /// <param name="posterUrl">游戏素材里的版本海报（<c>GameInfo.Display.Background</c>），接口没有时兜底。</param>
+    public async Task<IReadOnlyList<BackgroundEntry>> LoadCatalogAsync(
+        string launcherId,
+        string gameBiz,
+        string? posterUrl,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<BackgroundEntry> official = [];
+        try
+        {
+            if (Core.HoYoPlay.GameId.FromGameBiz(new Core.GameBiz(gameBiz)) is { } gameId)
+            {
+                var client = new Core.HoYoPlay.HoYoPlayClient(_http);
+                var info = await client.GetGameBackgroundAsync(launcherId, "zh-cn", gameId, cancellationToken)
+                    .ConfigureAwait(false);
+                official = BackgroundCatalog.FromApi(info);
+            }
+        }
+        catch (Exception ex)
+        {
+            // 离线/接口改动：退化为海报 + 本地背景
+            ProbeError ??= ex.Message;
+        }
+
+        IReadOnlyList<string> files = [];
+        try
+        {
+            if (Directory.Exists(CacheDirectory))
+            {
+                files = Directory.EnumerateFiles(CacheDirectory).OrderBy(x => x).ToList();
+            }
+        }
+        catch (Exception)
+        {
+            // 目录不可读就当成没有本地背景
+        }
+
+        return BackgroundCatalog.Merge(official, posterUrl, BackgroundCatalog.FromFiles(files));
+    }
+
+
     public void Dispose()
     {
         try
         {
-            _player?.Stop();
-            _player?.Dispose();
-            _libVlc?.Dispose();
+            _activePlayer?.Stop();
+            _activePlayer = null;
         }
         catch (Exception)
         {
             // ignore
         }
 
-        _player = null;
-        _libVlc = null;
+        _http.Dispose();
     }
 }
 
