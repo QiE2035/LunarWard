@@ -78,6 +78,10 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --gacha-excel <path>（把样例记录按 Starward 的 Excel 模板导出到该路径）、
 #                 --uigf-window（UIGF v4.2 导出/导入窗口，自动用原神样例存档；加 --uigf-import 切到导入页）、
 #                 自检一律使用临时库 $TMP/lunarward-capture/capture.db，不写用户的 LunarWardDatabase.db、
+#
+# 逐页冒烟：scripts/smoke-screenshots.sh 会在隔离的 HOME/XDG 目录里把 launcher、gacha、
+#   beyond、selfquery、screenshot、toolbox、settings、game-setting 八页各渲染一次 PNG 到
+#   artifacts/smoke/，任何一页抛未处理异常都会以非零码退出。
 #                 --predownload-dialog（预下载确认框；加 --predownload-dialog-unavailable 看不可用态）、
 | `--dx12-intro` | 打开 DX12「效果详情」引导弹窗并截图 |
 #                 --launcher-setting-dialog + --settings-section basic|arguments|background|packages|network
