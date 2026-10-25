@@ -71,6 +71,7 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --gacha-delete-dialog（抽卡页「删除指定时间段」对话框，自动用 ZZZ 样例数据）、
 #                 --gacha-materials（抽卡页右侧材料统计 Pane，自动用原神样例数据；会联网同步 wiki 图标）、
 #                 --tray-test（试建系统托盘并打印 TRAY_OK / TRAY_FAIL，再模拟一次关闭，窗口应隐藏）、
+#                 --scan-games（扫游戏库含 Steam 的 steamapps/common，打印 SCAN_GAME/SCAN_TOTAL 后退出）、
 #                 --start-hidden（启动即藏到托盘，开机自启用）、--quit-after <ms>（自检自动退出）、
 #                 --gacha-export <path>（把样例记录按 UIGF v3.0 导出到该路径）、
 #                 --gacha-import <path>（读回 UIGF v3.0 / JSON 并合并，做往返自检）、
