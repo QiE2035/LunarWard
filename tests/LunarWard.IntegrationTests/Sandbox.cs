@@ -160,13 +160,19 @@ public sealed class Sandbox : IDisposable
             }
         }
 
-        try
+        // 客户端刚被 SIGKILL 时内核可能还没回收它的 cwd/句柄，删目录会失败；
+        // 重试几次，避免 /tmp 里越堆越多 lunarward-test-*。
+        for (var attempt = 0; attempt < 3; attempt++)
         {
-            Directory.Delete(Root, recursive: true);
-        }
-        catch (Exception)
-        {
-            // best effort
+            try
+            {
+                Directory.Delete(Root, recursive: true);
+                break;
+            }
+            catch (Exception)
+            {
+                Thread.Sleep(200);
+            }
         }
     }
 }
