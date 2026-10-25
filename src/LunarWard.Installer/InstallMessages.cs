@@ -168,42 +168,6 @@ public sealed class GameInstallProgress
 public readonly record struct GameIdSnapshot(string GameBiz, string Id);
 
 
-/// <summary>卸载请求。</summary>
-public sealed class UninstallGameRequest
-{
-    public string GameBiz { get; set; } = "";
-
-    public string GameId { get; set; } = "";
-
-    public string InstallPath { get; set; } = "";
-
-    public string UserDataFolder { get; set; } = "";
-
-    public string? ScreenshotFolder { get; set; }
-
-    public string? GameExeName { get; set; }
-
-
-    public LunarWard.Core.HoYoPlay.GameId GetGameId()
-        => new() { GameBiz = GameBiz, Id = GameId };
-}
-
-
-/// <summary>卸载结果。</summary>
-public sealed class UninstallGameResponse
-{
-    public bool Success { get; set; }
-
-    public string? ErrorMessage { get; set; }
-
-
-    public static UninstallGameResponse Ok() => new() { Success = true };
-
-
-    public static UninstallGameResponse Fail(string message) => new() { Success = false, ErrorMessage = message };
-}
-
-
 /// <summary>限速请求/响应（字段名与 proto 一致）。</summary>
 public sealed class RateLimiterMessage
 {
