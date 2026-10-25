@@ -98,7 +98,10 @@ cd packaging && makepkg -si
 
 ```bash
 lunarward startgame --biz hk4e_cn      # 原神国服；hkrpg_cn / nap_global 等同理
+lunarward "lunarward://startgame/hk4e_cn"   # 同一入口的 URL 协议形式（桌面文件的 %U 会传进来）
 ```
+
+`lunarward://playtime/<biz>` 对应上游「游戏退出后补记时长」，尚未移植（启动器启动的游戏时长已自动记录）。
 
 使用说明见 [USER-GUIDE.md](docs/USER-GUIDE.md)，出问题看
 [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)。

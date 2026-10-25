@@ -21,9 +21,11 @@ namespace LunarWard.App.Services;
 /// </remarks>
 internal static class StartupCommands
 {
-    /// <summary>是否是本类处理的子命令。</summary>
+    /// <summary>是否是本类处理的子命令（含 <c>lunarward://</c> 协议 URL）。</summary>
     public static bool IsCommand(string[] args)
-        => args.Length > 0 && args[0].Equals("startgame", StringComparison.OrdinalIgnoreCase);
+        => args.Length > 0
+           && (args[0].Equals("startgame", StringComparison.OrdinalIgnoreCase)
+               || args[0].StartsWith("lunarward://", StringComparison.OrdinalIgnoreCase));
 
 
     /// <summary>
@@ -32,6 +34,11 @@ internal static class StartupCommands
     /// </summary>
     public static async Task<int> RunAsync(string[] args)
     {
+        if (args[0].StartsWith("lunarward://", StringComparison.OrdinalIgnoreCase))
+        {
+            return await RunUrlAsync(args[0]).ConfigureAwait(false);
+        }
+
         string? biz = ReadArgument(args, "--biz");
         if (string.IsNullOrWhiteSpace(biz))
         {
@@ -39,6 +46,46 @@ internal static class StartupCommands
             return 2;
         }
 
+        return await StartByBizAsync(biz).ConfigureAwait(false);
+    }
+
+
+    /// <summary>
+    /// <c>lunarward://startgame/&lt;game_biz&gt;</c>（对应上游 <c>UrlProtocolService.HandleUrlProtocolAsync</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 桌面文件已经把 <c>x-scheme-handler/lunarward</c> 注册给本程序；这里只处理
+    /// <c>startgame</c>（启动游戏）与 <c>playtime</c>（未移植，明确报错而不静默失败）。
+    /// </remarks>
+    private static async Task<int> RunUrlAsync(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
+        {
+            Console.Error.WriteLine($"无法解析 URL：{url}");
+            return 2;
+        }
+
+        string biz = uri.AbsolutePath.Trim('/');
+        if (uri.Host.Equals("startgame", StringComparison.OrdinalIgnoreCase))
+        {
+            return await StartByBizAsync(biz).ConfigureAwait(false);
+        }
+
+        if (uri.Host.Equals("playtime", StringComparison.OrdinalIgnoreCase))
+        {
+            // 上游由 hoYoPlay 在游戏退出后回调补记时长；LunarWard 的时长来自启动器自己观测的进程，
+            // 外部补记需要的 pid→开始时间映射尚未移植（parity 文档已记）。
+            Console.Error.WriteLine("lunarward://playtime 尚未移植：游戏时长由启动器启动时自动记录");
+            return 4;
+        }
+
+        Console.Error.WriteLine($"不支持的 URL：{url}");
+        return 2;
+    }
+
+
+    private static async Task<int> StartByBizAsync(string biz)
+    {
         try
         {
             var paths = XdgPaths.Default;
