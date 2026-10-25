@@ -5,7 +5,8 @@
 # 仓库根目录的 artifacts/smoke/ 下，方便人工对比或挂到 PR。
 #
 # 用法：scripts/smoke-screenshots.sh [页面名…]
-#   不给页面名时跑全部页面。页面名与 --page 的取值一致。
+#   不给页面名时跑全部页面 + 设置页的全部二级子页。
+#   页面名与 --page 的取值一致；设置子页写成 settings:<section>。
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -13,6 +14,9 @@ cd "$(dirname "$0")/.."
 pages=("$@")
 if [ ${#pages[@]} -eq 0 ]; then
     pages=(launcher gacha beyond selfquery screenshot toolbox settings game-setting)
+    for section in about general download files screenshot hotkey gamepad advanced toolbox; do
+        pages+=("settings:$section")
+    done
 fi
 
 out="artifacts/smoke"
@@ -23,12 +27,16 @@ trap 'rm -rf "$tmp"' EXIT
 fail=0
 for page in "${pages[@]}"; do
     log="$tmp/$page.log"
+    args=(--screenshot "$out/${page/:/-}.png" --page "$page" --wait 500)
+    if [[ "$page" == settings:* ]]; then
+        args=(--screenshot "$out/settings-${page#settings:}.png" --page settings
+              --settings-section "${page#settings:}" --wait 500)
+    fi
     if HOME="$tmp/home" \
         XDG_CONFIG_HOME="$tmp/cfg" \
         XDG_DATA_HOME="$tmp/data" \
         XDG_CACHE_HOME="$tmp/cache" \
-        dotnet run --project src/LunarWard.App -c Debug -- \
-        --screenshot "$out/$page.png" --page "$page" --wait 500 >"$log" 2>&1; then
+        dotnet run --project src/LunarWard.App -c Debug -- "${args[@]}" >"$log" 2>&1; then
         echo "OK   $page"
     else
         echo "FAIL $page（日志：$log）" >&2
