@@ -6,7 +6,7 @@ namespace LunarWard.Core.GameRecord.ZZZ.ShiyuDefense;
 public class ShiyuDefenseV2FifthLayerChallengeInfo : ShiyuDefenseV2FourthLayerChallengeInfo
 {
     [JsonPropertyName("rating")]
-    public string Rating { get; set; }
+    public string Rating { get; set; } = null!;
 
     [JsonPropertyName("buffer")]
     public ShiyuDefenseBuff Buff { get; set; }
@@ -15,7 +15,7 @@ public class ShiyuDefenseV2FifthLayerChallengeInfo : ShiyuDefenseV2FourthLayerCh
     public int Score { get; set; }
 
     [JsonPropertyName("monster_pic")]
-    public string MonsterPic { get; set; }
+    public string MonsterPic { get; set; } = null!;
 
     [JsonPropertyName("max_score")]
     public int MaxScore { get; set; }

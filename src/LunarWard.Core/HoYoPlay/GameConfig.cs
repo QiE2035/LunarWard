@@ -17,70 +17,70 @@ public class GameConfig
     /// exe 文件名（带.exe后缀）
     /// </summary>
     [JsonPropertyName("exe_file_name")]
-    public string ExeFileName { get; set; }
+    public string ExeFileName { get; set; } = null!;
 
 
     /// <summary>
     /// 默认安装文件夹名称
     /// </summary>
     [JsonPropertyName("installation_dir")]
-    public string InstallationDir { get; set; }
+    public string InstallationDir { get; set; } = null!;
 
 
     /// <summary>
     /// 音频配置文件（不是文件夹，相对于游戏安装目录，标记哪些语音包已下载）
     /// </summary>
     [JsonPropertyName("audio_pkg_scan_dir")]
-    public string AudioPackageScanDir { get; set; }
+    public string AudioPackageScanDir { get; set; } = null!;
 
 
     /// <summary>
     /// 音频文件路径（相对于游戏安装目录）
     /// </summary>
     [JsonPropertyName("audio_pkg_res_dir")]
-    public string AudioPackageResDir { get; set; }
+    public string AudioPackageResDir { get; set; } = null!;
 
 
     /// <summary>
     /// 音频资源缓存路径（相对于游戏安装目录）
     /// </summary>
     [JsonPropertyName("audio_pkg_cache_dir")]
-    public string AudioPackageCacheDir { get; set; }
+    public string AudioPackageCacheDir { get; set; } = null!;
 
 
     /// <summary>
     /// 游戏资源缓存路径（相对于游戏安装目录）
     /// </summary>
     [JsonPropertyName("game_cached_res_dir")]
-    public string GameCachedResDir { get; set; }
+    public string GameCachedResDir { get; set; } = null!;
 
 
     /// <summary>
     /// 截图文件夹（相对于游戏安装目录）
     /// </summary>
     [JsonPropertyName("game_screenshot_dir")]
-    public string GameScreenshotDir { get; set; }
+    public string GameScreenshotDir { get; set; } = null!;
 
 
     /// <summary>
     /// 游戏日志文件夹（包含 Windows 环境变量路径，如 %UserProfile%）
     /// </summary>
     [JsonPropertyName("game_log_gen_dir")]
-    public string GameLogGenDir { get; set; }
+    public string GameLogGenDir { get; set; } = null!;
 
 
     /// <summary>
     /// 崩溃文件（包含 Windows 环境变量路径，如 %UserProfile%）
     /// </summary>
     [JsonPropertyName("game_crash_file_gen_dir")]
-    public string GameCrashFileGenDir { get; set; }
+    public string GameCrashFileGenDir { get; set; } = null!;
 
 
     /// <summary>
     /// 默认下载模式，<see cref="DownloadMode"/>
     /// </summary>
     [JsonPropertyName("default_download_mode")]
-    public string DefaultDownloadMode { get; set; }
+    public string DefaultDownloadMode { get; set; } = null!;
 
 
     // bool enable_customer_service
@@ -89,11 +89,11 @@ public class GameConfig
 
 
     [JsonPropertyName("local_res_dir")]
-    public string LocalResDir { get; set; }
+    public string LocalResDir { get; set; } = null!;
 
 
     [JsonPropertyName("local_res_cache_dir")]
-    public string LocalResCacheDir { get; set; }
+    public string LocalResCacheDir { get; set; } = null!;
 
     /// <summary>
     /// 此文件用于标记已删除的资源目录，没有资源被删除时此文件不存在，文件内容举个例子：
@@ -102,13 +102,13 @@ public class GameConfig
     /// 其中 category 对应 <see cref="GameSophonChunkManifest.MatchingField"/> 和 <see cref="GameSophonPatchManifest.MatchingField"/>
     /// </summary>
     [JsonPropertyName("res_category_dir")]
-    public string ResCategoryDir { get; set; }
+    public string ResCategoryDir { get; set; } = null!;
 
     /// <summary>
     /// 此文件记录的本地资源目录
     /// </summary>
     [JsonPropertyName("game_res_cut_dir")]
-    public string GameResCutDir { get; set; }
+    public string GameResCutDir { get; set; } = null!;
 
 
     [JsonPropertyName("enable_game_log_export")]
@@ -124,15 +124,15 @@ public class GameConfig
     /// {"fileName":"StarRail_Data/StreamingAssets/Video/Windows/CS_ChapLoop_Black.usm"}
     /// </summary>
     [JsonPropertyName("blacklist_dir")]
-    public string BlacklistDir { get; set; }
+    public string BlacklistDir { get; set; } = null!;
 
 
     [JsonPropertyName("wpf_exe_dir")]
-    public string WpfExeDir { get; set; }
+    public string WpfExeDir { get; set; } = null!;
 
 
     [JsonPropertyName("wpf_pkg_version_dir")]
-    public string WpfPackageVersionDir { get; set; }
+    public string WpfPackageVersionDir { get; set; } = null!;
 
 
     [JsonPropertyName("enable_audio_pkg_mgmt")]
@@ -140,7 +140,7 @@ public class GameConfig
 
 
     [JsonPropertyName("audio_pkg_config_dir")]
-    public string AudioPackageConfigDir { get; set; }
+    public string AudioPackageConfigDir { get; set; } = null!;
 
 
     [JsonPropertyName("enable_resource_deletion_adapter")]

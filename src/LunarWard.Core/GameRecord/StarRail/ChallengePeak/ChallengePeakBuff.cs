@@ -8,13 +8,13 @@ public class ChallengePeakBuff
     public int Id { get; set; }
 
     [JsonPropertyName("name_mi18n")]
-    public string NameMi18n { get; set; }
+    public string NameMi18n { get; set; } = null!;
 
     [JsonPropertyName("desc_mi18n")]
-    public string DescMi18n { get; set; }
+    public string DescMi18n { get; set; } = null!;
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonExtensionData]

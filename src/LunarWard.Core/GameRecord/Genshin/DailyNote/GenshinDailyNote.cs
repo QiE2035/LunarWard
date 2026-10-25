@@ -109,7 +109,7 @@ public class GenshinDailyNote
 
 
     [JsonPropertyName("calendar_url")]
-    public string CalendarUrl { get; set; }
+    public string CalendarUrl { get; set; } = null!;
 
 
     /// <summary>

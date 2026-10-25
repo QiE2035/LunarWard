@@ -14,14 +14,14 @@ public class InterKnotReportDetailItem
     public long Id { get; set; }
 
     [JsonIgnore]
-    public string DataMonth { get; set; }
+    public string DataMonth { get; set; } = null!;
 
     [JsonIgnore]
-    public string DataType { get; set; }
+    public string DataType { get; set; } = null!;
 
 
     [JsonPropertyName("action")]
-    public string Action { get; set; }
+    public string Action { get; set; } = null!;
 
 
     [JsonPropertyName("time")]

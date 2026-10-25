@@ -20,7 +20,7 @@ public class StarRailQueryItem
 
 
     [JsonPropertyName("action")]
-    public string Action { get; set; }
+    public string Action { get; set; } = null!;
 
 
     [JsonPropertyName("add_num")]
@@ -33,7 +33,7 @@ public class StarRailQueryItem
 
 
     [JsonPropertyName("relic_name")]
-    public string RelicName { get; set; }
+    public string RelicName { get; set; } = null!;
 
 
     [JsonPropertyName("relic_level")]
@@ -45,7 +45,7 @@ public class StarRailQueryItem
 
 
     [JsonPropertyName("equipment_name")]
-    public string EquipmentName { get; set; }
+    public string EquipmentName { get; set; } = null!;
 
 
     [JsonPropertyName("equipment_level")]

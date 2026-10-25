@@ -58,7 +58,7 @@ public class GamePackageResource
     /// 完整安装包的版本，增量更新包的对应版本
     /// </summary>
     [JsonPropertyName("version")]
-    public string Version { get; set; }
+    public string Version { get; set; } = null!;
 
     /// <summary>
     /// 游戏本体
@@ -76,7 +76,7 @@ public class GamePackageResource
     /// 散装文件前缀，可能是空字符串
     /// </summary>
     [JsonPropertyName("res_list_url")]
-    public string ResListUrl { get; set; }
+    public string ResListUrl { get; set; } = null!;
 
 }
 
@@ -92,19 +92,19 @@ public class GamePackageFile
     /// 本地音频资源的语言
     /// </summary>
     [JsonPropertyName("language")]
-    public string? Language { get; set; }
+    public string? Language { get; set; } = null!;
 
     /// <summary>
     /// 下载链接
     /// </summary>
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public string Url { get; set; } = null!;
 
     /// <summary>
     /// 全是小写
     /// </summary>
     [JsonPropertyName("md5")]
-    public string MD5 { get; set; }
+    public string MD5 { get; set; } = null!;
 
     /// <summary>
     /// 压缩包大小

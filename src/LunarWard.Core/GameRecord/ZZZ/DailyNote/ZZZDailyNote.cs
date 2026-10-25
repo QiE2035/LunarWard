@@ -31,7 +31,7 @@ public class ZZZDailyNote
     /// 刮刮卡 <see cref="CardSignState"/>
     /// </summary>
     [JsonPropertyName("card_sign")]
-    public string CardSign { get; set; }
+    public string CardSign { get; set; } = null!;
 
     /// <summary>
     /// 刮刮卡未完成

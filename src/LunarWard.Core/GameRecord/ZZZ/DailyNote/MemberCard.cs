@@ -16,7 +16,7 @@ public class MemberCard
     /// 已领取 MemberCardStateACK
     /// </summary>
     [JsonPropertyName("member_card_state")]
-    public string MemberCardState { get; set; }
+    public string MemberCardState { get; set; } = null!;
 
     // seconds 未购买是 0
     [JsonPropertyName("exp_time")]

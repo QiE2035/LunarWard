@@ -38,5 +38,5 @@ public class UltraEndless
     /// 分组图标
     /// </summary>
     [JsonPropertyName("level_icon")]
-    public string LevelIcon { get; set; }
+    public string LevelIcon { get; set; } = null!;
 }

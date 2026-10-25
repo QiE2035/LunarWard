@@ -34,22 +34,22 @@ public class GameBranchPackage
 {
 
     [JsonPropertyName("package_id")]
-    public string PackageId { get; set; }
+    public string PackageId { get; set; } = null!;
 
     // main or predownload
     [JsonPropertyName("branch")]
-    public string Branch { get; set; }
+    public string Branch { get; set; } = null!;
 
 
     [JsonPropertyName("password")]
-    public string Password { get; set; }
+    public string Password { get; set; } = null!;
 
 
     /// <summary>
     /// 游戏版本
     /// </summary>
     [JsonPropertyName("tag")]
-    public string Tag { get; set; }
+    public string Tag { get; set; } = null!;
 
 
     /// <summary>
@@ -73,10 +73,10 @@ public class GameBranchPackageCategory
 {
 
     [JsonPropertyName("category_id")]
-    public string CategoryId { get; set; }
+    public string CategoryId { get; set; } = null!;
 
 
     [JsonPropertyName("matching_field")]
-    public string MatchingField { get; set; }
+    public string MatchingField { get; set; } = null!;
 
 }

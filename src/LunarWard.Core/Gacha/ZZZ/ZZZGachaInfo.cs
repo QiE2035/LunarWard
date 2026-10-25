@@ -10,11 +10,11 @@ public class ZZZGachaInfo
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonPropertyName("rarity")]

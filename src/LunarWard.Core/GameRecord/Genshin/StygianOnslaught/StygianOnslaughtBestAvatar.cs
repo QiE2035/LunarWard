@@ -10,7 +10,7 @@ public class StygianOnslaughtBestAvatar
 
 
     [JsonPropertyName("side_icon")]
-    public string SideIcon { get; set; }
+    public string SideIcon { get; set; } = null!;
 
 
     [JsonPropertyName("dps")]

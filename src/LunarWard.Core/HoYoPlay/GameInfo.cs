@@ -26,7 +26,7 @@ public class GameInfo : GameId
     /// <see cref="GameInfoDisplayStatus"/>
     /// </summary>
     [JsonPropertyName("display_status")]
-    public string DisplayStatus { get; set; }
+    public string DisplayStatus { get; set; } = null!;
 
     /// <summary>
     /// 服务器信息，暂时仅崩坏三国际服在使用
@@ -42,12 +42,12 @@ public class GameInfoDisplay
 
 
     [JsonPropertyName("language")]
-    public string Language { get; set; }
+    public string Language { get; set; } = null!;
 
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     /// <summary>
@@ -59,12 +59,12 @@ public class GameInfoDisplay
 
 
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; set; } = null!;
 
 
 
     [JsonPropertyName("subtitle")]
-    public string Subtitle { get; set; }
+    public string Subtitle { get; set; } = null!;
 
 
     /// <summary>
@@ -96,7 +96,7 @@ public class GameInfoDisplay
 public class GameInfoReservation
 {
     [JsonPropertyName("link")]
-    public string Link { get; set; }
+    public string Link { get; set; } = null!;
 }
 
 
@@ -119,34 +119,34 @@ public class GameServerConfig
     /// 游戏本地化名称
     /// </summary>
     [JsonPropertyName("i18n_name")]
-    public string I18nName { get; set; }
+    public string I18nName { get; set; } = null!;
 
     /// <summary>
     /// 游戏服务器本地化名称
     /// </summary>
     [JsonPropertyName("i18n_description")]
-    public string I18nDescription { get; set; }
+    public string I18nDescription { get; set; } = null!;
 
     /// <summary>
     /// 服务器id
     /// </summary>
     [JsonPropertyName("package_name")]
-    public string PackageName { get; set; }
+    public string PackageName { get; set; } = null!;
 
     /// <summary>
     /// 注册表key
     /// </summary>
     [JsonPropertyName("auto_scan_registry_key")]
-    public string AutoScanRegistryKey { get; set; }
+    public string AutoScanRegistryKey { get; set; } = null!;
 
     /// <summary>
     /// 服务器id
     /// </summary>
     [JsonPropertyName("package_detection_info")]
-    public string PackageDetectionInfo { get; set; }
+    public string PackageDetectionInfo { get; set; } = null!;
 
     [JsonPropertyName("game_id")]
-    public string GameId { get; set; }
+    public string GameId { get; set; } = null!;
 
     /// <summary>
     /// 预约链接
@@ -158,6 +158,6 @@ public class GameServerConfig
     /// <see cref="GameInfoDisplayStatus"/>
     /// </summary>
     [JsonPropertyName("display_status")]
-    public string DisplayStatus { get; set; }
+    public string DisplayStatus { get; set; } = null!;
 
 }

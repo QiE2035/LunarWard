@@ -9,7 +9,7 @@ public class StygianOnslaughtChallenge
     /// 怪物名称
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("second")]

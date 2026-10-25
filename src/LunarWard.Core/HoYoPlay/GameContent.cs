@@ -14,7 +14,7 @@ public class GameContent
 
 
     [JsonPropertyName("language")]
-    public string Language { get; set; }
+    public string Language { get; set; } = null!;
 
     /// <summary>
     /// 轮播图
@@ -47,7 +47,7 @@ public class GameBanner
 {
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     [JsonPropertyName("image")]
     public GameImage Image { get; set; }
@@ -62,29 +62,29 @@ public class GamePost
 {
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// 资讯类型，<see cref="GamePostType"/>
     /// </summary>
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public string Type { get; set; } = null!;
 
 
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; set; } = null!;
 
     /// <summary>
     /// 链接
     /// </summary>
     [JsonPropertyName("link")]
-    public string Link { get; set; }
+    public string Link { get; set; } = null!;
 
     /// <summary>
     /// 日期，mm/dd
     /// </summary>
     [JsonPropertyName("date")]
-    public string Date { get; set; }
+    public string Date { get; set; } = null!;
 
 }
 
@@ -105,7 +105,7 @@ public class GameSocialMedia
 {
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// 分享图标
@@ -121,7 +121,7 @@ public class GameSocialMedia
 
 
     [JsonPropertyName("qr_desc")]
-    public string QrDesc { get; set; }
+    public string QrDesc { get; set; } = null!;
 
     /// <summary>
     /// 更多文字链接
@@ -135,7 +135,7 @@ public class GameSocialMedia
 
 
     [JsonPropertyName("red_dot_content")]
-    public string RedDotContent { get; set; }
+    public string RedDotContent { get; set; } = null!;
 
 }
 
@@ -145,10 +145,10 @@ public class GameSocialMediaLink
 {
 
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; set; } = null!;
 
 
     [JsonPropertyName("link")]
-    public string Link { get; set; }
+    public string Link { get; set; } = null!;
 
 }

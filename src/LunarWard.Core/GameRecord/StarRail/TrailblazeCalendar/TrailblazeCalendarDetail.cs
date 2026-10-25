@@ -13,13 +13,13 @@ public class TrailblazeCalendarDetail : IJsonOnDeserialized
     public long Uid { get; set; }
 
     [JsonPropertyName("region")]
-    public string Region { get; set; }
+    public string Region { get; set; } = null!;
 
     /// <summary>
     /// 202304
     /// </summary>
     [JsonPropertyName("data_month")]
-    public string DataMonth { get; set; }
+    public string DataMonth { get; set; } = null!;
 
 
     [JsonPropertyName("current_page")]

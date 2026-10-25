@@ -16,7 +16,7 @@ public class ZZZAvatar
     /// 稀有度 S A
     /// </summary>
     [JsonPropertyName("rarity")]
-    public string Rarity { get; set; }
+    public string Rarity { get; set; } = null!;
 
 
     [JsonPropertyName("element_type")]
@@ -34,7 +34,7 @@ public class ZZZAvatar
 
 
     [JsonPropertyName("role_square_url")]
-    public string RoleSquareUrl { get; set; }
+    public string RoleSquareUrl { get; set; } = null!;
 
 
     [JsonPropertyName("sub_element_type")]

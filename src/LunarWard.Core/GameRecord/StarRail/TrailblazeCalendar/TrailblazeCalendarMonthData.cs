@@ -13,7 +13,7 @@ public class TrailblazeCalendarMonthData
     public long Uid { get; set; }
 
     [JsonPropertyName("month")]
-    public string Month { get; set; }
+    public string Month { get; set; } = null!;
 
     /// <summary>
     /// 本月的星琼

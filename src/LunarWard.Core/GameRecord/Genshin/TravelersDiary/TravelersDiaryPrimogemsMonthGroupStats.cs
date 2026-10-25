@@ -13,7 +13,7 @@ public class TravelersDiaryPrimogemsMonthGroupStats
 
 
     [JsonPropertyName("action")]
-    public string? ActionName { get; set; }
+    public string? ActionName { get; set; } = null!;
 
 
     [JsonPropertyName("num")]

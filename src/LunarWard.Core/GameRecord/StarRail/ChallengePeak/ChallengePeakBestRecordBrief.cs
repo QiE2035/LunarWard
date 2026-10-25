@@ -14,10 +14,10 @@ public class ChallengePeakBestRecordBrief
     public int BossStars { get; set; }
 
     [JsonPropertyName("challenge_peak_rank_icon_type")]
-    public string ChallengePeakRankIconType { get; set; }
+    public string ChallengePeakRankIconType { get; set; } = null!;
 
     [JsonPropertyName("challenge_peak_rank_icon")]
-    public string ChallengePeakRankIcon { get; set; }
+    public string ChallengePeakRankIcon { get; set; } = null!;
 
 
     [JsonExtensionData]

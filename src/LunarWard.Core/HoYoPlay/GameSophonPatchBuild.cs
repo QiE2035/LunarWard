@@ -7,18 +7,18 @@ public class GameSophonPatchBuild
 {
 
     [JsonPropertyName("build_id")]
-    public string BuildId { get; set; }
+    public string BuildId { get; set; } = null!;
 
 
     [JsonPropertyName("patch_id")]
-    public string PatchId { get; set; }
+    public string PatchId { get; set; } = null!;
 
 
     /// <summary>
     /// 游戏版本
     /// </summary>
     [JsonPropertyName("tag")]
-    public string Tag { get; set; }
+    public string Tag { get; set; } = null!;
 
 
     /// <summary>
@@ -40,19 +40,19 @@ public class GameSophonPatchManifest
     /// 资源ID
     /// </summary>
     [JsonPropertyName("category_id")]
-    public string CategoryId { get; set; }
+    public string CategoryId { get; set; } = null!;
 
     /// <summary>
     /// 资源名称
     /// </summary>
     [JsonPropertyName("category_name")]
-    public string CategoryName { get; set; }
+    public string CategoryName { get; set; } = null!;
 
     /// <summary>
     /// 资源类型，game or 语音类型（zh-cn, en-us, ja-jp, ko-kr）
     /// </summary>
     [JsonPropertyName("matching_field")]
-    public string MatchingField { get; set; }
+    public string MatchingField { get; set; } = null!;
 
     /// <summary>
     /// 清单文件信息

@@ -9,13 +9,13 @@ public class PureFictionBuff
     public int Id { get; set; }
 
     [JsonPropertyName("name_mi18n")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("desc_mi18n")]
-    public string Desc { get; set; }
+    public string Desc { get; set; } = null!;
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonExtensionData]

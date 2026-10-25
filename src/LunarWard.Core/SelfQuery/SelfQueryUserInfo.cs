@@ -11,11 +11,11 @@ public class SelfQueryUserInfo
 
 
     [JsonPropertyName("nickname")]
-    public string Nickname { get; set; }
+    public string Nickname { get; set; } = null!;
 
 
     [JsonPropertyName("region")]
-    public string Region { get; set; }
+    public string Region { get; set; } = null!;
 
 
     [JsonPropertyName("level")]

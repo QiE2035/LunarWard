@@ -14,7 +14,7 @@ public class SpiralAbyssRank
 
 
     [JsonPropertyName("avatar_icon")]
-    public string AvatarIcon { get; set; }
+    public string AvatarIcon { get; set; } = null!;
 
 
     [JsonPropertyName("value")]

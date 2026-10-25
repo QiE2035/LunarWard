@@ -11,10 +11,10 @@ internal class DeviceFpResult
 
 
     [JsonPropertyName("msg")]
-    public string Message { get; set; }
+    public string Message { get; set; } = null!;
 
 
     [JsonPropertyName("device_fp")]
-    public string DeviceFp { get; set; }
+    public string DeviceFp { get; set; } = null!;
 
 }

@@ -18,7 +18,7 @@ public class ThresholdSimulationMainChallengeRecord
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("score")]
@@ -28,13 +28,13 @@ public class ThresholdSimulationMainChallengeRecord
     /// S A B C
     /// </summary>
     [JsonPropertyName("star")]
-    public string Star { get; set; }
+    public string Star { get; set; } = null!;
 
     /// <summary>
     /// 得分倍，如 1.2
     /// </summary>
     [JsonPropertyName("score_ratio")]
-    public string ScoreRatio { get; set; }
+    public string ScoreRatio { get; set; } = null!;
 
 
     [JsonPropertyName("challenge_time")]

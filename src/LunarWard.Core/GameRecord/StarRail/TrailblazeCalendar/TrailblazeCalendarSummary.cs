@@ -14,7 +14,7 @@ public class TrailblazeCalendarSummary : IJsonOnDeserialized
 
 
     [JsonPropertyName("region")]
-    public string Region { get; set; }
+    public string Region { get; set; } = null!;
 
 
     [JsonPropertyName("login_flag")]
@@ -30,13 +30,13 @@ public class TrailblazeCalendarSummary : IJsonOnDeserialized
     /// 发出请求时的月份 202306
     /// </summary>
     [JsonPropertyName("month")]
-    public string Month { get; set; }
+    public string Month { get; set; } = null!;
 
     /// <summary>
     /// 返回数据的月份 202304
     /// </summary>
     [JsonPropertyName("data_month")]
-    public string DataMonth { get; set; }
+    public string DataMonth { get; set; } = null!;
 
     /// <summary>
     /// 月数据
@@ -54,13 +54,13 @@ public class TrailblazeCalendarSummary : IJsonOnDeserialized
     /// 发出请求时的游戏版本
     /// </summary>
     [JsonPropertyName("version")]
-    public string Version { get; set; }
+    public string Version { get; set; } = null!;
 
     /// <summary>
     /// 202304
     /// </summary>
     [JsonPropertyName("start_month")]
-    public string StartMonth { get; set; }
+    public string StartMonth { get; set; } = null!;
 
 
     [JsonExtensionData]

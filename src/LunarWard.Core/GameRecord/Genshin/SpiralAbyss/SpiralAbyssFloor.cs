@@ -13,7 +13,7 @@ public class SpiralAbyssFloor
 
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonPropertyName("is_unlock")]
@@ -21,7 +21,7 @@ public class SpiralAbyssFloor
 
 
     [JsonPropertyName("settle_time")]
-    public string SettleTime { get; set; }
+    public string SettleTime { get; set; } = null!;
 
 
     [JsonPropertyName("star")]

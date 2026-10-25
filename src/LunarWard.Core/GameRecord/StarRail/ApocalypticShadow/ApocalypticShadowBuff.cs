@@ -9,10 +9,10 @@ public class ApocalypticShadowBuff
     public int Id { get; set; }
 
     [JsonPropertyName("name_mi18n")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonExtensionData]

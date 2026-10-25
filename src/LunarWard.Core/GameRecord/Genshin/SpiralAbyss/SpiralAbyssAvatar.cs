@@ -13,7 +13,7 @@ public class SpiralAbyssAvatar
 
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonPropertyName("level")]

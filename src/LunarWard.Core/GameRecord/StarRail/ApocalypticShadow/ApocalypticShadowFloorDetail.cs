@@ -7,10 +7,10 @@ public class ApocalypticShadowFloorDetail
 {
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("star_num")]
-    public string StarNumStr { get; set; }
+    public string StarNumStr { get; set; } = null!;
 
     [JsonIgnore]
     public int StarNum => int.Parse(StarNumStr);

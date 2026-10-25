@@ -14,7 +14,7 @@ public class StygianOnslaughtBest
 
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonExtensionData]

@@ -36,7 +36,7 @@ public class StygianOnslaughtSchedule
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonExtensionData]

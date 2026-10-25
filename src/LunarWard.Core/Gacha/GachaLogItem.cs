@@ -22,11 +22,11 @@ public class GachaLogItem
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("item_type")]
-    public string ItemType { get; set; }
+    public string ItemType { get; set; } = null!;
 
 
     [JsonPropertyName("rank_type")]
@@ -59,7 +59,7 @@ public class GachaLogItem
 
 
     [JsonPropertyName("lang")]
-    public string Lang { get; set; }
+    public string Lang { get; set; } = null!;
 
 
 

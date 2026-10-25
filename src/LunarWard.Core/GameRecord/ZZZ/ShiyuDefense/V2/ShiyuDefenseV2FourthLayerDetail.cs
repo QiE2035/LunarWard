@@ -13,7 +13,7 @@ public class ShiyuDefenseV2FourthLayerDetail
     public DateTime ChallengeTime { get; set; }
 
     [JsonPropertyName("rating")]
-    public string Rating { get; set; }
+    public string Rating { get; set; } = null!;
 
     [JsonPropertyName("layer_challenge_info_list")]
     public List<ShiyuDefenseV2FourthLayerChallengeInfo> LayerChallenges { get; set; }

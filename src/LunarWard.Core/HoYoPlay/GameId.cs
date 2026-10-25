@@ -10,7 +10,7 @@ public class GameId : IEquatable<GameId>
 {
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
 
     [JsonPropertyName("biz")]

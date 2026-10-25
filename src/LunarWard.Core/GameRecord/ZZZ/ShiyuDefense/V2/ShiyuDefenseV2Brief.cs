@@ -33,7 +33,7 @@ public class ShiyuDefenseV2Brief
     /// S A B
     /// </summary>
     [JsonPropertyName("rating")]
-    public string Rating { get; set; }
+    public string Rating { get; set; } = null!;
 
     [JsonPropertyName("challenge_time")]
     [JsonConverter(typeof(DateTimeObjectJsonConverter))]

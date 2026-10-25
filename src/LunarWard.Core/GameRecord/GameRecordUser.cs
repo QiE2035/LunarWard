@@ -19,19 +19,19 @@ public class GameRecordUser
     /// 昵称
     /// </summary>
     [JsonPropertyName("nickname")]
-    public string? Nickname { get; set; }
+    public string? Nickname { get; set; } = null!;
 
     /// <summary>
     /// 介绍
     /// </summary>
     [JsonPropertyName("introduce")]
-    public string? Introduce { get; set; }
+    public string? Introduce { get; set; } = null!;
 
     /// <summary>
     /// 头像 ID
     /// </summary>
     [JsonPropertyName("avatar")]
-    public string? Avatar { get; set; }
+    public string? Avatar { get; set; } = null!;
 
     /// <summary>
     /// 性别 0/1/2
@@ -43,19 +43,19 @@ public class GameRecordUser
     /// 头像     
     /// </summary>
     [JsonPropertyName("avatar_url")]
-    public string? AvatarUrl { get; set; }
+    public string? AvatarUrl { get; set; } = null!;
 
     /// <summary>
     /// 头像框    
     /// </summary>
     [JsonPropertyName("pendant")]
-    public string? Pendant { get; set; }
+    public string? Pendant { get; set; } = null!;
 
     /// <summary>
     /// 与此账号相关联的 Cookie
     /// </summary>
     [JsonIgnore]
-    public string? Cookie { get; set; }
+    public string? Cookie { get; set; } = null!;
 
 }
 

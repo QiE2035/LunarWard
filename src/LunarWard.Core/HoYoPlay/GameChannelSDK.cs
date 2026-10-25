@@ -17,7 +17,7 @@ public class GameChannelSDK
     /// SDK 版本
     /// </summary>
     [JsonPropertyName("version")]
-    public string Version { get; set; }
+    public string Version { get; set; } = null!;
 
 
     [JsonPropertyName("channel_sdk_pkg")]
@@ -25,7 +25,7 @@ public class GameChannelSDK
 
 
     [JsonPropertyName("pkg_version_file_name")]
-    public string PkgVersionFileName { get; set; }
+    public string PkgVersionFileName { get; set; } = null!;
 
 
 }
@@ -38,11 +38,11 @@ public class GameChannelSDKPackage
     /// 下载链接
     /// </summary>
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public string Url { get; set; } = null!;
 
 
     [JsonPropertyName("md5")]
-    public string MD5 { get; set; }
+    public string MD5 { get; set; } = null!;
 
 
     [JsonPropertyName("size")]

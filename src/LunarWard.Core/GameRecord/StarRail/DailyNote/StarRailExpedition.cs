@@ -19,7 +19,7 @@ public class StarRailExpedition
     /// 状态 Ongoing:派遣中 Finished:已完成
     /// </summary>
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string Status { get; set; } = null!;
 
     /// <summary>
     /// 剩余时间，秒
@@ -32,13 +32,13 @@ public class StarRailExpedition
     /// 委托名称
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>
     /// 委托奖励图标 url
     /// </summary>
     [JsonPropertyName("item_url")]
-    public string ItemUrl { get; set; }
+    public string ItemUrl { get; set; } = null!;
 
     /// <summary>
     /// 委托完成时间戳，秒

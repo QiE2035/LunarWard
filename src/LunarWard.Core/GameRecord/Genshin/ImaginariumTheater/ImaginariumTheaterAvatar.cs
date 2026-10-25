@@ -16,15 +16,15 @@ public class ImaginariumTheaterAvatar
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("element")]
-    public string Element { get; set; }
+    public string Element { get; set; } = null!;
 
 
     [JsonPropertyName("image")]
-    public string Image { get; set; }
+    public string Image { get; set; } = null!;
 
 
     [JsonPropertyName("level")]

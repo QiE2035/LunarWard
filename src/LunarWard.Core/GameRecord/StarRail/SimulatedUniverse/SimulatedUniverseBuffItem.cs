@@ -8,7 +8,7 @@ public class SimulatedUniverseBuffItem
     public int Id { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("is_evoluted")]
     public bool IsEvoluted { get; set; }

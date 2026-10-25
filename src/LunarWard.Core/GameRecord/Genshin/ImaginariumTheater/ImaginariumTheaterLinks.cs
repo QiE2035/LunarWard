@@ -5,19 +5,19 @@ namespace LunarWard.Core.GameRecord.Genshin.ImaginariumTheater;
 public class ImaginariumTheaterLinks
 {
     [JsonPropertyName("lineup_link")]
-    public string LineupLink { get; set; }
+    public string LineupLink { get; set; } = null!;
 
     [JsonPropertyName("lineup_link_pc")]
-    public string LineupLinkPc { get; set; }
+    public string LineupLinkPc { get; set; } = null!;
 
     [JsonPropertyName("strategy_link")]
-    public string StrategyLink { get; set; }
+    public string StrategyLink { get; set; } = null!;
 
     [JsonPropertyName("lineup_publish_link")]
-    public string LineupPublishLink { get; set; }
+    public string LineupPublishLink { get; set; } = null!;
 
     [JsonPropertyName("lineup_publish_link_pc")]
-    public string LineupPublishLinkPc { get; set; }
+    public string LineupPublishLinkPc { get; set; } = null!;
 
 
     [JsonExtensionData]

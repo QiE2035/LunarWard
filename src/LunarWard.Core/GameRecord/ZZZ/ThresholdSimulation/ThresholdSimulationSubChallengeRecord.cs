@@ -9,13 +9,13 @@ public class ThresholdSimulationSubChallengeRecord
     public int BattleId { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>
     /// S A B C
     /// </summary>
     [JsonPropertyName("star")]
-    public string Star { get; set; }
+    public string Star { get; set; } = null!;
 
     [JsonPropertyName("avatar_list")]
     public List<ZZZAvatar> AvatarList { get; set; }

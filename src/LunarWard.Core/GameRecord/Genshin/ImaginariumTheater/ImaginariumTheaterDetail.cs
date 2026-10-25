@@ -16,7 +16,7 @@ public class ImaginariumTheaterDetail
 
 
     [JsonPropertyName("lineup_link")]
-    public string LineupLink { get; set; }
+    public string LineupLink { get; set; } = null!;
 
     /// <summary>
     /// 待命角色

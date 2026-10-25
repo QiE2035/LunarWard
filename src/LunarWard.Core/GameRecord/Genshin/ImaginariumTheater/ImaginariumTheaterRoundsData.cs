@@ -40,7 +40,7 @@ public class ImaginariumTheaterRoundsData
     /// 完成时间，timestamp
     /// </summary>
     [JsonPropertyName("finish_time")]
-    public string FinishTime { get; set; }
+    public string FinishTime { get; set; } = null!;
 
     /// <summary>
     /// 完成时间

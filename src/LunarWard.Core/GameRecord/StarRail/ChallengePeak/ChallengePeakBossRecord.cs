@@ -34,13 +34,13 @@ public class ChallengePeakBossRecord
     public bool FinishColorMedal { get; set; }
 
     [JsonPropertyName("challenge_peak_rank_icon_type")]
-    public string ChallengePeakRankIconType { get; set; }
+    public string ChallengePeakRankIconType { get; set; } = null!;
 
     [JsonPropertyName("challenge_peak_rank_icon")]
-    public string ChallengePeakRankIcon { get; set; }
+    public string ChallengePeakRankIcon { get; set; } = null!;
 
     [JsonPropertyName("record_unique_key")]
-    public string RecordUniqueKey { get; set; }
+    public string RecordUniqueKey { get; set; } = null!;
 
 
     [JsonExtensionData]

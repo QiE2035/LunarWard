@@ -31,13 +31,13 @@ public class ThresholdSimulationBrief
     /// 结局名称
     /// </summary>
     [JsonPropertyName("ending_record_name")]
-    public string EndingRecordName { get; set; }
+    public string EndingRecordName { get; set; } = null!;
 
     /// <summary>
     /// 结局图片
     /// </summary>
     [JsonPropertyName("ending_record_bg_pic")]
-    public string EndingRecordBgPic { get; set; }
+    public string EndingRecordBgPic { get; set; } = null!;
 
     /// <summary>
     /// 总分

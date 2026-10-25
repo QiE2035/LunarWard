@@ -28,7 +28,7 @@ public class ChallengePeakData
     public int GroupId { get; set; }
 
     [JsonIgnore]
-    public string GameVersion { get; set; }
+    public string GameVersion { get; set; } = null!;
 
     [JsonIgnore]
     public int BossStars { get; set; }
@@ -37,6 +37,6 @@ public class ChallengePeakData
     public int MobStars { get; set; }
 
     [JsonIgnore]
-    public string BossIcon { get; set; }
+    public string BossIcon { get; set; } = null!;
 
 }

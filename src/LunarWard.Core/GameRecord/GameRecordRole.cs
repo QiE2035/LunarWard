@@ -12,11 +12,11 @@ public class GameRecordRole
 
 
     [JsonPropertyName("game_biz")]
-    public string GameBiz { get; set; }
+    public string GameBiz { get; set; } = null!;
 
 
     [JsonPropertyName("nickname")]
-    public string Nickname { get; set; }
+    public string Nickname { get; set; } = null!;
 
 
     [JsonPropertyName("level")]
@@ -24,18 +24,18 @@ public class GameRecordRole
 
 
     [JsonPropertyName("region")]
-    public string Region { get; set; }
+    public string Region { get; set; } = null!;
 
 
     [JsonPropertyName("region_name")]
-    public string RegionName { get; set; }
+    public string RegionName { get; set; } = null!;
 
 
     [JsonIgnore]
-    public string? Cookie { get; set; }
+    public string? Cookie { get; set; } = null!;
 
     [JsonIgnore]
-    public string HeadIcon { get; set; }
+    public string HeadIcon { get; set; } = null!;
 
 }
 

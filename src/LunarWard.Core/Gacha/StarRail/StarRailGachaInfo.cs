@@ -10,13 +10,13 @@ public class StarRailGachaInfo : IJsonOnDeserialized
     public int ItemId { get; set; }
 
     [JsonPropertyName("item_name")]
-    public string ItemName { get; set; }
+    public string ItemName { get; set; } = null!;
 
     [JsonPropertyName("icon_url")]
-    public string IconUrl { get; set; }
+    public string IconUrl { get; set; } = null!;
 
     [JsonPropertyName("item_url")]
-    public string ItemUrl { get; set; }
+    public string ItemUrl { get; set; } = null!;
 
     [JsonPropertyName("damage_type")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
@@ -31,7 +31,7 @@ public class StarRailGachaInfo : IJsonOnDeserialized
     public int AvatarBaseType { get; set; }
 
     [JsonPropertyName("wiki_url")]
-    public string WikiUrl { get; set; }
+    public string WikiUrl { get; set; } = null!;
 
     [JsonPropertyName("is_system")]
     public bool IsSystem { get; set; }

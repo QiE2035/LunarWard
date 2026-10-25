@@ -22,13 +22,13 @@ public class ApocalypticShadowInfo
     public DateTime EndTime { get; set; }
 
     [JsonPropertyName("upper_boss_icon")]
-    public string UpperBossIcon { get; set; }
+    public string UpperBossIcon { get; set; } = null!;
 
     [JsonPropertyName("lower_boss_icon")]
-    public string LowerBossIcon { get; set; }
+    public string LowerBossIcon { get; set; } = null!;
 
     [JsonPropertyName("tierce_boss_icon")]
-    public string? TierceBossIcon { get; set; }
+    public string? TierceBossIcon { get; set; } = null!;
 
     [JsonPropertyName("star_num")]
     public int StarNum { get; set; }
@@ -37,7 +37,7 @@ public class ApocalypticShadowInfo
     public int ExtraStarNum { get; set; }
 
     [JsonPropertyName("max_floor")]
-    public string MaxFloor { get; set; }
+    public string MaxFloor { get; set; } = null!;
 
     [JsonPropertyName("battle_num")]
     public int BattleNum { get; set; }

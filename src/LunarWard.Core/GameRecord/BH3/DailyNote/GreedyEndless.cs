@@ -20,7 +20,7 @@ public class GreedyEndless
     /// 分组图标
     /// </summary>
     [JsonPropertyName("level_icon")]
-    public string LevelIcon { get; set; }
+    public string LevelIcon { get; set; } = null!;
 
     /// <summary>
     /// 当前分数

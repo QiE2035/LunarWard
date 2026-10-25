@@ -17,16 +17,16 @@ public class ChallengePeakGroup
     public DateTime EndTime { get; set; }
 
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string Status { get; set; } = null!;
 
     [JsonPropertyName("name_mi18n")]
-    public string NameMi18n { get; set; }
+    public string NameMi18n { get; set; } = null!;
 
     [JsonPropertyName("game_version")]
-    public string GameVersion { get; set; }
+    public string GameVersion { get; set; } = null!;
 
     [JsonPropertyName("theme_pic_path")]
-    public string ThemePicPath { get; set; }
+    public string ThemePicPath { get; set; } = null!;
 
 
     [JsonExtensionData]

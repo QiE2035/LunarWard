@@ -22,7 +22,7 @@ public class ShiyuDefenseFloorDetail
     /// 评分，SABC
     /// </summary>
     [JsonPropertyName("rating")]
-    public string Rating { get; set; }
+    public string Rating { get; set; } = null!;
 
     /// <summary>
     /// buff
@@ -59,7 +59,7 @@ public class ShiyuDefenseFloorDetail
     /// 防线名称
     /// </summary>
     [JsonPropertyName("zone_name")]
-    public string ZoneName { get; set; }
+    public string ZoneName { get; set; } = null!;
 
     /// <summary>
     /// 挑战时间

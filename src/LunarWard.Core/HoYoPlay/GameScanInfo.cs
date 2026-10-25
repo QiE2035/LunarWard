@@ -10,7 +10,7 @@ public class GameScanInfo
 {
 
     [JsonPropertyName("game_id")]
-    public string GameId { get; set; }
+    public string GameId { get; set; } = null!;
 
     /// <summary>
     /// 不同版本的游戏 exe md5
@@ -28,10 +28,10 @@ public class GameScanInfoExe
 {
 
     [JsonPropertyName("version")]
-    public string Version { get; set; }
+    public string Version { get; set; } = null!;
 
 
     [JsonPropertyName("md5")]
-    public string MD5 { get; set; }
+    public string MD5 { get; set; } = null!;
 
 }

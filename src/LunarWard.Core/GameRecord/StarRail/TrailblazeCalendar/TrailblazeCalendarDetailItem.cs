@@ -19,7 +19,7 @@ public class TrailblazeCalendarDetailItem
     /// <summary>
     /// 202304
     /// </summary>
-    public string Month { get; set; }
+    public string Month { get; set; } = null!;
 
     /// <summary>
     /// 1 星琼  2 星轨票
@@ -27,10 +27,10 @@ public class TrailblazeCalendarDetailItem
     public int Type { get; set; }
 
     [JsonPropertyName("action")]
-    public string Action { get; set; }
+    public string Action { get; set; } = null!;
 
     [JsonPropertyName("action_name")]
-    public string ActionName { get; set; }
+    public string ActionName { get; set; } = null!;
 
     [JsonPropertyName("time")]
     [JsonConverter(typeof(DateTimeStringJsonConverter))]

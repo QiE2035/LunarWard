@@ -5,7 +5,7 @@ namespace LunarWard.Core.GameRecord.StarRail.ForgottenHall;
 public class ForgottenHallFloorDetail
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("round_num")]
     public int RoundNum { get; set; }

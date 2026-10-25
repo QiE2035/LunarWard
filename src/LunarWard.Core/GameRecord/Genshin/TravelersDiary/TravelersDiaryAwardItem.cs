@@ -29,7 +29,7 @@ public class TravelersDiaryAwardItem
 
 
     [JsonPropertyName("action")]
-    public string ActionName { get; set; }
+    public string ActionName { get; set; } = null!;
 
     /// <summary>
     /// 获取时间，UTC+8

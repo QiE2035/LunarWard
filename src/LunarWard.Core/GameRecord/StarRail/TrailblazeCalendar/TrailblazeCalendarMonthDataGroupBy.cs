@@ -8,7 +8,7 @@ namespace LunarWard.Core.GameRecord.StarRail.TrailblazeCalendar;
 public class TrailblazeCalendarMonthDataGroupBy
 {
     [JsonPropertyName("action")]
-    public string Action { get; set; }
+    public string Action { get; set; } = null!;
 
     [JsonPropertyName("num")]
     public int Num { get; set; }
@@ -17,7 +17,7 @@ public class TrailblazeCalendarMonthDataGroupBy
     public int Percent { get; set; }
 
     [JsonPropertyName("action_name")]
-    public string ActionName { get; set; }
+    public string ActionName { get; set; } = null!;
 
 
     [JsonExtensionData]

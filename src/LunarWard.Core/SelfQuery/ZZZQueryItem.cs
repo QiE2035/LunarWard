@@ -21,7 +21,7 @@ public class ZZZQueryItem
 
 
     [JsonPropertyName("reason")]
-    public string Reason { get; set; }
+    public string Reason { get; set; } = null!;
 
 
     [JsonPropertyName("add_num")]
@@ -34,7 +34,7 @@ public class ZZZQueryItem
 
 
     [JsonPropertyName("equip_name")]
-    public string EquipName { get; set; }
+    public string EquipName { get; set; } = null!;
 
 
     [JsonPropertyName("equip_rarity")]
@@ -46,7 +46,7 @@ public class ZZZQueryItem
 
 
     [JsonPropertyName("weapon_name")]
-    public string WeaponName { get; set; }
+    public string WeaponName { get; set; } = null!;
 
 
     [JsonPropertyName("weapon_rarity")]
@@ -58,11 +58,11 @@ public class ZZZQueryItem
 
 
     [JsonPropertyName("client_ip")]
-    public string ClientIp { get; set; }
+    public string ClientIp { get; set; } = null!;
 
 
     [JsonPropertyName("action_name")]
-    public string ActionName { get; set; }
+    public string ActionName { get; set; } = null!;
 
 
     [JsonPropertyName("card_type")]
@@ -70,7 +70,7 @@ public class ZZZQueryItem
 
 
     [JsonPropertyName("item_name")]
-    public string ItemName { get; set; }
+    public string ItemName { get; set; } = null!;
 
 
 }

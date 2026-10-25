@@ -10,13 +10,13 @@ public class ShiyuDefenseInfoBase
 
 
     [JsonIgnore]
-    public string Version { get; set; }
+    public string Version { get; set; } = null!;
 
     /// <summary>
     /// 最高评分
     /// </summary>
     [JsonIgnore]
-    public string MaxRating { get; set; }
+    public string MaxRating { get; set; } = null!;
 
     /// <summary>
     /// 最高评分次数

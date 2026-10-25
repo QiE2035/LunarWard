@@ -5,10 +5,10 @@ namespace LunarWard.Core.GameRecord.ZZZ.InterKnotReport;
 public class InterKnotReportRoleInfo
 {
     [JsonPropertyName("nickname")]
-    public string Nickname { get; set; }
+    public string Nickname { get; set; } = null!;
 
     [JsonPropertyName("avatar")]
-    public string Avatar { get; set; }
+    public string Avatar { get; set; } = null!;
 }
 
 

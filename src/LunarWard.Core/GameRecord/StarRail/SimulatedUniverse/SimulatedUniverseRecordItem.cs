@@ -9,7 +9,7 @@ public class SimulatedUniverseRecordItem
     /// 第几世界
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("finish_time")]
     [JsonConverter(typeof(DateTimeObjectJsonConverter))]

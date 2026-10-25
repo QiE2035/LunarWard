@@ -18,10 +18,10 @@ public class PureFictionMeta
     public DateTime EndTime { get; set; }
 
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string Status { get; set; } = null!;
 
     [JsonPropertyName("name_mi18n")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonExtensionData]

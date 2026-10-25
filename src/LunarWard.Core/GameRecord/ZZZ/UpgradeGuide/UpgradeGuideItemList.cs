@@ -36,15 +36,15 @@ public class UpgradeGuideWeapon
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonPropertyName("rarity")]
-    public string Rarity { get; set; }
+    public string Rarity { get; set; } = null!;
 
 
     [JsonPropertyName("profession")]
@@ -64,23 +64,23 @@ public class UpgradeGuideEquipSuit
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("desc1")]
-    public string Desc1 { get; set; }
+    public string Desc1 { get; set; } = null!;
 
 
     [JsonPropertyName("desc2")]
-    public string Desc2 { get; set; }
+    public string Desc2 { get; set; } = null!;
 
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonPropertyName("rarity")]
-    public string Rarity { get; set; }
+    public string Rarity { get; set; } = null!;
 
 }
 
@@ -101,11 +101,11 @@ public class UpgradeGuideAvatar
 
 
     [JsonPropertyName("name_mi18n")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("full_name_mi18n")]
-    public string FullName { get; set; }
+    public string FullName { get; set; } = null!;
 
 
     [JsonPropertyName("element_type")]
@@ -113,7 +113,7 @@ public class UpgradeGuideAvatar
 
 
     [JsonPropertyName("camp_name_mi18n")]
-    public string CampName { get; set; }
+    public string CampName { get; set; } = null!;
 
 
     [JsonPropertyName("avatar_profession")]
@@ -121,15 +121,15 @@ public class UpgradeGuideAvatar
 
 
     [JsonPropertyName("rarity")]
-    public string Rarity { get; set; }
+    public string Rarity { get; set; } = null!;
 
 
     [JsonPropertyName("group_icon_path")]
-    public string GroupIconPath { get; set; }
+    public string GroupIconPath { get; set; } = null!;
 
 
     [JsonPropertyName("hollow_icon_path")]
-    public string HollowIconPath { get; set; }
+    public string HollowIconPath { get; set; } = null!;
 
 }
 
@@ -145,10 +145,10 @@ public class UpgradeGuideBuddy
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("rarity")]
-    public string Rarity { get; set; }
+    public string Rarity { get; set; } = null!;
 
 }

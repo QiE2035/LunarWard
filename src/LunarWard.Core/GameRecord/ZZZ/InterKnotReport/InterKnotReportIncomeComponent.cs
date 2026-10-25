@@ -6,7 +6,7 @@ public class InterKnotReportIncomeComponent
 {
 
     [JsonPropertyName("action")]
-    public string Action { get; set; }
+    public string Action { get; set; } = null!;
 
 
     [JsonPropertyName("num")]

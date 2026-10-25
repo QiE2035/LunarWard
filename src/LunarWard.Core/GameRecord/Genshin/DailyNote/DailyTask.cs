@@ -70,7 +70,7 @@ public sealed class TaskRewardStatus
 {
 
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string Status { get; set; } = null!;
 
 
     /// <summary>
@@ -123,7 +123,7 @@ public class AttendanceRewardStatus
 {
 
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string Status { get; set; } = null!;
 
     /// <summary>
     /// 历练点进度，满值2000

@@ -24,13 +24,13 @@ public class Transformer
     /// Wiki url
     /// </summary>
     [JsonPropertyName("wiki")]
-    public string Wiki { get; set; }
+    public string Wiki { get; set; } = null!;
 
     [JsonPropertyName("noticed")]
     public bool Noticed { get; set; }
 
     [JsonPropertyName("latest_job_id")]
-    public string LatestJobId { get; set; }
+    public string LatestJobId { get; set; } = null!;
 
 }
 

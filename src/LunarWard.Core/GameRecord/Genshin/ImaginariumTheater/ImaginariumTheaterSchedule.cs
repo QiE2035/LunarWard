@@ -9,13 +9,13 @@ public class ImaginariumTheaterSchedule
     /// 开始时间，timestamp
     /// </summary>
     [JsonPropertyName("start_time")]
-    public string StartTime { get; set; }
+    public string StartTime { get; set; } = null!;
 
     /// <summary>
     /// 结束时间，timestamp
     /// </summary>
     [JsonPropertyName("end_time")]
-    public string EndTime { get; set; }
+    public string EndTime { get; set; } = null!;
 
     [JsonPropertyName("schedule_type")]
     public int ScheduleType { get; set; }

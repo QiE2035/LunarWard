@@ -21,5 +21,5 @@ public class GameDeprecatedFileConfig
 public class GameDeprecatedFile
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 }

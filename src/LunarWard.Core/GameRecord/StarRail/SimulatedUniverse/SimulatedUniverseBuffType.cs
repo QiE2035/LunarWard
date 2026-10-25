@@ -8,7 +8,7 @@ public class SimulatedUniverseBuffType
     public int Id { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("cnt")]
     public int Cnt { get; set; }

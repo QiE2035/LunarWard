@@ -5,13 +5,13 @@ namespace LunarWard.Core.GameRecord.ZZZ.InterKnotReport;
 public class InterKnotReportSummaryAward
 {
     [JsonPropertyName("data_type")]
-    public string DataType { get; set; }
+    public string DataType { get; set; } = null!;
 
     [JsonPropertyName("count")]
     public int Count { get; set; }
 
     [JsonPropertyName("data_name")]
-    public string DataName { get; set; }
+    public string DataName { get; set; } = null!;
 }
 
 public class InterKnotReportSummary
@@ -23,15 +23,15 @@ public class InterKnotReportSummary
 
 
     [JsonPropertyName("region")]
-    public string Region { get; set; }
+    public string Region { get; set; } = null!;
 
 
     [JsonPropertyName("current_month")]
-    public string CurrentMonth { get; set; }
+    public string CurrentMonth { get; set; } = null!;
 
 
     [JsonPropertyName("data_month")]
-    public string DataMonth { get; set; }
+    public string DataMonth { get; set; } = null!;
 
 
     [JsonPropertyName("month_data")]

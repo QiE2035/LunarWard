@@ -12,13 +12,13 @@ public class ShiyuDefenseBuff
     /// 名称
     /// </summary>
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; set; } = null!;
 
     /// <summary>
     /// 详细描述，格式化富文本
     /// </summary>
     [JsonPropertyName("text")]
-    public string Text { get; set; }
+    public string Text { get; set; } = null!;
 
 
     [JsonExtensionData]

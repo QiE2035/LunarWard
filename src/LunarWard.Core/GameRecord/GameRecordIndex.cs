@@ -9,7 +9,7 @@ internal class GameRecordIndex : IJsonOnDeserialized
 {
 
     [JsonPropertyName("cur_head_icon_url")]
-    public string CurHeadIconUrl { get; set; }
+    public string CurHeadIconUrl { get; set; } = null!;
 
 
     [JsonPropertyName("role")]
@@ -17,7 +17,7 @@ internal class GameRecordIndex : IJsonOnDeserialized
 
 
     [JsonIgnore]
-    public string HeadIcon { get; set; }
+    public string HeadIcon { get; set; } = null!;
 
 
     public void OnDeserialized()
@@ -47,20 +47,20 @@ internal class GameRecordIndexRole
 {
 
     [JsonPropertyName("AvatarUrl")]
-    public string AvatarUrl { get; set; }
+    public string AvatarUrl { get; set; } = null!;
 
 
     [JsonPropertyName("nickname")]
-    public string Nickname { get; set; }
+    public string Nickname { get; set; } = null!;
 
     [JsonPropertyName("region")]
-    public string RegionName { get; set; }
+    public string RegionName { get; set; } = null!;
 
     [JsonPropertyName("level")]
     public int Level { get; set; }
 
 
     [JsonPropertyName("game_head_icon")]
-    public string GameHeadIcon { get; set; }
+    public string GameHeadIcon { get; set; } = null!;
 
 }

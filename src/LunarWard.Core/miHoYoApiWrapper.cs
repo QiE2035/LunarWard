@@ -10,7 +10,7 @@ public class miHoYoApiWrapper<T>
 
 
     [JsonPropertyName("message")]
-    public string Message { get; set; }
+    public string Message { get; set; } = null!;
 
 
     [JsonPropertyName("data")]

@@ -6,14 +6,14 @@ public class ImaginariumTheaterSplendourBuffEffect
 {
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("desc")]
-    public string Desc { get; set; }
+    public string Desc { get; set; } = null!;
 
 }

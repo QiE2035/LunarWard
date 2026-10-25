@@ -18,7 +18,7 @@ public class ShiyuDefenseRatingTimes
     /// 评分，SABC
     /// </summary>
     [JsonPropertyName("rating")]
-    public string Rating { get; set; }
+    public string Rating { get; set; } = null!;
 
 
     [JsonExtensionData]

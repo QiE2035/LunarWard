@@ -26,7 +26,7 @@ public class GameBackground
 {
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// 背景图
@@ -56,7 +56,7 @@ public class GameBackground
     /// <see cref="BACKGROUND_TYPE_UNSPECIFIED"/> or <see cref="BACKGROUND_TYPE_VIDEO"/>
     /// </summary>
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public string Type { get; set; } = null!;
 
 
     [JsonIgnore]

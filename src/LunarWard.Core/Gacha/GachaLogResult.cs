@@ -20,7 +20,7 @@ internal class GachaLogResult<T> where T : GachaLogItem
 
 
     [JsonPropertyName("region")]
-    public string Region { get; set; }
+    public string Region { get; set; } = null!;
 
 
 }

@@ -10,11 +10,11 @@ public class ImaginariumTheaterFightStatisicAvatar
 
 
     [JsonPropertyName("avatar_icon")]
-    public string AvatarIcon { get; set; }
+    public string AvatarIcon { get; set; } = null!;
 
 
     [JsonPropertyName("value")]
-    public string Value { get; set; }
+    public string Value { get; set; } = null!;
 
 
     [JsonPropertyName("rarity")]

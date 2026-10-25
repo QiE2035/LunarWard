@@ -6,7 +6,7 @@ public class StygianOnslaughtMonster
 {
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("level")]
@@ -14,7 +14,7 @@ public class StygianOnslaughtMonster
 
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonPropertyName("desc")]

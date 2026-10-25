@@ -17,7 +17,7 @@ public class GameDXConfig
 
 
     [JsonPropertyName("cmd_args")]
-    public string CmdArgs { get; set; }
+    public string CmdArgs { get; set; } = null!;
 
 
     [JsonPropertyName("use_dx12_by_default")]
@@ -29,15 +29,15 @@ public class GameDXConfig
 
 
     [JsonPropertyName("dx11_preview_image")]
-    public string DX11PreviewImage { get; set; }
+    public string DX11PreviewImage { get; set; } = null!;
 
 
     [JsonPropertyName("dx12_preview_image")]
-    public string DX12PreviewImage { get; set; }
+    public string DX12PreviewImage { get; set; } = null!;
 
 
     [JsonPropertyName("i18n_intro")]
-    public string I18nIntro { get; set; }
+    public string I18nIntro { get; set; } = null!;
 
 
     [JsonPropertyName("force_enable")]
@@ -45,7 +45,7 @@ public class GameDXConfig
 
 
     [JsonPropertyName("dx11_cmd_args")]
-    public string DX11CmdArgs { get; set; }
+    public string DX11CmdArgs { get; set; } = null!;
 
 
     [JsonPropertyName("support_list")]
@@ -61,11 +61,11 @@ public class GPUInfo
 {
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
 
     [JsonPropertyName("driver_version")]
-    public string DriverVersion { get; set; }
+    public string DriverVersion { get; set; } = null!;
 
 }
 
@@ -77,7 +77,7 @@ public class GetDXConfigsRequest
 {
 
     [JsonPropertyName("launcher_id")]
-    public string LauncherId { get; set; }
+    public string LauncherId { get; set; } = null!;
 
 
     [JsonPropertyName("game_ids")]
@@ -85,7 +85,7 @@ public class GetDXConfigsRequest
 
 
     [JsonPropertyName("language")]
-    public string Language { get; set; }
+    public string Language { get; set; } = null!;
 
 
     [JsonPropertyName("gpu_info")]

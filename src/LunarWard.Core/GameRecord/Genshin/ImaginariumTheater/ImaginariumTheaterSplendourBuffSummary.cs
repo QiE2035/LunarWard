@@ -10,6 +10,6 @@ public class ImaginariumTheaterSplendourBuffSummary
 
 
     [JsonPropertyName("desc")]
-    public string Desc { get; set; }
+    public string Desc { get; set; } = null!;
 
 }

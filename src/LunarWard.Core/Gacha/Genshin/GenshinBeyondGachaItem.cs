@@ -17,7 +17,7 @@ public class GenshinBeyondGachaItem
 
 
     [JsonPropertyName("region")]
-    public string Region { get; set; }
+    public string Region { get; set; } = null!;
 
 
     [JsonPropertyName("op_gacha_type")]
@@ -31,7 +31,7 @@ public class GenshinBeyondGachaItem
 
 
     [JsonPropertyName("item_type")]
-    public string ItemType { get; set; }
+    public string ItemType { get; set; } = null!;
 
 
     [JsonPropertyName("item_id")]
@@ -40,7 +40,7 @@ public class GenshinBeyondGachaItem
 
 
     [JsonPropertyName("item_name")]
-    public string ItemName { get; set; }
+    public string ItemName { get; set; } = null!;
 
 
     [JsonPropertyName("rank_type")]

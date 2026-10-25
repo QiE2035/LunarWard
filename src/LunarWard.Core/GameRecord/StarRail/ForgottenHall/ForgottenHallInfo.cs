@@ -29,7 +29,7 @@ public class ForgottenHallInfo
     public int ExtraStarNum { get; set; }
 
     [JsonPropertyName("max_floor")]
-    public string MaxFloor { get; set; }
+    public string MaxFloor { get; set; } = null!;
 
     [JsonPropertyName("battle_num")]
     public int BattleNum { get; set; }

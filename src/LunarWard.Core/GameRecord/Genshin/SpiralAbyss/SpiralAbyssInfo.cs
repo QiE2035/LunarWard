@@ -33,7 +33,7 @@ public class SpiralAbyssInfo
 
 
     [JsonPropertyName("max_floor")]
-    public string? MaxFloor { get; set; }
+    public string? MaxFloor { get; set; } = null!;
 
     /// <summary>
     /// 出战最多

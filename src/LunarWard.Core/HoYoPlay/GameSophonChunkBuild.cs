@@ -7,14 +7,14 @@ public class GameSophonChunkBuild
 {
 
     [JsonPropertyName("build_id")]
-    public string BuildId { get; set; }
+    public string BuildId { get; set; } = null!;
 
 
     /// <summary>
     /// 游戏版本
     /// </summary>
     [JsonPropertyName("tag")]
-    public string Tag { get; set; }
+    public string Tag { get; set; } = null!;
 
 
     /// <summary>
@@ -36,19 +36,19 @@ public class GameSophonChunkManifest
     /// 资源ID
     /// </summary>
     [JsonPropertyName("category_id")]
-    public string CategoryId { get; set; }
+    public string CategoryId { get; set; } = null!;
 
     /// <summary>
     /// 资源名称
     /// </summary>
     [JsonPropertyName("category_name")]
-    public string CategoryName { get; set; }
+    public string CategoryName { get; set; } = null!;
 
     /// <summary>
     /// 资源类型，game or 语音类型（zh-cn, en-us, ja-jp, ko-kr）
     /// </summary>
     [JsonPropertyName("matching_field")]
-    public string MatchingField { get; set; }
+    public string MatchingField { get; set; } = null!;
 
     /// <summary>
     /// 清单文件信息
@@ -94,13 +94,13 @@ public class GameSophonManifestFile
     /// 文件名，与下载链接前缀拼接为下载链接
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// 解压后的MD5
     /// </summary>
     [JsonPropertyName("checksum")]
-    public string Checksum { get; set; }
+    public string Checksum { get; set; } = null!;
 
 
     [JsonPropertyName("compressed_size")]
@@ -131,7 +131,7 @@ public class GameSophonManifestUrl
     /// 密码
     /// </summary>
     [JsonPropertyName("password")]
-    public string Password { get; set; }
+    public string Password { get; set; } = null!;
 
     /// <summary>
     /// 压缩
@@ -143,13 +143,13 @@ public class GameSophonManifestUrl
     /// 前缀
     /// </summary>
     [JsonPropertyName("url_prefix")]
-    public string UrlPrefix { get; set; }
+    public string UrlPrefix { get; set; } = null!;
 
     /// <summary>
     /// 后缀
     /// </summary>
     [JsonPropertyName("url_suffix")]
-    public string UrlSuffix { get; set; }
+    public string UrlSuffix { get; set; } = null!;
 
 }
 

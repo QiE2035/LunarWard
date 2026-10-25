@@ -12,13 +12,13 @@ public class ApocalypticShadowAvatar
     public int Level { get; set; }
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
     [JsonPropertyName("rarity")]
     public int Rarity { get; set; }
 
     [JsonPropertyName("element")]
-    public string Element { get; set; }
+    public string Element { get; set; } = null!;
 
     [JsonPropertyName("rank")]
     public int Rank { get; set; }

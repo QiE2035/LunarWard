@@ -50,13 +50,13 @@ public class DeadlyAssaultInfo
     /// 昵称
     /// </summary>
     [JsonPropertyName("nick_name")]
-    public string NickName { get; set; }
+    public string NickName { get; set; } = null!;
 
     /// <summary>
     /// 头像
     /// </summary>
     [JsonPropertyName("avatar_icon")]
-    public string AvatarIcon { get; set; }
+    public string AvatarIcon { get; set; } = null!;
 
     /// <summary>
     /// 总分

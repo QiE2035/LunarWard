@@ -20,22 +20,22 @@ public class UpgradeGuidIconInfoItem
 {
 
     [JsonPropertyName("square_avatar")]
-    public string SquareAvatar { get; set; }
+    public string SquareAvatar { get; set; } = null!;
 
 
     [JsonPropertyName("rectangle_avatar")]
-    public string RectangleAvatar { get; set; }
+    public string RectangleAvatar { get; set; } = null!;
 
 
     [JsonPropertyName("vertical_painting")]
-    public string? VerticalPainting { get; set; }
+    public string? VerticalPainting { get; set; } = null!;
 
 
     [JsonPropertyName("vertical_painting_color")]
-    public string? VerticalPaintingColor { get; set; }
+    public string? VerticalPaintingColor { get; set; } = null!;
 
 
     [JsonPropertyName("avatar_us_full_name")]
-    public string? AvatarUsFullName { get; set; }
+    public string? AvatarUsFullName { get; set; } = null!;
 
 }

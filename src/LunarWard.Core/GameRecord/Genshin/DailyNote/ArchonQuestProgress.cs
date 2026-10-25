@@ -42,19 +42,19 @@ public class ArchonQuest
 {
 
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string Status { get; set; } = null!;
 
     /// <summary>
     /// 第X章 第Y幕
     /// </summary>
     [JsonPropertyName("chapter_num")]
-    public string ChapterNum { get; set; }
+    public string ChapterNum { get; set; } = null!;
 
     /// <summary>
     /// 章节标题
     /// </summary>
     [JsonPropertyName("chapter_title")]
-    public string ChapterTitle { get; set; }
+    public string ChapterTitle { get; set; } = null!;
 
 
     [JsonPropertyName("id")]

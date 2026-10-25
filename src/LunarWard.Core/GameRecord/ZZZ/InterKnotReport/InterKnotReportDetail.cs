@@ -11,11 +11,11 @@ public class InterKnotReportDetail : IJsonOnDeserialized
 
 
     [JsonPropertyName("region")]
-    public string Region { get; set; }
+    public string Region { get; set; } = null!;
 
 
     [JsonPropertyName("data_month")]
-    public string DataMonth { get; set; }
+    public string DataMonth { get; set; } = null!;
 
 
     [JsonPropertyName("current_page")]
@@ -33,11 +33,11 @@ public class InterKnotReportDetail : IJsonOnDeserialized
 
 
     [JsonPropertyName("data_name")]
-    public string DataName { get; set; }
+    public string DataName { get; set; } = null!;
 
 
     [JsonPropertyName("data_type")]
-    public string DataType { get; set; }
+    public string DataType { get; set; } = null!;
 
 
     public void OnDeserialized()

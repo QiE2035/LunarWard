@@ -9,13 +9,13 @@ public class GenshinGachaInfo : IJsonOnSerializing, IJsonOnDeserialized
     public int Id { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
     [JsonPropertyName("head_icon")]
-    public string HeadIcon { get; set; }
+    public string HeadIcon { get; set; } = null!;
 
     [JsonPropertyName("element")]
     public int Element { get; set; }

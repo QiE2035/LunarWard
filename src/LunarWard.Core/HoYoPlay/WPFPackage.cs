@@ -18,13 +18,13 @@ public class WPFPackage
 {
 
     [JsonPropertyName("version")]
-    public string Version { get; set; }
+    public string Version { get; set; } = null!;
 
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public string Url { get; set; } = null!;
 
     [JsonPropertyName("md5")]
-    public string MD5 { get; set; }
+    public string MD5 { get; set; } = null!;
 
     [JsonPropertyName("size")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]

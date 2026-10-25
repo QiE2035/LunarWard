@@ -12,10 +12,10 @@ public class ZZZBuddy
     public int Level { get; set; }
 
     [JsonPropertyName("rarity")]
-    public string Rarity { get; set; }
+    public string Rarity { get; set; } = null!;
 
     [JsonPropertyName("bangboo_rectangle_url")]
-    public string RectangleUrl { get; set; }
+    public string RectangleUrl { get; set; } = null!;
 
 
     [JsonExtensionData]

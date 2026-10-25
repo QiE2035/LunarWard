@@ -8,7 +8,7 @@ namespace LunarWard.Core.GameRecord.ZZZ.DailyNote;
 public class VhsSale
 {
     [JsonPropertyName("sale_state")]
-    public string SaleState { get; set; }
+    public string SaleState { get; set; } = null!;
 
     /// <summary>
     /// 等待营业

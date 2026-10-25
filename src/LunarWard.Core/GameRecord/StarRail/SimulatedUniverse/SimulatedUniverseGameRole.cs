@@ -5,10 +5,10 @@ namespace LunarWard.Core.GameRecord.StarRail.SimulatedUniverse;
 public class SimulatedUniverseGameRole
 {
     [JsonPropertyName("server")]
-    public string Server { get; set; }
+    public string Server { get; set; } = null!;
 
     [JsonPropertyName("nickname")]
-    public string Nickname { get; set; }
+    public string Nickname { get; set; } = null!;
 
     [JsonPropertyName("level")]
     public int Level { get; set; }

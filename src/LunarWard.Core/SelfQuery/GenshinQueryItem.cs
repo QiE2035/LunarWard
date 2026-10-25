@@ -19,7 +19,7 @@ public class GenshinQueryItem : IJsonOnDeserialized
     public long AddNum { get; set; }
 
     [JsonPropertyName("reason")]
-    public string Reason { get; set; }
+    public string Reason { get; set; } = null!;
 
     [JsonPropertyName("datetime")]
     [JsonConverter(typeof(DateTimeStringJsonConverter))]
@@ -29,7 +29,7 @@ public class GenshinQueryItem : IJsonOnDeserialized
     public GenshinQueryType Type { get; set; }
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
     [JsonPropertyName("level")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
@@ -40,7 +40,7 @@ public class GenshinQueryItem : IJsonOnDeserialized
     public int Quality { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("time")]
     [JsonConverter(typeof(DateTimeStringJsonConverter))]
@@ -74,17 +74,17 @@ public class GenshinSelfQueryItem_BeyondCostume
     public DateTime Time { get; set; }
 
     [JsonPropertyName("source_type")]
-    public string SourceType { get; set; }
+    public string SourceType { get; set; } = null!;
 
     [JsonPropertyName("body_type")]
-    public string BodyType { get; set; }
+    public string BodyType { get; set; } = null!;
 
     [JsonPropertyName("costume_level")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
     public int CostumeLevel { get; set; }
 
     [JsonPropertyName("costume_name")]
-    public string CostumeName { get; set; }
+    public string CostumeName { get; set; } = null!;
 
     /// <summary>
     /// 试用
@@ -116,17 +116,17 @@ public class GenshinSelfQueryItem_BeyondCostumeSuit
     public DateTime Time { get; set; }
 
     [JsonPropertyName("source_type")]
-    public string SourceType { get; set; }
+    public string SourceType { get; set; } = null!;
 
     [JsonPropertyName("body_type")]
-    public string BodyType { get; set; }
+    public string BodyType { get; set; } = null!;
 
     [JsonPropertyName("costume_suit_level")]
     public int CostumeSuitLevel { get; set; }
 
     [JsonPropertyName("costume_suit_name")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
-    public string CostumeSuitName { get; set; }
+    public string CostumeSuitName { get; set; } = null!;
 
     /// <summary>
     /// 试用
@@ -159,10 +159,10 @@ public class GenshinSelfQueryItem_BeyondBattlePath
     public DateTime Time { get; set; }
 
     [JsonPropertyName("unlock_type")]
-    public string UnlockType { get; set; }
+    public string UnlockType { get; set; } = null!;
 
     [JsonPropertyName("unlock_reason")]
-    public string UnlockReason { get; set; }
+    public string UnlockReason { get; set; } = null!;
 }
 
 /// <summary>
@@ -179,7 +179,7 @@ public class GenshinSelfQueryItem_BattlePath
     public long Uid { get; set; }
 
     [JsonPropertyName("sub_action_name")]
-    public string SubActionName { get; set; }
+    public string SubActionName { get; set; } = null!;
 
     [JsonPropertyName("quantity")]
     public int Quantity { get; set; }
@@ -189,5 +189,5 @@ public class GenshinSelfQueryItem_BattlePath
     public DateTime Datetime { get; set; }
 
     [JsonPropertyName("battle_path_type")]
-    public string BattlePathType { get; set; }
+    public string BattlePathType { get; set; } = null!;
 }

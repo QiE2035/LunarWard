@@ -8,7 +8,7 @@ public class SimulatedUniverseAvatar
     public int Id { get; set; }
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
     [JsonPropertyName("level")]
     public int Level { get; set; }
@@ -17,7 +17,7 @@ public class SimulatedUniverseAvatar
     public int Rarity { get; set; }
 
     [JsonPropertyName("element")]
-    public string Element { get; set; }
+    public string Element { get; set; } = null!;
 
 
     [JsonExtensionData]

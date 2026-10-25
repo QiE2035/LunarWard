@@ -11,7 +11,7 @@ public abstract class TravelersDiaryBase
 
 
     [JsonPropertyName("region")]
-    public string Region { get; set; }
+    public string Region { get; set; } = null!;
 
     /// <summary>
     /// 米游社 ID
@@ -21,7 +21,7 @@ public abstract class TravelersDiaryBase
 
 
     [JsonPropertyName("nickname")]
-    public string Nickname { get; set; }
+    public string Nickname { get; set; } = null!;
 
     /// <summary>
     /// 当前日期

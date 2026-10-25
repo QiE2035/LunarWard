@@ -6,15 +6,15 @@ public class ThresholdSimulationRoleBasicInfo
 {
 
     [JsonPropertyName("server")]
-    public string Server { get; set; }
+    public string Server { get; set; } = null!;
 
 
     [JsonPropertyName("nickname")]
-    public string NickName { get; set; }
+    public string NickName { get; set; } = null!;
 
 
     [JsonPropertyName("icon")]
-    public string Icon { get; set; }
+    public string Icon { get; set; } = null!;
 
 
     [JsonExtensionData]
