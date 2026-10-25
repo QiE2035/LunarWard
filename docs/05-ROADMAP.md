@@ -256,7 +256,7 @@ cd src/LunarWard.Core && dotnet build
 | `dotnet build` 无警告 | ✅ | `dotnet build LunarWard.slnx` → 0 warning / 0 error |
 | 全部单元测试通过 | ✅ | **520**（Unit）+ **31**（Installer）= 551 |
 | 集成测试 I1–I13 通过 | ✅ | **27** 个集成测试（I1–I13 + S1–S5 + 真 wine 2 个）；合计 **578** 全绿 |
-| 真机清单 R1–R15 全部记录 | ⚠️ | 已记录：R9/R12 ✅、R1/R13/R15 ⚠️、其余 ⏳ → `acceptance-2026-10-23.md` |
+| 真机清单 R1–R15 全部记录 | ⚠️ | **R1 ✅**（launch-report `AwaitReady: WineDevice`）、R12 ✅（部分）；其余待前置 → `acceptance-2026-10-25.md` |
 | 安装器真机下载 | ✅ | CLI：`install-smoke` 15s 下载 474 MB，续传到 687 MB；UI：`--install-real [--install-info-popup]` 截图出现真实下载速度/进度卡片与「暂停」按钮 |
 | `launch-report.json` 能正确输出 | ✅ | `I13` / `Report_HasSevenPhasesAndFullChain` |
 | 配置损坏时能恢复 | ✅ | `U13` / `PlayTimeTests.CorruptStore_IsBackedUpAndReset` |
