@@ -7,7 +7,7 @@
 M0 是**唯一的前置门禁**——它验证四个未证实的技术点，任何一项失败都需要回到
 设计阶段。M0 通过后，M1–M5 可并行推进。
 
-> **状态（2026-10-23）**：M0–M9 已完成，M10 部分完成（i18n 与文档已完成，导入向导/崩溃上报按 Q10 不做）。
+> **状态（2026-10-25，M8 真机下载已做部分验证）**：M0–M9 已完成，M10 部分完成（i18n 与文档已完成，导入向导/崩溃上报按 Q10 不做）。
 > 详细证据见 `M0-RESULTS.md`、`acceptance-2026-10-23.md` 与本文件 §四的交付清单。
 
 | # | 内容 | 产出 | 依赖 | 状态 |
@@ -20,7 +20,7 @@ M0 是**唯一的前置门禁**——它验证四个未证实的技术点，任�
 | **M5** | 环境 shell | Avalonia 终端控件 + 复用 `LaunchPlan.Env` | M2, M0 | ✅ |
 | **M6** | `LunarWard.App` UI 骨架 | 窗口、游戏切换、启动按钮状态机 | M2 | ✅ |
 | **M7** | Starward 风格 UI | 公告三源 + 动态背景 + 双主题 | M6 | ✅（动态背景本机回退静态图） |
-| **M8** | `LunarWard.Installer` | 移植 `Starward.RPC/GameInstall`，去 gRPC/Vanara | M2 | ✅ 移植完成；`InstallGameDialog` + 开始按钮进度/暂停/取消已接（`GameLauncherPage`）；真机完整下载仍未跑通一轮（只验到任务启动与取消） |
+| **M8** | `LunarWard.Installer` | 移植 `Starward.RPC/GameInstall`，去 gRPC/Vanara | M2 | ✅ 移植完成；`InstallGameDialog` + 开始按钮进度/暂停/取消已接（`GameLauncherPage`）；真机已跑通「下载→暂停→续传→取消」与非零进度（曾验到 0.84/119.5 GB），`--install-real` 可复跑；完整 119 GB 一轮未跑完（时间成本，非缺陷） |
 | **M9** | Starward P0/P1 功能 | 抽卡、便笺、时长、截图、URL 协议 | M7, M8 | ✅ 全部完成（抽卡 / 便笺 / 时长 / 截图 / URL 协议） |
 | **M10** | 打磨 | i18n、崩溃上报、导入向导、文档 | M9 | ⚠️ i18n ✅、文档 ✅；导入向导与崩溃上报按 Q10 不做 |
 
