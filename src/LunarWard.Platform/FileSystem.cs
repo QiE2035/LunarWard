@@ -78,21 +78,71 @@ public sealed class FlockFileLock : IFileLock
 public static class AtomicFile
 {
     /// <summary>原子写入文本。</summary>
+    /// <remarks>
+    /// 配置文件里有 cookie / authkey，<c>.tmp</c> 也必须是 0600（审计 M-01：曾用默认
+    /// 0644 创建 tmp，崩溃后留下同机可读的明文）；失败路径删掉 tmp，不留残留。
+    /// </remarks>
     public static void WriteAllText(string path, string content)
     {
         var full = Path.GetFullPath(path);
         var dir = Path.GetDirectoryName(full)!;
         Directory.CreateDirectory(dir);
         var tmp = full + ".tmp";
-        using (var fs = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None, 64 * 1024, FileOptions.WriteThrough))
+        try
         {
-            using var writer = new StreamWriter(fs, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-            writer.Write(content);
-            writer.Flush();
-            fs.Flush(flushToDisk: true);
+            using (var fs = CreateOwnerOnly(tmp))
+            {
+                using var writer = new StreamWriter(fs, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+                writer.Write(content);
+                writer.Flush();
+                fs.Flush(flushToDisk: true);
+            }
+
+            File.Move(tmp, full, overwrite: true);
+        }
+        catch
+        {
+            TryDelete(tmp);
+            throw;
+        }
+    }
+
+
+    /// <summary>以 0600 创建/截断临时文件（非 Unix 平台退回默认行为）。</summary>
+    private static FileStream CreateOwnerOnly(string path)
+    {
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.Create,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            BufferSize = 64 * 1024,
+            Options = FileOptions.WriteThrough,
+        };
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
         }
 
-        File.Move(tmp, full, overwrite: true);
+        return new FileStream(path, options);
+    }
+
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
     }
 
 
@@ -103,10 +153,18 @@ public static class AtomicFile
         var dir = Path.GetDirectoryName(full)!;
         Directory.CreateDirectory(dir);
         var tmp = full + ".tmp";
-        using (var fs = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None, 64 * 1024, FileOptions.WriteThrough))
+        try
         {
-            fs.Write(content);
-            fs.Flush(flushToDisk: true);
+            using (var fs = CreateOwnerOnly(tmp))
+            {
+                fs.Write(content);
+                fs.Flush(flushToDisk: true);
+            }
+        }
+        catch
+        {
+            TryDelete(tmp);
+            throw;
         }
 
         File.Move(tmp, full, overwrite: true);

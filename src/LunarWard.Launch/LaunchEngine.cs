@@ -174,6 +174,16 @@ public sealed class LaunchEngine
 
 
     /// <summary>
+    /// 日志泵的告警出口（App 接到 Serilog）。为空时不影响启动。
+    /// </summary>
+    /// <remarks>
+    /// 审计 M-04/RK-03：日志泵失败此前被空 <c>catch</c> 吞掉，管道没人读会让子进程
+    /// 写满缓冲区后永久阻塞。这里至少把「泵坏了」记下来，便于排查「游戏卡住」。
+    /// </remarks>
+    public Action<string>? LogWarning { get; init; }
+
+
+    /// <summary>
     /// 执行完整启动流程。取消令牌只影响"等待"阶段，不会强杀游戏。
     /// </summary>
     public async Task<LaunchResult> RunAsync(LaunchPlan plan, CancellationToken ct = default)
@@ -689,29 +699,8 @@ public sealed class LaunchEngine
             var fs = new FileStream(logPath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             var writer = new StreamWriter(fs) { AutoFlush = true };
 
-            void Pump(StreamReader reader)
-            {
-                try
-                {
-                    string? line;
-                    while ((line = reader.ReadLine()) is not null)
-                    {
-                        if (fs.Length > GameLogLimitBytes)
-                        {
-                            break;
-                        }
-
-                        lock (fs)
-                        {
-                            writer.WriteLine(line);
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    // 进程退出后读流会抛异常，正常
-                }
-            }
+            // 读与写分离：超过上限后继续读到 EOF，只是不再落盘（审计 M-04）。
+            void Pump(StreamReader reader) => GameLogPump.Pump(reader, fs, GameLogLimitBytes, LogWarning);
 
             if (process.StartInfo.RedirectStandardOutput)
             {
@@ -725,9 +714,33 @@ public sealed class LaunchEngine
                 t2.Start();
             }
         }
+        catch (Exception ex)
+        {
+            // 打不开日志文件时管道仍被重定向：关掉读端避免子进程写满阻塞。
+            LogWarning?.Invoke($"游戏日志泵启动失败：{ex.Message}");
+            TryClosePipes(process);
+        }
+    }
+
+
+    /// <summary>关闭被重定向的子进程管道，避免「有重定向但没有读者」造成的死锁。</summary>
+    private static void TryClosePipes(Process process)
+    {
+        try
+        {
+            if (process.StartInfo.RedirectStandardOutput)
+            {
+                process.StandardOutput.Close();
+            }
+
+            if (process.StartInfo.RedirectStandardError)
+            {
+                process.StandardError.Close();
+            }
+        }
         catch (Exception)
         {
-            // 日志泵失败不影响启动
+            // 进程可能已退出
         }
     }
 

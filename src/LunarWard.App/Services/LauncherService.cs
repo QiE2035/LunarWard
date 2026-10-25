@@ -172,7 +172,10 @@ public sealed class LauncherService : IDisposable
 
             _engine = new LaunchEngine(
                 _services.Processes, _services.Controller, _services.Launcher, _services.PrefixManager,
-                _services.Paths, _services.Dxvk);
+                _services.Paths, _services.Dxvk)
+            {
+                LogWarning = message => _services.Log.Warn(message),
+            };
 
             _engine.PhaseChanged += Engine_PhaseChanged;
 
@@ -323,7 +326,10 @@ public sealed class LauncherService : IDisposable
 
         _engine ??= new LaunchEngine(
             _services.Processes, _services.Controller, _services.Launcher, _services.PrefixManager,
-            _services.Paths, _services.Dxvk);
+            _services.Paths, _services.Dxvk)
+        {
+            LogWarning = message => _services.Log.Warn(message),
+        };
 
         var handle = _engine.StartManual(plan, _currentPlan, out var error);
         if (handle is null)

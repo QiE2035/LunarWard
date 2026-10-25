@@ -186,7 +186,7 @@ public sealed class LaunchReport
                 Prefix = plan.Prefix,
                 Explain = plan.Runtime.Explain,
             },
-            Env = new Dictionary<string, string>(plan.Env, StringComparer.Ordinal),
+            Env = RedactEnv(plan.Env),
             EnvSources = new Dictionary<string, string>(plan.EnvSources, StringComparer.Ordinal),
             Command = plan.BuildArgumentVector().ToList(),
             Prefix = plan.Prefix,
@@ -208,6 +208,31 @@ public sealed class LaunchReport
         };
         return report;
     }
+
+
+    /// <summary>
+    /// 把环境变量里像凭据的值打码（报告会落到 <c>data/launch-report.json</c>，
+    /// 审计 M-01 要求不留明文 cookie/token）；键名可见，便于排查来源。
+    /// </summary>
+    private static Dictionary<string, string> RedactEnv(IReadOnlyDictionary<string, string> env)
+    {
+        Dictionary<string, string> copy = new(env.Count, StringComparer.Ordinal);
+        foreach ((string key, string value) in env)
+        {
+            copy[key] = LooksSecret(key) ? "(redacted)" : value;
+        }
+
+        return copy;
+    }
+
+
+    private static bool LooksSecret(string key)
+        => key.Contains("TOKEN", StringComparison.OrdinalIgnoreCase)
+           || key.Contains("SECRET", StringComparison.OrdinalIgnoreCase)
+           || key.Contains("PASSWORD", StringComparison.OrdinalIgnoreCase)
+           || key.Contains("COOKIE", StringComparison.OrdinalIgnoreCase)
+           || key.Contains("AUTHKEY", StringComparison.OrdinalIgnoreCase)
+           || key.EndsWith("_KEY", StringComparison.OrdinalIgnoreCase);
 
 
     public string ToJson() => JsonSerializer.Serialize(this, Options);
