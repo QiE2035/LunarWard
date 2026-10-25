@@ -6,6 +6,9 @@
 > `07-UI-REPLICA.md` 仍是视觉 token / 布局契约；发生冲突时以 Starward 源码为准，
 > 并回头修正 07（见 §5）。
 
+> 与上游的所有主动差异（不可移植、素材缺失、平台不同实现）集中登记在
+> `09-LINUX-DIVERGENCES.md`。
+
 ## 0. 方法
 
 1. 每个页面先读 Starward 对应 `.xaml`（结构、Margin、尺寸、字号、圆角、资源键）
