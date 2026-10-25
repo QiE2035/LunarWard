@@ -3,11 +3,14 @@ using Avalonia.Threading;
 using Iciclecreek.Terminal;
 using LunarWard.App.ViewModels;
 
-namespace LunarWard.App.Views;
+namespace LunarWard.App.Views.Starward.Legacy;
 
 /// <summary>
 /// 环境 shell 窗口。终端控件用 <c>Iciclecreek.Avalonia.Terminal</c>
 /// （<see cref="TerminalView"/>），PTY 走 Porta.Pty 的原生 <c>openpty</c>。
+/// </summary>
+/// <summary>
+/// 旧壳层（审计 DC-16）：只被两个调试入口以 <c>new</c> 方式使用，新界面走 <see cref="StarwardShell"/>。
 /// </summary>
 public partial class ShellWindow : Window
 {

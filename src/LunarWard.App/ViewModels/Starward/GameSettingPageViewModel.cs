@@ -1420,10 +1420,11 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         try
         {
             var plan = _plan ?? _launcher.BuildPlan(Profile.Id, Profile.Profile, dryRun: true);
-            var shell = new Views.ShellWindow
+            var shell = new Views.Starward.Legacy.ShellWindow
             {
                 DataContext = new ViewModels.EnvironmentShellViewModel(plan, Services.Paths),
             };
+
             shell.Show();
             DiagnosticStatus = "";
         }

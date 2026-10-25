@@ -74,10 +74,11 @@ public sealed partial class SettingToolboxViewModel : SettingSectionViewModel
         try
         {
             var plan = Services.LauncherService.BuildPlan(Profile.Id, Profile.Profile, dryRun: true);
-            var window = new Views.ShellWindow
+            var window = new Views.Starward.Legacy.ShellWindow
             {
                 DataContext = new ViewModels.EnvironmentShellViewModel(plan, Services.Paths),
             };
+
             window.Show();
             Status = null;
         }
