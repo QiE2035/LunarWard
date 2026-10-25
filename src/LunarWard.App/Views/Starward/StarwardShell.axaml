@@ -23,39 +23,11 @@
              IsVisible="{Binding HasBackgroundImage}" />
       <ContentPresenter x:Name="VideoBackgroundHost" IsHitTestVisible="False" />
 
-      <!-- Starward AppBackground：右上有两片 400×400 的暗角渐变 -->
-      <Panel HorizontalAlignment="Right" VerticalAlignment="Top" Width="400" Height="400" IsHitTestVisible="False">
-        <Rectangle>
-          <Rectangle.Fill>
-            <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
-              <GradientStop Offset="0.55" Color="#00000000" />
-              <GradientStop Offset="0.8" Color="#1C000000" />
-              <GradientStop Offset="1" Color="#48000000" />
-            </LinearGradientBrush>
-          </Rectangle.Fill>
-        </Rectangle>
-      </Panel>
-      <Panel HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="400" Height="400" IsHitTestVisible="False">
-        <Rectangle>
-          <Rectangle.Fill>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-              <GradientStop Offset="0.55" Color="#00000000" />
-              <GradientStop Offset="0.8" Color="#1C000000" />
-              <GradientStop Offset="1" Color="#48000000" />
-            </LinearGradientBrush>
-          </Rectangle.Fill>
-        </Rectangle>
-      </Panel>
-      <Panel HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="200" IsHitTestVisible="False">
-        <Rectangle>
-          <Rectangle.Fill>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-              <GradientStop Offset="0.35" Color="#00000000" />
-              <GradientStop Offset="1" Color="#28000000" />
-            </LinearGradientBrush>
-          </Rectangle.Fill>
-        </Rectangle>
-      </Panel>
+      <!--
+        上游 AppBackground 在右上/右下各有一片 400×400 暗角渐变。这里去掉：
+        在亮色版本图上它们看起来就是两块黑色半透明遮罩（用户反馈），
+        而开始游戏按钮与便笺时钟本身自带底色，不需要这层压暗。
+      -->
 
     </Grid>
 

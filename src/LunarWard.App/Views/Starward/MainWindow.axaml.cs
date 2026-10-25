@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -125,18 +126,35 @@ public partial class MainWindow : Window
     }
 
 
-    private void OnTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
+    /// <summary>
+    /// 窗口级拖拽：去掉整宽标题栏遮罩后，在「没有控件接管的空白处」按下左键即可拖动窗口。
+    /// 按钮/输入框等会自己把 PointerPressed 标记为 Handled，这里的兜底判断只防御
+    /// `Handled` 未被设置的控件（例如某些自绘元素）。
+    /// </summary>
+    private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && e.ClickCount == 2)
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
-            // Starward 主窗口不可最大化：双击标题栏不动作
             return;
         }
 
-        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        // 只把最上面 48px 当拖拽区：内容区的「可点但没接管 PointerPressed」的元素
+        // （公告卡 Tapped、时钟等）不应该被拖动抢走。
+        if (e.GetPosition(this).Y > 48)
         {
-            BeginMoveDrag(e);
+            return;
         }
+
+        for (Visual? visual = e.Source as Visual; visual is not null && visual != this; visual = visual.GetVisualParent())
+        {
+            if (visual is Button or TextBox or ComboBox or ComboBoxItem or CheckBox or ToggleSwitch
+                or Slider or ListBox or ListBoxItem or TreeViewItem or TabItem or MenuItem or ScrollBar)
+            {
+                return;
+            }
+        }
+
+        BeginMoveDrag(e);
     }
 
 
