@@ -87,4 +87,21 @@ STARTED hk4e_cn pid=699177
 
 - `lunarward install-smoke <dir>`：真实 CDN 下载 + 续传（474 MB → 687 MB，未重下）。
 - `--install-real <dir> [--install-info-popup]`：真实下载进度与「下载中/下载/安装/校验」卡片。
-- `scripts/smoke-screenshots.sh`：八页渲染冒烟。
+- `scripts/smoke-screenshots.sh`：8 个主页面 + 9 个设置子页共 17 张渲染冒烟。
+
+---
+
+## 收尾快照（2026-10-25 晚）
+
+| 项 | 结果 |
+|---|---|
+| `dotnet build LunarWard.slnx` | 0 警告 0 错误 |
+| `dotnet build -t:Rebuild -warnaserror`（Debug / Release） | 通过（`NoWarn` 已清空，不再靠压制） |
+| `dotnet test LunarWard.slnx` | **632** 通过（Unit 569 / Installer 36 / Integration 27），0 跳过 |
+| `scripts/ci.sh` / GitHub Actions | 同序复跑，`check-skips.py` 0 跳过、`check-parity.py` 59 个引用全解析 |
+| UI 冒烟 | `scripts/smoke-screenshots.sh` 17 张全部 `SCREENSHOT_OK` |
+| 存储 | 抽卡 / 账号 / 时长 / 记录 / 千星奇域 / 游玩统计全部在 `<DataHome>/LunarWardDatabase.db`，表结构照抄上游 |
+| 未移植功能 | 无（parity 3 ✅ / 20 🟡 / 0 🔴；🟡 均为「无 Linux 等价物 / 缺美术素材 / 形态不同」） |
+| 安装器 | 下载→暂停→续传→取消已真机验证；完整 119 GB 一轮未跑完（时间成本） |
+
+剩余可选项见 `docs/09-LINUX-DIVERGENCES.md` 与 `docs/audit/00-SUMMARY.md` 的「待决策」表。
