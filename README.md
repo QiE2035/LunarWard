@@ -96,7 +96,8 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --launcher-setting-dialog + --settings-section basic|arguments|background|packages|network
 #                 --launcher-setting-dialog + --settings-section basic --uninstall-warning（卸载确认区）
 #                     （截启动器「游戏设置」弹窗；network 亮网络驱动器警告）、
-#                 --close-window-dialog（关闭主窗口时的「最小化到托盘 / 完全退出」询问浮层）、
+#                 --close-window-dialog（关闭主窗口时的「最小化到托盘 / 完全退出」询问浮层；
+#                     加 --dialog-esc-test 合成一次 ESC，验证键盘关闭路径，输出 DIALOG_ESC_CLOSED）、
 #                 --auth-login（右上角通行证授权登录按钮切到可见 + 失败态，并单独出 Flyout 图 *.flyout.png）、
 #                 --page self-query（账号记录页）、--selfquery-select（自动选中第一行类型）、
 #                 --selfquery-url（打开「输入 URL」对话框并单独出图 *.dialog.png）、

@@ -192,6 +192,19 @@ public partial class MainWindow : Window
             var closeDialog = new MainWindowCloseDialog(trayAvailable: true, currentOption: null);
             _ = DialogService.ShowAsync(closeDialog, this);
             await Task.Delay(900);
+
+            // --dialog-esc-test：合成一次 ESC，验证键盘关闭路径真的走通（会话被关掉）
+            if (CaptureMode.DialogEscTest)
+            {
+                closeDialog.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Escape,
+                });
+                await Task.Delay(400);
+                Console.WriteLine($"DIALOG_ESC_CLOSED {!closeDialog.IsShown}");
+            }
+
             CaptureMode.Capture(this);
             return;
         }

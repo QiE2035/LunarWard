@@ -232,6 +232,8 @@ _ = DialogService.ShowAsync(dialog, this);                                      
   `CloseButtonText` 即可，`CloseButtonClicked` / `CloseRequested` 都表示取消路径。
 - 自检截图（`--launcher-setting-dialog` 等）：打开浮层后 `CaptureMode.Capture(owner)`
   渲染主窗口，浮层与暗化一起进 PNG（不再有 `.dialog.png` 的独立窗口截图）。
+- 关闭询问浮层的键盘自检：`--screenshot /tmp/esc.png --close-window-dialog --dialog-esc-test`
+  会在打开后合成一次 ESC，打印 `DIALOG_ESC_CLOSED True`（表示 ESC → 会话关闭 → 浮层收起）。
 
 ## 7. 验收
 

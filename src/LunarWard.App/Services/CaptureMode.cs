@@ -191,6 +191,12 @@ internal static class CaptureMode
     /// </summary>
     public static bool CloseWindowDialog { get; set; }
 
+    /// <summary>
+    /// 自检：浮层打开后合成一次 ESC，验证「ESC = 关闭」的键盘路径确实关掉了会话
+    /// （<c>--dialog-esc-test</c>，配 <c>--close-window-dialog --screenshot</c>）。
+    /// </summary>
+    public static bool DialogEscTest { get; set; }
+
     /// <summary>渲染前等待时间（毫秒）。</summary>
     public static int WaitMilliseconds { get; set; } = 1600;
 
