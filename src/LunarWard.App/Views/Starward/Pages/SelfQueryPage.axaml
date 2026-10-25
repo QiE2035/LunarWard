@@ -23,7 +23,7 @@
            「删除本月数据」+「重新获取所有数据」；
            下面三个 ListBox（原神/星铁/绝区零各一，Padding 0,0,0,12，SelectionMode None）。
     差异（已记录在 docs/08-UI-PARITY.md）：
-      · Starward 的 ProgressRing 在 Avalonia 没有对应控件，用 Arc 静态画环（不旋转）；
+      · Starward 的 ProgressRing 在 Avalonia 没有对应控件，用 Arc + 1s 无限旋转动画模拟（仅更新中显示）；
       · 类型图标在 Starward 是 Assets 里的 PNG，LunarWard 没有这批素材，用字形占位；
       · 游戏图标同样是字形占位。
   -->
@@ -141,7 +141,7 @@
                          Text="{Binding SubText}" />
             </StackPanel>
 
-            <!-- 更新中：进度环（Arc 静态）+ 页码 -->
+            <!-- 更新中：进度环（Avalonia 无 ProgressRing，用 Arc + 旋转动画模拟器旋转）+ 页码 -->
             <Grid Grid.Column="2" IsVisible="{Binding IsUpdating}">
               <Arc Width="24"
                    Height="24"
@@ -149,7 +149,23 @@
                    SweepAngle="270"
                    Stroke="{StaticResource StarAccentBrush}"
                    StrokeThickness="2"
-                   StrokeLineCap="Round" />
+                   StrokeLineCap="Round"
+                   RenderTransform="rotate(0deg)">
+                <Arc.Styles>
+                  <Style Selector="Arc">
+                    <Style.Animations>
+                      <Animation Duration="0:0:1" IterationCount="Infinite">
+                        <KeyFrame Cue="0%">
+                          <Setter Property="RotateTransform.Angle" Value="0" />
+                        </KeyFrame>
+                        <KeyFrame Cue="100%">
+                          <Setter Property="RotateTransform.Angle" Value="360" />
+                        </KeyFrame>
+                      </Animation>
+                    </Style.Animations>
+                  </Style>
+                </Arc.Styles>
+              </Arc>
               <TextBlock HorizontalAlignment="Center"
                          VerticalAlignment="Center"
                          FontSize="12"
