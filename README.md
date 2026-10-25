@@ -104,7 +104,7 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --tab <n>（工具箱第 n 个战绩菜单）、--lang en-US、
 #                 --settings-section <about|general|download|files|screenshot|hotkey|gamepad|advanced|toolbox>、
 #                 --window playtime（打开游戏时长统计弹窗再截图）、
-#                 --profile <id>、--scroll-y <px>（截图前滚到长页下半部分）、--wait <ms>
+#                 --profile <id>、--scroll-y <px>（截图前滚到长页下半部分，配 --scroll-target <控件名> 精确指定滚动容器）、--wait <ms>
 
 # 5. 打包（Arch）
 cd packaging && makepkg -si
