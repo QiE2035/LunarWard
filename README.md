@@ -94,6 +94,12 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 cd packaging && makepkg -si
 ```
 
+直接启动游戏（不开窗口，给桌面快捷方式用，对应上游 `starward startgame --biz`）：
+
+```bash
+lunarward startgame --biz hk4e_cn      # 原神国服；hkrpg_cn / nap_global 等同理
+```
+
 使用说明见 [USER-GUIDE.md](docs/USER-GUIDE.md)，出问题看
 [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)。
 

@@ -11,6 +11,13 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // 命令行子命令（上游 App.xaml.cs 的 HandleStartupAsync）：startgame 等不打开窗口。
+        if (Services.StartupCommands.IsCommand(args))
+        {
+            Environment.ExitCode = Services.StartupCommands.RunAsync(args).GetAwaiter().GetResult();
+            return;
+        }
+
         // 自检开关：--screenshot <png> 打开主窗口、切到指定页面、渲染一帧、写 PNG 后退出。
         // 用于 CI/无人值守验证，不改变正常启动行为。
         //
