@@ -717,6 +717,26 @@ var shell = new ShellSession
 
 ---
 
+## 六·五、Linux 独有功能一览
+
+以下功能上游 Starward（Windows）没有对应物，是 LunarWard 的扩展；表格给出实现位置，
+便于验收时区分「上游对齐」与「Linux 补充」。
+
+| 功能 | 实现 | 说明 |
+|---|---|---|
+| 系统托盘 | `src/LunarWard.App/Services/TrayService.cs` | Avalonia `TrayIcon` + 原生菜单；无 SNI 宿主时回退「完全退出」并写回配置 |
+| 单实例 | `src/LunarWard.App/Services/SingleInstance.cs` | Unix socket；第二次启动把窗口叫回来（`SINGLE_INSTANCE_ACTIVATED`） |
+| CLI `startgame` | `src/LunarWard.App/Services/StartupCommands.cs` | `lunarward startgame --biz hk4e_cn`，不开窗口；桌面快捷方式用 |
+| URL 协议 | 同上 + `.desktop` 的 `x-scheme-handler/lunarward` | `lunarward://startgame/<biz>`、`lunarward://playtime?biz=&pid=` |
+| XDG 开机自启 | `src/LunarWard.Platform/AutostartEntry.cs` | 写 `$XDG_CONFIG_HOME/autostart/lunarward.desktop`，Exec 带 `--start-hidden` |
+| 包装器链 | `ProfileConfig.Wrappers` / `GamescopeArgs` | gamemoderun（最外）→ gamescope → mangohud → 自定义；设置页有开关与参数框 |
+| gamescope 嵌套提示 | `GameSettingPageViewModel.IsGamescopeSessionActive` | `GAMESCOPE_WAYLAND_DISPLAY` 存在时提示不要套娃 |
+| Steam 库扫描 | `src/LunarWard.App/Services/GameScanner.cs` | 标准路径 + `libraryfolders.vdf` 的 `steamapps/common`；`--scan-games` 可查 |
+| 启动报告 | `<DataHome>/launch-report.json` | 每相位时间、env 逐键来源、退出码/就绪信号 |
+| SQLite 存储 | `<DataHome>/LunarWardDatabase.db` | 抽卡四表 + 千星奇域 + 账号记录三表 + 游戏时长 + 已保存账号；表结构照抄上游 |
+
+---
+
 ## 七、其他 Starward 功能
 
 见 `05-ROADMAP.md` 的迁移矩阵。要点：

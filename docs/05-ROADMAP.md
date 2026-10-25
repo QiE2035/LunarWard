@@ -20,7 +20,7 @@ M0 是**唯一的前置门禁**——它验证四个未证实的技术点，任�
 | **M5** | 环境 shell | Avalonia 终端控件 + 复用 `LaunchPlan.Env` | M2, M0 | ✅ |
 | **M6** | `LunarWard.App` UI 骨架 | 窗口、游戏切换、启动按钮状态机 | M2 | ✅ |
 | **M7** | Starward 风格 UI | 公告三源 + 动态背景 + 双主题 | M6 | ✅（动态背景本机回退静态图） |
-| **M8** | `LunarWard.Installer` | 移植 `Starward.RPC/GameInstall`，去 gRPC/Vanara | M2 | ✅ 移植完成；UI 入口待接、真机下载未验证 |
+| **M8** | `LunarWard.Installer` | 移植 `Starward.RPC/GameInstall`，去 gRPC/Vanara | M2 | ✅ 移植完成；`InstallGameDialog` + 开始按钮进度/暂停/取消已接（`GameLauncherPage`）；真机完整下载仍未跑通一轮（只验到任务启动与取消） |
 | **M9** | Starward P0/P1 功能 | 抽卡、便笺、时长、截图、URL 协议 | M7, M8 | ✅ 全部完成（抽卡 / 便笺 / 时长 / 截图 / URL 协议） |
 | **M10** | 打磨 | i18n、崩溃上报、导入向导、文档 | M9 | ⚠️ i18n ✅、文档 ✅；导入向导与崩溃上报按 Q10 不做 |
 
