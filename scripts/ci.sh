@@ -6,6 +6,8 @@ cd "$(dirname "$0")/.."
 
 dotnet restore LunarWard.slnx
 dotnet build LunarWard.slnx -c Release --no-restore
+# 警告门禁：-t:Rebuild 强制全量重编，增量构建会漏掉未重编项目的警告。
+dotnet build LunarWard.slnx -c Release -t:Rebuild -warnaserror --no-restore
 rm -rf artifacts/test-results
 dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj -c Release --no-build \
   --logger "trx;LogFileName=unit.trx" --results-directory artifacts/test-results

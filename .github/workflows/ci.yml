@@ -28,6 +28,10 @@ jobs:
       - name: Build
         run: dotnet build LunarWard.slnx -c Release --no-restore
 
+      - name: 警告门禁（全量重编，避免增量构建漏报）
+        # 增量构建不会重编未改动项目，警告会被漏掉（审计 2026-10-25 误判 CA1416 的教训）。
+        run: dotnet build LunarWard.slnx -c Release -t:Rebuild -warnaserror --no-restore
+
       - name: Unit tests
         run: >
           dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj -c Release --no-build

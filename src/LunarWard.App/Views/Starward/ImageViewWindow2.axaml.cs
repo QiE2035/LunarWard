@@ -304,7 +304,7 @@ public partial class ImageViewWindow2 : Window
         {
             File.Delete(item.Path);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 #if DEBUG
             Debug.WriteLine($"[ImageView2] 删除失败：{ex}");
@@ -472,7 +472,7 @@ public partial class ImageViewWindow2 : Window
         {
             Process.Start(new ProcessStartInfo(fileName, argument) { UseShellExecute = true });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 #if DEBUG
             Debug.WriteLine($"[ImageView2] 打开失败：{ex}");
