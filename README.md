@@ -79,7 +79,10 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --uigf-window（UIGF v4.2 导出/导入窗口，自动用原神样例存档；加 --uigf-import 切到导入页）、
 #                 自检一律使用临时库 $TMP/lunarward-capture/capture.db，不写用户的 LunarWardDatabase.db、
 #
-# 逐页冒烟：scripts/smoke-screenshots.sh 会在隔离的 HOME/XDG 目录里把 launcher、gacha、
+# 真机下载自检：`lunarward install-smoke <目录> [--biz hk4e_cn] [--seconds 20]` 会启动一次
+  真实安装任务（官方 CDN），跑指定秒数后暂停，打印 `state/downloaded/total/files`；同一目录再跑一次
+  即可验证续传（实测 15s 下载 474 MB，6s 续传到 687 MB，未从头重下）。
+逐页冒烟：scripts/smoke-screenshots.sh 会在隔离的 HOME/XDG 目录里把 launcher、gacha、
 #   beyond、selfquery、screenshot、toolbox、settings、game-setting 八页各渲染一次 PNG 到
 #   artifacts/smoke/，任何一页抛未处理异常都会以非零码退出。
 #                 --predownload-dialog（预下载确认框；加 --predownload-dialog-unavailable 看不可用态）、

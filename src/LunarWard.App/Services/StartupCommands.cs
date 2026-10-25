@@ -1,3 +1,5 @@
+using LunarWard.Core;
+using LunarWard.Core.HoYoPlay;
 using LunarWard.Games;
 using LunarWard.Launch;
 using LunarWard.Platform;
@@ -26,6 +28,7 @@ internal static class StartupCommands
         => args.Length > 0
            && (args[0].Equals("startgame", StringComparison.OrdinalIgnoreCase)
                || args[0].Equals("playtime", StringComparison.OrdinalIgnoreCase)
+               || args[0].Equals("install-smoke", StringComparison.OrdinalIgnoreCase)
                || args[0].StartsWith("lunarward://", StringComparison.OrdinalIgnoreCase));
 
 
@@ -45,6 +48,11 @@ internal static class StartupCommands
             return await RunPlayTimeAsync(args).ConfigureAwait(false);
         }
 
+        if (args[0].Equals("install-smoke", StringComparison.OrdinalIgnoreCase))
+        {
+            return await RunInstallSmokeAsync(args).ConfigureAwait(false);
+        }
+
         string? biz = ReadArgument(args, "--biz");
         if (string.IsNullOrWhiteSpace(biz))
         {
@@ -53,6 +61,75 @@ internal static class StartupCommands
         }
 
         return await StartByBizAsync(biz).ConfigureAwait(false);
+    }
+
+
+    /// <summary>
+    /// <c>lunarward install-smoke &lt;目录&gt; [--biz hk4e_cn] [--seconds 20]</c>：
+    /// 真机下载自检——启动一次真实安装任务，跑若干秒后暂停，打印状态、已下载字节数与
+    /// 落盘文件数，然后退出。用于验证 M8「安装器真机下载」而不是只跑合成测试。
+    /// </summary>
+    /// <remarks>下载到 <c>&lt;目录&gt;</c> 后保留文件，便于检查；自检完自行删除即可。</remarks>
+    private static async Task<int> RunInstallSmokeAsync(string[] args)
+    {
+        string? dir = null;
+        for (int i = 1; i < args.Length; i++)
+        {
+            if (!args[i].StartsWith('-'))
+            {
+                dir = args[i];
+                break;
+            }
+        }
+        if (string.IsNullOrWhiteSpace(dir))
+        {
+            Console.Error.WriteLine("用法：lunarward install-smoke <目录> [--biz hk4e_cn] [--seconds 20]");
+            return 2;
+        }
+
+        string biz = ReadArgument(args, "--biz") ?? "hk4e_cn";
+        int seconds = int.TryParse(ReadArgument(args, "--seconds"), out int parsed) ? Math.Max(1, parsed) : 20;
+        GameId? gameId = GameId.FromGameBiz(new GameBiz(biz));
+        if (gameId is null)
+        {
+            Console.Error.WriteLine($"未知区服：{biz}");
+            return 2;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(dir);
+            AppServices.Initialize(XdgPaths.Default);
+            var services = AppServices.Current;
+            var request = new Installer.GameInstallRequest
+            {
+                GameBiz = biz,
+                GameId = gameId.Id,
+                InstallPath = Path.GetFullPath(dir),
+                Operation = Installer.GameInstallOperation.Install,
+                AudioLanguage = AudioLanguage.None,
+            };
+
+            Installer.GameInstallProgress progress = services.Installer.StartOrContinue(request);
+            Console.WriteLine($"INSTALL_SMOKE state={progress.State} total={progress.ProgressDownloadTotalBytes}");
+            if (services.Installer.CurrentTask is { } task)
+            {
+                Task run = Task.Run(() => services.Installer.RunAsync(task));
+                await Task.Delay(TimeSpan.FromSeconds(seconds)).ConfigureAwait(false);
+                progress = run.IsCompleted ? progress : services.Installer.Pause(request);
+            }
+
+            long bytes = Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).Sum(f => new FileInfo(f).Length);
+            int files = Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).Count();
+            Console.WriteLine($"INSTALL_SMOKE_DONE state={progress.State} downloaded={progress.ProgressDownloadFinishBytes} total={progress.ProgressDownloadTotalBytes} files={files} bytes={bytes} dir={Path.GetFullPath(dir)}");
+            services.ShutdownInstaller();
+            return progress.State is (int)Installer.GameInstallState.Error ? 1 : 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"install-smoke 失败：{ex.GetType().Name}: {ex.Message}");
+            return 1;
+        }
     }
 
 
