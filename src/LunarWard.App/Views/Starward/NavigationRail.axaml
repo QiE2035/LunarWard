@@ -110,6 +110,26 @@
         </Panel>
       </Button>
 
+      <Button Classes="rail" Tag="selfquery" Classes.is-selected="{Binding IsSelfQuerySelected}"
+              ToolTip.Tip="{Binding Strings[Shell.SelfQuery]}"
+              Command="{Binding SelectPageCommand}"
+              CommandParameter="{x:Static starward:ShellPage.SelfQuery}">
+        <Panel>
+          <Border Classes="rail-indicator" IsVisible="{Binding IsSelfQuerySelected}" />
+          <TextBlock Classes="icon" Text="&#xE8C7;" />
+        </Panel>
+      </Button>
+
+      <Button Classes="rail" Tag="genshin-beyond-gacha" Classes.is-selected="{Binding IsGenshinBeyondGachaSelected}"
+              ToolTip.Tip="{Binding Strings[Shell.GenshinBeyondGacha]}"
+              Command="{Binding SelectPageCommand}"
+              CommandParameter="{x:Static starward:ShellPage.GenshinBeyondGacha}">
+        <Panel>
+          <Border Classes="rail-indicator" IsVisible="{Binding IsGenshinBeyondGachaSelected}" />
+          <TextBlock Classes="icon" Text="&#xE776;" />
+        </Panel>
+      </Button>
+
       <Button Classes="rail" Tag="toolbox" Classes.is-selected="{Binding IsToolboxSelected}"
               ToolTip.Tip="{Binding Strings[Shell.Toolbox]}"
               Command="{Binding SelectPageCommand}"

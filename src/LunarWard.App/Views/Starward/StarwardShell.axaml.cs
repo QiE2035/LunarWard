@@ -168,6 +168,9 @@ public partial class StarwardShell : UserControl
         ShellPage.Screenshot => new Pages.ScreenshotPage(context),
         ShellPage.Gacha => new Pages.GachaPage(context),
         ShellPage.Toolbox => new Pages.ToolboxPage(context),
+        ShellPage.SelfQuery => new Pages.SelfQueryPage(context),
+
+        ShellPage.GenshinBeyondGacha => new Pages.GenshinBeyondGachaPage(context),
         ShellPage.Settings => new Pages.SettingPage(context),
         _ => throw new ArgumentOutOfRangeException(nameof(page)),
     };
@@ -217,6 +220,118 @@ public partial class StarwardShell : UserControl
     {
         ViewModel?.CloseGameSelectorCommand.Execute(null);
     }
+
+    private Avalonia.Point _dragStart;
+    private GameChoiceViewModel? _dragChoice;
+    private PointerPressedEventArgs? _dragPress;
+
+
+    /// <summary>按下记录起点：拖动超过阈值才算排序（源码「长按/拖动」交互的等价物）。</summary>
+    private void OnGameChoicePointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is Control { DataContext: GameChoiceViewModel choice })
+        {
+            _dragStart = e.GetPosition(this);
+            _dragChoice = choice;
+            _dragPress = e;
+        }
+    }
+
+
+    private async void OnGameChoicePointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (_dragChoice is null || _dragPress is null || sender is not Control card || !e.GetCurrentPoint(card).Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        var now = e.GetPosition(this);
+        if (Math.Abs(now.X - _dragStart.X) < 8 && Math.Abs(now.Y - _dragStart.Y) < 8)
+        {
+            return;
+        }
+
+        var choice = _dragChoice;
+        _dragChoice = null;
+        var press = _dragPress;
+        _dragPress = null;
+        var format = DataFormat.CreateStringApplicationFormat("lunarward/game-choice");
+        var item = new DataTransferItem();
+        item.Set(format, choice.SourceProfileId);
+        var data = new DataTransfer();
+        data.Add(item);
+        await DragDrop.DoDragDropAsync(press, data, DragDropEffects.Move);
+    }
+
+
+    /// <summary>松开即清拖动状态（否则点击后残留起点会让下一次微动触发拖放）。</summary>
+    private void OnGameChoicePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        _dragChoice = null;
+        _dragPress = null;
+    }
+
+
+    private void OnGameChoiceDragOver(object? sender, DragEventArgs e)
+    {
+        e.DragEffects = e.DataTransfer.Contains(DataFormat.CreateStringApplicationFormat("lunarward/game-choice")) ? DragDropEffects.Move : DragDropEffects.None;
+    }
+
+
+    private void OnGameChoiceDrop(object? sender, DragEventArgs e)
+    {
+        if (sender is not Control card || card.DataContext is not GameChoiceViewModel target
+            || DataContext is not ShellViewModel shell)
+        {
+            return;
+        }
+
+        if (e.DataTransfer.TryGetValue(DataFormat.CreateStringApplicationFormat("lunarward/game-choice")) is { } sourceId)
+        {
+            shell.MoveGameChoice(sourceId, shell.GameChoices.IndexOf(target));
+        }
+    }
+
+
+    /// <summary>悬停卡片弹出区服列表（源码 <c>Grid_GameBizDisplay_PointerEntered</c>）。</summary>
+    private void OnGameChoicePointerEntered(object? sender, PointerEventArgs e)
+    {
+        if (sender is Control card && card.ContextFlyout is { } flyout)
+        {
+            flyout.ShowAt(card);
+        }
+    }
+
+
+    private void OnGameChoicePointerExited(object? sender, PointerEventArgs e)
+    {
+        if (sender is Control card && card.ContextFlyout is Flyout flyout)
+        {
+            flyout.Hide();
+        }
+    }
+
+
+    /// <summary>点区服行：切档案并写渠道（源码 <c>Button_GameServer_Click</c>）。</summary>
+    private void OnGameServerClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control { DataContext: GameServerItem server } && DataContext is ShellViewModel shell)
+        {
+            shell.SelectServerCommand.Execute(server);
+        }
+    }
+
+
+    /// <summary>「固定」按钮（源码 <c>Button_PinGameBiz_Click</c>）。</summary>
+    private void OnGameServerPinClick(object? sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is Control { DataContext: GameServerItem server } && DataContext is ShellViewModel shell)
+        {
+            shell.ToggleServerPinCommand.Execute(server);
+        }
+    }
+
 
     private async void OnGameChoiceTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {

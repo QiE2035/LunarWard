@@ -123,6 +123,16 @@ public partial class App : Application
             case "toolbox":
                 page = ShellPage.Toolbox;
                 return true;
+            case "self-query":
+            case "selfquery":
+            case "account-records":
+                page = ShellPage.SelfQuery;
+                return true;
+            case "genshin-beyond":
+            case "beyond":
+            case "miliastra":
+                page = ShellPage.GenshinBeyondGacha;
+                return true;
             case "settings":
             case "setting":
                 page = ShellPage.Settings;

@@ -12,6 +12,8 @@ public enum ShellPage
     Screenshot,
     Gacha,
     Toolbox,
+    SelfQuery,
+    GenshinBeyondGacha,
     Settings,
 }
 

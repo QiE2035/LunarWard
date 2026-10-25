@@ -94,8 +94,60 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:GameChoiceViewModel">
                 <Border Width="192" Height="108" CornerRadius="8" ClipToBounds="True" Cursor="Hand"
+                        Classes="choice"
                         Background="#40000000"
-                        Tapped="OnGameChoiceTapped">
+                        Tapped="OnGameChoiceTapped"
+                        PointerEntered="OnGameChoicePointerEntered"
+                        PointerExited="OnGameChoicePointerExited"
+                        PointerPressed="OnGameChoicePointerPressed"
+                        PointerMoved="OnGameChoicePointerMoved"
+                        PointerReleased="OnGameChoicePointerReleased"
+                        DragDrop.AllowDrop="True"
+                        DragDrop.DragOver="OnGameChoiceDragOver"
+                        DragDrop.Drop="OnGameChoiceDrop">
+                  <!--
+                    区服列表（Starward GameSelector.xaml:203-251 的 FlyoutBase.AttachedFlyout）：
+                    每行 24×24 图标 + 名称 + 28×28「固定」按钮（E718 空心 / E841 实心）。
+                    Avalonia 用 ContextFlyout 承载同样的内容，悬停卡片时由 code-behind 弹出。
+                  -->
+                  <Border.ContextFlyout>
+                    <Flyout Placement="RightEdgeAlignedTop">
+                      <ItemsControl ItemsSource="{Binding Servers}" MinWidth="200">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:GameServerItem">
+                            <Button Padding="4"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="OnGameServerClick">
+                              <Grid ColumnSpacing="12" ColumnDefinitions="Auto,*,Auto">
+                                <Border Width="24" Height="24" CornerRadius="4" ClipToBounds="True">
+                                  <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                </Border>
+                                <TextBlock Grid.Column="1"
+                                           HorizontalAlignment="Left" VerticalAlignment="Center"
+                                           FontSize="14"
+                                           Text="{Binding Name}" />
+                                <Button Grid.Column="2"
+                                        Width="28" Height="28"
+                                        Padding="0"
+                                        HorizontalAlignment="Right"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Click="OnGameServerPinClick">
+                                  <Panel>
+                                    <TextBlock Classes="icon" FontSize="16" Text="&#xE718;" IsVisible="{Binding !IsPinned}" />
+                                    <TextBlock Classes="icon" FontSize="16" Text="&#xE841;" IsVisible="{Binding IsPinned}" />
+                                  </Panel>
+                                </Button>
+                              </Grid>
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </Flyout>
+                  </Border.ContextFlyout>
                   <Panel>
                     <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" IsVisible="{Binding HasThumbnail}" />
                     <!-- Logo（Starward 中央 Logo，带 #60000000 底） -->
@@ -116,6 +168,41 @@
                             IsVisible="{Binding IsInstalled}">
                       <TextBlock FontSize="11" Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[Launcher.Installed]}" />
                     </Border>
+
+                    <!--
+                      悬停遮罩（Starward Grid_GameBizDisplay_IconAndName）：#D0000000 底 + 强调色 2px 边框 + 圆角 6，
+                      48×48 图标 + 「选择游戏服务器」。源码 0.167s 淡入淡出（Storyboard），这里用过渡复刻。
+                    -->
+                    <Border Classes="choiceHover"
+                            Opacity="0"
+                            Background="#D0000000"
+                            BorderBrush="{StaticResource StarAccentBrush}"
+                            BorderThickness="2"
+                            CornerRadius="6"
+                            IsHitTestVisible="False">
+                      <Border.Transitions>
+                        <Transitions>
+                          <DoubleTransition Property="Opacity" Duration="0:0:0.167" />
+                        </Transitions>
+                      </Border.Transitions>
+                      <Grid ColumnDefinitions="*,Auto,Auto,*">
+                      <Border Grid.Column="1"
+                              Width="48" Height="48"
+                              Margin="0,0,8,0"
+                              HorizontalAlignment="Right" VerticalAlignment="Center"
+                              CornerRadius="8"
+                              ClipToBounds="True"
+                              IsVisible="{Binding HasIcon}">
+                        <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                      </Border>
+                      <TextBlock Grid.Column="2"
+                                 Margin="8,0,0,0"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 FontSize="14"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding Strings[Shell.SelectGameServer]}" />
+                      </Grid>
+                    </Border>
                   </Panel>
                 </Border>
               </DataTemplate>
@@ -123,6 +210,51 @@
           </ItemsControl>
         </StackPanel>
       </ScrollViewer>
+
+      <!--
+        已安装游戏实际占用大小（Starward GameSelector.xaml:268-341 的 Expander_InstalledGamesActualSize）：
+        头部「已安装游戏实际占用大小 {合计}」+ 右侧 32×32 刷新；展开后每行 32×32 图标 + 名称 + 容量。
+      -->
+      <Expander MinWidth="820"
+                Margin="0,-8,0,0"
+                HorizontalAlignment="Left"
+                HorizontalContentAlignment="Stretch"
+                Background="Transparent"
+                Foreground="{StaticResource StarTextSecondary}">
+        <Expander.Header>
+          <Grid ColumnSpacing="12" ColumnDefinitions="*,Auto">
+            <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{StaticResource StarTextSecondary}">
+              <Run Text="{Binding Strings[Shell.ActualSizeOfInstalledGames]}" /><Run Text="  " /><Run Text="{Binding InstalledGamesSizeText}" /><Run Text="{Binding InstalledGamesSavedSizeHint}" />
+            </TextBlock>
+            <Button Grid.Column="1"
+                    Width="32" Height="32" Padding="0"
+                    Background="Transparent" BorderThickness="0"
+                    Command="{Binding RefreshInstalledGamesCommand}"
+                    ToolTip.Tip="{Binding Strings[Shell.RefreshSize]}">
+              <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+            </Button>
+          </Grid>
+        </Expander.Header>
+        <ItemsControl ItemsSource="{Binding InstalledGameItems}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Spacing="8" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:InstalledGameItem">
+              <Grid ColumnSpacing="8" ColumnDefinitions="Auto,*,Auto" Height="32">
+                <Border Width="32" Height="32" CornerRadius="4" ClipToBounds="True" IsVisible="{Binding HasIcon}">
+                  <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                </Border>
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="14" Text="{Binding Name}" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="12"
+                           Foreground="{StaticResource StarTextSecondary}" Text="{Binding SizeText}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Expander>
 
       <!-- 关闭（Starward 用点空白 / ESC 关闭；这里补一个显式按钮，放在右上不挡启动按钮） -->
       <Button Classes="overlay"
@@ -149,6 +281,10 @@
           PointerExited="OnGameIconsAreaPointerExited">
 
       <Grid.Styles>
+        <!-- 游戏选择卡片：悬停时显示「选择游戏服务器」遮罩（源码 0.167s 淡入） -->
+        <Style Selector="Border.choice:pointerover Border.choiceHover">
+          <Setter Property="Opacity" Value="1" />
+        </Style>
         <Style Selector="Button.game-icon">
           <Setter Property="Width" Value="40" />
           <Setter Property="Height" Value="40" />

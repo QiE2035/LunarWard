@@ -47,7 +47,8 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
     public ToolboxPageViewModel(PageContext context) : base(context)
     {
         _credentials = new DailyNoteService(context.Services.Paths);
-        _gameKind = Profile.Profile.Game;
+        // 自检/截图可用 LUNARWARD_TOOLBOX_GAME 覆盖（例如 --tab 切到崩铁菜单）；正常启动仍读当前配置。
+        _gameKind = Environment.GetEnvironmentVariable("LUNARWARD_TOOLBOX_GAME") ?? Profile.Profile.Game;
         _gameBiz = Shell.CurrentGameBiz;
         _server = _gameBiz.EndsWith("_global", StringComparison.Ordinal) ? "global" : "cn";
 
@@ -132,6 +133,12 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
         "DeadlyAssault",
         "ShiyuDefense",
         "TravelersDiary",
+        "ForgottenHall",
+        "TrailblazeCalendar",
+        "SimulatedUniverse",
+        "PureFiction",
+        "ApocalypticShadow",
+        "ChallengePeak",
     };
 
     public string PlaceholderTitle => SelectedItem?.Title ?? "";
@@ -408,6 +415,12 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
         }
         else
         {
+            Add("TrailblazeCalendar", "\uE787", "Toolbox.TrailblazeCalendar");
+            Add("SimulatedUniverse", "\uE9D9", "Toolbox.SimulatedUniverse");
+            Add("ForgottenHall", "\uE8A1", "Toolbox.ForgottenHall");
+            Add("PureFiction", "\uE7C1", "Toolbox.PureFiction");
+            Add("ApocalypticShadow", "\uE7C3", "Toolbox.ApocalypticShadow");
+            Add("ChallengePeak", "\uE9D9", "Toolbox.ChallengePeak");
             Add("InterKnotMonthlyReport", "\uE9D2", "Toolbox.InterKnotMonthly");
             Add("ShiyuDefense", "\uE8A1", "Toolbox.ShiyuDefense");
             Add("DeadlyAssault", "\uE7FC", "Toolbox.DeadlyAssault");

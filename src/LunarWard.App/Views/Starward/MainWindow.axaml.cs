@@ -36,6 +36,15 @@ public partial class MainWindow : Window
             if (CaptureMode.OpenSelector)
             {
                 shell.OpenGameSelectorCommand.Execute(null);
+                if (CaptureMode.SelectorHover)
+                {
+                    _ = SetSelectorHoverAsync(this);
+                }
+
+                if (CaptureMode.SelectorFlyout)
+                {
+                    _ = ShowSelectorFlyoutAsync(this);
+                }
             }
 
             if (CaptureMode.GameIcons)
@@ -48,6 +57,41 @@ public partial class MainWindow : Window
         }
 
         CaptureMode.Capture(this);
+    }
+
+
+    /// <summary>自检：把游戏选择器第一张卡片切成 <c>:pointerover</c>，截「选择游戏服务器」遮罩。</summary>
+    private static async Task SetSelectorHoverAsync(Control root)
+    {
+        await Task.Delay(600);
+        // 直接点亮第一张卡片的悬停遮罩（真实交互仍靠 Border.choice:pointerover 样式）
+        var overlay = root.GetVisualDescendants()
+                          .OfType<Avalonia.Controls.Border>()
+                          .FirstOrDefault(x => x.Classes.Contains("choiceHover"));
+        if (overlay is not null)
+        {
+            overlay.Opacity = 1;
+        }
+    }
+
+
+    /// <summary>自检：弹出第一张卡片的区服列表，并打印实际是否打开（Flyout 是独立 Popup，不随窗口截图）。</summary>
+    private static async Task ShowSelectorFlyoutAsync(Control root)
+    {
+        await Task.Delay(600);
+        var card = root.GetVisualDescendants()
+                       .OfType<Avalonia.Controls.Border>()
+                       .FirstOrDefault(x => x.Classes.Contains("choice"));
+        if (card?.ContextFlyout is { } flyout)
+        {
+            flyout.ShowAt(card);
+            await Task.Delay(400);
+            Console.WriteLine($"SERVER_FLYOUT_OPEN {flyout.IsOpen}");
+        }
+        else
+        {
+            Console.WriteLine("SERVER_FLYOUT_OPEN False (card/flyout not found)");
+        }
     }
 
 
@@ -118,6 +162,16 @@ public partial class MainWindow : Window
             var dialog = new PlayTimeStatsDialog(shell.Services, shell.Profile.Id);
             dialog.Show(this);
             dialog.CaptureSelf(CaptureMode.Path!, 1200);
+            return;
+        }
+
+        // 图片查看器：同样是独立 Window，主窗口渲染不到
+        if (string.Equals(CaptureMode.TargetWindow, "image-viewer", StringComparison.OrdinalIgnoreCase))
+        {
+            var viewer = new ImageViewWindow2(ImageViewWindow2.CreateCaptureSamples(), 0);
+            viewer.PrepareCapture(CaptureMode.ImageViewerGallery, CaptureMode.ImageViewerInfo);
+            viewer.Show(this);
+            viewer.CaptureSelf(CaptureMode.Path!, 1600);
             return;
         }
 

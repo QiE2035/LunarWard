@@ -93,7 +93,78 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     }
 
 
-    /// <summary>点击图标条里的游戏：切档案并收起图标条（Starward <c>Grid_GameIcon_Tapped</c>）。</summary>
+    /// <summary>
+    /// 拖放排序（Starward <c>DragItemsCompleted</c>）：把 <paramref name="sourceId"/> 移到
+    /// <paramref name="targetIndex"/>，并把顺序写进 <c>LauncherSettings.GameChoiceOrder</c>。
+    /// </summary>
+    public void MoveGameChoice(string sourceId, int targetIndex)
+    {
+        int from = GameChoices.IndexOf(GameChoices.FirstOrDefault(x => x.SourceProfileId == sourceId)!);
+        if (from < 0)
+        {
+            return;
+        }
+
+        targetIndex = Math.Clamp(targetIndex, 0, GameChoices.Count - 1);
+        if (from == targetIndex)
+        {
+            return;
+        }
+
+        GameChoices.Move(from, targetIndex);
+        _services.Config.Launcher.GameChoiceOrder = GameChoices.Select(x => x.SourceProfileId).ToList();
+        SaveConfig();
+    }
+
+
+    /// <summary>点区服：切到该档案并把渠道写进去（对应源码 <c>Button_GameServer_Click</c>）。</summary>
+    [RelayCommand]
+    private async Task SelectServerAsync(GameServerItem? server)
+    {
+        if (server is null)
+        {
+            return;
+        }
+
+        await ChooseGameAsync(server.Choice).ConfigureAwait(true);
+        if (Profiles.FirstOrDefault(x => x.Id == server.Choice.SourceProfileId) is { } item)
+        {
+            item.Profile.Channel = server.Channel.ToString();
+        }
+
+        SaveConfig();
+        ReloadProfiles();
+    }
+
+
+    /// <summary>「固定」区服（源码 <c>Button_PinGameBiz_Click</c>）。</summary>
+    [RelayCommand]
+    private void ToggleServerPin(GameServerItem? server)
+    {
+        if (server is null)
+        {
+            return;
+        }
+
+        server.IsPinned = !server.IsPinned;
+        var pinned = _services.Config.Launcher.PinnedGameServers;
+        var key = $"{server.Choice.SourceProfileId}:{server.Channel}";
+        if (server.IsPinned)
+        {
+            if (!pinned.Contains(key))
+            {
+                pinned.Add(key);
+            }
+        }
+        else
+        {
+            pinned.RemoveAll(x => x == key);
+        }
+
+        SaveConfig();
+    }
+
+
     [RelayCommand]
     private async Task SelectGameIcon(GameChoiceViewModel choice)
     {
@@ -110,7 +181,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLauncherSelected), nameof(IsGameSettingSelected), nameof(IsScreenshotSelected),
-        nameof(IsGachaSelected), nameof(IsToolboxSelected), nameof(IsSettingsSelected))]
+        nameof(IsGachaSelected), nameof(IsToolboxSelected), nameof(IsSelfQuerySelected), nameof(IsGenshinBeyondGachaSelected), nameof(IsSettingsSelected))]
     private ShellPage _currentPage;
 
 
@@ -123,6 +194,10 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     public bool IsGachaSelected => CurrentPage == ShellPage.Gacha;
 
     public bool IsToolboxSelected => CurrentPage == ShellPage.Toolbox;
+
+    public bool IsSelfQuerySelected => CurrentPage == ShellPage.SelfQuery;
+
+    public bool IsGenshinBeyondGachaSelected => CurrentPage == ShellPage.GenshinBeyondGacha;
 
     public bool IsSettingsSelected => CurrentPage == ShellPage.Settings;
 
@@ -200,6 +275,123 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     partial void OnIsGameSelectorOpenChanged(bool value) => GameSelectorVisibilityChanged?.Invoke(this, EventArgs.Empty);
 
 
+    /// <summary>
+    /// 「已安装游戏实际占用大小」（Starward <c>Expander_InstalledGamesActualSize</c>）：
+    /// 列每个已安装档案的目录占用，右下角刷新按钮重算。
+    /// </summary>
+    [ObservableProperty]
+    private string _installedGamesSizeText = "";
+
+    [ObservableProperty]
+    private bool _isCalculatingInstalledGames;
+
+
+    public ObservableCollection<InstalledGameItem> InstalledGameItems { get; } = [];
+
+
+    /// <summary>多份安装之间重复占用的估算（Starward <c>InstalledGamesSavedSize</c>）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InstalledGamesSavedSizeHint))]
+    private string? _installedGamesSavedSizeText;
+
+
+    /// <summary>（其中约 X 可省）——没有重复安装时为空串（Avalonia 的 Run 不支持 IsVisible）。</summary>
+    public string InstalledGamesSavedSizeHint
+        => string.IsNullOrEmpty(InstalledGamesSavedSizeText)
+            ? ""
+            : $"（{Strings["Shell.SavedSize"]} {InstalledGamesSavedSizeText}）";
+
+
+    [RelayCommand]
+    private async Task RefreshInstalledGamesAsync()
+    {
+        IsCalculatingInstalledGames = true;
+        try
+        {
+            var items = await Task.Run(() => Profiles.Where(x => x.IsInstalled)
+                .Select(profile =>
+                {
+                    var path = ProfileConfig.ExpandPath(profile.Profile.Path);
+                    long bytes = 0;
+                    var files = new List<(string Key, long Length)>();
+                    if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
+                    {
+                        try
+                        {
+                            foreach (var file in new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories))
+                            {
+                                bytes += file.Length;
+                                files.Add(($"{file.Length}/{file.Name}", file.Length));
+                            }
+                        }
+                        catch (IOException)
+                        {
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                        }
+                    }
+
+                    return (profile, bytes, files);
+                })
+                .ToList()).ConfigureAwait(true);
+
+            InstalledGameItems.Clear();
+            long total = 0;
+            var seen = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var (profile, bytes, files) in items)
+            {
+                total += bytes;
+                var choice = GameChoices.FirstOrDefault(x => x.SourceProfileId == profile.Id);
+                InstalledGameItems.Add(new InstalledGameItem(profile.DisplayName, choice?.Icon, FormatSize(bytes), profile.DisplayName));
+
+                foreach (var (key, _) in files)
+                {
+                    seen[key] = seen.TryGetValue(key, out int count) ? count + 1 : 1;
+                }
+            }
+
+            // Starward 用文件 ID 精确统计硬链接节省量；Linux 侧没有等价的托管 API，
+            // 这里用「同名同大小出现在多个安装里」估算重复占用（文档已注明是估算）。
+            long duplicated = 0;
+            foreach (var (profile, _, files) in items)
+            {
+                foreach (var (key, length) in files)
+                {
+                    if (seen.TryGetValue(key, out int count) && count > 1)
+                    {
+                        duplicated += length;
+                    }
+                }
+            }
+
+            if (duplicated > 0)
+            {
+                InstalledGamesSizeText = FormatSize(total - duplicated);
+                InstalledGamesSavedSizeText = FormatSize(duplicated);
+            }
+            else
+            {
+                InstalledGamesSizeText = FormatSize(total);
+                InstalledGamesSavedSizeText = null;
+            }
+        }
+        finally
+        {
+            IsCalculatingInstalledGames = false;
+        }
+    }
+
+
+    /// <summary>磁盘占用（Starward 侧同样用两位小数的 GB / MB）。</summary>
+    private static string FormatSize(long bytes)
+    {
+        const double Kb = 1024d;
+        double gb = bytes / Kb / Kb / Kb;
+        return gb >= 1 ? $"{gb:F2} GB" : $"{bytes / Kb / Kb:F0} MB";
+    }
+
+
     [RelayCommand]
     private void OpenGameSelector()
     {
@@ -207,6 +399,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         IsGameSelectorOpen = true;
         ShowGameIcons();
         _ = LoadChoiceArtAsync();
+        _ = RefreshInstalledGamesAsync();
     }
 
 
@@ -463,14 +656,15 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     private void BuildGameChoices()
     {
         GameChoices.Clear();
-        foreach (var profile in Profiles)
+        var order = _services.Config.Launcher.GameChoiceOrder;
+        foreach (var profile in Profiles.OrderBy(x => order.IndexOf(x.Id) is var i && i >= 0 ? i : int.MaxValue))
         {
             var definition = Games.GameCatalog.Detect(ProfileConfig.ExpandPath(profile.Profile.Path))
                              ?? Games.GameCatalog.Get(profile.Profile.Game,
                                  string.Equals(profile.Profile.Edition, "Global", StringComparison.OrdinalIgnoreCase)
                                      ? Games.GameEdition.Global
                                      : Games.GameEdition.China);
-            GameChoices.Add(new GameChoiceViewModel(profile, definition));
+            GameChoices.Add(new GameChoiceViewModel(profile, definition, _services.Config.Launcher.PinnedGameServers));
         }
 
         _ = LoadChoiceArtAsync();
@@ -577,7 +771,8 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 /// <summary>游戏选择层的一格（Starward GameSelector 的 192×108 卡片）。</summary>
 public sealed partial class GameChoiceViewModel : ObservableObject
 {
-    public GameChoiceViewModel(ProfileItemViewModel profile, Games.GameDefinition? definition)
+    public GameChoiceViewModel(ProfileItemViewModel profile, Games.GameDefinition? definition,
+                               IReadOnlyCollection<string>? pinnedServers = null)
     {
         SourceProfileId = profile.Id;
         ProfileId = profile.IsInstalled ? profile.Id : null;
@@ -586,6 +781,27 @@ public sealed partial class GameChoiceViewModel : ObservableObject
         Edition = definition?.Edition == Games.GameEdition.Global ? "国际服" : "国服";
         IsInstalled = profile.IsInstalled;
         IsCurrent = false;
+
+        // 区服列表（Starward GameBizIcon.Servers）：本项目每款游戏都只有官方 + Bilibili 两档
+        var channels = definition?.GetSupportedChannels() ?? [Games.GameChannel.Official];
+        Servers = channels.Select(x => new GameServerItem(this, x, ServerName(definition, x),
+                                                         pinnedServers?.Contains($"{profile.Id}:{x}") == true))
+                          .ToList();
+    }
+
+
+    /// <summary>区服（Starward <c>GameBizIcon</c>，带 24×24 图标、名称与「固定」开关）。</summary>
+    public IReadOnlyList<GameServerItem> Servers { get; }
+
+
+    private static string ServerName(Games.GameDefinition? definition, Games.GameChannel channel)
+    {
+        if (channel == Games.GameChannel.Bilibili)
+        {
+            return "Bilibili";
+        }
+
+        return definition?.Edition == Games.GameEdition.Global ? "国际服" : "官方国服";
     }
 
 
@@ -637,4 +853,45 @@ public sealed partial class GameChoiceViewModel : ObservableObject
 
     /// <summary>XAML 内的文案（例如「已安装」标记）。</summary>
     public Localization.AppStrings Strings => Localization.AppStrings.Instance;
+}
+
+
+/// <summary>游戏区服（Starward <c>GameBizIcon</c> 的区服条目：24×24 图标、名称、固定开关）。</summary>
+public sealed partial class GameServerItem : ObservableObject
+{
+    public GameServerItem(GameChoiceViewModel choice, Games.GameChannel channel, string name, bool isPinned)
+    {
+        Choice = choice;
+        Channel = channel;
+        Name = name;
+        _isPinned = isPinned;
+    }
+
+
+    public GameChoiceViewModel Choice { get; }
+
+    public Games.GameChannel Channel { get; }
+
+    public string Name { get; }
+
+    /// <summary>图标沿用游戏图标（本项目没有区服独立图标素材，docs/08 §4 记录）。</summary>
+    public Bitmap? Icon => Choice.Icon;
+
+    [ObservableProperty]
+    private bool _isPinned;
+}
+
+
+/// <summary>「已安装游戏实际占用大小」的一行（图标 + 名称 + 右上角容量）。</summary>
+public sealed class InstalledGameItem(string name, Bitmap? icon, string sizeText, string toolTip)
+{
+    public string Name { get; } = name;
+
+    public Bitmap? Icon { get; } = icon;
+
+    public string SizeText { get; } = sizeText;
+
+    public string ToolTip { get; } = toolTip;
+
+    public bool HasIcon => Icon is not null;
 }

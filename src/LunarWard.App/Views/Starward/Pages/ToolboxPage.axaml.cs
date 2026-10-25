@@ -57,6 +57,12 @@ public partial class ToolboxPage : StarwardPage
                 "DeadlyAssault" => new Record.DeadlyAssaultPage(Context, role),
                 "ShiyuDefense" => new Record.ShiyuDefensePage(Context, role),
                 "TravelersDiary" => new Record.TravelersDiaryPage(Context, role),
+                "TrailblazeCalendar" => new Record.TrailblazeCalendarPage(Context, role),
+                "SimulatedUniverse" => new Record.SimulatedUniversePage(Context, role),
+                "ForgottenHall" => new Record.ForgottenHallPage(Context, role),
+                "PureFiction" => new Record.PureFictionPage(Context, role),
+                "ApocalypticShadow" => new Record.ApocalypticShadowPage(Context, role),
+                "ChallengePeak" => new Record.ChallengePeakPage(Context, role),
                 _ => null,
             };
         }
