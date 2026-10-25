@@ -1,3 +1,4 @@
+using LunarWard.App.Services;
 using System.Collections.ObjectModel;
 using System.Net.Http;
 using Avalonia.Media.Imaging;
@@ -250,6 +251,23 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
     }
 
 
+    private async Task LoadAvatarAsync(string url)
+    {
+        try
+        {
+            var bitmap = await GachaIconCache.LoadAsync(url).ConfigureAwait(false);
+            if (bitmap is not null)
+            {
+                GachaIconCache.Post(() => Avatar = bitmap);
+            }
+        }
+        catch (Exception)
+        {
+            // 头像失败不影响页面（保留占位图标）
+        }
+    }
+
+
     private void ApplyRole(GameRecordRole role)
     {
         CurrentRole = role;
@@ -259,6 +277,15 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
         LevelText = role.Level > 0 ? $"Lv.{role.Level}" : "";
         StatusText = "";
         ErrorText = null;
+
+        // 头像：上游 GetGameRolesAsync 已经把 role.HeadIcon 填好，这里把 URL 变成位图。
+        // 复用 GachaIconCache 的「内存 + 磁盘」缓存（同一个 HttpClient，目录名沿用
+        // gacha-icons 仅为兼容已有缓存，头像 URL 自带唯一后缀，不会撞名）。
+        Avatar = GachaIconCache.TryGet(role.HeadIcon);
+        if (Avatar is null && !string.IsNullOrWhiteSpace(role.HeadIcon))
+        {
+            _ = LoadAvatarAsync(role.HeadIcon);
+        }
 
         Roles.Clear();
         Roles.Add(new ToolboxRoleItem(role, _cookie, _server));
