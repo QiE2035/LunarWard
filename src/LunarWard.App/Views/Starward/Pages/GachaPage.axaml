@@ -410,12 +410,25 @@
                       -->
                       <Border Background="{Binding RankType, Converter={StaticResource RarityBackgroundConverter}}"
                               CornerRadius="4" />
+                      <!--
+                        Starward GachaLogPage.xaml:373-376：图标 80 高贴顶、左下圆角 16；
+                        有图标时不再显示名称（上游同样只有图标 + 次数），没图标时退回名称占位。
+                      -->
+                      <Border Height="64"
+                              Margin="8,6,8,20"
+                              VerticalAlignment="Top"
+                              CornerRadius="0,0,12,0"
+                              ClipToBounds="True"
+                              IsVisible="{Binding HasIcon}">
+                        <Image Stretch="Uniform" Source="{Binding Icon}" />
+                      </Border>
                       <TextBlock Margin="4,0"
                                  VerticalAlignment="Center"
                                  FontSize="12"
                                  TextAlignment="Center"
                                  TextWrapping="Wrap"
                                  MaxLines="3"
+                                 IsVisible="{Binding !HasIcon}"
                                  Text="{Binding Name}" />
                       <TextBlock Margin="0,0,0,3"
                                  HorizontalAlignment="Center"

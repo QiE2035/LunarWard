@@ -69,6 +69,7 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --screenshot-seed / --screenshot-hover（截图页样例数据 / 首块磁贴悬停放大）、
 #                 --gacha-seed zzz|genshin（抽卡页样例记录，便于截 ZZZ 统计卡）、
 #                 --gacha-delete-dialog（抽卡页「删除指定时间段」对话框，自动用 ZZZ 样例数据）、
+#                 --gacha-materials（抽卡页右侧材料统计 Pane，自动用原神样例数据；会联网同步 wiki 图标）、
 #                 --gacha-export <path>（把样例记录按 UIGF v3.0 导出到该路径）、
 #                 --gacha-import <path>（读回 UIGF v3.0 / JSON 并合并，做往返自检）、
 #                 --gacha-excel <path>（把样例记录按 Starward 的 Excel 模板导出到该路径）、

@@ -24,6 +24,7 @@ internal static class Program
         //   --selector-flyout                 游戏选择器第一张卡片的区服列表（配 --open-selector）
         //   --gacha-seed zzz|genshin          抽卡页样例记录（不碰网络，便于截 ZZZ 统计卡）
         //   --gacha-delete-dialog             抽卡页「删除指定时间段」对话框（自动用 ZZZ 样例数据）
+        //   --gacha-materials                 抽卡页右侧材料统计 Pane（自动用原神样例数据）
         //   --uigf-window                     UIGF v4.2 导出 / 导入窗口（自动用原神样例存档）
         //   --uigf-import                     配合 --uigf-window，直接切到导入页并灌样例文件
         //   --gacha-export <path>             把样例记录按 UIGF v3.0 / SRGF v1.0 导出到该路径
@@ -70,6 +71,7 @@ internal static class Program
             CaptureMode.LauncherSettingDialog = args.Contains("--launcher-setting-dialog");
             CaptureMode.GachaSeed = ReadArgument(args, "--gacha-seed");
             CaptureMode.GachaDeleteDialog = args.Contains("--gacha-delete-dialog");
+            CaptureMode.GachaMaterials = args.Contains("--gacha-materials");
             CaptureMode.UigfWindow = args.Contains("--uigf-window");
             CaptureMode.UigfImportPage = args.Contains("--uigf-import");
             CaptureMode.PredownloadDialog = args.Contains("--predownload-dialog");

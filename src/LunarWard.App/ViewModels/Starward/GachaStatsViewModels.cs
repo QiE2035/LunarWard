@@ -113,17 +113,40 @@ public sealed partial class GachaStatsItemViewModel : ObservableObject
 /// Starward 按 <c>ItemId</c> 分组；<c>GachaRecord</c> 没有 ItemId，这里按 <c>Name</c>
 /// 分组（同名物品合并），数量与排序语义一致（稀有度降序 → 次数降序 → 时间降序）。
 /// </remarks>
-public sealed class GachaItemStatsViewModel
+public sealed partial class GachaItemStatsViewModel : ObservableObject
 {
-    public GachaItemStatsViewModel(string name, int rankType, int count)
+    public GachaItemStatsViewModel(string name, int rankType, int count, int itemId = 0, string? iconUrl = null)
     {
         Name = name;
         RankType = rankType;
         Count = count;
+        ItemId = itemId;
+        IconUrl = iconUrl;
+
+        if (!string.IsNullOrWhiteSpace(iconUrl))
+        {
+            Icon = GachaIconCache.TryGet(iconUrl);
+            if (Icon is null)
+            {
+                _ = LoadIconAsync(iconUrl);
+            }
+        }
     }
 
 
     public string Name { get; }
+
+    /// <summary>物品 Id（上游按它分组；0 = 老记录还没同步 wiki）。</summary>
+    public int ItemId { get; }
+
+    /// <summary>图标 URL（Starward <c>GachaLogItemEx.Icon</c>）。</summary>
+    public string? IconUrl { get; }
+
+    /// <summary>图标位图；null 时卡片显示名称占位（上述上游无素材时的降级）。</summary>
+    [ObservableProperty]
+    private Bitmap? _icon;
+
+    public bool HasIcon => Icon is not null;
 
     /// <summary>3 / 4 / 5 星，决定占位底色。</summary>
     public int RankType { get; }
@@ -132,6 +155,19 @@ public sealed class GachaItemStatsViewModel
 
     /// <summary>"12 次"（Starward GachaLogPage.xaml:377-384 的 ItemCount + SpiralAbyssPage_Times）。</summary>
     public string CountText => $"{Count} {AppStrings.Instance["Gacha.Times"]}";
+
+
+    partial void OnIconChanged(Bitmap? value) => OnPropertyChanged(nameof(HasIcon));
+
+
+    private async Task LoadIconAsync(string url)
+    {
+        Bitmap? bitmap = await GachaIconCache.LoadAsync(url).ConfigureAwait(false);
+        if (bitmap is not null)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => Icon = bitmap);
+        }
+    }
 }
 
 

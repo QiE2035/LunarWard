@@ -751,12 +751,14 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         }
 
         // Starward GachaLogService.cs:251-256：按 ItemId 分组 → 稀有度降序、次数降序、时间降序。
-        // 这里没有 ItemId，按名称分组。
+        // 老记录还没同步 wiki（ItemId=0）时退回按名称分组，行为与上游「先用名字分组、
+        // UpdateGachaItemId 回填后再按 ItemId」一致。
         foreach (var group in records
-                     .GroupBy(r => r.Name)
+                     .GroupBy(r => r.ItemId != 0 ? $"id:{r.ItemId}" : $"name:{r.Name}")
                      .Select(g => new
                      {
-                         Name = g.Key,
+                         Name = g.First().Name,
+                         ItemId = g.Max(r => r.ItemId),
                          RankType = g.Max(r => r.RankType),
                          Count = g.Count(),
                          Time = g.Max(r => r.Time),
@@ -765,7 +767,12 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
                      .ThenByDescending(x => x.Count)
                      .ThenByDescending(x => x.Time))
         {
-            ItemStats.Add(new GachaItemStatsViewModel(group.Name, group.RankType, group.Count));
+            ItemStats.Add(new GachaItemStatsViewModel(
+                group.Name,
+                group.RankType,
+                group.Count,
+                group.ItemId,
+                IconOf(group.ItemId)));
         }
 
         SyncBannerOptions(stats);
@@ -783,6 +790,11 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     /// 卡池类型 → 显示名。Starward 用 <c>IGachaType.ToLocalization()</c>；
     /// 这里从 AppStrings 取同义文案，查不到时退回 <see cref="GachaService.GetPoolName"/>。
     /// </summary>
+    /// <summary>从 wiki 图标表取 URL（没有就返回 null，材料卡显示名称而不是空白图标）。</summary>
+    private string? IconOf(int itemId)
+        => itemId != 0 && _icons.TryGetValue(itemId, out string? icon) ? icon : null;
+
+
     private string PoolText(int gachaType)
     {
         var key = (_gameKind == "zzz" ? "Gacha.Pool.Zzz." : "Gacha.Pool.Genshin.") + gachaType;

@@ -111,6 +111,9 @@ internal static class CaptureMode
     /// <summary>截抽卡页「删除指定时间段」对话框（自动灌 ZZZ 样例记录）。</summary>
     public static bool GachaDeleteDialog { get; set; }
 
+    /// <summary><c>--gacha-materials</c>：截图时展开右侧材料统计 Pane。</summary>
+    public static bool GachaMaterials { get; set; }
+
     /// <summary>截 UIGF v4.2 导出 / 导入窗口（自动灌原神样例存档）。</summary>
     public static bool UigfWindow { get; set; }
 

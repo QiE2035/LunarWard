@@ -67,6 +67,7 @@ public partial class GachaPage : StarwardPage
             ?? (CaptureMode.GachaDeleteDialog ? "zzz" : null)
             ?? (CaptureMode.UigfWindow ? "genshin" : null)
             ?? (CaptureMode.UigfExport is null ? null : "genshin")
+            ?? (CaptureMode.GachaMaterials ? "genshin" : null)
             ?? (CaptureMode.GachaExport is null ? null : "genshin")
             ?? (CaptureMode.GachaImport is null ? null : "genshin");
         _viewModel = new GachaPageViewModel(
@@ -112,6 +113,18 @@ public partial class GachaPage : StarwardPage
         {
             // 等页面挂到窗口再弹，否则 Show 的 owner 还没准备好
             Dispatcher.UIThread.Post(OnDeleteByTimeRequested, DispatcherPriority.Loaded);
+        }
+
+        if (CaptureMode.GachaMaterials)
+        {
+            // 材料统计 Pane 默认收起，截图前展开（等价于点页头「材料统计」按钮）
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (!_viewModel.IsPaneOpen)
+                {
+                    _viewModel.ToggleItemStatsPaneCommand.Execute(null);
+                }
+            }, DispatcherPriority.Loaded);
         }
 
         if (CaptureMode.UigfWindow)
