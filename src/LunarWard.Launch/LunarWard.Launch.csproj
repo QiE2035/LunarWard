@@ -14,5 +14,6 @@
   <ItemGroup>
     <ProjectReference Include="..\LunarWard.Wine\LunarWard.Wine.csproj" />
     <ProjectReference Include="..\LunarWard.Core\LunarWard.Core.csproj" />
+    <ProjectReference Include="..\LunarWard.Platform\LunarWard.Platform.csproj" />
   </ItemGroup>
 </Project>
