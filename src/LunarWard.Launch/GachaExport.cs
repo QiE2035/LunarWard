@@ -12,7 +12,7 @@ namespace LunarWard.Launch;
 /// 三个游戏的导出信封完全一致：<c>{ "info": {...}, "list": [...] }</c>，
 /// 差别只在于：原神每条记录多一个 <c>uigf_gacha_type</c>（400 归并到 301），
 /// 星铁的 <c>info</c> 里 <c>srgf_version</c> 为 <c>v1.0</c>、<c>uigf_version</c> 仍写着 <c>v3.0</c>（上游同款）。
-/// Excel 导出（MiniExcel 模板）暂未移植。
+/// Excel 导出不在本类：走 <c>GachaExcelExport</c>（MiniExcel + 上游模板 `GachaLog.xlsx` / `ZZZGachaLog.xlsx`）。
 /// </remarks>
 public static class GachaExport
 {

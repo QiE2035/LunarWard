@@ -219,8 +219,9 @@
     </StackPanel>
 
     <!--
-      操作反馈（LunarWard 追加）：Starward 用 InAppToast，ToastHost 尚未移植，
-      这里用同位置（底部居中、MaxWidth 600）的小 InfoBar 承担；无操作时不显示。
+      操作反馈（LunarWard 追加）：主窗口已有 InAppToast（Services/InAppToast.cs），
+      但截图页在独立窗口里无法直接用；这里保留页面内的底部提示条，
+      重要操作成功/失败同时发 InAppToast；无操作时不显示。
     -->
     <StackPanel Grid.Row="1"
                 HorizontalAlignment="Center"
