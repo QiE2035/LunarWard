@@ -12,7 +12,13 @@
       NU1900 = 取不到 NuGet 漏洞数据（只读缓存/离线 CI/镜像源没有漏洞库时必然出现），
       是环境问题而非代码问题；审计本身仍开着，真实漏洞（NU1901–NU1904）照常报。
     -->
-    <NoWarn>$(NoWarn);CS8618;CS8600;CS8602;CS8603;CS8604;CS8625;CA1416;NU1900</NoWarn>
+    <!--
+      只压两类：① 上游 Starward.Core 继承来的可空性警告（逐条修违背"只改三处"约束，
+      已登记为审计 M-06 待办）；② NU1900（离线/镜像环境下取不到漏洞库，属环境噪音，
+      NU1901–NU1904 真实漏洞仍会报）。CA1416（平台 API）不再压制——实测放开后本仓库
+      0 处命中，压着只会掩盖将来误用 Windows API 的问题。
+    -->
+    <NoWarn>$(NoWarn);CS8618;CS8600;CS8602;CS8603;CS8604;CS8625;NU1900</NoWarn>
     <EnableWindowsTargeting>false</EnableWindowsTargeting>
 
   </PropertyGroup>
