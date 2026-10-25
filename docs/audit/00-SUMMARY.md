@@ -222,9 +222,13 @@
 | DC-01 死模块 | `bd2f9d8` | 删 `src/LunarWard.Core/Metadata/`（8 文件 520 行，0 外部引用） |
 | DC-02/PS-05a 双份卸载 | `47a5af6` | 删 `Installer/GameUninstallService.cs`(187 行) 与只服务它的 `UninstallGameRequest/Response` |
 | DC-13/PS-07 死包 | `36f94a9` | 删 6 个零引用包；Serilog 本体改显式 4.2.0 |
+| DC-09 死锁实现 | `75968b9` | 删 `FileSystem.cs` 的 `IFileLock`/`FlockFileLock`（69 行） |
+| DC 旧窗口 | `48f2f1e`/`e5adb46` | 删 `GachaWindow`/`ScreenshotWindow`/`GachaViewModel`；`ShellWindow` 归档到 `Views/Starward/Legacy/` |
+| DC-11 注册表常量 | `54b604c` | 删 `GameRegistry.cs` 16 个零引用常量（66 → 34 行） |
+| DC-03 无绑定成员 | `d52dfc1` | 删 9 个「除声明外零出现」的 VM 成员（从 85 个候选里用引用扫描筛出） |
 
 验证：build 0 警告；`dotnet test` 537 + 31 + 27 = 595 全过。
-未做：`IFileLock/FlockFileLock`、`Libc` 零引用 P/Invoke、`GameRegistry` 常量、14 个无绑定成员、三个旧窗口归档、`HardLink`/`statx` 上提、命名整理、常量抽取。
+未做：`Libc` 零引用 P/Invoke、`HardLink`/`statx` 上提、命名整理（`CaptureMode` 命名空间、`_camel` 6 文件、`LUNARWARD_TOOLBOX_DEMO` 26 处、版本解析 6 套）、常量抽取。
 
 ---
 
