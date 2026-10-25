@@ -97,6 +97,31 @@ public partial class App : Application
             });
         }
 
+        if (CaptureMode.QuitAfterMilliseconds > 0)
+        {
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(CaptureMode.QuitAfterMilliseconds);
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
+            });
+        }
+
+        // 单实例监听：后来的启动请求都会走到这里，把窗口显示出来。
+        if (!CaptureMode.Enabled)
+        {
+            Services.SingleInstance.Listen(() =>
+            {
+                Console.WriteLine("SINGLE_INSTANCE_ACTIVATED");
+                window.Show();
+                if (window.WindowState == WindowState.Minimized)
+                {
+                    window.WindowState = WindowState.Normal;
+                }
+
+                window.Activate();
+            });
+        }
+
         // 系统托盘：仅在用户选了「最小化到系统托盘」时创建；截图自检不碰托盘。
         if (!CaptureMode.Enabled
             && string.Equals(AppServices.Current.Config.Launcher.CloseWindowOption, "Hide", StringComparison.OrdinalIgnoreCase))
@@ -118,12 +143,18 @@ public partial class App : Application
 
         desktop.Exit += (_, _) =>
         {
+            Services.SingleInstance.Dispose();
             _tray?.Dispose();
             _tray = null;
             _shell.Shutdown();
             _shell.Dispose();
             AppServices.Current.Background.Dispose();
         };
+
+        if (CaptureMode.StartHidden)
+        {
+            window.Hide();
+        }
 
         // 旧窗口自检（--window settings 等）保留到对应页面验收通过
         if (CaptureMode.Enabled && CaptureMode.TargetWindow is not "main")

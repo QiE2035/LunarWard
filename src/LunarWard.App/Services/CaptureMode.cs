@@ -50,6 +50,13 @@ internal static class CaptureMode
     public static bool TrayTest { get; set; }
 
 
+    /// <summary>启动后直接藏到托盘（<c>--start-hidden</c>，对应上游 <c>--hide</c>）。</summary>
+    public static bool StartHidden { get; set; }
+
+    /// <summary>自检用：N 毫秒后自动退出（<c>--quit-after</c>）。</summary>
+    public static int QuitAfterMilliseconds { get; set; }
+
+
     /// <summary>指定档案 id。</summary>
     public static string? ProfileId { get; set; }
 

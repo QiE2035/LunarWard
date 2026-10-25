@@ -32,6 +32,26 @@ internal static class Program
             return;
         }
 
+        // 单实例：第二次启动只把已运行的窗口叫回来（托盘隐藏后尤其需要）。
+        // 截图自检与 CLI 子命令不走这条，避免 CI 里并发截图互相抢占。
+        bool isolated = args.Contains("--screenshot")
+                        || args.Contains("--tray-test")
+                        || Services.StartupCommands.IsCommand(args);
+        if (!isolated && Services.SingleInstance.TryActivateExisting())
+        {
+            Console.WriteLine("ACTIVATED_EXISTING");
+            return;
+        }
+
+        // --start-hidden / --quit-after：开机自启到托盘、自检自动退出。
+        CaptureMode.StartHidden = args.Contains("--start-hidden");
+        if (args.Contains("--quit-after")
+            && int.TryParse(ReadArgument(args, "--quit-after"), out int quitAfter)
+            && quitAfter > 0)
+        {
+            CaptureMode.QuitAfterMilliseconds = quitAfter;
+        }
+
         // 自检开关：--screenshot <png> 打开主窗口、切到指定页面、渲染一帧、写 PNG 后退出。
         // 用于 CI/无人值守验证，不改变正常启动行为。
         //
@@ -50,6 +70,8 @@ internal static class Program
         //   --uigf-import                     配合 --uigf-window，直接切到导入页并灌样例文件
         //   --gacha-export <path>             把样例记录按 UIGF v3.0 / SRGF v1.0 导出到该路径
         //   --gacha-excel <path>              把样例记录按 Starward 的 Excel 模板导出到该路径
+        //   --start-hidden                    启动后藏到托盘（开机自启用，对应上游 --hide）
+        //   --quit-after <ms>                 启动 N 毫秒后自动退出（自检用）
         //   --tray-test                       试建系统托盘并验证「关闭 = 隐藏」，打印 TRAY_OK / TRAY_FAIL
         //   --uigf-export <path>              把本地存档按 UIGF v4.2 导出到该路径（配 --gacha-seed）
         //   --predownload-dialog              启动器预下载确认框（配 --predownload-dialog-unavailable 看不可用态）

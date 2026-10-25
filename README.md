@@ -71,6 +71,7 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --gacha-delete-dialog（抽卡页「删除指定时间段」对话框，自动用 ZZZ 样例数据）、
 #                 --gacha-materials（抽卡页右侧材料统计 Pane，自动用原神样例数据；会联网同步 wiki 图标）、
 #                 --tray-test（试建系统托盘并打印 TRAY_OK / TRAY_FAIL，再模拟一次关闭，窗口应隐藏）、
+#                 --start-hidden（启动即藏到托盘，开机自启用）、--quit-after <ms>（自检自动退出）、
 #                 --gacha-export <path>（把样例记录按 UIGF v3.0 导出到该路径）、
 #                 --gacha-import <path>（读回 UIGF v3.0 / JSON 并合并，做往返自检）、
 #                 --gacha-excel <path>（把样例记录按 Starward 的 Excel 模板导出到该路径）、
@@ -101,6 +102,7 @@ cd packaging && makepkg -si
 lunarward startgame --biz hk4e_cn      # 原神国服；hkrpg_cn / nap_global 等同理
 lunarward "lunarward://startgame/hk4e_cn"   # 同一入口的 URL 协议形式（桌面文件的 %U 会传进来）
 lunarward --version / --help            # 版本号 / 命令帮助（不启动窗口）
+lunarward --start-hidden                # 开机自启：直接藏到系统托盘（需先在设置里选「最小化到系统托盘」）
 lunarward playtime --biz hk4e_cn --pid 1234           # 盯住外部启动的游戏进程，退出后补记时长
 lunarward "lunarward://playtime?biz=hk4e_cn&pid=1234" # 同上，URL 形式（给 hoYoPlay / 外部启动器调用）
 ```
