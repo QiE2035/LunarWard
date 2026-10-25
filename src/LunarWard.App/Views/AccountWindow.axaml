@@ -46,6 +46,6 @@
     </Border>
 
     <TextBlock Grid.Row="2" Classes="status" TextWrapping="Wrap"
-               Text="账号数据里含 cookie 明文，只保存在本机 ~/.local/share/lunarward/accounts.json（权限 0600），不会上传、不写日志。切换前请先退出游戏：游戏会在退出时把当前登录态写回，覆盖掉你的切换。" />
+               Text="账号数据里含 cookie 明文，只保存在本机 LunarWardDatabase.db 的 GameAccount 表（权限 0600），不会上传、不写日志。切换前请先退出游戏：游戏会在退出时把当前登录态写回，覆盖掉你的切换。" />
   </Grid>
 </Window>

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Avalonia.Controls;
 using LunarWard.App.ViewModels;
 using LunarWard.App.ViewModels.Starward;
 
@@ -80,12 +81,22 @@ public partial class ToolboxPage : StarwardPage
     }
 
 
-    private void OnLocalAccountsRequested(object? sender, EventArgs e)
+    private async void OnLocalAccountsRequested(object? sender, EventArgs e)
     {
         var window = new Views.AccountWindow
         {
             DataContext = new AccountViewModel(Context.Services, Context.Profile),
         };
+
+        // 之前用 window.Show()：非模态、无 owner，窗口常被抓口管理器丢到外壳后面，
+        // 看起来就是「点了没反应」。改成以主窗口为 owner 的模态对话框并居中。
+        if (TopLevel.GetTopLevel(this) is Window owner)
+        {
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            await window.ShowDialog(owner);
+            return;
+        }
+
         window.Show();
     }
 
