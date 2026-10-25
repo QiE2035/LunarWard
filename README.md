@@ -178,10 +178,12 @@ dotnet test LunarWard.slnx -m:1         # 串行，规避并发下两个集成�
    运行的 `GetPrefixClients` 扫描串味 → finally 里按 `/proc/<pid>/environ` 里的
    `WINEPREFIX` 精确杀掉该 root 下的 wineserver/winedevice。
 
-此外本机还有一类**外部**干扰：用户自己的 sleepy-launcher prefix
-（`~/.local/share/sleepy-launcher/prefix`）会有常驻 wineserver/winedevice，
-进程扫描类断言在极端时机会读到它们。CI 的干净容器里不存在这个问题；
-本机复现时应先 `pgrep -a -f wineserver` 确认不是自己的实例。
+排查中还在本机看到过不属于测试的 wineserver（白眼里的 `WINEPREFIX` 是
+`~/.local/share/sleepy-launcher/prefix`，用户自己的实例）。不过 `GetPrefixClients`
+（`src/LunarWard.Platform/LinuxProcessTree.cs:94`）是**读 `/proc/<pid>/environ` 里的
+`WINEPREFIX` 精确比较**的，理论上不会把外部 prefix 算成本 sandbox 的客户端；
+所以这条只能解释「残留进程数不对」，不能直接解释断言失败。结论：第三类干扰仍未定论，
+暂按「本机环境噪声」记录，CI 干净环境不受影响。
 
 ## 文档索引
 
