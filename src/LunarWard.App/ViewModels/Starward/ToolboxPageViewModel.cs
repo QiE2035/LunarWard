@@ -354,8 +354,55 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
     }
 
 
-    /// <summary>「更新设备指纹」在 Starward 用于战绩 API 风控；LunarWard 暂未接，保留位置但禁用。</summary>
-    public bool CanUpdateDeviceFingerprint => false;
+    /// <summary>
+    /// 「更新设备指纹」是否可用：与上游 <c>GameRecordService.UpdateDeviceFpAsync</c> 一致，
+    /// 只有国服（<c>HyperionClient</c>）有这条链路，HoYoLAB 直接返回。
+    /// </summary>
+    public bool CanUpdateDeviceFingerprint => _server == "cn";
+
+
+    /// <summary>
+    /// 更新设备指纹（对应上游 <c>GameRecordPage.xaml.cs</c> 的 <c>UpdateDeviceInfoAsync(true)</c>）：
+    /// 带上已保存的 device_id/fp 拉新指纹，成功后落盘 <see cref="Launch.ToolboxSettings"/>。
+    /// </summary>
+    [RelayCommand]
+    private async Task UpdateDeviceFingerprintAsync()
+    {
+        if (!CanUpdateDeviceFingerprint)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        ErrorText = null;
+        StatusText = Strings["Toolbox.FingerprintUpdating"];
+        try
+        {
+            var client = new HyperionClient(Http);
+            var toolbox = Services.Config.Toolbox;
+            if (!string.IsNullOrWhiteSpace(toolbox.DeviceId) && !string.IsNullOrWhiteSpace(toolbox.DeviceFp))
+            {
+                client.DeviceId = toolbox.DeviceId;
+                client.DeviceFp = toolbox.DeviceFp;
+            }
+
+            var fp = await client.GetDeviceFpAsync().ConfigureAwait(true);
+            toolbox.DeviceId = client.DeviceId;
+            toolbox.DeviceFp = string.IsNullOrWhiteSpace(fp) ? client.DeviceFp : fp;
+            toolbox.DeviceFpLastUpdate = DateTimeOffset.Now;
+            Services.Config.Save(Services.Paths.ConfigFile);
+            StatusText = Strings["Toolbox.FingerprintUpdated"];
+        }
+        catch (Exception ex)
+        {
+            ErrorText = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                Strings["Toolbox.FingerprintFailed"], ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
 
     // ── 本机游戏账号（LunarWard 追加） ────────────────────────────────

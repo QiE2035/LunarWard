@@ -23,6 +23,9 @@ public sealed class LauncherConfig
     [JsonPropertyName("launcher")]
     public LauncherSettings Launcher { get; set; } = new();
 
+    [JsonPropertyName("toolbox")]
+    public ToolboxSettings Toolbox { get; set; } = new();
+
     [JsonPropertyName("runtimes")]
     public Dictionary<string, RuntimeConfigDto> Runtimes { get; set; } = new(StringComparer.Ordinal);
 

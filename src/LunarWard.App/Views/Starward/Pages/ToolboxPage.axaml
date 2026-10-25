@@ -251,6 +251,7 @@
       <!-- PaneFooter（源码 :502-515）+ LunarWard 追加的本机账号入口 -->
       <StackPanel Grid.Row="2" Margin="0,0,0,8">
         <Button Classes="nav-item"
+                Command="{Binding UpdateDeviceFingerprintCommand}"
                 IsEnabled="{Binding CanUpdateDeviceFingerprint}"
                 ToolTip.Tip="{Binding Strings[Toolbox.FingerprintUnsupported]}">
           <Grid Classes="nav-content" ColumnDefinitions="20,*">
