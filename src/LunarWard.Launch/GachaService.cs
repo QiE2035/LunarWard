@@ -195,6 +195,30 @@ public sealed class GachaService
 
 
     /// <summary>
+    /// LunarWard 补充（上游 <c>GenshinGachaService.GetGachaLogItemEx</c> 的 <c>IsUp</c> 计算）：
+    /// 库里没有 <c>IsUp</c> 列，读出来的是「接口给的值」；这里按 <see cref="GachaNoUp"/> 的
+    /// 卡池时间表重算 5★ 行的 UP 标记，4★ 与其它星级保持原值。
+    /// </summary>
+    public static IReadOnlyList<GachaRecord> ApplyUpFlags(string gameKind, IReadOnlyList<GachaRecord> records)
+    {
+        List<GachaRecord> list = new(records.Count);
+        foreach (GachaRecord record in records)
+        {
+            if (record.RankType == 5
+                && GachaNoUp.ComputeIsUp(gameKind, record.GachaType, record.ItemId, record.Time) is { } isUp)
+            {
+                list.Add(record with { IsUp = isUp });
+            }
+            else
+            {
+                list.Add(record);
+            }
+        }
+        return list;
+    }
+
+
+    /// <summary>
     /// 按 <see cref="GachaRecord.Id"/> 合并两批记录（导入进现有列表）；纯函数。
     /// </summary>
     /// <remarks>

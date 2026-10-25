@@ -17,8 +17,9 @@ namespace LunarWard.App.ViewModels.Starward;
 /// </para>
 /// <para>
 /// <b>IsUp</b>：Starward 的 <c>up!</c> 标记来自 <c>Features/Gacha/GachaNoUp.cs</c> 的
-/// 卡池时间表 + <c>ItemId</c>；<c>LunarWard.Core</c> 的 <c>GachaRecord</c> 没有暴露
-/// <c>ItemId</c>，所以这里恒为 <c>false</c>，<c>up!</c> 不显示（已知偏差）。
+/// 卡池时间表 + <c>ItemId</c>；LunarWard 已把该表整份复制到
+/// <c>LunarWard.Core/Gacha/GachaNoUp.cs</c>，读库后由 <c>GachaService.ApplyUpFlags</c>
+/// 按同一算法重算 5★ 行的 UP 标记（常驻池没有该表，标记保持 false，与上游一致）。
 /// </para>
 /// </remarks>
 public sealed partial class GachaStatsItemViewModel : ObservableObject

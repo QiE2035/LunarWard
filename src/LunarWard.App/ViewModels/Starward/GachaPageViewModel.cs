@@ -85,7 +85,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         ErrorText = url is null ? NormalizeError(error) : null;
 
         // 上游打开页面就从数据库读已保存的记录（不必先点「更新记录」）
-        _allRecords = _archiveStore.GetAll(_gameKind);
+        _allRecords = LoadRecordsFromDatabase();
         if (_allRecords.Count > 0)
         {
             RebuildUidList();
@@ -313,7 +313,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
             {
                 _archiveStore.SaveGachaLogUrl(_gameBiz, uid, GachaUrl);
             }
-            _allRecords = _archiveStore.GetAll(_gameKind);
+            _allRecords = LoadRecordsFromDatabase();
             RebuildUidList();
             Rebuild();
             StatusText = string.Format(Strings["Gacha.FetchDone"], _allRecords.Count);
@@ -385,7 +385,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
 
             // 上游改名是 UPDATE Name, Lang：只改库里的名字，不重写其它列
             _archiveStore.Rename(_gameKind, GachaLanguage, records);
-            _allRecords = _archiveStore.GetAll(_gameKind);
+            _allRecords = LoadRecordsFromDatabase();
             Rebuild();
             StatusText = string.Format(Strings["Gacha.LanguageChanged"], GachaLanguage, renamed);
         }
@@ -429,7 +429,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
             var imported = GachaLegacyImport.ParseFile(path, _gameKind);
             // 上游导入也是写库 + 刷新：这里同样落库后从库里重读
             _archiveStore.Merge(_gameKind, imported, GachaLanguage);
-            _allRecords = _archiveStore.GetAll(_gameKind);
+            _allRecords = LoadRecordsFromDatabase();
             RebuildUidList();
             Rebuild();
             ErrorText = null;
@@ -536,7 +536,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         if (SelectUid is long uid && uid > 0)
         {
             _archiveStore.DeleteUid(_gameKind, uid);
-            _allRecords = _archiveStore.GetAll(_gameKind);
+            _allRecords = LoadRecordsFromDatabase();
         }
         else
         {
@@ -735,7 +735,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         // 上游 DeleteGachaLogByTime：DELETE FROM 表 WHERE Uid=@uid AND Time BETWEEN
         int before = _allRecords.Count;
         _archiveStore.DeleteRange(_gameKind, uid, begin, end);
-        _allRecords = _archiveStore.GetAll(_gameKind);
+        _allRecords = LoadRecordsFromDatabase();
         int removed = before - _allRecords.Count;
         RebuildUidList();
         Rebuild();
@@ -749,13 +749,21 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     /// </summary>
     public void LoadRecordsForCapture(IReadOnlyList<Launch.GachaRecord> records)
     {
-        _allRecords = records;
+        _allRecords = Launch.GachaService.ApplyUpFlags(_gameKind, records);
         // 自检样例也落盘，UIGF 窗口才有存档可导
         _archiveStore.Merge(_gameKind, _allRecords, GachaLanguage);
         RebuildUidList();
         Rebuild();
         StatusText = string.Format(Strings["Gacha.FetchDone"], _allRecords.Count);
     }
+
+
+    /// <summary>
+    /// 从库里读记录并补算 <c>IsUp</c>：库里没有该列，<c>up!</c> 由 <see cref="Launch.GachaService.ApplyUpFlags"/>
+    /// 按上游 <c>GachaNoUp</c> 的卡池时间表重算（与 Starward 的读取路径一致）。
+    /// </summary>
+    private IReadOnlyList<Launch.GachaRecord> LoadRecordsFromDatabase()
+        => Launch.GachaService.ApplyUpFlags(_gameKind, _archiveStore.GetAll(_gameKind));
 
 
     public override void Dispose()
