@@ -1356,8 +1356,10 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         var launcherId = _context.Shell.CurrentLauncherId;
         if (CaptureMode.BackgroundPath is { Length: > 0 } forcedBackground)
         {
-            // 自检专用：强制指定背景（验证视频帧回调链路），不影响正常运行。
-            entries = BackgroundCatalog.Merge([], null, BackgroundCatalog.FromFiles([forcedBackground]));
+            // 自检专用：强制指定背景（本地文件或 https 地址），验证 ffmpeg 解帧链路。
+            entries = forcedBackground.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                ? [new BackgroundEntry(BackgroundKind.Custom, null, forcedBackground, "自检视频")]
+                : BackgroundCatalog.Merge([], null, BackgroundCatalog.FromFiles([forcedBackground]));
         }
         else if (string.IsNullOrWhiteSpace(launcherId))
         {

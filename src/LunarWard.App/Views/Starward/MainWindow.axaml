@@ -14,7 +14,8 @@
         ExtendClientAreaToDecorationsHint="False"
         WindowDecorations="None"
         TextOptions.TextRenderingMode="Antialias"
-        FontFamily="{StaticResource StarFontFamily}">
+        FontFamily="{StaticResource StarFontFamily}"
+        PointerPressed="OnWindowPointerPressed">
 
   <!--
     复刻 Starward MainWindow：
@@ -34,19 +35,22 @@
     <!-- 内容层：从 y=0 开始，被标题栏覆盖（背景铺满整窗，和 Starward 一致） -->
     <sw:StarwardShell x:Name="Shell" Grid.Row="0" Grid.RowSpan="2" />
 
-    <!-- 标题栏 -->
-    <Grid Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Top" Height="48"
-          Background="Transparent"
-          PointerPressed="OnTitleBarPointerPressed">
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-        <Button Classes="caption-button" Click="OnMinimizeClick" ToolTip.Tip="{Binding Strings[Shell.Minimize]}">
-          <TextBlock Classes="icon" FontSize="10" Text="&#xE921;" />
-        </Button>
-        <Button Classes="caption-close" Click="OnCloseClick" ToolTip.Tip="{Binding Strings[Shell.Close]}">
-          <TextBlock Classes="icon" FontSize="10" Text="&#xE8BB;" />
-        </Button>
-      </StackPanel>
-    </Grid>
+    <!--
+      标题栏按钮。这里**不再**铺一层整宽的透明拖拽区：它压在内容层（含左上角游戏切换按钮）上，
+      会让按钮只有下边沿能点到（z 序上被这层吃掉）。拖拽改由窗口级的 PointerPressed 处理，
+      只有点在「没人处理的空白处」才移动窗口，控件自己的点击不受影响。
+    -->
+    <StackPanel Grid.Row="0" Grid.RowSpan="2"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right" VerticalAlignment="Top"
+                Height="48">
+      <Button Classes="caption-button" Click="OnMinimizeClick" ToolTip.Tip="{Binding Strings[Shell.Minimize]}">
+        <TextBlock Classes="icon" FontSize="10" Text="&#xE921;" />
+      </Button>
+      <Button Classes="caption-close" Click="OnCloseClick" ToolTip.Tip="{Binding Strings[Shell.Close]}">
+        <TextBlock Classes="icon" FontSize="10" Text="&#xE8BB;" />
+      </Button>
+    </StackPanel>
     </Grid>
   </dh:DialogHost>
 </Window>
