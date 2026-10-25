@@ -67,7 +67,7 @@ public sealed class Uigf4Service
                     file.GenshinArchives!.Add(BuildGenshinArchive(archive));
                     break;
                 case GachaLogStore.StarRail:
-                    file.StarRailArchives!.Add(BuildArchive(archive));
+                    file.StarRailArchives!.Add(BuildStarRailArchive(archive));
                     break;
                 case GachaLogStore.Zzz:
                     file.ZzzArchives!.Add(BuildArchive(archive));
@@ -97,6 +97,34 @@ public sealed class Uigf4Service
                 // 400 集录祈愿在 UIGF 里归并到 301（上游同款）
                 UigfGachaType = item.GachaType == 400 ? 301 : item.GachaType,
                 ItemId = item.ItemId,
+                Count = item.Count,
+                Time = item.Time.ToString("yyyy-MM-dd HH:mm:ss"),
+                Name = item.Name,
+                ItemType = item.ItemType,
+                RankType = item.RankType,
+            });
+        }
+        return archive;
+    }
+
+
+    private Uigf4Archive<Uigf4StarRailItem> BuildStarRailArchive(GachaArchiveSummary summary)
+    {
+        var archive = new Uigf4Archive<Uigf4StarRailItem>
+        {
+            Uid = summary.Uid,
+            Timezone = GuessTimezone(summary.Uid),
+            Lang = NormalizeLang(summary.Lang),
+        };
+        foreach (var item in _store.GetItems(summary.Game, summary.Uid))
+        {
+            archive.List.Add(new Uigf4StarRailItem
+            {
+                Uid = item.Uid,
+                Id = item.Id,
+                GachaType = item.GachaType,
+                ItemId = item.ItemId,
+                GachaId = item.GachaId,
                 Count = item.Count,
                 Time = item.Time.ToString("yyyy-MM-dd HH:mm:ss"),
                 Name = item.Name,
@@ -257,6 +285,14 @@ public sealed class Uigf4Service
     };
 
 
+    private static GachaArchiveItem ToDomain(Uigf4StarRailItem item)
+    {
+        GachaArchiveItem archiveItem = ToDomain((Uigf4GachaItem)item);
+        archiveItem.GachaId = item.GachaId;
+        return archiveItem;
+    }
+
+
     /// <summary>
     /// 把选中的存档写入本地存档（上游 <c>ImportAsync</c>：校验字段、按 UID 一致性、
     /// 时间不早于 2020-09-01，最后 <c>INSERT OR REPLACE</c>）。
@@ -273,7 +309,7 @@ public sealed class Uigf4Service
         bool missingName = false;
         foreach (var item in archive.Items)
         {
-            Validate(item, archive.Uid, out bool noName);
+            Validate(item, archive.Game, archive.Uid, out bool noName);
             missingName |= noName;
             records.Add(new GachaRecord
             {
@@ -282,6 +318,7 @@ public sealed class Uigf4Service
                 GachaType = item.GachaType,
                 GachaTypeName = GachaService.GetPoolName(archive.Game, item.GachaType),
                 ItemId = item.ItemId,
+                GachaId = item.GachaId,
                 Count = item.Count == 0 ? 1 : item.Count,
                 Time = item.Time.AddHours(archive.Timezone),
                 Name = item.Name,
@@ -295,7 +332,7 @@ public sealed class Uigf4Service
     }
 
 
-    private static void Validate(GachaArchiveItem item, long archiveUid, out bool missingName)
+    private static void Validate(GachaArchiveItem item, string game, long archiveUid, out bool missingName)
     {
         if (item.Id == 0)
         {
@@ -308,6 +345,11 @@ public sealed class Uigf4Service
         if (item.GachaType == 0)
         {
             throw new Uigf4ImportException(Uigf4ImportErrorKind.MissingField, uid: archiveUid, field: "gacha_type");
+        }
+        if (game == GachaLogStore.StarRail && item.GachaId == 0)
+        {
+            // 上游 UIGFGachaService.cs:575：星铁记录必须有 gacha_id
+            throw new Uigf4ImportException(Uigf4ImportErrorKind.MissingField, uid: archiveUid, field: "gacha_id");
         }
         if (item.Time < new DateTime(2020, 9, 1))
         {

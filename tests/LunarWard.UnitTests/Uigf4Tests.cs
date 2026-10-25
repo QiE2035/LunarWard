@@ -46,7 +46,8 @@ public sealed class Uigf4Tests : IDisposable
         int gachaType,
         int itemId = 10000002,
         long uid = 100000001,
-        DateTime? time = null)
+        DateTime? time = null,
+        int gachaId = 0)
         => new()
         {
             Id = id,
@@ -58,6 +59,7 @@ public sealed class Uigf4Tests : IDisposable
             Time = time ?? new DateTime(2026, 1, 2, 3, 4, 5),
             Uid = uid,
             ItemId = itemId,
+            GachaId = gachaId,
             IsUp = true,
         };
 
@@ -232,8 +234,9 @@ public sealed class Uigf4Tests : IDisposable
                 {
                     Id = 1,
                     Uid = 200000002,
-                    GachaType = 1,
+                    GachaType = 11,
                     ItemId = 1001,
+                    GachaId = 1001,
                     Time = new DateTime(2026, 1, 2),
                     RankType = 5,
                 },
@@ -295,5 +298,52 @@ public sealed class Uigf4Tests : IDisposable
 
         // 同一 Id 覆盖，不会变 4 条
         Assert.Equal(2, _store.GetItems(GachaLogStore.Genshin, 100000001).Count);
+    }
+
+    [Fact]
+    public void ExportStarRailWritesGachaIdAsStringAndImportKeepsIt()
+    {
+        _store.Merge(GachaLogStore.StarRail, [Record(1, 11, 1205, gachaId: 2001)], "zh-cn");
+
+        var json = _service.BuildJson([_store.GetSummaries()[0]]);
+        using (var doc = JsonDocument.Parse(json))
+        {
+            var item = doc.RootElement.GetProperty("hkrpg")[0].GetProperty("list")[0];
+            Assert.Equal("2001", item.GetProperty("gacha_id").GetString());
+            // 便携格式：uid/gacha_type 等仍是字符串
+            Assert.Equal("11", item.GetProperty("gacha_type").GetString());
+        }
+
+        var parsed = Assert.Single(_service.ParseJson(json));
+        Assert.Equal(2001, Assert.Single(parsed.Items).GachaId);
+
+        _service.Import(parsed);
+        Assert.Equal(2001, Assert.Single(_store.GetItems(GachaLogStore.StarRail, 100000001)).GachaId);
+    }
+
+
+    [Fact]
+    public void ImportRejectsStarRailWithoutGachaId()
+    {
+        var archive = new Uigf4ImportArchive
+        {
+            Game = GachaLogStore.StarRail,
+            Uid = 100000001,
+            Items =
+            [
+                new GachaArchiveItem
+                {
+                    Id = 1,
+                    GachaType = 11,
+                    ItemId = 1205,
+                    Time = new DateTime(2026, 1, 2),
+                    RankType = 5,
+                },
+            ],
+        };
+
+        var ex = Assert.Throws<Uigf4ImportException>(() => _service.Import(archive));
+        Assert.Equal(Uigf4ImportErrorKind.MissingField, ex.Kind);
+        Assert.Equal("gacha_id", ex.Field);
     }
 }

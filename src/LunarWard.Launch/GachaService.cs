@@ -1,6 +1,7 @@
 using LunarWard.Core;
 using LunarWard.Core.Gacha;
 using LunarWard.Core.Gacha.Genshin;
+using LunarWard.Core.Gacha.StarRail;
 using LunarWard.Core.Gacha.ZZZ;
 
 namespace LunarWard.Launch;
@@ -30,6 +31,9 @@ public sealed record GachaRecord
 
     /// <summary>物品 id（UIGF/SRGF 导出需要）。</summary>
     public int ItemId { get; init; }
+
+    /// <summary>星铁 SRGF 的 <c>gacha_id</c>（原神/绝区零恒为 0；UIGF v4.2 的 hkrpg 区段导出需要）。</summary>
+    public int GachaId { get; init; }
 
     /// <summary>数量（接口恒为 1，UIGF 要求显式字段）。</summary>
     public int Count { get; init; } = 1;
@@ -81,6 +85,17 @@ public sealed class GachaService
     };
 
 
+    private static readonly Dictionary<int, string> StarRailPools = new()
+    {
+        [1] = "群星跃迁",
+        [2] = "始发跃迁",
+        [11] = "角色活动跃迁",
+        [12] = "光锥活动跃迁",
+        [21] = "角色联动跃迁",
+        [22] = "光锥联动跃迁",
+    };
+
+
     private static readonly Dictionary<int, string> ZzzPools = new()
     {
         [1] = "常驻频段",
@@ -102,7 +117,12 @@ public sealed class GachaService
     /// <summary>卡池显示名。</summary>
     public static string GetPoolName(string gameKind, int gachaType)
     {
-        var table = gameKind == "zzz" ? ZzzPools : GenshinPools;
+        var table = gameKind switch
+        {
+            "zzz" => ZzzPools,
+            "starrail" => StarRailPools,
+            _ => GenshinPools,
+        };
         return table.TryGetValue(gachaType, out var name) ? name : $"未知卡池({gachaType})";
     }
 
@@ -283,9 +303,12 @@ public sealed class GachaService
         IProgress<(string Pool, int Page)>? progress = null,
         CancellationToken ct = default)
     {
-        GachaLogClient client = gameKind == "zzz"
-            ? new ZZZGachaClient(_httpClient)
-            : new GenshinGachaClient(_httpClient);
+        GachaLogClient client = gameKind switch
+        {
+            "zzz" => new ZZZGachaClient(_httpClient),
+            "starrail" => new StarRailGachaClient(_httpClient),
+            _ => new GenshinGachaClient(_httpClient),
+        };
 
         var items = await client.GetGachaLogAsync(
             gachaUrl,
@@ -308,6 +331,7 @@ public sealed class GachaService
             Uid = item.Uid,
             IsUp = item.IsUp == 1,
             ItemId = item.ItemId,
+            GachaId = item is StarRailGachaItem sr ? sr.GachaId : 0,
             Count = 1,
         }).ToList();
     }

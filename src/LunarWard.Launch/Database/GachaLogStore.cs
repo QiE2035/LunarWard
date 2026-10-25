@@ -106,7 +106,7 @@ public sealed class GachaLogStore
             pItemType.Value = record.ItemType;
             pRankType.Value = record.RankType;
             pGachaType.Value = record.GachaType;
-            pGachaId?.Value = 0;
+            pGachaId?.Value = record.GachaId;
             pCount.Value = record.Count;
             pLang.Value = (object?)lang ?? DBNull.Value;
             command.ExecuteNonQuery();
@@ -322,6 +322,7 @@ public sealed class GachaLogStore
                 GachaType = gachaType,
                 GachaTypeName = GachaService.GetPoolName(game, gachaType),
                 Count = reader.GetInt32(reader.GetOrdinal("Count")),
+                GachaId = game == StarRail ? reader.GetInt32(reader.GetOrdinal("GachaId")) : 0,
                 IsUp = false,
             });
         }
@@ -357,6 +358,9 @@ public sealed class GachaArchiveItem
     public int GachaType { get; set; }
 
     public int ItemId { get; set; }
+
+    /// <summary>星铁 SRGF 的 <c>gacha_id</c>（其它游戏恒为 0）。</summary>
+    public int GachaId { get; set; }
 
     public int Count { get; set; } = 1;
 

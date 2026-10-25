@@ -21,7 +21,7 @@ public sealed class Uigf4File
 
 
     [JsonPropertyName("hkrpg")]
-    public List<Uigf4Archive<Uigf4GachaItem>>? StarRailArchives { get; set; } = [];
+    public List<Uigf4Archive<Uigf4StarRailItem>>? StarRailArchives { get; set; } = [];
 
 
     [JsonPropertyName("nap")]
@@ -133,6 +133,15 @@ public class Uigf4GachaItem
     [JsonPropertyName("count")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
     public int Count { get; set; } = 1;
+}
+
+
+/// <summary>星铁记录：额外带 <c>gacha_id</c>（SRGF 与 UIGF v4.2 的 hkrpg 区段都有该字段）。</summary>
+public sealed class Uigf4StarRailItem : Uigf4GachaItem
+{
+    [JsonPropertyName("gacha_id")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
+    public int GachaId { get; set; }
 }
 
 
