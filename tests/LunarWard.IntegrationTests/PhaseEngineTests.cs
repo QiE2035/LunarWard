@@ -2,6 +2,7 @@ using System.Diagnostics;
 using LunarWard.Launch;
 using LunarWard.Platform;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace LunarWard.IntegrationTests;
 
@@ -13,6 +14,10 @@ namespace LunarWard.IntegrationTests;
 [Collection("phase-engine")]
 public class PhaseEngineTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public PhaseEngineTests(ITestOutputHelper output) => _output = output;
+
     private static LaunchEngine CreateEngine(Sandbox sandbox)
         => new(sandbox.Processes, sandbox.Controller, sandbox.Launcher, sandbox.PrefixManager, sandbox.Xdg);
 
@@ -40,6 +45,10 @@ public class PhaseEngineTests
         var engine = CreateEngine(sandbox);
 
         var result = await engine.RunAsync(plan);
+
+        // 失败时把相位结果与进程快照打到测试输出（xunit 只显示失败用例的输出）
+        _output.WriteLine($"I1 run: success={result.Success} error={result.Error?.Message}");
+        _output.WriteLine($"I1 clients after run: {string.Join(",", sandbox.Processes.GetPrefixClients(sandbox.Prefix).Select(c => c.Pid))}");
 
         Assert.True(result.Success, result.Error?.Message);
         Assert.Empty(sandbox.Processes.GetPrefixClients(sandbox.Prefix));
