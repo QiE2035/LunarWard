@@ -49,15 +49,47 @@ public class ComponentInstallerTests
     }
 
 
-    /// <summary>起一个只回固定字节的 HTTP 服务。</summary>
+    /// <summary>
+    /// 造一个「自带一层同名根目录」的包：<c>my-wine-test/bin/wine</c>。
+    /// an-anime-team 的 wine 组件就是这种布局，解压后需要摊平一层。
+    /// </summary>
+    private static byte[] CreateWineArchiveWithRootDir()
+    {
+        using var tarred = new MemoryStream();
+        using (var tar = new TarWriter(tarred, TarEntryFormat.Pax, leaveOpen: true))
+        {
+            var entry = new PaxTarEntry(TarEntryType.RegularFile, "./my-wine-test/bin/wine")
+            {
+                DataStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("#!/bin/sh\necho wine-10.0-test\n")),
+                Mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute,
+            };
+            tar.WriteEntry(entry);
+        }
+
+        tarred.Position = 0;
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionMode.Compress, leaveOpen: true))
+        {
+            tarred.CopyTo(gzip);
+        }
+
+        return output.ToArray();
+    }
+
+
+    /// <summary>起一个只回固定字节的 HTTP 服务（可选支持 Range）。</summary>
     private sealed class OneShotServer : IDisposable
     {
         private readonly HttpListener _listener = new();
         private readonly Task _loop;
 
 
-        public OneShotServer(byte[] payload)
+        private readonly bool _supportRange;
+
+
+        public OneShotServer(byte[] payload, bool supportRange = false)
         {
+            _supportRange = supportRange;
             // 随机端口，避免与其它测试/进程打架
             var port = Random.Shared.Next(20000, 60000);
             BaseUrl = $"http://127.0.0.1:{port}/";
@@ -79,6 +111,19 @@ public class ComponentInstallerTests
 
                     try
                     {
+                        var range = context.Request.Headers["Range"];
+                        if (_supportRange && range is not null && range.StartsWith("bytes=", StringComparison.Ordinal))
+                        {
+                            var start = long.Parse(range[6..].Split('-')[0]);
+                            var slice = payload[(int)start..];
+                            context.Response.StatusCode = 206;
+                            context.Response.ContentLength64 = slice.Length;
+                            context.Response.Headers["Content-Range"] = $"bytes {start}-{payload.Length - 1}/{payload.Length}";
+                            await context.Response.OutputStream.WriteAsync(slice);
+                            context.Response.Close();
+                            continue;
+                        }
+
                         context.Response.ContentLength64 = payload.Length;
                         await context.Response.OutputStream.WriteAsync(payload);
                         context.Response.Close();
@@ -170,6 +215,46 @@ public class ComponentInstallerTests
         var found = installer.Repository.Find("wine", "my-wine-test");
         Assert.NotNull(found);
         Assert.Equal("1", found!.Value.Entry.Features?.Env?["WINE_TEST"]);
+    }
+
+
+    [Fact]
+    public async Task InstallWine_FlattensSingleRootDirectory()
+    {
+        using var temp = new TempDirectory();
+        var paths = CreatePaths(temp);
+        using var server = new OneShotServer(CreateWineArchiveWithRootDir());
+        WriteIndex(paths, server.BaseUrl + "wine-test.tar.gz");
+
+        var target = await new ComponentInstaller(paths).InstallWineAsync("my-wine-test");
+
+        // 包里的 my-wine-test/bin/wine 被摊平到 target/bin/wine
+        Assert.True(File.Exists(Path.Join(target, "bin", "wine")));
+        Assert.False(Directory.Exists(Path.Join(target, "my-wine-test")));
+    }
+
+
+    [Fact]
+    public async Task InstallWine_ResumesFromPartialFileInsteadOfRestarting()
+    {
+        using var temp = new TempDirectory();
+        var paths = CreatePaths(temp);
+        var payload = CreateWineArchive();
+        using var server = new OneShotServer(payload, supportRange: true);
+        WriteIndex(paths, server.BaseUrl + "wine-test.tar.gz");
+
+        // 模拟上次断流：缓存里只有前 100 字节的 .part
+        var downloads = Path.Join(paths.CacheHome, "downloads");
+        Directory.CreateDirectory(downloads);
+        var part = Path.Join(downloads, "wine-test.tar.gz.part");
+        await File.WriteAllBytesAsync(part, payload[..100]);
+
+        var target = await new ComponentInstaller(paths).InstallWineAsync("my-wine-test");
+
+        Assert.True(File.Exists(Path.Join(target, "bin", "wine")));
+        Assert.True(File.Exists(Path.Join(downloads, "wine-test.tar.gz")));
+        Assert.Equal(payload.Length, new FileInfo(Path.Join(downloads, "wine-test.tar.gz")).Length);
+        Assert.False(File.Exists(part));
     }
 
 
