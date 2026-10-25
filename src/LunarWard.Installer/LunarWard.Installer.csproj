@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Ini" />
     <PackageReference Include="ZstdSharp.Port" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- 安装器核心（解压/清单/差量）目前没有测试覆盖，内部静态解析函数需要单元测试验证。 -->
+    <InternalsVisibleTo Include="LunarWard.UnitTests" />
+  </ItemGroup>
 </Project>
