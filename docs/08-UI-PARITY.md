@@ -23,6 +23,15 @@
 
 图例：✅ 结构已 1:1；🟡 结构接近、细节缺失；🔴 版式自创，需重写。
 
+**一阶段完成度速览（2026-10-25，逐轮验收后）**：外壳/左栏/设置总览 3 行 ✅，其余 20 行 🟡、0 行 🔴。
+这 20 行的剩余差异按性质分三类，均已登记在 [09-LINUX-DIVERGENCES.md](09-LINUX-DIVERGENCES.md)：
+
+- **无 Linux 等价物**：WebView2（公告窗改浏览器打开）、H.NotifyIcon 之外的系统 API、Windows 专属卸载器/CMD 启动/渠道 SDK 分组等 —— 这些在 Linux 上禁用而非伪造；
+- **形态不同但功能不缺**：`ContentDialog`/`Popup`/`ProgressRing`/`InfoBar` 换成自绘窗口与控件（`InAppToast`、`Arc`、页面内浮层），备份从 `File.Copy` 换成 `VACUUM INTO`；
+- **缺美术素材**：上游 emoji/图标 PNG 与卡池底图未随源码搬运（emoji 属 Starward 自身资源，MIT 可搬但体积大），界面用字形/占位面板代替。
+
+仍属真实能力缺口的只有两处：游戏公告窗（无法内嵌 WebView2）与 emoji/卡池底图素材。
+
 | 页面 | Starward 源 | LunarWard 实现 | 状态 | 主要差距 |
 |---|---|---|---|---|
 | 窗口外壳 | `Features/ViewHost/MainWindow.xaml`(35) + `.cs`(268) | `MainWindow.axaml`(45) | ✅ | WinUI 系统标题栏按钮用自己的 46×32 实现；不可缩放/最大化一致 |
