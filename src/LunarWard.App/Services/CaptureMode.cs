@@ -46,6 +46,10 @@ internal static class CaptureMode
     /// <summary>安装中悬停时弹出的「游戏信息 / 下载进度」卡片（<c>--install-info-popup</c>）。</summary>
     public static bool InstallInfoPopup { get; set; }
 
+    /// <summary>自检：在外壳里弹三条提示条（<c>--toast-test</c>）。</summary>
+    public static bool ToastTest { get; set; }
+
+
     /// <summary>自检：创建系统托盘图标并打印 <c>TRAY_OK</c> / <c>TRAY_FAIL</c>（<c>--tray-test</c>）。</summary>
     public static bool TrayTest { get; set; }
 

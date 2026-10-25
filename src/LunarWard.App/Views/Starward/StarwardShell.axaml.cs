@@ -21,6 +21,17 @@ public partial class StarwardShell : UserControl
     public StarwardShell()
     {
         InitializeComponent();
+        Services.InAppToast.Initialize(ToastHost);
+
+        if (CaptureMode.ToastTest)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                Services.InAppToast.Success("已保存账号", "hk4e_cn · 100000001");
+                Services.InAppToast.Warning("网络较慢", "组件索引更新用了 12s，仍可继续");
+                Services.InAppToast.Error("下载失败", "raw.githubusercontent.com 连接被重置");
+            }, DispatcherPriority.Background);
+        }
     }
 
     public ShellViewModel? ViewModel => DataContext as ShellViewModel;

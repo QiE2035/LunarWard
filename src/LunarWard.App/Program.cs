@@ -100,6 +100,11 @@ internal static class Program
         //   --wait <ms>                        渲染前等待（默认 1600，给网络素材留时间）
         //   --window <name>                    旧窗口自检（settings / account / dailynote / gacha）
         // --tray-test：验证 Avalonia TrayIcon 在当前桌面能否创建（截图流程顺带出一张图）。
+        if (args.Contains("--toast-test"))
+        {
+            CaptureMode.ToastTest = true;
+        }
+
         if (args.Contains("--tray-test"))
         {
             CaptureMode.Path = ReadArgument(args, "--screenshot") ?? "/tmp/tray-test.png";

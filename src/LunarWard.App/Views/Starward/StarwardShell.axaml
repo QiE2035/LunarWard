@@ -84,6 +84,17 @@
 
 
 
+    <!--
+      应用内提示条堆叠（Starward MainWindow 的 RootInfoBar + Helpers/InAppToast.cs）。
+      上游把 InfoBar 追加在窗口底部；这里右下角、宽 380、自下而上堆叠。
+    -->
+    <StackPanel x:Name="ToastHost"
+                MaxWidth="600"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="24,72,24,72"
+                Spacing="0" />
+
     <!-- ── 游戏选择层（Starward GameSelector：全屏 #80000000 + 192×108 卡片） ── -->
     <Grid x:Name="GameSelectorOverlayCard" IsVisible="{Binding IsGameSelectorOpen}">
       <Border Background="{StaticResource StarScrimBrush}" PointerPressed="OnGameSelectorScrimPressed" />
