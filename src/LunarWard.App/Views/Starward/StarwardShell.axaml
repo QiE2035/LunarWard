@@ -231,11 +231,27 @@
                 Background="Transparent"
                 Foreground="{StaticResource StarTextSecondary}">
         <Expander.Header>
-          <Grid ColumnSpacing="12" ColumnDefinitions="*,Auto">
+          <Grid ColumnSpacing="12" ColumnDefinitions="*,Auto,Auto,Auto">
             <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{StaticResource StarTextSecondary}">
               <Run Text="{Binding Strings[Shell.ActualSizeOfInstalledGames]}" /><Run Text="  " /><Run Text="{Binding InstalledGamesSizeText}" /><Run Text="{Binding InstalledGamesSavedSizeHint}" />
             </TextBlock>
-            <Button Grid.Column="1"
+            <!-- 计算中：上游 Expander 头部同样有一个 ProgressRing（IsActive 绑 IsCalculating） -->
+            <ProgressBar Grid.Column="1"
+                         Width="16" Height="16"
+                         IsIndeterminate="True"
+                         VerticalAlignment="Center"
+                         Background="Transparent"
+                         IsVisible="{Binding IsCalculatingInstalledGames}"
+                         ToolTip.Tip="{Binding Strings[Shell.Calculating]}" />
+            <!-- 自动查找（上游 32×32 的 Button_AutoSearchInstalledGames，E721）；Windows 读注册表，这里走本机扫描 -->
+            <Button Grid.Column="2"
+                    Width="32" Height="32" Padding="0"
+                    Background="Transparent" BorderThickness="0"
+                    Command="{Binding AutoSearchInstalledGamesCommand}"
+                    ToolTip.Tip="{Binding Strings[Shell.AutoSearch]}">
+              <TextBlock Classes="icon" FontSize="16" Text="&#xE721;" />
+            </Button>
+            <Button Grid.Column="3"
                     Width="32" Height="32" Padding="0"
                     Background="Transparent" BorderThickness="0"
                     Command="{Binding RefreshInstalledGamesCommand}"

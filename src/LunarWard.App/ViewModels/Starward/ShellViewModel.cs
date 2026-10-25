@@ -310,6 +310,56 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             : $"（{Strings["Shell.SavedSize"]} {InstalledGamesSavedSizeText}）";
 
 
+    /// <summary>
+    /// 自动查找已安装的游戏（上游 <c>GameSelector.Button_AutoSearchInstalledGames</c>）。
+    /// 上游在 Windows 上读 <c>HKCU\Software\miHoYo\HYP\1_1\{gameBiz}</c>、
+    /// <c>Cognosphere\HYP\1_0\{gameBiz}</c> 的安装路径；Linux 上没有注册表，这里复用
+    /// <see cref="Services.GameScanner"/>（Steam 库 / 常见目录 / sleepy-launcher 与
+    /// anime-game-launcher 的配置）扫描到的目录，回填给「同一游戏 + 同一区服、当前目录无效」的档案。
+    /// </summary>
+    [RelayCommand]
+    private async Task AutoSearchInstalledGamesAsync()
+    {
+        var found = await Task.Run(() => _services.Scanner.Scan()).ConfigureAwait(true);
+        int updated = 0;
+        foreach (var detected in found)
+        {
+            foreach (var item in Profiles)
+            {
+                if (!string.Equals(item.Profile.Game, detected.Definition.Kind, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                bool sameEdition = string.Equals(
+                    item.Profile.Edition,
+                    detected.Definition.Edition == Games.GameEdition.Global ? "Global" : "China",
+                    StringComparison.OrdinalIgnoreCase);
+                if (!sameEdition)
+                {
+                    continue;
+                }
+                // 已经指向一个存在的目录就不覆盖用户的设置
+                if (Directory.Exists(ProfileConfig.ExpandPath(item.Path)))
+                {
+                    continue;
+                }
+                if (!string.Equals(item.Path, detected.Directory, StringComparison.Ordinal))
+                {
+                    item.Path = detected.Directory;
+                    updated++;
+                }
+            }
+        }
+
+        if (updated > 0)
+        {
+            SaveConfig();
+            ReloadProfiles();
+            await RefreshInstalledGamesAsync();
+        }
+    }
+
+
     [RelayCommand]
     private async Task RefreshInstalledGamesAsync()
     {
