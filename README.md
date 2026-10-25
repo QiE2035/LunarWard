@@ -163,6 +163,18 @@ App ──→ Games ──→ Launch ──→ Wine ──→ Platform
 
 ---
 
+### 运行测试
+
+```bash
+dotnet test LunarWard.slnx              # 三个测试项目并行跑（本地最快）
+dotnet test LunarWard.slnx -m:1         # 串行，规避并发下两个集成用例的偶发冲突
+```
+
+`scripts/ci.sh` 与 CI 都是**分项目串行**执行的，不受影响。已知在 `-m` 并行模式下
+`IntegrationTests` 的 `I10_AfterGameExit_ClientsConvergeToEmpty` 与
+`AcceptanceTests.Report_HasSevenPhasesAndFullChain` 会因共享临时资源偶发失败（单独跑全过），
+尚未定位到具体共享点。
+
 ## 文档索引
 
 | 文档 | 内容 | 何时读 |
