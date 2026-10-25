@@ -269,7 +269,7 @@ public partial class StarwardShell : UserControl
         _dragPress = null;
         var format = DataFormat.CreateStringApplicationFormat("lunarward/game-choice");
         var item = new DataTransferItem();
-        item.Set(format, choice.SourceProfileId);
+        item.Set(format, choice.Kind);
         var data = new DataTransfer();
         data.Add(item);
         await DragDrop.DoDragDropAsync(press, data, DragDropEffects.Move);
@@ -298,28 +298,9 @@ public partial class StarwardShell : UserControl
             return;
         }
 
-        if (e.DataTransfer.TryGetValue(DataFormat.CreateStringApplicationFormat("lunarward/game-choice")) is { } sourceId)
+        if (e.DataTransfer.TryGetValue(DataFormat.CreateStringApplicationFormat("lunarward/game-choice")) is { } sourceKind)
         {
-            shell.MoveGameChoice(sourceId, shell.GameChoices.IndexOf(target));
-        }
-    }
-
-
-    /// <summary>悬停卡片弹出区服列表（源码 <c>Grid_GameBizDisplay_PointerEntered</c>）。</summary>
-    private void OnGameChoicePointerEntered(object? sender, PointerEventArgs e)
-    {
-        if (sender is Control card && card.ContextFlyout is { } flyout)
-        {
-            flyout.ShowAt(card);
-        }
-    }
-
-
-    private void OnGameChoicePointerExited(object? sender, PointerEventArgs e)
-    {
-        if (sender is Control card && card.ContextFlyout is Flyout flyout)
-        {
-            flyout.Hide();
+            shell.MoveGameChoice(sourceKind, shell.GameChoices.IndexOf(target));
         }
     }
 
@@ -345,12 +326,51 @@ public partial class StarwardShell : UserControl
     }
 
 
-    private async void OnGameChoiceTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    /// <summary>
+    /// 点卡片：单区服直接切；多区服在卡片下方弹区服 flyout
+    /// （源码 <c>Grid_GameBizDisplay_Tapped</c>，Placement=Bottom / Transient）。
+    /// hover **不** 弹 flyout——那是之前闪烁的根因，hover 只做高亮（XAML 里的 choiceHover）。
+    /// </summary>
+    private void OnGameChoiceTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is Control { DataContext: GameChoiceViewModel choice } && ViewModel is { } vm)
+        if (sender is not Control { DataContext: GameChoiceViewModel choice } card || ViewModel is not { } vm)
         {
-            await Dispatcher.UIThread.InvokeAsync(async () => await vm.ChooseGameAsync(choice));
+            return;
         }
+
+        e.Handled = true;
+
+        if (vm.ChooseGame(choice))
+        {
+            return;
+        }
+
+        if (card.ContextFlyout is PopupFlyoutBase flyout)
+        {
+            flyout.Placement = PlacementMode.Bottom;
+            flyout.ShowMode = FlyoutShowMode.Transient;
+            flyout.ShowAt(card);
+        }
+    }
+
+
+    /// <summary>左上角当前游戏图标：指针进入滑出图标条（源码 <c>Border_CurrentGameIcon_PointerEntered</c>）。</summary>
+    private void OnCurrentGameIconPointerEntered(object? sender, PointerEventArgs e)
+        => ViewModel?.ShowGameIcons();
+
+
+    /// <summary>
+    /// 指针离开当前游戏图标：向右移入图标条时不收（源码 <c>Border_CurrentGameIcon_PointerExited</c>
+    /// 的 <c>position.X &gt; ActualSize.X - 1</c> 判断），其余情况收起。
+    /// </summary>
+    private void OnCurrentGameIconPointerExited(object? sender, PointerEventArgs e)
+    {
+        if (sender is Control icon && e.GetPosition(icon).X > icon.Bounds.Width - 1)
+        {
+            return;
+        }
+
+        ViewModel?.HideGameIcons();
     }
 
 

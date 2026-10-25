@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -65,26 +66,75 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<ProfileItemViewModel> Profiles { get; }
 
-    /// <summary>游戏选择层的条目（含未安装的游戏）。</summary>
+    /// <summary>游戏选择层的卡片（每款游戏一张，国服/国际服/B 站在卡片内）。</summary>
     public ObservableCollection<GameChoiceViewModel> GameChoices { get; } = [];
 
 
     /// <summary>
-    /// 左上角横排游戏图标条（Starward GameSelector 的 <c>Grid_GameIconsArea</c>）：
-    /// 平时收起，鼠标移到当前游戏图标上时滑出；全屏选择层打开时保持可见。
+    /// 左上角横排区服图标条（Starward <c>GameBizIcons</c>）：只放被「固定」的区服。
+    /// </summary>
+    public ObservableCollection<GameServerItem> PinnedServers { get; } = [];
+
+
+    /// <summary>当前游戏区服（左上角 40×40 图标对应的 gamebiz）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentServerBadgeText), nameof(CurrentServerBadgeBrush),
+        nameof(HasCurrentServer), nameof(ShowCurrentServerBadge))]
+    private GameServerItem? _currentServer;
+
+
+    public string CurrentServerBadgeText => CurrentServer?.BadgeText ?? "";
+
+    public Avalonia.Media.IBrush CurrentServerBadgeBrush
+        => CurrentServer?.BadgeBrush ?? Avalonia.Media.Brushes.Transparent;
+
+    public bool HasCurrentServer => CurrentServer is not null;
+
+    /// <summary>
+    /// 左上角当前游戏图标右下角的 20×20 区服角标：未固定图标条时才显示
+    /// （源码 <c>Visibility={x:Bind IsPinned, Converter=BoolToVisibilityReversedConverter}</c>）。
+    /// </summary>
+    public bool ShowCurrentServerBadge => HasCurrentServer && !IsGameIconsPinned;
+
+
+    /// <summary>
+    /// 左上角横排区服图标条（Starward GameSelector 的 <c>Grid_GameIconsArea</c>）：
+    /// 平时收起（Translation -100），鼠标移到当前游戏图标上时滑出；全屏选择层打开或
+    /// 图标条被固定时保持可见。
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowCurrentServerBadge))]
     private bool _isGameIconsVisible;
+
+
+    /// <summary>图标条是否被固定常驻（Starward <c>AppConfig.IsGameBizSelectorPinned</c>）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowCurrentServerBadge))]
+    private bool _isGameIconsPinned;
+
+    partial void OnIsGameIconsPinnedChanged(bool value)
+    {
+        _services.Config.Launcher.GameIconsPinned = value;
+        SaveConfig();
+        if (value)
+        {
+            IsGameIconsVisible = true;
+        }
+        else if (!IsGameSelectorOpen)
+        {
+            IsGameIconsVisible = false;
+        }
+    }
 
 
     /// <summary>鼠标进入左上角当前游戏图标。</summary>
     public void ShowGameIcons() => IsGameIconsVisible = true;
 
 
-    /// <summary>鼠标离开图标条。全屏选择层打开时不收起（Starward 同款判断）。</summary>
+    /// <summary>鼠标离开图标条。固定或全屏选择层打开时不收起（Starward 同款判断）。</summary>
     public void HideGameIcons()
     {
-        if (IsGameSelectorOpen)
+        if (IsGameSelectorOpen || IsGameIconsPinned)
         {
             return;
         }
@@ -94,12 +144,12 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
 
     /// <summary>
-    /// 拖放排序（Starward <c>DragItemsCompleted</c>）：把 <paramref name="sourceId"/> 移到
+    /// 拖放排序（Starward <c>DragItemsCompleted</c>）：把 <paramref name="sourceKind"/> 移到
     /// <paramref name="targetIndex"/>，并把顺序写进 <c>LauncherSettings.GameChoiceOrder</c>。
     /// </summary>
-    public void MoveGameChoice(string sourceId, int targetIndex)
+    public void MoveGameChoice(string sourceKind, int targetIndex)
     {
-        int from = GameChoices.IndexOf(GameChoices.FirstOrDefault(x => x.SourceProfileId == sourceId)!);
+        int from = GameChoices.IndexOf(GameChoices.FirstOrDefault(x => x.Kind == sourceKind)!);
         if (from < 0)
         {
             return;
@@ -112,29 +162,14 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         }
 
         GameChoices.Move(from, targetIndex);
-        _services.Config.Launcher.GameChoiceOrder = GameChoices.Select(x => x.SourceProfileId).ToList();
+        _services.Config.Launcher.GameChoiceOrder = GameChoices.Select(x => x.Kind).ToList();
         SaveConfig();
     }
 
 
     /// <summary>点区服：切到该档案并把渠道写进去（对应源码 <c>Button_GameServer_Click</c>）。</summary>
     [RelayCommand]
-    private async Task SelectServerAsync(GameServerItem? server)
-    {
-        if (server is null)
-        {
-            return;
-        }
-
-        await ChooseGameAsync(server.Choice).ConfigureAwait(true);
-        if (Profiles.FirstOrDefault(x => x.Id == server.Choice.SourceProfileId) is { } item)
-        {
-            item.Profile.Channel = server.Channel.ToString();
-        }
-
-        SaveConfig();
-        ReloadProfiles();
-    }
+    private void SelectServer(GameServerItem? server) => ApplyServer(server);
 
 
     /// <summary>「固定」区服（源码 <c>Button_PinGameBiz_Click</c>）。</summary>
@@ -148,32 +183,65 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
         server.IsPinned = !server.IsPinned;
         var pinned = _services.Config.Launcher.PinnedGameServers;
-        var key = $"{server.Choice.SourceProfileId}:{server.Channel}";
         if (server.IsPinned)
         {
-            if (!pinned.Contains(key))
+            if (!pinned.Contains(server.Key))
             {
-                pinned.Add(key);
+                pinned.Add(server.Key);
             }
         }
         else
         {
-            pinned.RemoveAll(x => x == key);
+            pinned.RemoveAll(x => x == server.Key);
         }
 
         SaveConfig();
+        UpdatePinnedServers();
     }
 
 
+    /// <summary>左上角图标条里点一档已固定的区服：直接切过去。</summary>
     [RelayCommand]
-    private async Task SelectGameIcon(GameChoiceViewModel choice)
+    private void SelectGameIcon(GameServerItem server) => ApplyServer(server);
+
+
+    /// <summary>全屏选择层里的「固定图标条」开关（源码 <c>Border_Pin</c>）。</summary>
+    [RelayCommand]
+    private void ToggleGameIconsPinned() => IsGameIconsPinned = !IsGameIconsPinned;
+
+
+    /// <summary>
+    /// 切到某一档区服（档案 + 渠道），并收起选择层/图标条。
+    /// 档案不存在时不动作（LunarWard 的四个档案在 <see cref="ReloadProfiles"/> 里总会建好）。
+    /// </summary>
+    public void ApplyServer(GameServerItem? server)
     {
-        // ChooseGameAsync 可能新建档案并重载 GameChoices，当前标记由 ReloadProfiles 统一维护。
-        await ChooseGameAsync(choice).ConfigureAwait(true);
-        if (!IsGameSelectorOpen)
+        if (server is null)
         {
-            IsGameIconsVisible = false;
+            return;
         }
+
+        IsGameSelectorOpen = false;
+        if (Profiles.FirstOrDefault(x => x.Id == server.ProfileId) is not { } profile)
+        {
+            return;
+        }
+
+        string channel = server.Channel.ToString();
+        if (!string.Equals(profile.Profile.Channel, channel, StringComparison.Ordinal))
+        {
+            profile.Profile.Channel = channel;
+        }
+
+        SaveConfig();
+        Profile = profile;
+        _services.Config.Launcher.LastProfileIndex = Profiles.IndexOf(profile);
+        SaveConfig();
+        MarkCurrentServer();
+        _ = LoadArtAsync();
+        GameChanged?.Invoke(this, EventArgs.Empty);
+        RebuildPage();
+        HideGameIcons();
     }
 
 
@@ -400,8 +468,20 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             foreach (var (profile, bytes, files) in items)
             {
                 total += bytes;
-                var choice = GameChoices.FirstOrDefault(x => x.SourceProfileId == profile.Id);
-                InstalledGameItems.Add(new InstalledGameItem(profile.DisplayName, choice?.Icon, FormatSize(bytes), profile.DisplayName));
+                var server = GameChoices.SelectMany(x => x.Servers)
+                    .FirstOrDefault(x => string.Equals(x.ProfileId, profile.Id, StringComparison.Ordinal)
+                                         && x.Channel == ChannelOf(profile))
+                    ?? GameChoices.SelectMany(x => x.Servers)
+                        .FirstOrDefault(x => string.Equals(x.ProfileId, profile.Id, StringComparison.Ordinal));
+                var card = GameChoices.FirstOrDefault(x => server is not null && x.Servers.Contains(server));
+                InstalledGameItems.Add(new InstalledGameItem(
+                    server?.GameName ?? profile.DisplayName,
+                    server?.Name ?? "",
+                    server?.BadgeText ?? "",
+                    server?.BadgeBrush ?? Brushes.Transparent,
+                    card?.Icon ?? server?.Icon,
+                    FormatSize(bytes),
+                    ProfileConfig.ExpandPath(profile.Profile.Path)));
 
                 foreach (var (key, _) in files)
                 {
@@ -469,43 +549,19 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     }
 
 
-    /// <summary>选择一个档案（或为未安装的游戏新建档案）。</summary>
-    public async Task ChooseGameAsync(GameChoiceViewModel choice)
+    /// <summary>
+    /// 点卡片：只有一档区服时直接切过去并返回 true；多区服返回 false，由视图弹 flyout
+    /// （Starward <c>Grid_GameBizDisplay_Tapped</c>，单选也弹；LunarWard 按验收要求单区服直切）。
+    /// </summary>
+    public bool ChooseGame(GameChoiceViewModel choice)
     {
-        IsGameSelectorOpen = false;
-        if (choice.ProfileId is { } id && Profiles.FirstOrDefault(x => x.Id == id) is { } existing)
+        if (!choice.IsSingleServer)
         {
-            SelectProfile(existing);
-            return;
+            return false;
         }
 
-        if (choice.Definition is not { } definition)
-        {
-            return;
-        }
-
-        // 未安装：建一个空路径的档案，用户在游戏设置页里指定目录
-        var profileId = $"{definition.Kind}-{(definition.Edition == Games.GameEdition.Global ? "global" : "cn")}";
-        if (!_services.Config.Profiles.TryGetValue(profileId, out var profile))
-        {
-            profile = new ProfileConfig
-            {
-                Game = definition.Kind,
-                Edition = definition.Edition == Games.GameEdition.Global ? "Global" : "China",
-                Path = "",
-                Channel = "Official",
-            };
-            _services.Config.Profiles[profileId] = profile;
-            SaveConfig();
-        }
-
-        ReloadProfiles();
-        if (Profiles.FirstOrDefault(x => x.Id == profileId) is { } created)
-        {
-            SelectProfile(created);
-        }
-
-        await Task.CompletedTask;
+        ApplyServer(choice.Servers[0]);
+        return true;
     }
 
 
@@ -530,14 +586,72 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         _services.Config.Launcher.LastProfileIndex = Profiles.IndexOf(item);
         SaveConfig();
 
-        foreach (var choice in GameChoices)
-        {
-            choice.IsCurrent = choice.SourceProfileId == item.Id;
-        }
-
+        MarkCurrentServer();
         _ = LoadArtAsync();
         GameChanged?.Invoke(this, EventArgs.Empty);
         RebuildPage();
+    }
+
+
+    /// <summary>当前档案 + 渠道（由 <c>Profile.Profile.Channel</c> 解析）。</summary>
+    public Games.GameChannel CurrentChannel => ChannelOf(Profile);
+
+
+    /// <summary>全部卡片上的全部区服（每档区服同时出现在卡片和图标条里）。</summary>
+    public IEnumerable<GameServerItem> AllServers => GameChoices.SelectMany(x => x.Servers);
+
+
+    private static Games.GameChannel ChannelOf(ProfileItemViewModel? profile)
+        => string.Equals(profile?.Profile.Channel, nameof(Games.GameChannel.Bilibili), StringComparison.OrdinalIgnoreCase)
+            ? Games.GameChannel.Bilibili
+            : Games.GameChannel.Official;
+
+
+    /// <summary>把所有卡片 / 图标条条目的「当前」标记重算一遍。</summary>
+    private void MarkCurrentServer()
+    {
+        var channel = CurrentChannel;
+        foreach (var server in GameChoices.SelectMany(x => x.Servers))
+        {
+            server.IsCurrent = string.Equals(server.ProfileId, Profile?.Id, StringComparison.Ordinal)
+                               && server.Channel == channel;
+        }
+
+        foreach (var choice in GameChoices)
+        {
+            choice.IsCurrent = choice.Servers.Any(x => x.IsCurrent);
+        }
+
+        RefreshCurrentServer();
+    }
+
+
+    private void RefreshCurrentServer()
+    {
+        CurrentServer = GameChoices.SelectMany(x => x.Servers)
+            .FirstOrDefault(x => string.Equals(x.ProfileId, Profile?.Id, StringComparison.Ordinal)
+                                 && x.Channel == CurrentChannel);
+    }
+
+
+    /// <summary>按配置顺序重建左上角图标条（Starward <c>GameBizIcons</c>）。</summary>
+    private void UpdatePinnedServers()
+    {
+        var order = _services.Config.Launcher.PinnedGameServers;
+        var pinned = GameChoices.SelectMany(x => x.Servers)
+            .Where(x => x.IsPinned)
+            .OrderBy(x =>
+            {
+                int index = order.IndexOf(x.Key);
+                return index < 0 ? int.MaxValue : index;
+            })
+            .ToList();
+
+        PinnedServers.Clear();
+        foreach (var server in pinned)
+        {
+            PinnedServers.Add(server);
+        }
     }
 
 
@@ -704,27 +818,34 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
         // 左上角图标条与全屏选择层共用 GameChoices：档案变化后重建，并标出当前游戏。
         BuildGameChoices();
-        foreach (var choice in GameChoices)
+        MarkCurrentServer();
+        if (IsGameIconsPinned)
         {
-            choice.IsCurrent = choice.SourceProfileId == Profile?.Id;
+            IsGameIconsVisible = true;
         }
     }
 
 
+    /// <summary>
+    /// 重建卡片（每款游戏一张，国服/国际服/B 站在卡片内）与图标条。
+    /// 语言过滤、区服归组都在 <see cref="GameChoiceBuilder"/> 里，便于单测。
+    /// </summary>
     private void BuildGameChoices()
     {
         GameChoices.Clear();
-        var order = _services.Config.Launcher.GameChoiceOrder;
-        foreach (var profile in Profiles.OrderBy(x => order.IndexOf(x.Id) is var i && i >= 0 ? i : int.MaxValue))
+        foreach (var choice in GameChoiceBuilder.Build(
+                     Profiles,
+                     Strings.Language,
+                     _services.Config.Launcher.PinnedGameServers,
+                     _services.Config.Launcher.GameChoiceOrder,
+                     Profile?.Id,
+                     CurrentChannel))
         {
-            var definition = Games.GameCatalog.Detect(ProfileConfig.ExpandPath(profile.Profile.Path))
-                             ?? Games.GameCatalog.Get(profile.Profile.Game,
-                                 string.Equals(profile.Profile.Edition, "Global", StringComparison.OrdinalIgnoreCase)
-                                     ? Games.GameEdition.Global
-                                     : Games.GameEdition.China);
-            GameChoices.Add(new GameChoiceViewModel(profile, definition, _services.Config.Launcher.PinnedGameServers));
+            GameChoices.Add(choice);
         }
 
+        UpdatePinnedServers();
+        RefreshCurrentServer();
         _ = LoadChoiceArtAsync();
     }
 
@@ -738,7 +859,16 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             await Assets.LoadAllLaunchersAsync(Profiles.Select(LauncherIdFor).Distinct()).ConfigureAwait(true);
             foreach (var choice in GameChoices)
             {
-                // 图标条用 40×40 方形图标（GameArt.Icon），全屏卡片用 192×108 缩略图 + Logo。
+                // 图标条按区服的 gamebiz 取 40×40 方形图标（国服/国际服图标不同）。
+                foreach (var server in choice.Servers)
+                {
+                    if (await Assets.BitmapAsync(Assets.For(server.GameBiz)?.Icon).ConfigureAwait(true) is { } serverIcon)
+                    {
+                        server.Icon = serverIcon;
+                    }
+                }
+
+                // 全屏卡片用 192×108 缩略图 + Logo。
                 if (await Assets.BitmapAsync(Assets.For(choice.GameBiz)?.Icon).ConfigureAwait(true) is { } icon)
                 {
                     choice.Icon = icon;
@@ -823,133 +953,4 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         _disposed = true;
         Assets.Dispose();
     }
-}
-
-
-/// <summary>游戏选择层的一格（Starward GameSelector 的 192×108 卡片）。</summary>
-public sealed partial class GameChoiceViewModel : ObservableObject
-{
-    public GameChoiceViewModel(ProfileItemViewModel profile, Games.GameDefinition? definition,
-                               IReadOnlyCollection<string>? pinnedServers = null)
-    {
-        SourceProfileId = profile.Id;
-        ProfileId = profile.IsInstalled ? profile.Id : null;
-        Definition = definition;
-        Name = profile.DisplayName;
-        Edition = definition?.Edition == Games.GameEdition.Global ? "国际服" : "国服";
-        IsInstalled = profile.IsInstalled;
-        IsCurrent = false;
-
-        // 区服列表（Starward GameBizIcon.Servers）：本项目每款游戏都只有官方 + Bilibili 两档
-        var channels = definition?.GetSupportedChannels() ?? [Games.GameChannel.Official];
-        Servers = channels.Select(x => new GameServerItem(this, x, ServerName(definition, x),
-                                                         pinnedServers?.Contains($"{profile.Id}:{x}") == true))
-                          .ToList();
-    }
-
-
-    /// <summary>区服（Starward <c>GameBizIcon</c>，带 24×24 图标、名称与「固定」开关）。</summary>
-    public IReadOnlyList<GameServerItem> Servers { get; }
-
-
-    private static string ServerName(Games.GameDefinition? definition, Games.GameChannel channel)
-    {
-        if (channel == Games.GameChannel.Bilibili)
-        {
-            return "Bilibili";
-        }
-
-        return definition?.Edition == Games.GameEdition.Global ? "国际服" : "官方国服";
-    }
-
-
-    /// <summary>来源档案 id（即使未安装也有值；用于图标条的当前游戏标记）。</summary>
-    public string SourceProfileId { get; }
-
-    public string? ProfileId { get; }
-
-    public Games.GameDefinition? Definition { get; }
-
-    public string Name { get; }
-
-    public string Edition { get; }
-
-    public bool IsInstalled { get; }
-
-    /// <summary>是否当前档案（10×10 强调色点在图标条里标记）。</summary>
-    [ObservableProperty]
-    private bool _isCurrent;
-
-    /// <summary>40×40 方形游戏图标（Starward <c>GameBizIcon.GameIcon</c>）。</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasIcon))]
-    private Bitmap? _icon;
-
-    public bool HasIcon => Icon is not null;
-
-    /// <summary>Starward 卡片背景（缩略图 192×108）。</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasThumbnail), nameof(ShowFallbackTitle))]
-    private Bitmap? _thumbnail;
-
-    /// <summary>Starward 卡片中央的 Logo（悬停时换成图标 + 「选择服务器」）。</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasLogo), nameof(ShowFallbackTitle))]
-    private Bitmap? _logo;
-
-    public bool HasThumbnail => Thumbnail is not null;
-
-    public bool HasLogo => Logo is not null;
-
-    /// <summary>既没有 Logo 也没有缩略图时，卡片中央显示游戏名。</summary>
-    public bool ShowFallbackTitle => !HasThumbnail && !HasLogo;
-
-    /// <summary>游戏 biz（<c>hk4e_cn</c>），用来匹配素材。</summary>
-    public string GameBiz => Definition?.GameBiz ?? "";
-
-    public string Title => $"{Name} · {Edition}";
-
-    /// <summary>XAML 内的文案（例如「已安装」标记）。</summary>
-    public Localization.AppStrings Strings => Localization.AppStrings.Instance;
-}
-
-
-/// <summary>游戏区服（Starward <c>GameBizIcon</c> 的区服条目：24×24 图标、名称、固定开关）。</summary>
-public sealed partial class GameServerItem : ObservableObject
-{
-    public GameServerItem(GameChoiceViewModel choice, Games.GameChannel channel, string name, bool isPinned)
-    {
-        Choice = choice;
-        Channel = channel;
-        Name = name;
-        _isPinned = isPinned;
-    }
-
-
-    public GameChoiceViewModel Choice { get; }
-
-    public Games.GameChannel Channel { get; }
-
-    public string Name { get; }
-
-    /// <summary>图标沿用游戏图标（本项目没有区服独立图标素材，docs/08 §4 记录）。</summary>
-    public Bitmap? Icon => Choice.Icon;
-
-    [ObservableProperty]
-    private bool _isPinned;
-}
-
-
-/// <summary>「已安装游戏实际占用大小」的一行（图标 + 名称 + 右上角容量）。</summary>
-public sealed class InstalledGameItem(string name, Bitmap? icon, string sizeText, string toolTip)
-{
-    public string Name { get; } = name;
-
-    public Bitmap? Icon { get; } = icon;
-
-    public string SizeText { get; } = sizeText;
-
-    public string ToolTip { get; } = toolTip;
-
-    public bool HasIcon => Icon is not null;
 }
