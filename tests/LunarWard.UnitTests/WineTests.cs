@@ -517,6 +517,66 @@ public class PlanFactoryTests
         profile.SetWrapper("mangohud", true);
         Assert.Equal(["gamemoderun", "mangohud", "custom-a", "custom-b"], profile.Wrappers);
     }
+
+
+    [Fact]
+    public void SetWrapper_PutsGamescopeBetweenGameModeAndMangoHud()
+    {
+        var profile = new ProfileConfig();
+
+        profile.SetWrapper("mangohud", true);
+        profile.SetWrapper("gamescope", true);
+        profile.SetWrapper("gamemoderun", true);
+        Assert.Equal(["gamemoderun", "gamescope", "mangohud"], profile.Wrappers);
+    }
+
+
+    [Fact]
+    public void BuildArgumentVector_ExpandsGamescopeArgsAndSeparator()
+    {
+        var (paths, temp, _) = Setup();
+        using (temp)
+        {
+            var profile = new ProfileConfig
+            {
+                Path = temp.Path,
+                Wrappers = ["gamemoderun", "gamescope", "mangohud"],
+                GamescopeArgs = "-f -W 2560 -H 1440",
+            };
+
+            var plan = Factory(paths).Build("p", profile, GameLaunchInfo.Fallback("genshin", "China"), dryRun: true);
+            var argv = plan.BuildArgumentVector();
+
+            int index = argv.ToList().IndexOf("gamescope");
+            Assert.True(index > 0);
+            Assert.Equal(
+                ["gamemoderun", "gamescope", "-f", "-W", "2560", "-H", "1440", "--", "mangohud"],
+                argv.Take(index + 8));
+            Assert.Equal(plan.WineBinary, argv[index + 8]);
+        }
+    }
+
+
+    [Fact]
+    public void BuildArgumentVector_DropsUserSuppliedSeparator()
+    {
+        var (paths, temp, _) = Setup();
+        using (temp)
+        {
+            var profile = new ProfileConfig
+            {
+                Path = temp.Path,
+                Wrappers = ["gamescope"],
+                GamescopeArgs = "-f -- -W 1280",
+            };
+
+            var plan = Factory(paths).Build("p", profile, GameLaunchInfo.Fallback("genshin", "China"), dryRun: true);
+            var argv = plan.BuildArgumentVector();
+
+            Assert.Equal(1, argv.Count(a => a == "--"));
+            Assert.Equal(["gamescope", "-f", "-W", "1280", "--"], argv.Take(5));
+        }
+    }
 }
 
 

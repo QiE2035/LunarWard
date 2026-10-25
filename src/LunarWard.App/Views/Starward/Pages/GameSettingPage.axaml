@@ -476,7 +476,23 @@
                          VerticalAlignment="Center"
                          Text="{Binding MangoHudStatus}" />
             </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <ToggleSwitch IsChecked="{Binding UseGamescope, Mode=TwoWay}"
+                            OffContent="{Binding Strings[GameSetting.Gamescope]}"
+                            OnContent="{Binding Strings[GameSetting.Gamescope]}" />
+              <TextBlock Classes="description"
+                         VerticalAlignment="Center"
+                         Text="{Binding GamescopeStatus}" />
+            </StackPanel>
           </StackPanel>
+
+          <TextBox Margin="0,6,0,0"
+                   Height="32"
+                   FontFamily="{StaticResource StarMonoFontFamily}"
+                   FontSize="12"
+                   IsVisible="{Binding IsGamescopeEnabled}"
+                   Watermark="-f -W 2560 -H 1440"
+                   Text="{Binding GamescopeArguments, Mode=TwoWay}" />
 
         </StackPanel>
 

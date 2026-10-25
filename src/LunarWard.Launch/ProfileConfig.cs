@@ -40,6 +40,16 @@ public sealed class ProfileConfig
     public List<string> Wrappers { get; set; } = [];
 
     /// <summary>
+    /// <c>gamescope</c> 包装器的参数（仅当 <see cref="Wrappers"/> 含 <c>gamescope</c> 时生效）。
+    /// </summary>
+    /// <remarks>
+    /// 上游 Starward 是 Windows 程序、没有 gamescope；这是 LunarWard 的 Linux 扩展。
+    /// 默认在嵌套合成器里跑全屏（<c>-f</c>），分辨率交给游戏自己的设置；用户可改成
+    /// <c>-f -W 2560 -H 1440</c> 之类的显式尺寸。<c>--</c> 由 <see cref="LaunchPlan"/> 补，不要自己写。
+    /// </remarks>
+    public string GamescopeArgs { get; set; } = "-f";
+
+    /// <summary>
     /// 开关一个性能包装器（LunarWard 的 Linux 扩展：<c>gamemoderun</c> / <c>mangohud</c>）。
     /// </summary>
     /// <remarks>
@@ -54,14 +64,22 @@ public sealed class ProfileConfig
             return;
         }
 
+        // 顺序：gamemoderun（最外）→ gamescope → mangohud → 其余自定义包装器。
         if (name == "gamemoderun")
         {
             Wrappers.Insert(0, name);
         }
-        else
+        else if (name == "gamescope")
         {
             int gameMode = Wrappers.IndexOf("gamemoderun");
             Wrappers.Insert(gameMode >= 0 ? gameMode + 1 : 0, name);
+        }
+        else
+        {
+            int gameScope = Wrappers.IndexOf("gamescope");
+            int gameMode = Wrappers.IndexOf("gamemoderun");
+            int anchor = gameScope >= 0 ? gameScope + 1 : gameMode >= 0 ? gameMode + 1 : 0;
+            Wrappers.Insert(anchor, name);
         }
     }
 

@@ -47,6 +47,12 @@ public sealed class LaunchPlan
     /// <summary>有序包装器链（外层在前），例如 <c>["gamemoderun", "mangohud"]</c>。</summary>
     public IReadOnlyList<string> Wrappers { get; init; } = [];
 
+    /// <summary>
+    /// <c>gamescope</c> 包装器的参数（LunarWard 的 Linux 扩展）。展开 argv 时插在
+    /// <c>gamescope</c> 之后，并自动补一个 <c>--</c> 分隔后续命令。
+    /// </summary>
+    public IReadOnlyList<string> GamescopeArguments { get; init; } = [];
+
     /// <summary>关键字表，供外部程序与文件写入替换。</summary>
     public IReadOnlyDictionary<string, string?> Keywords { get; init; } = new Dictionary<string, string?>();
 
@@ -68,7 +74,18 @@ public sealed class LaunchPlan
     public IReadOnlyList<string> BuildArgumentVector()
     {
         var result = new List<string>();
-        result.AddRange(Wrappers);
+        foreach (var wrapper in Wrappers)
+        {
+            result.Add(wrapper);
+            if (wrapper == "gamescope")
+            {
+                // gamescope 自己也要吃参数：`gamescope -f -W 2560 -H 1440 -- <内层命令>`。
+                // 用户可能自己写了 `--`，这里先剥掉再补一个，避免出现两个分隔符。
+                result.AddRange(GamescopeArguments.Where(a => a != "--"));
+                result.Add("--");
+            }
+        }
+
         result.Add(WineBinary);
         result.AddRange(Arguments);
         return result;

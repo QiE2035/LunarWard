@@ -178,6 +178,7 @@ public sealed class LaunchPlanFactory
             ExternalPrograms = externalPrograms,
             CommandTemplate = profile.CommandOverride,
             Wrappers = profile.Wrappers.ToList(),
+            GamescopeArguments = CommandLineSplitter.Split(profile.GamescopeArgs ?? "").ToList(),
             Keywords = keywords,
             WaitImageTimeout = TimeSpan.FromSeconds(Math.Max(1, profile.WaitImageTimeoutSeconds)),
             ReadyGrace = TimeSpan.FromMilliseconds(Math.Max(0, profile.ReadyGraceMs)),

@@ -77,6 +77,7 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         Dx12 = profile.Enhancements.Dx12;
         ReadyGraceMsValue = Math.Clamp(profile.ReadyGraceMs, 0, 600_000);
         StartArguments = string.Join(' ', profile.Args);
+        GamescopeArguments = profile.GamescopeArgs ?? "";
         _loading = false;
 
         ScanRuntimes();
@@ -971,10 +972,52 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
     }
 
 
+    /// <summary>gamescope 开关（LunarWard 的 Linux 扩展；参数见 <see cref="GamescopeArguments"/>）。</summary>
+    public bool UseGamescope
+    {
+        get => Profile.Profile.Wrappers.Contains("gamescope");
+        set
+        {
+            if (!_loading)
+            {
+                SetWrapper("gamescope", value);
+                OnPropertyChanged(nameof(IsGamescopeEnabled));
+            }
+        }
+    }
+
+
+    /// <summary>gamescope 的参数（<c>--</c> 由启动计划补，不要自己写）。</summary>
+    [ObservableProperty]
+    private string _gamescopeArguments = "";
+
+
+    partial void OnGamescopeArgumentsChanged(string value)
+    {
+        if (_loading)
+        {
+            return;
+        }
+
+        Profile.Profile.GamescopeArgs = value.Trim();
+        SetDirty(true);
+        RefreshPlan();
+    }
+
+
+    /// <summary>参数框是否可见（只在 gamescope 打开时显示）。</summary>
+    public bool IsGamescopeEnabled => UseGamescope;
+
+
     /// <summary>本机是否装了 gamemoderun（只影响提示文字，不阻止开关）。</summary>
     public string GameModeStatus => global::LunarWard.Platform.UnixProcessLauncher.Which("gamemoderun") is null
         ? Strings["GameSetting.GameModeMissing"]
         : Strings["GameSetting.GameModeFound"];
+
+
+    public string GamescopeStatus => global::LunarWard.Platform.UnixProcessLauncher.Which("gamescope") is null
+        ? Strings["GameSetting.GamescopeMissing"]
+        : Strings["GameSetting.GamescopeFound"];
 
 
     public string MangoHudStatus => global::LunarWard.Platform.UnixProcessLauncher.Which("mangohud") is null
@@ -993,6 +1036,9 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
         RefreshPlan();
         OnPropertyChanged(nameof(UseGameMode));
         OnPropertyChanged(nameof(UseMangoHud));
+        OnPropertyChanged(nameof(UseGamescope));
+        OnPropertyChanged(nameof(IsGamescopeEnabled));
+        OnPropertyChanged(nameof(GamescopeStatus));
     }
 
 
