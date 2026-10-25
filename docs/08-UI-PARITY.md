@@ -90,7 +90,7 @@
   双 Tab 换成 Starward 的 248px 左栏 + 战绩菜单 + 空白 Frame；登录 Flyout 用 cookie
   调 `GameRecordClient.GetGameRolesAsync` 拉角色（昵称/区服/Lv），凭据复用便笺存储；
   「更新设备指纹」保留位置但禁用；「本机游戏账号」是 LunarWard 追加入口（wine 快照）。
-  战绩子页未移植处显示占位并如实标注。
+  战绩菜单 14 个子页全部已移植（原神 5 + 崩铁/绝区零 9）；「战绩」本身在 Linux 上用系统浏览器打开同名网页。
 - **每日便笺 Flyout**（Lead）：按 `DailyNoteButton.xaml` 把启动器右下便笺按钮从
   「跳到工具箱」改为真正的 Flyout；`DailyNoteService` 增加原神/绝区零结构化字段
   （`GenshinDailyNoteExtra` / `ZzzDailyNoteExtra`），角色行/刷新/错误/无 cookie 引导
