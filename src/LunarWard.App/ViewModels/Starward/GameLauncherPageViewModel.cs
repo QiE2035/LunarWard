@@ -1563,16 +1563,10 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         GameAccounts.Clear();
         try
         {
-            var path = Path.Join(_services.Paths.DataHome, "accounts.json");
-            if (File.Exists(path))
+            // 上游从 GameAccount 表读已保存账号（accounts.json 已废弃）
+            foreach (var account in GameAccountStore.OpenDefault(_services.Paths.DataHome).GetAll(GameBiz))
             {
-                var accounts = JsonSerializer.Deserialize<List<GameAccountSnapshot>>(
-                    File.ReadAllText(path),
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? [];
-                foreach (var account in accounts.Where(x => x.GameBiz == GameBiz))
-                {
-                    GameAccounts.Add(new LauncherAccountItem(account));
-                }
+                GameAccounts.Add(new LauncherAccountItem(account));
             }
         }
         catch (Exception ex)

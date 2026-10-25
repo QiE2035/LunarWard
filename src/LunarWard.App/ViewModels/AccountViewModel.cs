@@ -1,11 +1,11 @@
 using System.Collections.ObjectModel;
-using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.App.Services;
 using LunarWard.Core;
 using LunarWard.Games;
 using LunarWard.Launch;
+using LunarWard.Games;
 using LunarWard.Platform;
 
 namespace LunarWard.App.ViewModels;
@@ -20,19 +20,13 @@ namespace LunarWard.App.ViewModels;
 /// Linux 下同样的数据在 Wine prefix 的 <c>user.reg</c> 的 <c>hex:</c> 值里。
 /// </para>
 /// <para>
-/// <b>安全</b>：这些 blob 内含 cookie 明文。默认只保存在本机
-/// <c>$XDG_DATA_HOME/lunarward/accounts.json</c>，权限 0600，不写日志、不上传。
+/// <b>安全</b>：这些 blob 内含 cookie 明文，与上游一样原样存进本机 SQLite 的
+/// <c>GameAccount</c> 表（<c>&lt;DataHome&gt;/LunarWardDatabase.db</c>，库文件权限 0600），
+/// 不写日志、不上传。
 /// </para>
 /// </remarks>
 public sealed partial class AccountViewModel : ObservableObject
 {
-    private static readonly JsonSerializerOptions StoreOptions = new()
-    {
-        WriteIndented = true,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-    };
-
-
     private readonly AppServices _services;
 
     private readonly ProfileItemViewModel _profile;
@@ -41,7 +35,8 @@ public sealed partial class AccountViewModel : ObservableObject
 
     private readonly string _gameBiz;
 
-    private readonly string _storePath;
+    /// <summary>账号存储（上游 <c>GameAccount</c> 表）。</summary>
+    private readonly GameAccountStore _store;
 
 
     public AccountViewModel(AppServices services, ProfileItemViewModel profile)
@@ -57,7 +52,7 @@ public sealed partial class AccountViewModel : ObservableObject
         var prefix = PrefixResolver.Resolve(
             profile.Profile.Prefix.ToDomain(), profile.Id, services.Paths);
         _wine = new WineAccountService(prefix);
-        _storePath = Path.Join(services.Paths.DataHome, "accounts.json");
+        _store = GameAccountStore.OpenDefault(services.Paths.DataHome);
 
         Accounts = new ObservableCollection<SavedAccountViewModel>();
         Reload();
@@ -92,12 +87,9 @@ public sealed partial class AccountViewModel : ObservableObject
     private void Reload()
     {
         Accounts.Clear();
-        foreach (var account in LoadStore())
+        foreach (var account in _store.GetAll(_gameBiz))
         {
-            if (account.GameBiz == _gameBiz)
-            {
-                Accounts.Add(new SavedAccountViewModel(account));
-            }
+            Accounts.Add(new SavedAccountViewModel(account));
         }
 
         RefreshCurrent();
@@ -145,15 +137,13 @@ public sealed partial class AccountViewModel : ObservableObject
 
         snapshot.Name = snapshot.Uid > 0 ? $"UID {snapshot.Uid}" : snapshot.Sha256[..8];
 
-        var all = LoadStore();
-        if (all.Any(x => x.Sha256 == snapshot.Sha256 && x.GameBiz == snapshot.GameBiz))
+        if (_store.Get(snapshot.Sha256) is not null)
         {
             ErrorText = "这个账号已经保存过了";
             return;
         }
 
-        all.Add(snapshot);
-        SaveStore(all);
+        _store.Save(snapshot);
         Reload();
         StatusText = $"已保存账号 {snapshot.Name}";
         ErrorText = null;
@@ -197,9 +187,7 @@ public sealed partial class AccountViewModel : ObservableObject
             return;
         }
 
-        var all = LoadStore();
-        all.RemoveAll(x => x.Sha256 == Selected.Snapshot.Sha256 && x.GameBiz == Selected.Snapshot.GameBiz);
-        SaveStore(all);
+        _store.Delete(Selected.Snapshot.Sha256);
         Reload();
         StatusText = "已删除";
     }
@@ -213,50 +201,11 @@ public sealed partial class AccountViewModel : ObservableObject
             return;
         }
 
-        var all = LoadStore();
-        var index = all.FindIndex(x => x.Sha256 == Selected.Snapshot.Sha256 && x.GameBiz == Selected.Snapshot.GameBiz);
-        if (index < 0)
-        {
-            return;
-        }
-
-        all[index].Name = Selected.Name;
-        SaveStore(all);
+        _store.Rename(Selected.Snapshot.Sha256, Selected.Name);
         StatusText = "已重命名";
     }
 
 
-    private List<GameAccountSnapshot> LoadStore()
-    {
-        try
-        {
-            if (!File.Exists(_storePath))
-            {
-                return [];
-            }
-
-            return JsonSerializer.Deserialize<List<GameAccountSnapshot>>(
-                       File.ReadAllText(_storePath), StoreOptions) ?? [];
-        }
-        catch (JsonException)
-        {
-            return [];
-        }
-    }
-
-
-    private void SaveStore(List<GameAccountSnapshot> accounts)
-    {
-        try
-        {
-            AtomicFile.WriteAllText(_storePath, JsonSerializer.Serialize(accounts, StoreOptions));
-            File.SetUnixFileMode(_storePath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-        }
-        catch (Exception ex)
-        {
-            ErrorText = $"保存失败：{ex.Message}";
-        }
-    }
 }
 
 

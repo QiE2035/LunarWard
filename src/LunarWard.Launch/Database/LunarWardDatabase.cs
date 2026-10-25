@@ -14,8 +14,9 @@ namespace LunarWard.Launch.Database;
 /// <c>Sql_v9</c> / <c>Sql_v12</c>），只是文件叫 <c>LunarWardDatabase.db</c>。
 /// </para>
 /// <para>
-/// 只建抽卡相关的表：Starward 的其它表（游戏账号、活动记录、截图等）在 LunarWard
-/// 里各自有独立的 JSON / 文件实现，不在本类范围内。
+/// 目前已建：抽卡四表 + 三张 wiki 信息表 + 千星奇域两表 + 账号记录三表 + 游戏账号
+/// <c>GameAccount</c> + 游戏时长 <c>PlayTimeItem/PlayTimeStats</c>；Starward 其余表
+/// （活动记录、截图等）在 LunarWard 里仍是独立实现，尚未搬进来。
 /// </para>
 /// </remarks>
 public sealed class LunarWardDatabase
@@ -281,6 +282,16 @@ public sealed class LunarWardDatabase
             CREATE INDEX IF NOT EXISTS IX_PlayTimeItem_Pid ON PlayTimeItem (Pid);
             CREATE INDEX IF NOT EXISTS IX_PlayTimeItem_State ON PlayTimeItem (State);
 
+            CREATE TABLE IF NOT EXISTS GameAccount
+            (
+                SHA256  TEXT    NOT NULL PRIMARY KEY,
+                GameBiz TEXT    NOT NULL,
+                Uid     INTEGER NOT NULL,
+                Name    TEXT    NOT NULL,
+                Value   BLOB    NOT NULL,
+                Time    TEXT    NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_GameAccount_GameBiz ON GameAccount (GameBiz);
             CREATE TABLE IF NOT EXISTS PlayTimeStats
             (
                 Id           INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
