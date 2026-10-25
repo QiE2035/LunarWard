@@ -1,4 +1,5 @@
 using System.Reflection;
+using LunarWard.App.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.App.Views.Starward;
@@ -53,6 +54,76 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
     public string Version { get; }
 
     public List<SettingLinkViewModel> Links { get; }
+
+
+    /// <summary>检查更新进行中（对应上游 <c>ProgressRing</c> 的位置）。</summary>
+    [ObservableProperty]
+    private bool _isCheckingUpdate;
+
+
+    /// <summary>检查结果文案（已是最新 / 有新版本 / 失败原因）。</summary>
+    [ObservableProperty]
+    private string? _updateMessage;
+
+
+    /// <summary>有新版时为 <c>true</c>，显示「打开下载页」。</summary>
+    [ObservableProperty]
+    private bool _hasUpdate;
+
+
+    private string? _updateUrl;
+
+
+    /// <summary>
+    /// 检查更新。上游会下载安装包并替换自身；LunarWard 走发行包，只在有新版时
+    /// 给出发布页链接（见 <see cref="ReleaseChecker"/>）。
+    /// </summary>
+    [RelayCommand]
+    private async Task CheckUpdateAsync()
+    {
+        if (IsCheckingUpdate)
+        {
+            return;
+        }
+
+        IsCheckingUpdate = true;
+        HasUpdate = false;
+        UpdateMessage = Strings["Settings.About.Checking"];
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+            var current = typeof(SettingAboutViewModel).Assembly.GetName().Version ?? new Version(1, 0, 0);
+            var result = await ReleaseChecker.CheckAsync(http, current).ConfigureAwait(true);
+            switch (result.Status)
+            {
+                case ReleaseCheckStatus.UpdateAvailable:
+                    HasUpdate = true;
+                    _updateUrl = result.HtmlUrl;
+                    UpdateMessage = string.Format(Strings["Settings.About.UpdateAvailable"], result.LatestVersion ?? "");
+                    break;
+                case ReleaseCheckStatus.UpToDate:
+                    UpdateMessage = string.Format(Strings["Settings.About.UpToDate"], result.LatestVersion ?? Version);
+                    break;
+                default:
+                    UpdateMessage = string.Format(Strings["Settings.About.CheckFailed"], result.Error ?? "");
+                    break;
+            }
+        }
+        finally
+        {
+            IsCheckingUpdate = false;
+        }
+    }
+
+
+    [RelayCommand]
+    private async Task OpenUpdateAsync()
+    {
+        if (_updateUrl is { Length: > 0 } url)
+        {
+            await Services.OpenUriAsync(url).ConfigureAwait(true);
+        }
+    }
 
 
     [RelayCommand]

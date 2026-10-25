@@ -60,8 +60,8 @@
                     OnContent="{Binding Strings[Settings.About.PreviewChannel]}" />
 
       <!-- AboutSetting.xaml:47-85 检查更新。
-           Starward 的第 1 列是「已是最新版 / ProgressRing / 错误文字」；LunarWard 没有
-           更新服务，第 1 列换成不可用说明（同一 Grid 位置与间距）。 -->
+           LunarWard 不替换自身（发行包更新），只查 GitHub 最新发布：
+           第 1 列同样是「← 检查更新」按钮 + 「已是最新版 / ProgressRing / 错误文字」。 -->
       <Grid Margin="0,4,0,0" ColumnSpacing="16">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
@@ -83,14 +83,23 @@
           </StackPanel>
         </Button>
 
-        <!-- AboutSetting.xaml:66-73 的「已是最新版」状态位：LunarWard 说明为什么不可用 -->
+        <!-- AboutSetting.xaml:66-73 的「已是最新版」状态位。
+             LunarWard 没有内置更新器：检查结果（已是最新 / 有新版本 / 失败）写在这里，
+             有新版本时右侧出现「打开下载页」。 -->
         <TextBlock Grid.Column="1"
                    VerticalAlignment="Center"
                    MaxWidth="620"
                    FontSize="12"
                    Foreground="{StaticResource StarTextSecondary}"
                    TextWrapping="Wrap"
-                   Text="{Binding Strings[Settings.About.UpdaterUnavailable]}" />
+                   Text="{Binding UpdateMessage}" />
+
+        <Button Grid.Column="2"
+                VerticalAlignment="Center"
+                Padding="8,2"
+                IsVisible="{Binding HasUpdate}"
+                Command="{Binding OpenUpdateCommand}"
+                Content="{Binding Strings[Settings.About.OpenRelease]}" />
       </Grid>
 
       <!-- AboutSetting.xaml:89-126 相关链接 -->
