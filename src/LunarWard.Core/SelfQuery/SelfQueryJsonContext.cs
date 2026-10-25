@@ -15,3 +15,14 @@ internal partial class SelfQueryJsonContext : JsonSerializerContext
 {
 
 }
+
+
+/// <summary>
+/// <see cref="SelfQueryStore"/> 的本地文件序列化上下文。
+/// （查询 API 的上下文在 <see cref="SelfQueryJsonContext"/>，两者互不影响。）
+/// </summary>
+[JsonSerializable(typeof(SelfQueryStoreData))]
+internal partial class SelfQueryStoreJsonContext : JsonSerializerContext
+{
+
+}

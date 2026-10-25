@@ -1,0 +1,405 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:pages="using:LunarWard.App.Views.Starward.Pages"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Pages.Record.ChallengePeakPage"
+             x:DataType="vm:ChallengePeakPageViewModel"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600">
+  <!--
+    异象仲裁页（崩坏：星穹铁道）：逐行对照
+    Starward Features/GameRecord/StarRail/ChallengePeakPage.xaml（514 行）。
+    结构 = 左栏（刷新 + 各期列表：版本号 / 王棋星 / 骑士星 / BOSS 立绘）
+         + 右侧（统计周期 / 统计卡 / 王棋通关战绩卡 / 骑士关卡战绩卡）。
+    素材缺失处理：星星用字形 ★（源码 20×20 PNG）、王棋立绘与主题图走远程图、
+    快速通关的 20004.png 用文字代替、Buff 图标留 28×28 占位。
+  -->
+  <UserControl.Styles>
+    <Style Selector="TextBlock.label">
+      <Setter Property="Foreground" Value="{StaticResource StarTextSecondary}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
+
+    <!-- ══ 空态（Starward Image_Emoji + HoyolabToolboxPage_NoData） ═════════ -->
+    <StackPanel Grid.RowSpan="2"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsVisible="{Binding ShowEmpty}"
+                Spacing="16">
+      <Border Width="160"
+              Height="160"
+              Background="{StaticResource StarControlFillBrush}"
+              CornerRadius="80">
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="64"
+                   Foreground="{StaticResource StarTextTertiary}"
+                   Text="&#xE9D9;" />
+      </Border>
+      <TextBlock HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding Strings[Common.NoData]}" />
+    </StackPanel>
+
+    <!-- ══ 错误提示 ═════════════════════════════════════════════════════ -->
+    <TextBlock Grid.Row="1"
+               Grid.Column="1"
+               Margin="24,0,24,16"
+               VerticalAlignment="Top"
+               Foreground="{StaticResource StarErrorBrush}"
+               IsVisible="{Binding HasError}"
+               TextWrapping="Wrap"
+               Text="{Binding ErrorText}" />
+
+    <!-- ══ 左栏：刷新 + 各期列表（Starward StackPanel Margin=0,24,0,0） ══ -->
+    <StackPanel Margin="0,24,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Spacing="12">
+      <Button Height="36"
+              BorderThickness="0"
+              Command="{Binding RefreshCommand}"
+              CornerRadius="0,18,18,0">
+        <StackPanel Margin="4,0,4,0" Orientation="Horizontal" Spacing="8">
+          <TextBlock VerticalAlignment="Center" FontSize="16" Text="&#xE72C;" />
+          <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Common.Refresh]}" />
+        </StackPanel>
+      </Button>
+    </StackPanel>
+
+    <ListBox Grid.Row="1"
+             Width="132"
+             Margin="0,0,0,24"
+             Padding="12,0,12,0"
+             HorizontalAlignment="Left"
+             ItemsSource="{Binding PeriodList}"
+             SelectedItem="{Binding CurrentPeriod}"
+             SelectionMode="Single">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:ChallengePeakPeriodItem">
+          <Border Width="112"
+                  Padding="8"
+                  Background="{StaticResource StarOverlayAcrylicBrush}"
+                  CornerRadius="4">
+          <Grid RowDefinitions="Auto,Auto">
+            <Image Grid.RowSpan="2"
+                   Height="60"
+                   Margin="0,-8,-8,-8"
+                   HorizontalAlignment="Right"
+                   Source="{Binding BossIcon}"
+                   Stretch="Uniform" />
+            <TextBlock Margin="2,0,0,0"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Text="{Binding GameVersion}" />
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="2">
+              <TextBlock VerticalAlignment="Center"
+                         FontSize="16"
+                         Foreground="#E4C891"
+                         Text="&#xE735;" />
+              <TextBlock Margin="0,0,6,2"
+                         VerticalAlignment="Center"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         Text="{Binding BossStars}" />
+              <TextBlock VerticalAlignment="Center"
+                         FontSize="16"
+                         Foreground="{StaticResource StarAccentForegroundBrush}"
+                         Text="&#xE735;" />
+              <TextBlock Margin="0,0,0,2"
+                         VerticalAlignment="Center"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         Text="{Binding MobStars}" />
+            </StackPanel>
+          </Grid>
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <!-- ══ 右侧详情（Starward ScrollViewer Grid.Column=1） ═══════════════ -->
+    <ScrollViewer Grid.RowSpan="2"
+                  Grid.Column="1"
+                  IsVisible="{Binding HasData}">
+      <StackPanel Margin="24" Spacing="8">
+
+        <!-- 统计周期 -->
+        <TextBlock Foreground="{StaticResource StarTextSecondary}" Text="{Binding PeriodText}" />
+
+        <!-- 统计（Starward Grid Padding 8 + CustomOverlayAcrylicBrush） -->
+        <Border Margin="0,-4,0,0"
+                Padding="8"
+                Background="{StaticResource StarOverlayAcrylicBrush}"
+                BoxShadow="0 4 16 0 #40000000"
+                CornerRadius="8">
+          <Grid ColumnDefinitions="*,Auto,*">
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="20">
+              <Image Width="48" Height="48" Source="{Binding ThemeImage}" Stretch="Uniform" />
+              <StackPanel VerticalAlignment="Center" Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                  <TextBlock VerticalAlignment="Center"
+                             FontSize="20"
+                             Foreground="#E4C891"
+                             Text="&#xE735;" />
+                  <TextBlock VerticalAlignment="Center" Foreground="{StaticResource StarTextSecondary}">
+                    <Run Text="x" />
+                    <Run Text="{Binding BossStarsText}" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                  <TextBlock VerticalAlignment="Center"
+                             FontSize="20"
+                             Foreground="{StaticResource StarAccentForegroundBrush}"
+                             Text="&#xE735;" />
+                  <TextBlock VerticalAlignment="Center" Foreground="{StaticResource StarTextSecondary}">
+                    <Run Text="x" />
+                    <Run Text="{Binding MobStarsText}" />
+                  </TextBlock>
+                </StackPanel>
+              </StackPanel>
+            </StackPanel>
+
+            <Border Grid.Column="1"
+                    Width="1"
+                    Margin="16,4,16,4"
+                    Background="{StaticResource StarDividerBrush}" />
+
+            <StackPanel Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4">
+              <TextBlock FontSize="16" Text="{Binding GroupName}" />
+              <TextBlock>
+                <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[ChallengePeak.ChallengeAttempts]}" />
+                <Run Text=" " />
+                <Run Text="{Binding ChallengeAttemptText}" />
+              </TextBlock>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- 王棋通关战绩 -->
+        <TextBlock Margin="0,8,0,0" Text="{Binding Strings[ChallengePeak.KingStageRecords]}" />
+
+        <Border Height="192"
+                Background="{StaticResource StarOverlayAcrylicBrush}"
+                BoxShadow="0 4 16 0 #40000000"
+                CornerRadius="8">
+          <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
+            <Image Grid.RowSpan="2"
+                   Grid.ColumnSpan="2"
+                   HorizontalAlignment="Right"
+                   Source="{Binding BossImage}"
+                   Stretch="Uniform" />
+
+            <StackPanel Grid.Row="0" Margin="20,12,0,0">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock FontSize="16"
+                           FontWeight="Bold"
+                           IsVisible="{Binding IsHardMode}"
+                           Text="{Binding BossHardModeName, StringFormat='[{0}]'}" />
+                <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding BossName}" />
+              </StackPanel>
+
+              <!-- 通关数据 -->
+              <StackPanel Margin="0,8,0,0"
+                          Orientation="Horizontal"
+                          IsVisible="{Binding HasBossRecord}">
+                <TextBlock>
+                  <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[ForgottenHall.CyclesUsed]}" />
+                  <Run Text=" " />
+                  <Run Text="{Binding BossRoundNumText}" />
+                </TextBlock>
+                <TextBlock Margin="20,2,4,0"
+                           VerticalAlignment="Center"
+                           FontSize="12"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="&#xEC61;" />
+                <TextBlock Margin="0,0,4,0"
+                           VerticalAlignment="Center"
+                           Text="{Binding Strings[ChallengePeak.Cleared]}" />
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="20"
+                           Foreground="#E4C891"
+                           Text="{Binding BossStarsGlyph}" />
+              </StackPanel>
+
+              <!-- 暂无通关战绩 -->
+              <TextBlock Margin="0,8,0,0"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         IsVisible="{Binding !HasBossRecord}"
+                         Text="{Binding Strings[ChallengePeak.NoClearanceRecords]}" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1"
+                        Margin="20,4,0,0"
+                        VerticalAlignment="Top"
+                        IsVisible="{Binding HasBossRecord}"
+                        Spacing="8">
+              <TextBlock Foreground="{StaticResource StarTextSecondary}" Text="{Binding BossChallengeTimeText}" />
+              <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding BossAvatars}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="12" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ChallengePeakAvatarItem">
+                    <Grid Width="72" Height="84">
+                      <Border Background="{Binding BackgroundBrush}" CornerRadius="6" />
+                      <Image VerticalAlignment="Top" Source="{Binding Icon}" Stretch="UniformToFill" />
+                      <Border HorizontalAlignment="Right"
+                              VerticalAlignment="Top"
+                              Background="#A0000000"
+                              CornerRadius="0,12,0,8"
+                              IsVisible="{Binding HasRank}">
+                        <TextBlock Margin="4,2,4,2"
+                                   FontSize="14"
+                                   Foreground="{StaticResource StarTextSecondary}"
+                                   Text="{Binding RankText}" />
+                      </Border>
+                      <Border Height="16"
+                              Margin="0,0,0,1.5"
+                              VerticalAlignment="Bottom"
+                              Background="#A0000000">
+                        <TextBlock HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding LevelText}" />
+                      </Border>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="12,0,12,0"
+                        IsVisible="{Binding HasBossRecord}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Image Width="28" Height="28" Source="{Binding BossBuffIcon}" />
+                <TextBlock VerticalAlignment="Center" Text="{Binding BossBuffName}" />
+              </StackPanel>
+              <TextBlock Foreground="{StaticResource StarTextSecondary}"
+                         Text="{Binding BossBuffDesc}"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- 骑士关卡战绩 -->
+        <TextBlock Margin="0,8,0,0" Text="{Binding Strings[ChallengePeak.KnightStageRecords]}" />
+
+        <Border Background="{StaticResource StarOverlayAcrylicBrush}"
+                BoxShadow="0 4 16 0 #40000000"
+                CornerRadius="8">
+          <ItemsControl ItemsSource="{Binding Mobs}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ChallengePeakMobItem">
+                <Grid Height="200" RowDefinitions="Auto,*">
+                  <Border Grid.RowSpan="2"
+                          Width="80"
+                          Height="80"
+                          Margin="0,12,20,0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Top">
+                    <Image Source="{Binding MonsterIcon}" Stretch="Uniform" />
+                  </Border>
+
+                  <StackPanel Grid.Row="0" Margin="20,12,0,0">
+                    <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding NameText}" />
+
+                    <StackPanel Margin="0,8,0,0"
+                                Orientation="Horizontal"
+                                IsVisible="{Binding HasChallengeRecord}">
+                      <TextBlock>
+                        <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[ForgottenHall.CyclesUsed]}" />
+                        <Run Text=" " />
+                        <Run Text="{Binding RoundNumText}" />
+                      </TextBlock>
+                      <TextBlock Margin="20,2,4,0"
+                                 VerticalAlignment="Center"
+                                 FontSize="12"
+                                 Foreground="{StaticResource StarTextSecondary}"
+                                 Text="&#xEC61;" />
+                      <TextBlock Margin="0,0,4,0"
+                                 VerticalAlignment="Center"
+                                 IsVisible="{Binding !IsFast}"
+                                 Text="{Binding Strings[ChallengePeak.Cleared]}" />
+                      <TextBlock Margin="0,0,4,0"
+                                 VerticalAlignment="Center"
+                                 IsVisible="{Binding IsFast}"
+                                 Text="{Binding Strings[ForgottenHall.QuickCleared]}" />
+                      <TextBlock VerticalAlignment="Center"
+                                 FontSize="20"
+                                 Foreground="#E4C891"
+                                 Text="{Binding StarGlyph}" />
+                    </StackPanel>
+
+                    <TextBlock Margin="0,8,0,0"
+                               Foreground="{StaticResource StarTextSecondary}"
+                               IsVisible="{Binding !HasChallengeRecord}"
+                               Text="{Binding Strings[ChallengePeak.NoClearanceRecords]}" />
+                  </StackPanel>
+
+                  <StackPanel Grid.Row="1"
+                              Margin="20,4,0,0"
+                              VerticalAlignment="Top"
+                              IsVisible="{Binding HasChallengeRecord}"
+                              Spacing="8">
+                    <StackPanel IsVisible="{Binding ShowTeam}" Spacing="8">
+                      <TextBlock Foreground="{StaticResource StarTextSecondary}" Text="{Binding ChallengeTimeText}" />
+                      <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding Avatars}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="12" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:ChallengePeakAvatarItem">
+                            <Grid Width="72" Height="84">
+                              <Border Background="{Binding BackgroundBrush}" CornerRadius="6" />
+                              <Image VerticalAlignment="Top" Source="{Binding Icon}" Stretch="UniformToFill" />
+                              <Border HorizontalAlignment="Right"
+                                      VerticalAlignment="Top"
+                                      Background="#A0000000"
+                                      CornerRadius="0,12,0,8"
+                                      IsVisible="{Binding HasRank}">
+                                <TextBlock Margin="4,2,4,2"
+                                           FontSize="14"
+                                           Foreground="{StaticResource StarTextSecondary}"
+                                           Text="{Binding RankText}" />
+                              </Border>
+                              <Border Height="16"
+                                      Margin="0,0,0,1.5"
+                                      VerticalAlignment="Bottom"
+                                      Background="#A0000000">
+                                <TextBlock HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Text="{Binding LevelText}" />
+                              </Border>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+
+                    <!-- 快速通关（源码 20004.png，无素材改文字） -->
+                    <TextBlock Margin="60,0,0,0"
+                               HorizontalAlignment="Left"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource StarAccentForegroundBrush}"
+                               IsVisible="{Binding IsFast}"
+                               Text="{Binding Strings[ForgottenHall.QuickCleared]}" />
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

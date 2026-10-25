@@ -1,0 +1,401 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             x:Class="LunarWard.App.Views.Starward.Pages.Record.SimulatedUniversePage"
+             x:DataType="vm:SimulatedUniversePageViewModel">
+  <!--
+    模拟宇宙页：逐段对照 Starward Features/GameRecord/StarRail/SimulatedUniversePage.xaml（439 行）。
+
+    结构：
+    · 左栏 = 圆头「刷新」+（源码里 Collapsed 的「数据总览」按钮，这里一并保留为隐藏占位）
+             + 期次列表（开始日期）。
+    · 右侧 = 数据总览卡（技能树已激活 / 已解锁奇物 / 已解锁祝福 三列）
+             → 本期卡（左「本期通关次数」，右「统计周期 yyyy/MM/dd - yyyy/MM/dd」）
+             → 每期一条 Expander 记录。
+
+    素材差异：世界图标（PicRoguePlanetM{progress}.png）、祝福图标、奇物图标都是游戏内 PNG，
+    本仓库没有随包素材，统一以「圆底 + 字形」占位；稀有度底色沿用源码三档（#686870/#5379B5/#BC9B6E）。
+  -->
+  <Grid ColumnDefinitions="Auto,*">
+
+    <!-- ══ 空态（源码 Image_Emoji + HoyolabToolboxPage_NoData） ══════════════ -->
+    <StackPanel Grid.Column="0"
+                Grid.ColumnSpan="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16"
+                IsVisible="{Binding ShowEmpty}">
+      <Border Width="160"
+              Height="160"
+              Background="{StaticResource StarControlFillBrush}"
+              CornerRadius="80">
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="64"
+                   Foreground="{StaticResource StarTextTertiary}"
+                   Text="&#xE9D9;" />
+      </Border>
+      <TextBlock HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding Strings[Common.NoData]}" />
+    </StackPanel>
+
+    <!-- ══ 左栏：刷新 / 期次列表 ══════════════════════════════════════════════ -->
+    <StackPanel Width="148"
+                Margin="0,24,0,0"
+                Spacing="12"
+                IsVisible="{Binding !ShowEmpty}">
+      <Button Height="36"
+              BorderThickness="0"
+              HorizontalAlignment="Left"
+              Classes="accent"
+              CornerRadius="0,18,18,0"
+              Command="{Binding RefreshCommand}">
+        <StackPanel Margin="4,0,4,0" Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+          <TextBlock Text="{Binding Strings[Common.Refresh]}" />
+        </StackPanel>
+      </Button>
+
+      <ListBox Margin="4,0,4,0"
+               Background="Transparent"
+               BorderThickness="0"
+               ItemsSource="{Binding PeriodList}"
+               SelectedItem="{Binding SelectedPeriod}">
+        <ListBox.ItemContainerTheme>
+          <ControlTheme TargetType="ListBoxItem" x:DataType="vm:SimulatedUniversePeriodItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,4,0,4" />
+            <Setter Property="Template">
+              <ControlTemplate>
+                <Border Margin="0,0,0,0"
+                        Padding="12,8"
+                        Background="{StaticResource StarOverlayAcrylicBrush}"
+                        CornerRadius="4">
+                  <TextBlock Text="{Binding DateText}" />
+                </Border>
+              </ControlTemplate>
+            </Setter>
+          </ControlTheme>
+        </ListBox.ItemContainerTheme>
+      </ListBox>
+    </StackPanel>
+
+    <!-- ══ 右侧内容 ═══════════════════════════════════════════════════════════ -->
+    <ScrollViewer Grid.Column="1" IsVisible="{Binding !ShowEmpty}">
+      <StackPanel Margin="24">
+
+        <!--  ── 数据总览 ───────────────────────────────────────────────────── -->
+        <Border Margin="0,0,0,16"
+                Padding="8"
+                Background="{StaticResource StarOverlayAcrylicBrush}"
+                CornerRadius="8"
+                IsVisible="{Binding HasBasicInfo}">
+          <Grid ColumnDefinitions="*,*,*">
+            <TextBlock Grid.Column="0"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center">
+              <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[SimulatedUniverse.AbilityTree]}" />
+              <Run Text=" " />
+              <Run Text="{Binding UnlockedSkillPointsText}" />
+            </TextBlock>
+            <TextBlock Grid.Column="1"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center">
+              <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[SimulatedUniverse.UnlockedCurios]}" />
+              <Run Text=" " />
+              <Run Text="{Binding UnlockedMiracleNumText}" />
+            </TextBlock>
+            <TextBlock Grid.Column="2"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center">
+              <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[SimulatedUniverse.UnlockedBlessings]}" />
+              <Run Text=" " />
+              <Run Text="{Binding UnlockedBuffNumText}" />
+            </TextBlock>
+          </Grid>
+        </Border>
+
+        <!--  ── 本期（通关次数 + 统计周期） ─────────────────────────────────── -->
+        <Border Padding="8"
+                Background="{StaticResource StarOverlayAcrylicBrush}"
+                CornerRadius="8"
+                IsVisible="{Binding HasRecord}">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <TextBlock Grid.Column="0"
+                       Margin="12,0,0,0"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Center">
+              <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[SimulatedUniverse.NumberOfClears]}" />
+              <Run Text=" " />
+              <Run Text="{Binding FinishCountText}" />
+            </TextBlock>
+            <TextBlock Grid.Column="2"
+                       Margin="0,0,12,0"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource StarTextSecondary}">
+              <Run Text="{Binding Strings[SimulatedUniverse.Period]}" />
+              <Run Text=" " />
+              <Run Text="{Binding PeriodText}" />
+            </TextBlock>
+          </Grid>
+        </Border>
+
+        <!--  ── 每期一条记录（源码 ItemsRepeater + Expander） ───────────────── -->
+        <ItemsControl Margin="0,16,0,0" ItemsSource="{Binding Items}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SimulatedUniverseItemViewModel">
+              <Border Margin="0,0,0,12"
+                      Background="{StaticResource StarOverlayAcrylicBrush}"
+                      CornerRadius="8">
+                <Expander Padding="16,0,16,12" HorizontalAlignment="Stretch">
+                  <Expander.Header>
+                    <StackPanel Margin="0,12,0,12" Spacing="8">
+                      <Grid ColumnDefinitions="*,Auto">
+                        <!--  第几世界 + 名称 + 难度  -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                          <Border Width="48"
+                                  Height="48"
+                                  Background="#FF2A2E3A"
+                                  CornerRadius="24">
+                            <TextBlock HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Classes="icon"
+                                       FontSize="22"
+                                       Foreground="{StaticResource StarTextSecondary}"
+                                       Text="&#xE9D9;" />
+                          </Border>
+                          <TextBlock Margin="16,0,0,0"
+                                     VerticalAlignment="Center"
+                                     FontSize="16"
+                                     Foreground="{StaticResource StarTextSecondary}"
+                                     Text="{Binding Name}" />
+                          <TextBlock Margin="4,0,0,0"
+                                     VerticalAlignment="Center"
+                                     FontSize="16"
+                                     Foreground="{StaticResource StarTextSecondary}"
+                                     Text="{Binding DifficultyText}" />
+                        </StackPanel>
+
+                        <!--  最高积分  -->
+                        <StackPanel Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center">
+                          <TextBlock HorizontalAlignment="Center"
+                                     FontSize="12"
+                                     Foreground="{StaticResource StarTextSecondary}"
+                                     Text="{Binding Strings[SimulatedUniverse.HighestScore]}" />
+                          <TextBlock HorizontalAlignment="Center" FontSize="16" Text="{Binding ScoreText}" />
+                        </StackPanel>
+                      </Grid>
+
+                      <!--  挑战时间  -->
+                      <TextBlock HorizontalAlignment="Left"
+                                 VerticalAlignment="Center"
+                                 FontSize="12"
+                                 Foreground="{StaticResource StarTextSecondary}">
+                        <Run Text="{Binding Strings[SimulatedUniverse.ChallengedOn]}" />
+                        <Run Text=" " />
+                        <Run Text="{Binding FinishTimeText}" />
+                      </TextBlock>
+                      <Border Height="1" Background="{StaticResource StarDividerBrush}" />
+
+                      <!--  通关角色  -->
+                      <TextBlock Text="{Binding Strings[SimulatedUniverse.CharactersUsed]}" />
+                      <ItemsControl ItemsSource="{Binding Lineup}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="20" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:SimulatedUniverseAvatarViewModel">
+                            <Grid Width="72" Height="84">
+                              <Border Background="{Binding BackgroundBrush}" CornerRadius="4" />
+                              <Border VerticalAlignment="Top"
+                                      Height="64"
+                                      CornerRadius="4,4,0,0"
+                                      ClipToBounds="True">
+                                <Image Stretch="UniformToFill" Source="{Binding Icon}" />
+                              </Border>
+                              <Border Height="16"
+                                      Margin="0,0,0,1.5"
+                                      VerticalAlignment="Bottom"
+                                      Background="#A0000000">
+                                <TextBlock Margin="0,0,0,1"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"
+                                           Text="{Binding LevelText}" />
+                              </Border>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+
+                      <!--  祝福命途图标行  -->
+                      <ItemsControl ItemsSource="{Binding BuffTypeList}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="8" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:SimulatedUniverseBuffTypeViewModel">
+                            <Grid Width="48" Height="48">
+                              <Border Background="#FF3A3F4A" CornerRadius="24">
+                                <TextBlock HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Classes="icon"
+                                           FontSize="18"
+                                           Foreground="{StaticResource StarTextSecondary}"
+                                           Text="&#xE8A5;" />
+                              </Border>
+                              <Border Width="16"
+                                      Height="16"
+                                      HorizontalAlignment="Right"
+                                      VerticalAlignment="Bottom"
+                                      Background="#FF3A3F4A"
+                                      CornerRadius="8"
+                                      ToolTip.Tip="{Binding Name}">
+                                <TextBlock Margin="0,0,0,1"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"
+                                           Text="{Binding CountText}" />
+                              </Border>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </Expander.Header>
+
+                  <Expander.Content>
+                    <StackPanel HorizontalAlignment="Stretch">
+                      <!--  缓存角色  -->
+                      <TextBlock HorizontalAlignment="Left"
+                                 IsVisible="{Binding HasCachedAvatars}"
+                                 Text="{Binding Strings[SimulatedUniverse.CachedCharacters]}" />
+                      <ItemsControl Margin="0,8,0,0"
+                                    IsVisible="{Binding HasCachedAvatars}"
+                                    ItemsSource="{Binding CachedAvatars}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="8" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:SimulatedUniverseAvatarViewModel">
+                            <Border Width="32"
+                                    Height="32"
+                                    Background="#FF3A3F4A"
+                                    CornerRadius="16"
+                                    ClipToBounds="True">
+                              <Image Stretch="UniformToFill" Source="{Binding Icon}" />
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+
+                      <!--  获得祝福（按命途分组）  -->
+                      <TextBlock Margin="0,12,0,0"
+                                 HorizontalAlignment="Left"
+                                 Text="{Binding Strings[SimulatedUniverse.BlessingsObtained]}" />
+                      <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding Buffs}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Spacing="8" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:SimulatedUniverseBuffViewModel">
+                            <Grid RowDefinitions="Auto,Auto" RowSpacing="4">
+                              <StackPanel Orientation="Horizontal">
+                                <Border Width="24"
+                                        Height="24"
+                                        Background="#FF3A3F4A"
+                                        CornerRadius="12">
+                                  <TextBlock HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             Classes="icon"
+                                             FontSize="12"
+                                             Foreground="{StaticResource StarTextSecondary}"
+                                             Text="&#xE8A5;" />
+                                </Border>
+                                <TextBlock Margin="8,0,0,0"
+                                           VerticalAlignment="Center"
+                                           Text="{Binding TypeName}" />
+                              </StackPanel>
+                              <ItemsControl Grid.Row="1"
+                                            Margin="32,0,0,0"
+                                            ItemsSource="{Binding Items}">
+                                <ItemsControl.ItemsPanel>
+                                  <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                  </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:SimulatedUniverseBuffItemViewModel">
+                                    <Border Margin="0,0,8,4"
+                                            Padding="8,4"
+                                            Background="{Binding Background}"
+                                            CornerRadius="4">
+                                      <StackPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center"
+                                                   FontSize="12"
+                                                   Text="{Binding Name}" />
+                                        <TextBlock Margin="4,0,0,0"
+                                                   VerticalAlignment="Center"
+                                                   Classes="icon"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource StarTextSecondary}"
+                                                   IsVisible="{Binding IsEvoluted}"
+                                                   Text="&#xEB11;" />
+                                      </StackPanel>
+                                    </Border>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+
+                      <!--  获得奇物  -->
+                      <TextBlock Margin="0,12,0,0"
+                                 HorizontalAlignment="Left"
+                                 Text="{Binding Strings[SimulatedUniverse.CuriosObtained]}" />
+                      <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding Miracles}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:SimulatedUniverseMiracleViewModel">
+                            <Border Width="32"
+                                    Height="32"
+                                    Margin="0,0,8,8"
+                                    Background="#FF3A3F4A"
+                                    CornerRadius="16"
+                                    ClipToBounds="True"
+                                    ToolTip.Tip="{Binding Name}">
+                              <Image Stretch="UniformToFill" Source="{Binding Icon}" />
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </Expander.Content>
+                </Expander>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>
