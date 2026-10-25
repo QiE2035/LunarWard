@@ -30,6 +30,11 @@ public sealed class BackgroundService : IDisposable
 {
     private readonly IXdgPaths _paths;
 
+    private readonly HttpClient _http = new()
+    {
+        Timeout = TimeSpan.FromSeconds(15),
+    };
+
     private LibVLCSharp.Shared.LibVLC? _libVlc;
 
     private LibVLCSharp.Shared.MediaPlayer? _player;
@@ -136,7 +141,11 @@ public sealed class BackgroundService : IDisposable
     }
 
 
-    /// <summary>播放一个本地视频文件（循环）。</summary>
+    /// <summary>播放一个视频（本地文件或 https 地址，循环）。</summary>
+    /// <remarks>
+    /// LibVLC 可以直接播远程 URL（内部带缓存），所以官方动态背景不必先整段下载；
+    /// Starward 是下载到 <c>CacheFolder/bg</c> 再播，这里换成流式播放更省时间与磁盘。
+    /// </remarks>
     public void PlayLoop(string videoPath)
     {
         var player = EnsurePlayer(() => { });
@@ -152,6 +161,20 @@ public sealed class BackgroundService : IDisposable
         catch (Exception ex)
         {
             ProbeError = ex.Message;
+        }
+    }
+
+
+    /// <summary>暂停并释放视频背景（切回静态图时用，避免残影/黑块）。</summary>
+    public void Stop()
+    {
+        try
+        {
+            _player?.Stop();
+        }
+        catch (Exception)
+        {
+            // ignore
         }
     }
 
@@ -219,6 +242,52 @@ public sealed class BackgroundService : IDisposable
     }
 
 
+    /// <summary>
+    /// 加载可切换背景：官方接口（图 + 官方动态视频）→ 版本海报 → 本地背景目录。
+    /// </summary>
+    /// <param name="launcherId">启动器 id（<c>HoYoPlayClient</c> 用），如 <c>jGHFHHS</c>。</param>
+    /// <param name="gameBiz">游戏区服标识，如 <c>hk4e_cn</c>。</param>
+    /// <param name="posterUrl">游戏素材里的版本海报（<c>GameInfo.Display.Background</c>），接口没有时兜底。</param>
+    public async Task<IReadOnlyList<BackgroundEntry>> LoadCatalogAsync(
+        string launcherId,
+        string gameBiz,
+        string? posterUrl,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<BackgroundEntry> official = [];
+        try
+        {
+            if (Core.HoYoPlay.GameId.FromGameBiz(new Core.GameBiz(gameBiz)) is { } gameId)
+            {
+                var client = new Core.HoYoPlay.HoYoPlayClient(_http);
+                var info = await client.GetGameBackgroundAsync(launcherId, "zh-cn", gameId, cancellationToken)
+                    .ConfigureAwait(false);
+                official = BackgroundCatalog.FromApi(info);
+            }
+        }
+        catch (Exception ex)
+        {
+            // 离线/接口改动：退化为海报 + 本地背景
+            ProbeError ??= ex.Message;
+        }
+
+        IReadOnlyList<string> files = [];
+        try
+        {
+            if (Directory.Exists(CacheDirectory))
+            {
+                files = Directory.EnumerateFiles(CacheDirectory).OrderBy(x => x).ToList();
+            }
+        }
+        catch (Exception)
+        {
+            // 目录不可读就当成没有本地背景
+        }
+
+        return BackgroundCatalog.Merge(official, posterUrl, BackgroundCatalog.FromFiles(files));
+    }
+
+
     public void Dispose()
     {
         try
@@ -234,6 +303,7 @@ public sealed class BackgroundService : IDisposable
 
         _player = null;
         _libVlc = null;
+        _http.Dispose();
     }
 }
 

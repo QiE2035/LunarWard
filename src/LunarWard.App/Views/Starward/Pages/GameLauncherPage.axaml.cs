@@ -36,6 +36,7 @@ public partial class GameLauncherPage : StarwardPage
         RootGrid.AddHandler(DragDrop.DragOverEvent, OnRootGridDragOver);
         RootGrid.AddHandler(DragDrop.DragLeaveEvent, OnRootGridDragLeave);
         RootGrid.AddHandler(DragDrop.DropEvent, OnRootGridDrop);
+        _viewModel.BackgroundImages.CollectionChanged += (_, _) => RebuildPips();
         _viewModel.RefreshBackgroundImages();
         if (CaptureMode.ShowBackgroundBar)
         {
@@ -361,7 +362,8 @@ public partial class GameLauncherPage : StarwardPage
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(GameLauncherPageViewModel.SelectedBackgroundIndex))
+        if (e.PropertyName is nameof(GameLauncherPageViewModel.SelectedBackgroundIndex)
+            or nameof(GameLauncherPageViewModel.ShowBackgroundBar))
         {
             RebuildPips();
         }
@@ -615,6 +617,29 @@ public partial class GameLauncherPage : StarwardPage
 
 
     private void OnBannerTapped(object? sender, TappedEventArgs e) => _viewModel?.OpenBannerLinkCommand.Execute(null);
+
+
+    /// <summary>
+    /// 公告卡滚轮翻页（Starward 用 FlipView，鼠标滚轮即翻页；这里是单张 Image + 计时器，
+    /// 需要显式接住滚轮，见用户反馈「左下角轮播的图片滚轮无翻页」）。
+    /// </summary>
+    private void OnBannerPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        if (_viewModel is null || _viewModel.Banners.Count == 0)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        if (e.Delta.Y > 0)
+        {
+            _viewModel.PreviousBanner();
+        }
+        else if (e.Delta.Y < 0)
+        {
+            _viewModel.NextBanner();
+        }
+    }
 
 
     private void OnBackgroundBarPointerEntered(object? sender, PointerEventArgs e) => _viewModel?.OnBackgroundBarPointerEnter();

@@ -640,10 +640,11 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             var items = _services.Background.Discover();
             var video = items.FirstOrDefault(x => x.IsVideo);
             var image = items.FirstOrDefault(x => x.ImagePath is not null);
-            if (video is not null && _services.Background.IsVlcAvailable)
+            if (video?.VideoPath is { } videoPath
+                && _services.Background.IsVlcAvailable
+                && _services.Config.Launcher.VideoBackground)
             {
-                _videoBackground = video.VideoPath;
-                VideoBackgroundRequested?.Invoke(this, video.VideoPath!);
+                ShowVideoBackground(videoPath);
                 return;
             }
 
@@ -664,7 +665,56 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     /// <summary>视图收到后把 VideoView 挂到背景层。</summary>
     public event EventHandler<string>? VideoBackgroundRequested;
 
+    /// <summary>切回静态图时通知视图卸载 VideoView（否则残留黑块）。</summary>
+    public event EventHandler? VideoBackgroundCleared;
+
     public string? VideoBackgroundPath => _videoBackground;
+
+
+    /// <summary>
+    /// 切到视频背景：本地文件或官方 https 视频（LibVLC 直接流式播放）。
+    /// </summary>
+    public void ShowVideoBackground(string source)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            return;
+        }
+
+        _videoBackground = source;
+        BackgroundImage = null;
+        VideoBackgroundRequested?.Invoke(this, source);
+    }
+
+
+    /// <summary>切到静态图背景（本地或远程），同时卸载视频层。</summary>
+    public async Task ShowStaticBackgroundAsync(string? source)
+    {
+        ClearVideoBackground();
+
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            return;
+        }
+
+        if (await Assets.BitmapAsync(source).ConfigureAwait(true) is { } bitmap)
+        {
+            BackgroundImage = bitmap;
+        }
+    }
+
+
+    /// <summary>卸载视频背景（不改变当前静态图）。</summary>
+    public void ClearVideoBackground()
+    {
+        if (_videoBackground is null)
+        {
+            return;
+        }
+
+        _videoBackground = null;
+        VideoBackgroundCleared?.Invoke(this, EventArgs.Empty);
+    }
 
 
     // ── 档案 ──────────────────────────────────────────────────────────

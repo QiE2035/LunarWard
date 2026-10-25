@@ -53,6 +53,8 @@ public partial class StarwardShell : UserControl
             vm.GameSelectorVisibilityChanged += OnGameSelectorVisibilityChanged;
             vm.VideoBackgroundRequested -= OnVideoBackgroundRequested;
             vm.VideoBackgroundRequested += OnVideoBackgroundRequested;
+            vm.VideoBackgroundCleared -= OnVideoBackgroundCleared;
+            vm.VideoBackgroundCleared += OnVideoBackgroundCleared;
             if (vm.VideoBackgroundPath is { } videoPath)
             {
                 OnVideoBackgroundRequested(this, videoPath);
@@ -78,6 +80,7 @@ public partial class StarwardShell : UserControl
             vm.GameChanged -= OnGameChanged;
             vm.GameSelectorVisibilityChanged -= OnGameSelectorVisibilityChanged;
             vm.VideoBackgroundRequested -= OnVideoBackgroundRequested;
+            vm.VideoBackgroundCleared -= OnVideoBackgroundCleared;
         }
     }
 
@@ -147,18 +150,35 @@ public partial class StarwardShell : UserControl
                 return;
             }
 
-            _videoView = new VideoView
+            // 复用同一个 VideoView：LibVLCSharp 的 VideoView 背后是原生窗口，
+            // 每次重建会留下未释放的原生资源（切背景几次后能看到残影/黑块）。
+            _videoView ??= new VideoView
             {
-                MediaPlayer = player,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
             };
+            _videoView.MediaPlayer = player;
             VideoBackgroundHost.Content = _videoView;
             background.PlayLoop(path);
         }
         catch (Exception ex)
         {
             ViewModel?.Log.Warn($"视频背景挂载失败：{ex.Message}");
+        }
+    }
+
+
+    private void OnVideoBackgroundCleared(object? sender, EventArgs e)
+    {
+        try
+        {
+            VideoBackgroundHost.Content = null;
+            _videoView = null;
+            ViewModel?.Services.Background.Stop();
+        }
+        catch (Exception ex)
+        {
+            ViewModel?.Log.Warn($"视频背景卸载失败：{ex.Message}");
         }
     }
 

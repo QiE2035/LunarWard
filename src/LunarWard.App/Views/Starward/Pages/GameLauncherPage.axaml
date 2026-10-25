@@ -30,6 +30,7 @@
       <Grid x:Name="BannerHost"
             PointerEntered="OnBannerPointerEntered"
             PointerExited="OnBannerPointerExited"
+            PointerWheelChanged="OnBannerPointerWheelChanged"
             Cursor="Hand"
             Tapped="OnBannerTapped">
         <Image Source="{Binding CurrentBanner.Image}" Stretch="UniformToFill" />
@@ -803,16 +804,12 @@
            PointerEntered="OnBackgroundBarPointerEntered"
            PointerExited="OnBackgroundBarPointerExited"
            PointerWheelChanged="OnBackgroundBarPointerWheelChanged">
+      <!-- 上游 Border_SwitchBackgroundImage 没有底色，只有悬停时 Opacity 0→1；
+           这里保留透明底色，避免 60px 渐变在「开始游戏」按钮上切出半明半暗的硬边。 -->
       <Border IsVisible="{Binding ShowBackgroundBar}"
               VerticalAlignment="Stretch"
               PointerEntered="OnBackgroundBarPointerEntered"
               PointerExited="OnBackgroundBarPointerExited">
-        <Border.Background>
-          <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Offset="0" Color="#00000000" />
-            <GradientStop Offset="1" Color="#88000000" />
-          </LinearGradientBrush>
-        </Border.Background>
 
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom"
                     Margin="16,0,0,4"
