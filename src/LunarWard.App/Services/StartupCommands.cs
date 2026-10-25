@@ -31,6 +31,7 @@ internal static class StartupCommands
                || args[0].Equals("playtime", StringComparison.OrdinalIgnoreCase)
                || args[0].Equals("install-smoke", StringComparison.OrdinalIgnoreCase)
                || args[0].Equals("components", StringComparison.OrdinalIgnoreCase)
+               || args[0] is "--version" or "-v"
                || args[0].StartsWith("lunarward://", StringComparison.OrdinalIgnoreCase));
 
 
@@ -43,6 +44,12 @@ internal static class StartupCommands
         if (args[0].StartsWith("lunarward://", StringComparison.OrdinalIgnoreCase))
         {
             return await RunUrlAsync(args[0]).ConfigureAwait(false);
+        }
+
+        if (args[0] is "--version" or "-v")
+        {
+            Console.WriteLine($"LunarWard {AppVersion.Display}");
+            return 0;
         }
 
         if (args[0].Equals("playtime", StringComparison.OrdinalIgnoreCase))
