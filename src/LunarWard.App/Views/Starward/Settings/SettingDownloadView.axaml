@@ -19,7 +19,7 @@
     行号均指 Starward/src/Starward/Features/Setting/DownloadSetting.xaml。
 
     LunarWard 落位说明：
-      · 安装/更新界面尚未移植 → 「定位」按钮、文件夹胶囊、硬链接开关、速度数字框
+      · 安装/更新界面已可用（启动器「安装游戏」走 InstallGameDialog），但**全局默认值**这一组还没接线 → 「定位」按钮、文件夹胶囊、硬链接开关、速度数字框
         全部保留 Starward 的位置并禁用，旁边用 12px 次要色写原因（不伪造功能）。
       · 「下载参数（只读）」「托管组件源」是 LunarWard 追加项，排在 Starward 三块之后。
   -->
