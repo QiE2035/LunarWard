@@ -302,11 +302,6 @@
         <TextBlock HorizontalAlignment="Center"
                    FontSize="12"
                    Foreground="{StaticResource StarTextSecondary}"
-                   IsVisible="{Binding ShowNotPortedHint}"
-                   Text="{Binding Strings[Toolbox.NotPorted]}" />
-        <TextBlock HorizontalAlignment="Center"
-                   FontSize="12"
-                   Foreground="{StaticResource StarTextSecondary}"
                    MaxWidth="420"
                    TextAlignment="Center"
                    TextWrapping="Wrap"

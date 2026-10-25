@@ -23,8 +23,8 @@ namespace LunarWard.App.ViewModels.Starward;
 /// </para>
 /// <para>
 /// 战绩子页（深境螺旋 / 幻想真境剧诗 / 幽境危战 / 绳网月报 / 危局强袭战）已移植，
-/// 未覆盖的页（如部分绝区零子页）点菜单项仍显示"尚未移植"占位，
-/// 不伪造数据；未选中时与 Starward 一样是空白 Frame。
+/// 战绩菜单里的 14 个子页全部已移植（5 个原神 + 9 个崩铁/绝区零）；
+/// 未选中时与 Starward 一样是空白 Frame。
 /// </para>
 /// <para>
 /// LunarWard 追加：左栏底部「本机游戏账号」打开既有的 wine 账号快照窗口
@@ -99,7 +99,6 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
         }
 
         OnPropertyChanged(nameof(ShowPlaceholder));
-        OnPropertyChanged(nameof(ShowNotPortedHint));
         OnPropertyChanged(nameof(ShowWebRecordHint));
         OnPropertyChanged(nameof(PlaceholderTitle));
     }
@@ -112,36 +111,14 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
     partial void OnHasHostedPageChanged(bool value)
     {
         OnPropertyChanged(nameof(ShowPlaceholder));
-        OnPropertyChanged(nameof(ShowNotPortedHint));
         OnPropertyChanged(nameof(ShowWebRecordHint));
     }
 
     /// <summary>选中战绩页 → 显示"尚未移植"占位；未选中时 Starward 是空白 Frame。</summary>
     public bool ShowPlaceholder => SelectedItem is not null && !HasHostedPage;
 
-    /// <summary>占位提示只对尚未移植的页显示（深境螺旋 / 幻想真境剧诗 / 幽境危战 / 绳网月报 / 危局强袭战已移植）。</summary>
-    public bool ShowNotPortedHint => ShowPlaceholder && SelectedItem?.Tag is not "BattleChronicle" && !PortedTags.Contains(SelectedItem?.Tag ?? "");
-
     /// <summary>「战绩」在 Starward 是独立 WebView 窗口，Linux 下等价为在系统浏览器打开同名网页。</summary>
     public bool ShowWebRecordHint => ShowPlaceholder && SelectedItem?.Tag is "BattleChronicle";
-
-    /// <summary>已经 1:1 移植、能真正挂载子页的战绩菜单。</summary>
-    public static IReadOnlySet<string> PortedTags { get; } = new HashSet<string>(StringComparer.Ordinal)
-    {
-        "SpiralAbyss",
-        "ImaginariumTheater",
-        "StygianOnslaught",
-        "InterKnotMonthlyReport",
-        "DeadlyAssault",
-        "ShiyuDefense",
-        "TravelersDiary",
-        "ForgottenHall",
-        "TrailblazeCalendar",
-        "SimulatedUniverse",
-        "PureFiction",
-        "ApocalypticShadow",
-        "ChallengePeak",
-    };
 
     public string PlaceholderTitle => SelectedItem?.Title ?? "";
 
