@@ -494,6 +494,15 @@
                    PlaceholderText="-f -W 2560 -H 1440"
                    Text="{Binding GamescopeArguments, Mode=TwoWay}" />
 
+          <TextBlock Margin="0,6,0,0"
+                     MaxWidth="820"
+                     HorizontalAlignment="Left"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     IsVisible="{Binding IsGamescopeSessionActive}"
+                     Text="{Binding GamescopeSessionHint}" />
+
         </StackPanel>
 
         <!-- ══════════════════════════════════════════════════════════

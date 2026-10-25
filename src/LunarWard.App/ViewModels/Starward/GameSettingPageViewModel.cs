@@ -1009,6 +1009,17 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
     public bool IsGamescopeEnabled => UseGamescope;
 
 
+    /// <summary>
+    /// 当前进程是否已经跑在 gamescope 会话里（Steam Deck / gamescope-session 会设
+    /// <c>GAMESCOPE_WAYLAND_DISPLAY</c>）。此时再开 gamescope 会嵌套一层合成器。
+    /// </summary>
+    public bool IsGamescopeSessionActive
+        => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GAMESCOPE_WAYLAND_DISPLAY"));
+
+
+    public string GamescopeSessionHint => Strings["GameSetting.GamescopeSessionActive"];
+
+
     /// <summary>本机是否装了 gamemoderun（只影响提示文字，不阻止开关）。</summary>
     public string GameModeStatus => global::LunarWard.Platform.UnixProcessLauncher.Which("gamemoderun") is null
         ? Strings["GameSetting.GameModeMissing"]
