@@ -109,6 +109,12 @@ public sealed class LauncherSettings
     /// <summary><c>Nothing</c> | <c>Hide</c> | <c>Close</c>（沿用 Starward）。</summary>
     public string Behavior { get; set; } = "Hide";
 
+    /// <summary>
+    /// 主窗口关闭行为（对应上游 <c>AppConfig.CloseWindowOption</c>）：
+    /// <c>Hide</c> 最小化到系统托盘、<c>Exit</c> 完全退出。
+    /// </summary>
+    public string CloseWindowOption { get; set; } = "Exit";
+
     /// <summary><c>Modern</c> | <c>Classic</c>。</summary>
     public string Style { get; set; } = "Modern";
 

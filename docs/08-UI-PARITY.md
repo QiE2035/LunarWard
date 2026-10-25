@@ -33,7 +33,7 @@
 | 游戏设置 | `GameSettingPage.xaml`(199) + `GameSettingService.cs` | `Pages/GameSettingPage.axaml`(约 900) + `Services/WineRegistry.cs` / `GameSettingRegistry.cs` | 🟡 | 本轮已按源码恢复左列（分辨率/全屏/无边框/自定义分辨率/语音语言）+ 右列图形设置 + 60px 应用条；值通过 `wine reg` 读写游戏 prefix 的 `HKCU\Software\miHoYo\<游戏>`（与 Starward 同一组键）。LunarWard 目录/wine/env/外部程序/诊断移到下方追加区。未移植：HDR（Linux/Wine 无等价物，开关禁用+说明）、按显示器尺寸过滤分辨率列表、星铁帧率（LunarWard 不支持星铁）、游戏版本检测（用 exe 是否存在近似） |
 | 设置总览 | `SettingPage.xaml`(108) | `Pages/SettingPage.axaml`(160) | ✅ | 260 二级导航 + Frame Margin 24,24,0,0 一致 |
 | 关于 | `AboutSetting.xaml`(135) | `SettingAboutView.axaml`(约 190) | 🟡 | 本轮已按源码重排：Logo 160 / 24px Bold / 版本行 / 预览版 Toggle / 检查更新按钮 / 相关链接；Windows 更新器与预览通道如实禁用 |
-| 通用 | `GeneralSetting.xaml`(87) | `SettingGeneralView.axaml`(约 160) | 🟡 | 本轮已对齐：语言 ComboBox 36/260/圆角 8,18,18,8、帮助翻译链接、关闭窗口两 Radio、注册表账号 Toggle、分隔线、系统效果说明位；LunarWard 主题/启动/公告追加在后 |
+| 通用 | `GeneralSetting.xaml`(87) | `SettingGeneralView.axaml`(约 160) | 🟡 | 关闭行为两选项已可用（托盘用 Avalonia `TrayIcon`≈上游 `SystemTrayWindow` 的 `H.NotifyIcon`；无 SNI 宿主时自动退回退出并写配置）； 本轮已对齐：语言 ComboBox 36/260/圆角 8,18,18,8、帮助翻译链接、关闭窗口两 Radio、注册表账号 Toggle、分隔线、系统效果说明位；LunarWard 主题/启动/公告追加在后 |
 | 下载 | `DownloadSetting.xaml`(104) | `SettingDownloadView.axaml`(约 210) | 🟡 | 本轮已对齐：默认安装路径 + 定位 + 文件夹胶囊、硬链接 Toggle、限速行；Windows 默认路径/硬链接/限速控件禁用并说明 |
 | 文件管理 | `FileManageSetting.xaml`(206) | `SettingFileManageView.axaml`(约 400) | 🟡 | 本轮已对齐：数据文件夹、备份数据库（ProgressRing→ProgressBar）、删除所有设置、日志、缓存五分类真实占用、清理缓存 + 清理背景；SQLite 备份/改目录禁用并说明 |
 | 截图设置 | `ScreenshotSetting.xaml`(189) | `SettingScreenshotView.axaml`(约 350) | 🟡 | 本轮已对齐：文件夹按钮/胶囊、快捷键占位、格式质量（Segmented 无等价物→禁用占位）、三个 Toggle、HDR 说明、测试/清缓存、两段 12px 说明；WIC 转码/全局热键禁用并说明 |

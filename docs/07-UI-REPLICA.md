@@ -109,8 +109,9 @@
 6. **背景**：默认使用当前游戏的官方背景图（HoYoPlay `getGames` 的
    `background`/`backgrounds`），本地自定义背景优先；悬停底部出现切换条；视频背景
    用 LibVLCSharp（已实现），启动游戏时暂停、退出恢复。
-7. **窗口关闭**：Starward 可配置"隐藏到托盘/退出"；LunarWard 首期直接退出（不伪造
-   托盘），但关闭按钮行为集中在 Shell 一处，后续可追加。
+7. **窗口关闭**：与上游一致，通用设置里可选「最小化到系统托盘 / 完全退出」。托盘用
+   Avalonia `TrayIcon`（Linux 上走 StatusNotifier，KDE 默认支持、GNOME 需 AppIndicator
+   扩展）；宿主不可用时自动退回「完全退出」并注明原因。
 8. **动效**：页面切换 167ms 淡入；选择层 167ms 淡入；悬停背景 83ms；不做夸张动画。
 
 ## 5. 页面映射（LunarWard 功能 → Starward 页面）

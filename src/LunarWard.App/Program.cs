@@ -50,6 +50,7 @@ internal static class Program
         //   --uigf-import                     配合 --uigf-window，直接切到导入页并灌样例文件
         //   --gacha-export <path>             把样例记录按 UIGF v3.0 / SRGF v1.0 导出到该路径
         //   --gacha-excel <path>              把样例记录按 Starward 的 Excel 模板导出到该路径
+        //   --tray-test                       试建系统托盘并验证「关闭 = 隐藏」，打印 TRAY_OK / TRAY_FAIL
         //   --uigf-export <path>              把本地存档按 UIGF v4.2 导出到该路径（配 --gacha-seed）
         //   --predownload-dialog              启动器预下载确认框（配 --predownload-dialog-unavailable 看不可用态）
         //   --window image-viewer             截图片查看器（可加 --image-viewer-gallery / --image-viewer-info）
@@ -60,6 +61,13 @@ internal static class Program
         //   --profile <id>                     指定档案（如 genshin-cn）
         //   --wait <ms>                        渲染前等待（默认 1600，给网络素材留时间）
         //   --window <name>                    旧窗口自检（settings / account / dailynote / gacha）
+        // --tray-test：验证 Avalonia TrayIcon 在当前桌面能否创建（截图流程顺带出一张图）。
+        if (args.Contains("--tray-test"))
+        {
+            CaptureMode.Path = ReadArgument(args, "--screenshot") ?? "/tmp/tray-test.png";
+            CaptureMode.TrayTest = true;
+        }
+
         var index = Array.IndexOf(args, "--screenshot");
         if (index >= 0 && index + 1 < args.Length)
         {

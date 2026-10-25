@@ -5,12 +5,26 @@ namespace LunarWard.App.ViewModels.Starward;
 
 /// <summary>通用页（复刻 Starward <c>GeneralSetting.xaml</c>）。</summary>
 /// <remarks>
-/// 语言是真配置（<c>launcher.language</c>）；主题与关闭行为是只读说明
-/// （LunarWard 只有暗色、只有直接退出）。
+/// 语言（<c>launcher.language</c>）与关闭行为（<c>launcher.closeWindowOption</c>）是真配置；
+/// 主题是只读说明（LunarWard 只有暗色）。关闭到托盘由 Avalonia <c>TrayIcon</c> 实现，
+/// 对应上游的 <c>SystemTrayWindow</c>。
 /// </remarks>
 public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
 {
     private bool _initializing = true;
+
+
+    /// <summary>「最小化到系统托盘」为 true、「完全退出」为 false（映射上游 <c>CloseWindowOption</c>）。</summary>
+    public bool IsCloseToTray
+    {
+        get => string.Equals(Services.Config.Launcher.CloseWindowOption, "Hide", StringComparison.OrdinalIgnoreCase);
+        set
+        {
+            Services.Config.Launcher.CloseWindowOption = value ? "Hide" : "Exit";
+            Services.Config.Save(Services.Paths.ConfigFile);
+            OnPropertyChanged();
+        }
+    }
 
 
     public SettingGeneralViewModel(PageContext context, bool showDivider = false)

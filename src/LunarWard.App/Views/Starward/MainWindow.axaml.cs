@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using LunarWard.App.Services;
 using LunarWard.App.ViewModels.Starward;
 
 namespace LunarWard.App.Views.Starward;
@@ -232,6 +233,28 @@ public partial class MainWindow : Window
         catch (Exception)
         {
             // 自检辅助，失败不影响截图
+        }
+    }
+
+
+    /// <summary>
+    /// 关闭按钮：配置为「最小化到系统托盘」时 cancel 关闭、把窗口藏起来（上游
+    /// <c>MainWindow.AppWindow_Closing</c> 的 <c>Hide</c> 分支）。托盘本身由 App 创建。
+    /// </summary>
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        base.OnClosing(e);
+        if ((CaptureMode.Enabled && !CaptureMode.TrayTest) || e.Cancel)
+        {
+            return;
+        }
+
+        if (Avalonia.Application.Current is LunarWard.App.App app
+            && string.Equals(AppServices.Current.Config.Launcher.CloseWindowOption, "Hide", StringComparison.OrdinalIgnoreCase)
+            && app.EnsureTray())
+        {
+            e.Cancel = true;
+            Hide();
         }
     }
 
