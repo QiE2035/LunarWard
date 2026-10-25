@@ -116,9 +116,11 @@
     </StackPanel>
 
     <!-- ══ 磁贴墙（Starward ItemsView，:169-282） ═══════════════════════ -->
-    <ScrollViewer Grid.Row="1"
+    <ScrollViewer x:Name="WallScroller"
+                  Grid.Row="1"
                   HorizontalScrollBarVisibility="Disabled"
-                  VerticalScrollBarVisibility="Auto">
+                  VerticalScrollBarVisibility="Auto"
+                  ScrollChanged="OnWallScrollChanged">
       <!-- Starward ItemsView Padding="24,0,0,12"（:171） -->
       <Border Padding="24,0,0,12">
         <ItemsControl x:Name="ScreenshotWall"
@@ -186,6 +188,24 @@
         </ItemsControl>
       </Border>
     </ScrollViewer>
+
+    <!--
+      月份胶囊（替代上游 AnnotatedScrollBar，见 docs/07 §8）：贴在磁贴墙右侧垂直居中，
+      滚动时按磁贴实际 Y 坐标找到视口顶端所在的月份分组，显示 1.1s 后自动隐藏。
+      命中不到月份（空墙/未布局完）时整块不显示。
+    -->
+    <Border x:Name="MonthIndicator"
+            Grid.Row="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Margin="0,0,16,0"
+            Padding="10,6"
+            CornerRadius="14"
+            Background="#CC202020"
+            IsVisible="False"
+            IsHitTestVisible="False">
+      <TextBlock x:Name="MonthIndicatorText" FontSize="12" Foreground="#E6FFFFFF" />
+    </Border>
 
     <!-- ══ 空态（Starward StackPanel_Emoji，:153-166） ═══════════════════ -->
     <!--

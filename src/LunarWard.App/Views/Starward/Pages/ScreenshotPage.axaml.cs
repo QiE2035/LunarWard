@@ -31,6 +31,13 @@ public partial class ScreenshotPage : StarwardPage
 
     private readonly ScreenshotPageViewModel _viewModel;
 
+    /// <summary>「磁贴顶边 Y → 月份」映射（内容坐标，按 Y 升序）；内容高度变化时重建。</summary>
+    private readonly List<(double Y, string Month)> _monthMap = [];
+
+    private double _monthMapExtent = -1;
+
+    private DispatcherTimer? _monthHideTimer;
+
 
     public ScreenshotPage(PageContext context) : base(context)
     {
@@ -102,6 +109,67 @@ public partial class ScreenshotPage : StarwardPage
         }
 
         return true;
+    }
+
+
+    // ── 月份胶囊（近似 Starward AnnotatedScrollBar 的分组标注） ──────────
+
+    private void OnWallScrollChanged(object? sender, ScrollChangedEventArgs e)
+    {
+        if (sender is not ScrollViewer scroller)
+        {
+            return;
+        }
+
+        if (Math.Abs(scroller.Extent.Height - _monthMapExtent) > 0.5)
+        {
+            _monthMapExtent = scroller.Extent.Height;
+            RebuildMonthMap();
+        }
+
+        string? month = ScreenshotMonthIndex.Locate(_monthMap, scroller.Offset.Y);
+        if (month is null)
+        {
+            return;
+        }
+
+        MonthIndicatorText.Text = month;
+        MonthIndicator.IsVisible = true;
+        _monthHideTimer ??= new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1100) };
+        _monthHideTimer.Stop();
+        _monthHideTimer.Start();
+        _monthHideTimer.Tick -= OnMonthHideTick;
+        _monthHideTimer.Tick += OnMonthHideTick;
+    }
+
+
+    private void OnMonthHideTick(object? sender, EventArgs e)
+    {
+        if (_monthHideTimer is not null)
+        {
+            _monthHideTimer.Stop();
+            _monthHideTimer.Tick -= OnMonthHideTick;
+        }
+
+        MonthIndicator.IsVisible = false;
+    }
+
+
+    private void RebuildMonthMap()
+    {
+        _monthMap.Clear();
+        if (ScreenshotWall.ItemsPanelRoot is not WrapPanel panel)
+        {
+            return;
+        }
+
+        foreach (Control child in panel.Children.OfType<Control>())
+        {
+            if (child.DataContext is ScreenshotItemViewModel item)
+            {
+                _monthMap.Add((child.Bounds.Y, ScreenshotMonthIndex.Label(item.Screenshot.CapturedAt)));
+            }
+        }
     }
 
 
