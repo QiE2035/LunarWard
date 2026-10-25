@@ -101,8 +101,6 @@ public sealed partial class GameSettingPageViewModel : StarwardPageViewModel
 
     public string GameName => Profile.DisplayName;
 
-    /// <summary>左侧标题下的一行小字：游戏 + 档案 id。</summary>
-    public string GameSubtitle => $"{Profile.DisplayName} · {Profile.Id}";
 
     /// <summary>DX12 只对绝区零有意义（原神的 DX12 不走 DXVK，见 GameAdapter）。</summary>
     public bool IsZzz => string.Equals(Profile.Profile.Game, GameCatalog.Zzz, StringComparison.OrdinalIgnoreCase);

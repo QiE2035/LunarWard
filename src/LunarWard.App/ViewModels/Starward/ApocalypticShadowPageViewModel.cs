@@ -428,7 +428,6 @@ public sealed partial class ApocalypticShadowFloorItem : ObservableObject
 
     public bool Node2BossDefeated => Detail.Node2?.BossDefeated ?? false;
 
-    public bool Node3BossDefeated => Detail.Node3?.BossDefeated ?? false;
 
     /// <summary>普通星（上限 3），XAML 用字形重复渲染。</summary>
     public string NormalStars => new('★', Math.Clamp(Detail.NormalStarNum, 0, 3));

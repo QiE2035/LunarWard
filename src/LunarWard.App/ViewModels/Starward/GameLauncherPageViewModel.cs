@@ -83,14 +83,6 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
     public bool IsGenshin => GameBiz.StartsWith("hk4e", StringComparison.Ordinal);
 
-    public bool SupportsDailyNote => true;
-
-    /// <summary>Starward 支持原神 / 星穹铁道 / 绝区零三款游戏的抽卡记录。</summary>
-    public bool SupportsGacha => GameBiz.StartsWith("hk4e", StringComparison.Ordinal)
-                                 || GameBiz.StartsWith("nap", StringComparison.Ordinal)
-                                 || GameBiz.StartsWith("nap_cn", StringComparison.Ordinal)
-                                 || GameBiz.StartsWith("zzz", StringComparison.Ordinal);
-
 
     // ── 公告卡 ────────────────────────────────────────────────────────
 

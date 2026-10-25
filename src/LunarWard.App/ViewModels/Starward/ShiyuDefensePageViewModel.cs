@@ -501,7 +501,6 @@ public sealed partial class ShiyuFloorItem : ObservableObject
 
     public List<ShiyuBuffItem> Buffs { get; }
 
-    public bool HasBuffs => Buffs.Count > 0;
 
     public string ZoneName => Floor.ZoneName ?? "";
 
@@ -538,7 +537,6 @@ public sealed partial class ShiyuNodeItem : ObservableObject
 
     public List<ShiyuMonsterItem> Monsters { get; }
 
-    public bool HasMonsters => Monsters.Count > 0;
 
     public string ClearTimeText { get; }
 
@@ -578,11 +576,9 @@ public sealed partial class ShiyuDefenseV2Item : ObservableObject
 
     public ShiyuBuffItem? FourthBuff { get; }
 
-    public bool HasFourthBuff => FourthBuff is not null;
 
     public string FourthChallengeTimeText { get; }
 
-    public bool HasFourthChallengeTime => !string.IsNullOrEmpty(FourthChallengeTimeText);
 
     public string FourthRatingLetter { get; }
 
@@ -653,7 +649,6 @@ public sealed partial class ShiyuV2ChallengeItem : ObservableObject
 
     public ShiyuBuffItem? Buff { get; }
 
-    public bool HasBuff => Buff is not null;
 
     public string ScoreText { get; } = "";
 
