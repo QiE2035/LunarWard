@@ -164,6 +164,9 @@ App ──→ Games ──→ Launch ──→ Wine ──→ Platform
 ## 文档索引
 
 | 文档 | 内容 | 何时读 |
+
+对照表可以用脚本自检：`scripts/check-parity.py --upstream <Starward 路径>` 检查
+`docs/08-UI-PARITY.md` 里引用的每个源文件是否存在、行数是否漂移（漂移只告警）。
 |---|---|---|
 | [00-DECISIONS.md](docs/00-DECISIONS.md) | 已定决策与理由、明确否决的方案 | **先读这个** |
 | [01-RESEARCH.md](docs/01-RESEARCH.md) | 参考项目实证结论、事实核查记录 | 实施前，避免重复调研 |

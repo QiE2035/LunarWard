@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""对照 08-UI-PARITY 表：上游文件与 LunarWard 目标文件是否存在、行数是否漂移。
+
+用法：
+    scripts/check-parity.py [--upstream /path/to/Starward]
+
+退出码：0 = 全部可解析文件都存在；1 = 有缺失文件（打印清单）。
+行数漂移只告警，不失败——上游升级或我们重构都会让它变，人工判断。
+"""
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+DOC = ROOT / 'docs' / '08-UI-PARITY.md'
+PATH_RE = re.compile(r'`((?!\.)[\w./-]+\.(?:xaml|cs|axaml))`(?:\s*\([约\s]*(\d+)[^)]*\))?')
+
+
+def rows(text):
+    for line in text.splitlines():
+        if not line.startswith('|'):
+            continue
+        cells = [c.strip() for c in line.strip().strip('|').split('|')]
+        if len(cells) < 4 or cells[0] in ('页面', '---'):
+            continue
+        yield cells[0], cells[1], cells[2]
+
+
+def main() -> int:
+    upstream = None
+    if '--upstream' in sys.argv:
+        upstream = Path(sys.argv[sys.argv.index('--upstream') + 1])
+
+    text = DOC.read_text(encoding='utf-8')
+    missing, checked = [], 0
+    for page, src, dst in rows(text):
+        for cell, base in ((src, upstream), (dst, ROOT)):
+            if base is None:
+                continue
+            for path, count in PATH_RE.findall(cell):
+                target = base / path
+                checked += 1
+                if not target.exists():
+                    # 文档里的路径常省略 src/.../Views/Starward 前缀，退化到按文件名找
+                    matches = list(base.rglob(Path(path).name))
+                    if not matches:
+                        missing.append((page, str(target), '文件不存在'))
+                        continue
+                    target = matches[0]
+                if count and target.suffix in ('.xaml', '.cs', '.axaml'):
+                    actual = sum(1 for _ in target.open(encoding='utf-8', errors='ignore'))
+                    expected = int(count)
+                    if expected and abs(actual - expected) / max(expected, 1) > 0.5:
+                        print(f'[warn] {page}: {path} 行数 {actual}（文档写 {expected}）')
+
+    print(f'检查 {checked} 个文件引用')
+    for page, path, why in missing:
+        print(f'[FAIL] {page}: {why} {path}')
+    return 1 if missing else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
