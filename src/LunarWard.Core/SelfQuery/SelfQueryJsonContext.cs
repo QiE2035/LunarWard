@@ -1,8 +1,11 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace LunarWard.Core.SelfQuery;
 
 
+/// <summary>
+/// 账号记录查询 API 的序列化上下文（与持久化无关；持久化走 <c>SelfQueryLogStore</c> 的 SQLite 表）。
+/// </summary>
 [JsonSerializable(typeof(miHoYoApiWrapper<SelfQueryUserInfo>))]
 [JsonSerializable(typeof(miHoYoApiWrapper<SelfQueryListWrapper<GenshinQueryItem>>))]
 [JsonSerializable(typeof(miHoYoApiWrapper<SelfQueryListWrapper<GenshinSelfQueryItem_BattlePath>>))]
@@ -12,17 +15,6 @@ namespace LunarWard.Core.SelfQuery;
 [JsonSerializable(typeof(miHoYoApiWrapper<SelfQueryListWrapper<StarRailQueryItem>>))]
 [JsonSerializable(typeof(miHoYoApiWrapper<SelfQueryListWrapper<ZZZQueryItem>>))]
 internal partial class SelfQueryJsonContext : JsonSerializerContext
-{
-
-}
-
-
-/// <summary>
-/// <see cref="SelfQueryStore"/> 的本地文件序列化上下文。
-/// （查询 API 的上下文在 <see cref="SelfQueryJsonContext"/>，两者互不影响。）
-/// </summary>
-[JsonSerializable(typeof(SelfQueryStoreData))]
-internal partial class SelfQueryStoreJsonContext : JsonSerializerContext
 {
 
 }

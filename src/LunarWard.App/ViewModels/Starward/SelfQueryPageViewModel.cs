@@ -6,6 +6,7 @@ using LunarWard.App.ViewModels.Starward;
 using LunarWard.App.Views.Starward;
 using LunarWard.Core;
 using LunarWard.Core.SelfQuery;
+using LunarWard.Launch.Database;
 
 namespace LunarWard.App.ViewModels.Starward;
 
@@ -20,14 +21,14 @@ namespace LunarWard.App.ViewModels.Starward;
 /// </para>
 /// <para>
 /// 与源码的差异只有持久化：Starward 走 SQLite/Dapper，LunarWard 没有数据库层，
-/// 用 <see cref="SelfQueryStore"/>（JSON 文件）承载同样的「按 uid + type + 月份存取」语义。
+/// 用 <see cref="LunarWard.Launch.Database.SelfQueryLogStore"/>（Starward 同款 SQLite 表）承载同样的「按 uid + type + 月份存取」语义。
 /// </para>
 /// </remarks>
 public sealed partial class SelfQueryPageViewModel : StarwardPageViewModel
 {
 
 
-    private readonly SelfQueryStore _store;
+    private readonly SelfQueryLogStore _store;
 
     private readonly SelfQueryService _service;
 
@@ -51,7 +52,7 @@ public sealed partial class SelfQueryPageViewModel : StarwardPageViewModel
         var server = string.Equals(Profile.Profile.Edition, "Global", StringComparison.OrdinalIgnoreCase) ? "global" : "cn";
         _gameBiz = new GameBiz(biz + "_" + server);
         _game = _gameBiz.Game;
-        _store = new SelfQueryStore(Path.Join(Services.Paths.DataHome, "selfquery.json"));
+        _store = SelfQueryLogStore.OpenDefault(Services.Paths.DataHome);
         _service = new SelfQueryService(_store);
     }
 

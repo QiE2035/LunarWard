@@ -6,18 +6,18 @@ namespace LunarWard.Core.SelfQuery;
 /// 游戏内「数据查询」记录的拉取与统计。
 ///
 /// <para>上游 <c>Starward.Features.SelfQuery.SelfQueryService</c> 直接走 SQLite；这里把
-/// 持久化换成 <see cref="SelfQueryStore"/>（JSON），分页/去重/月份重写的语义保持一致。</para>
+/// 持久化通过 <see cref="ISelfQueryStore"/> 注入（SQLite 实现见 <c>SelfQueryLogStore</c>），分页/去重/月份重写的语义保持一致。</para>
 /// </summary>
 public sealed class SelfQueryService
 {
 
-    private readonly SelfQueryStore _store;
+    private readonly ISelfQueryStore _store;
 
     private readonly SelfQueryClient _client;
 
 
 
-    public SelfQueryService(SelfQueryStore store, SelfQueryClient? client = null)
+    public SelfQueryService(ISelfQueryStore store, SelfQueryClient? client = null)
     {
         _store = store;
         _client = client ?? new SelfQueryClient();
