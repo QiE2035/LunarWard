@@ -6,8 +6,15 @@ cd "$(dirname "$0")/.."
 
 dotnet restore LunarWard.slnx
 dotnet build LunarWard.slnx -c Release --no-restore
-dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj -c Release --no-build
-dotnet test tests/LunarWard.Installer.UnitTests/LunarWard.Installer.UnitTests.csproj -c Release --no-build
+rm -rf artifacts/test-results
+dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj -c Release --no-build \
+  --logger "trx;LogFileName=unit.trx" --results-directory artifacts/test-results
+dotnet test tests/LunarWard.Installer.UnitTests/LunarWard.Installer.UnitTests.csproj -c Release --no-build \
+  --logger "trx;LogFileName=installer.trx" --results-directory artifacts/test-results
+# 审计 M-02：集成测试也要跑（启动链路/相位引擎），跳过数由下一步卡上限。
+dotnet test tests/LunarWard.IntegrationTests/LunarWard.IntegrationTests.csproj -c Release --no-build \
+  --logger "trx;LogFileName=integration.trx" --results-directory artifacts/test-results
+python3 scripts/check-skips.py artifacts/test-results --max-skips 30
 
 if [[ "${1:-}" == "--with-upstream" ]]; then
   python3 scripts/check-parity.py --upstream "$2"
