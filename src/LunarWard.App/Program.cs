@@ -196,12 +196,17 @@ internal static class Program
         Console.WriteLine("  (无)                         打开启动器");
         Console.WriteLine("  startgame --biz <biz>        直接启动对应区服（不开窗口）");
         Console.WriteLine("  playtime --biz <biz> --pid <pid>  盯住外部启动的游戏进程，退出后补记时长");
+        Console.WriteLine("  components list                  列出可用的 wine / dxvk 组件");
+        Console.WriteLine("  components install <wine|dxvk> <名字>   安装指定组件");
+        Console.WriteLine("  install-smoke                    安装器 30 秒下载烟测（临时目录）");
         Console.WriteLine("  \"lunarward://startgame/<biz>\"      URL 协议形式（桌面文件传给程序）");
         Console.WriteLine("  \"lunarward://playtime?biz=<biz>&pid=<pid>\"");
         Console.WriteLine();
         Console.WriteLine("选项:");
         Console.WriteLine("  --version, -V                输出版本号");
         Console.WriteLine("  --help, -h                   输出本帮助");
+        Console.WriteLine("  --scan-games                 扫游戏库（含 Steam 的 steamapps/common）后退出");
+        Console.WriteLine("  --start-hidden               启动后藏到系统托盘（开机自启用）");
         Console.WriteLine();
         Console.WriteLine("自检截图开关见 https://github.com/ …/README.md 的「自检与截图」一节。");
     }
