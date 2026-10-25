@@ -3,6 +3,7 @@ using LunarWard.App.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.App.Views.Starward;
+using LunarWard.Platform;
 
 namespace LunarWard.App.ViewModels.Starward;
 
@@ -29,6 +30,10 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
     {
         Version = ReadVersion();
 
+        // LunarWard 追加：Starward 的关于页只有应用版本，没有系统环境；
+        // Linux 上显卡/会话信息对排查启动问题非常有用，放在版本号下面。
+        System = LinuxSystemInfo.Read();
+
         // 顺序 = AboutSetting.xaml:92-126（项目主页 / 反馈问题 / 更新记录 / 隐私策略 / 赞助开发者）
         // + LunarWard 追加的两条（上游 Starward / 文档）。
         Links =
@@ -52,6 +57,10 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
     public string AppName => "LunarWard";
 
     public string Version { get; }
+
+
+    /// <summary>Linux 运行环境（内核 / 会话 / 显卡），只读 <c>/proc</c>、<c>/sys</c>。</summary>
+    public LinuxSystemInfo System { get; }
 
     public List<SettingLinkViewModel> Links { get; }
 

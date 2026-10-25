@@ -254,8 +254,8 @@ cd src/LunarWard.Core && dotnet build
 | 检查项 | 状态 | 证据 |
 |---|---|---|
 | `dotnet build` 无警告 | ✅ | `dotnet build LunarWard.slnx` → 0 warning / 0 error |
-| 全部单元测试通过 | ✅ | **528**（Unit）+ **31**（Installer）= 559 |
-| 集成测试 I1–I13 通过 | ✅ | **27** 个集成测试（I1–I13 + S1–S5 + 真 wine 2 个）；合计 **586** 全绿 |
+| 全部单元测试通过 | ✅ | **531**（Unit）+ **31**（Installer）= 562 |
+| 集成测试 I1–I13 通过 | ✅ | **27** 个集成测试（I1–I13 + S1–S5 + 真 wine 2 个）；合计 **589** 全绿 |
 | 真机清单 R1–R15 全部记录 | ⚠️ | **R1 ✅、R9 ✅（托管 runner 真机安装+启动）、R10 ✅（Proton files/bin）、R15 ✅（SIGKILL 后清理+再启动）**、R12 ✅；R8 ⏳（本机无系统 wine）、其余待前置 → `acceptance-2026-10-25.md` |
 | 安装器真机下载 | ✅ | CLI：`install-smoke` 15s 下载 474 MB，续传到 687 MB；UI：`--install-real [--install-info-popup]` 截图出现真实下载速度/进度卡片与「暂停」按钮 |
 | `launch-report.json` 能正确输出 | ✅ | `I13` / `Report_HasSevenPhasesAndFullChain` |

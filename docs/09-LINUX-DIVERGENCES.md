@@ -53,6 +53,10 @@
 | Steam/Proton 检测 | 游戏设置 › wine 运行时 | `RuntimeScanner` |
 | 托管 runner 安装 | `lunarward components install` + 设置页组件源 | `d309637` |
 | 崩溃恢复验证 | 验收文档 R15 | `8a4a194` |
+| 关于页「运行环境」（内核 / 会话 / 显卡驱动 + PCI ID） | 设置 › 关于 | `LinuxSystemInfo`，只读 `/proc`、`/sys` |
+| 开机自启（XDG autostart） | 设置 › 通用 | `9366077` |
+| 系统托盘 / 单实例 | 关闭窗口行为 | `76e749d`、`c635365` |
+| URL 协议 `lunarward://startgame` | 桌面文件 | `cfef0a5` |
 
 ## 五、维护规则
 

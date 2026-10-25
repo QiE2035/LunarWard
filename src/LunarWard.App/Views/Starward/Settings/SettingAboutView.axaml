@@ -52,6 +52,32 @@
                    Text="{Binding Version}" />
       </StackPanel>
 
+      <!-- LunarWard 追加：Linux 运行环境（Starward 没有；排查启动问题用）。
+           只读 /proc 与 /sys，不调用外部命令，见 LinuxSystemInfo。 -->
+      <Border Margin="0,16,0,0"
+              Padding="12,10"
+              Background="#0FFFFFFF"
+              CornerRadius="8">
+        <StackPanel Spacing="6">
+          <Grid ColumnDefinitions="110,*">
+            <TextBlock Text="{Binding Strings[Settings.About.Kernel]}" />
+            <TextBlock Grid.Column="1" Text="{Binding System.Kernel}" />
+          </Grid>
+          <Grid ColumnDefinitions="110,*">
+            <TextBlock Text="{Binding Strings[Settings.About.Session]}" />
+            <TextBlock Grid.Column="1" Text="{Binding System.Session}" />
+          </Grid>
+          <Grid ColumnDefinitions="110,*">
+            <TextBlock Text="{Binding Strings[Settings.About.GpuDriver]}" />
+            <TextBlock Grid.Column="1" Text="{Binding System.GpuDriver}" />
+          </Grid>
+          <Grid ColumnDefinitions="110,*">
+            <TextBlock Text="{Binding Strings[Settings.About.GpuPciId]}" />
+            <TextBlock Grid.Column="1" Text="{Binding System.GpuPciId}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
       <!-- AboutSetting.xaml:43-46 预览版更新渠道。
            LunarWard 通过发行包（.deb / AppImage）更新，没有内置更新器：保留位置、禁用。 -->
       <ToggleSwitch Margin="0,12,0,0"
