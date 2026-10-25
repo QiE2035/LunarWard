@@ -1,5 +1,8 @@
+using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using LunarWard.App.Localization;
+using LunarWard.App.Services;
 
 namespace LunarWard.App.ViewModels.Starward;
 
@@ -12,8 +15,9 @@ namespace LunarWard.App.ViewModels.Starward;
 /// UpTextOpacity / IsPointerIn</c>。
 /// </para>
 /// <para>
-/// <b>Icon</b>：Starward 用 <c>sc:CachedImage</c> 显示物品图标；LunarWard 没有图标素材，
-/// 按任务约定省略图片、保留 28×28 占位（见 <c>Controls/GachaStatsCard.axaml</c>）。
+/// <b>Icon</b>：Starward 用 <c>sc:CachedImage</c> 显示 <c>GenshinGachaInfo.Icon</c> 里的远程图标；
+/// LunarWard 由 <see cref="GachaIconCache"/> 下载并磁盘缓存，没有图标 URL（老数据没同步过 wiki）
+/// 时只显示 28×28 底色占位。
 /// </para>
 /// <para>
 /// <b>IsUp</b>：Starward 的 <c>up!</c> 标记来自 <c>Features/Gacha/GachaNoUp.cs</c> 的
@@ -30,7 +34,8 @@ public sealed partial class GachaStatsItemViewModel : ObservableObject
         DateTime time,
         int gachaType,
         bool isPityRow = false,
-        bool isUp = false)
+        bool isUp = false,
+        string? iconUrl = null)
     {
         Name = name;
         Pity = pity;
@@ -38,10 +43,27 @@ public sealed partial class GachaStatsItemViewModel : ObservableObject
         GachaType = gachaType;
         IsPityRow = isPityRow;
         IsUp = isUp;
+        IconUrl = iconUrl;
+
+        if (!string.IsNullOrWhiteSpace(iconUrl))
+        {
+            Icon = GachaIconCache.TryGet(iconUrl);
+            if (Icon is null)
+            {
+                _ = LoadIconAsync(iconUrl);
+            }
+        }
     }
 
 
     public string Name { get; }
+
+    /// <summary>物品图标 URL（Starward <c>GachaLogItemEx.Icon</c>）；null = 未同步 wiki。</summary>
+    public string? IconUrl { get; }
+
+    /// <summary>图标位图（28×28 显示）；异步加载完成后由 <see cref="GachaIconCache"/> 回填。</summary>
+    [ObservableProperty]
+    private Bitmap? _icon;
 
     /// <summary>本行是「已垫」占位行（Starward GachaLogService.cs:233-248 在列表首位插入）。</summary>
     public bool IsPityRow { get; }
@@ -70,6 +92,16 @@ public sealed partial class GachaStatsItemViewModel : ObservableObject
     /// <summary>鼠标悬停在本行；Starward 会让同名的所有行一起高亮。</summary>
     [ObservableProperty]
     private bool _isPointerIn;
+
+
+    private async Task LoadIconAsync(string url)
+    {
+        Bitmap? bitmap = await GachaIconCache.LoadAsync(url).ConfigureAwait(false);
+        if (bitmap is not null)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => Icon = bitmap);
+        }
+    }
 }
 
 

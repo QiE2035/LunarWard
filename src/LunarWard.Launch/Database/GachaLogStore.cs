@@ -275,6 +275,106 @@ public sealed class GachaLogStore
     }
 
 
+    /// <summary>
+    /// 写入抽卡物品信息（Starward <c>UpdateGachaInfoAsync</c>：<c>INSERT OR REPLACE</c> 进
+    /// <c>GenshinGachaInfo</c> / <c>StarRailGachaInfo</c> / <c>ZZZGachaInfo</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 三张表的列名不同（星铁是 <c>ItemId/ItemName/IconUrl</c>），所以按游戏分别写 SQL；
+    /// 上游还会写 Element/Rarity 等展示字段，这里只保留 Name/Icon 两个用得到的。
+    /// </remarks>
+    public int UpsertGachaInfo(string game, IReadOnlyList<GachaInfoItem> items)
+    {
+        if (items.Count == 0)
+        {
+            return 0;
+        }
+
+        using SqliteConnection connection = _database.CreateConnection();
+        using SqliteTransaction transaction = connection.BeginTransaction();
+        using SqliteCommand command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = game switch
+        {
+            StarRail => """
+                INSERT OR REPLACE INTO StarRailGachaInfo (ItemId, ItemName, IconUrl, DamageType, Rarity, AvatarBaseType, WikiUrl, IsSystem)
+                VALUES (@Id, @Name, @Icon, 0, 0, 0, NULL, 0);
+                """,
+            Zzz => """
+                INSERT OR REPLACE INTO ZZZGachaInfo (Id, Name, Icon, Rarity, ElementType, Profession)
+                VALUES (@Id, @Name, @Icon, 0, 0, 0);
+                """,
+            _ => """
+                INSERT OR REPLACE INTO GenshinGachaInfo (Id, Name, Icon, Element, Level, CatId, WeaponCatId)
+                VALUES (@Id, @Name, @Icon, 0, 0, 0, 0);
+                """,
+        };
+
+        SqliteParameter id = command.Parameters.Add("@Id", SqliteType.Integer);
+        SqliteParameter name = command.Parameters.Add("@Name", SqliteType.Text);
+        SqliteParameter icon = command.Parameters.Add("@Icon", SqliteType.Text);
+        int affected = 0;
+        foreach (GachaInfoItem item in items)
+        {
+            id.Value = item.Id;
+            name.Value = item.Name;
+            icon.Value = item.Icon ?? "";
+            affected += command.ExecuteNonQuery();
+        }
+
+        transaction.Commit();
+        return affected;
+    }
+
+
+    /// <summary>读物品图标：<c>ItemId → Icon URL</c>（库里没有就给空字典）。</summary>
+    public Dictionary<int, string> GetIconMap(string game)
+    {
+        var result = new Dictionary<int, string>();
+        string sql = game switch
+        {
+            StarRail => "SELECT ItemId, IconUrl FROM StarRailGachaInfo WHERE IconUrl IS NOT NULL AND IconUrl <> '';",
+            Zzz => "SELECT Id, Icon FROM ZZZGachaInfo WHERE Icon IS NOT NULL AND Icon <> '';",
+            _ => "SELECT Id, Icon FROM GenshinGachaInfo WHERE Icon IS NOT NULL AND Icon <> '';",
+        };
+
+        using SqliteConnection connection = _database.CreateConnection();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = sql;
+        using SqliteDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            result[reader.GetInt32(0)] = reader.GetString(1);
+        }
+        return result;
+    }
+
+
+    /// <summary>
+    /// 按名字回填 <c>ItemId</c>（Starward <c>UpdateGachaItemId</c>：老记录 <c>ItemId=0</c> 时用
+    /// GachaInfo 表按 Name 匹配补齐，图标和 UP 判定都靠它）。
+    /// </summary>
+    public int UpdateItemIds(string game)
+    {
+        (string table, string infoTable, string infoId, string infoName) = game switch
+        {
+            StarRail => ("StarRailGachaItem", "StarRailGachaInfo", "ItemId", "ItemName"),
+            Zzz => ("ZZZGachaItem", "ZZZGachaInfo", "Id", "Name"),
+            _ => ("GenshinGachaItem", "GenshinGachaInfo", "Id", "Name"),
+        };
+
+        using SqliteConnection connection = _database.CreateConnection();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = $"""
+            UPDATE {table}
+            SET ItemId = (SELECT {infoId} FROM {infoTable} WHERE {infoName} = {table}.Name LIMIT 1)
+            WHERE ItemId = 0
+              AND EXISTS (SELECT 1 FROM {infoTable} WHERE {infoName} = {table}.Name);
+            """;
+        return command.ExecuteNonQuery();
+    }
+
+
     /// <summary>读取某游戏最近一次保存的抽卡链接（Starward <c>GachaLogUrl</c> 表）。</summary>
     public string? GetGachaLogUrl(string gameBiz)
     {
@@ -346,6 +446,10 @@ public sealed record GachaArchiveSummary(
     DateTime LastItemTime,
     string LastItemName,
     int LastItemGachaType);
+
+
+/// <summary>抽卡物品信息表的一行（wiki 接口的 Name + Icon）。</summary>
+public sealed record GachaInfoItem(int Id, string Name, string Icon);
 
 
 /// <summary>导出时的一条记录（字段与上游 <c>GachaLogItem</c> 的表列一致）。</summary>

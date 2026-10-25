@@ -159,6 +159,44 @@ public sealed class LunarWardDatabase
             );
             CREATE INDEX IF NOT EXISTS IX_GenshinBeyondGachaInfo_Name ON GenshinBeyondGachaInfo (Name);
 
+            -- 抽卡物品信息（Starward Sql_v1 / Sql_v9 的 GachaInfo 三表，列/索引逐字照抄）
+            -- 存 wiki 接口给的 Name + Icon URL，GachaLogStore.UpsertGachaInfo 写入、GetIconMap 读
+            CREATE TABLE IF NOT EXISTS GenshinGachaInfo
+            (
+                Id          INTEGER NOT NULL PRIMARY KEY,
+                Name        TEXT,
+                Icon        TEXT,
+                Element     INTEGER NOT NULL,
+                Level       INTEGER NOT NULL,
+                CatId       INTEGER NOT NULL,
+                WeaponCatId INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_GenshinGachaInfo_Name ON GenshinGachaInfo (Name);
+
+            CREATE TABLE IF NOT EXISTS StarRailGachaInfo
+            (
+                ItemId         INTEGER NOT NULL PRIMARY KEY,
+                ItemName       TEXT,
+                IconUrl        TEXT,
+                DamageType     INTEGER NOT NULL,
+                Rarity         INTEGER NOT NULL,
+                AvatarBaseType INTEGER NOT NULL,
+                WikiUrl        TEXT,
+                IsSystem       INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_StarRailGachaInfo_Name ON StarRailGachaInfo (ItemName);
+
+            CREATE TABLE IF NOT EXISTS ZZZGachaInfo
+            (
+                Id          INTEGER NOT NULL PRIMARY KEY,
+                Name        TEXT,
+                Icon        TEXT,
+                Rarity      INTEGER NOT NULL,
+                ElementType INTEGER NOT NULL,
+                Profession  INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_ZZZGachaInfo_Name ON ZZZGachaInfo (Name);
+
             -- 账号记录（Starward Sql_v7 / Sql_v9 的 QueryItem 三表，列/索引逐字照抄）
             CREATE TABLE IF NOT EXISTS GenshinQueryItem
             (

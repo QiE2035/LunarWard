@@ -29,7 +29,8 @@ namespace LunarWard.App.ViewModels.Starward;
 /// <para>
 /// 存储与 Starward 一致：SQLite（<c>&lt;DataHome&gt;/LunarWardDatabase.db</c>，表结构照抄
 /// <c>StarwardDatabase.db</c>），更新记录后写库、删除时间段直接删行、打开页面先从库里读。
-/// 已知差异：<c>up!</c> 需要上游的 <c>GachaNoUp</c> 表，尚未移植，所以从库里读出的记录不显示 UP 标记。
+/// 已知差异：物品图标要等 wiki 信息表同步（<c>UpdateWikiDataAsync</c>，首次打开页面后台拉取），
+/// 没同步前显示 28×28 底色占位；<c>up!</c> 由 <c>GachaNoUp</c> 表重算，行为与上游一致。
 /// </para>
 /// </remarks>
 public sealed partial class GachaPageViewModel : StarwardPageViewModel
@@ -46,6 +47,11 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     private readonly string _gameKind;
 
     private IReadOnlyList<GachaRecord> _allRecords = [];
+
+    /// <summary>物品图标映射（wiki 信息表：ItemId → 图标 URL），由 <see cref="UpdateWikiDataAsync"/> 刷新。</summary>
+    private IReadOnlyDictionary<int, string> _icons = new Dictionary<int, string>();
+
+    private bool _wikiUpdateStarted;
 
     /// <summary>「隐藏卡池」勾选项（空集合 = 显示全部，语义同 Starward GachaLogPage.xaml.cs:381-384）。</summary>
     private readonly HashSet<int> _selectedPools = [];
@@ -92,6 +98,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
             RebuildUidList();
             Rebuild();
             StatusText = string.Format(Strings["Gacha.LoadedFromDatabase"], _allRecords.Count);
+            _ = UpdateWikiDataAsync();
         }
     }
 
@@ -390,6 +397,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
 
             // 上游改名是 UPDATE Name, Lang：只改库里的名字，不重写其它列
             _archiveStore.Rename(_gameKind, GachaLanguage, records);
+            await RefreshWikiDataAsync().ConfigureAwait(true);
             _allRecords = LoadRecordsFromDatabase();
             Rebuild();
             StatusText = string.Format(Strings["Gacha.LanguageChanged"], GachaLanguage, renamed);
@@ -656,6 +664,62 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     }
 
 
+    /// <summary>
+    /// 后台同步 wiki 物品信息（对应上游 <c>GachaLogPage.xaml.cs:220-232 UpdateWikiDataAsync</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 只负责「图标 URL + 老记录的 ItemId 回填」：拉 <c>GachaInfo</c> 接口 → 写
+    /// <c>Genshin/StarRail/ZZZGachaInfo</c> 表 → 用名字回填 <c>ItemId=0</c> 的记录 → 重读重绘。
+    /// 网络失败静默（图标保持占位），不弹错误条 —— 上游同样只写日志。
+    /// </remarks>
+    private async Task UpdateWikiDataAsync()
+    {
+        if (_wikiUpdateStarted)
+        {
+            return;
+        }
+
+        _wikiUpdateStarted = true;
+        await RefreshWikiDataAsync().ConfigureAwait(true);
+    }
+
+
+    private async Task RefreshWikiDataAsync()
+    {
+        try
+        {
+            _icons = _archiveStore.GetIconMap(_gameKind);
+            if (_icons.Count > 0)
+            {
+                Rebuild();
+                return;
+            }
+
+            string lang = string.IsNullOrWhiteSpace(GachaLanguage)
+                ? System.Globalization.CultureInfo.CurrentUICulture.Name
+                : GachaLanguage;
+            IReadOnlyList<GachaInfoItem> items = await _gacha
+                .FetchGachaInfoAsync(_gameKind, new LunarWard.Core.GameBiz(_gameBiz), lang)
+                .ConfigureAwait(true);
+            if (_disposed || items.Count == 0)
+            {
+                return;
+            }
+
+            _archiveStore.UpsertGachaInfo(_gameKind, items);
+            _archiveStore.UpdateItemIds(_gameKind);
+            _allRecords = LoadRecordsFromDatabase();
+            _icons = _archiveStore.GetIconMap(_gameKind);
+            RebuildUidList();
+            Rebuild();
+        }
+        catch (Exception)
+        {
+            // 与上游一致：wiki 拉取失败只影响图标/名字，不打扰用户。
+        }
+    }
+
+
     private void Rebuild()
     {
         Pools.Clear();
@@ -682,7 +746,8 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
                 byType[statistics.GachaType],
                 PoolText(statistics.GachaType),
                 Strings["Gacha.Pity"],
-                zzz: _gameKind == "zzz"));
+                zzz: _gameKind == "zzz",
+                icons: _icons));
         }
 
         // Starward GachaLogService.cs:251-256：按 ItemId 分组 → 稀有度降序、次数降序、时间降序。
@@ -809,9 +874,14 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         _allRecords = Launch.GachaService.ApplyUpFlags(_gameKind, records);
         // 自检样例也落盘，UIGF 窗口才有存档可导
         _archiveStore.Merge(_gameKind, _allRecords, GachaLanguage);
+        // 样例记录没有 ItemId：先同步 wiki 再按名字回填（真实抓取时接口自带 ItemId，不会被覆盖）
+        _archiveStore.UpdateItemIds(_gameKind);
+        _allRecords = LoadRecordsFromDatabase();
         RebuildUidList();
         Rebuild();
         StatusText = string.Format(Strings["Gacha.FetchDone"], _allRecords.Count);
+        // 截图要看到图标：后台同步 wiki 信息表（网络失败就保持占位块）
+        _ = UpdateWikiDataAsync();
     }
 
 

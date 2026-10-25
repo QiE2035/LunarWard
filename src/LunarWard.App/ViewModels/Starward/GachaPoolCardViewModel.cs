@@ -27,7 +27,8 @@ public sealed partial class GachaPoolCardViewModel : ObservableObject
         IReadOnlyList<GachaRecord> records,
         string poolText,
         string pityText,
-        bool zzz = false)
+        bool zzz = false,
+        IReadOnlyDictionary<int, string>? icons = null)
     {
         GachaType = statistics.GachaType;
         GachaTypeText = poolText;
@@ -57,12 +58,14 @@ public sealed partial class GachaPoolCardViewModel : ObservableObject
             {
                 case 5:
                     count5++;
-                    list5.Add(new GachaStatsItemViewModel(record.Name, pity5, record.Time, GachaType, isUp: record.IsUp));
+                    list5.Add(new GachaStatsItemViewModel(
+                        record.Name, pity5, record.Time, GachaType, isUp: record.IsUp, iconUrl: IconOf(icons, record.ItemId)));
                     pity5 = 0;
                     break;
                 case 4:
                     count4++;
-                    list4.Add(new GachaStatsItemViewModel(record.Name, pity4, record.Time, GachaType, isUp: record.IsUp));
+                    list4.Add(new GachaStatsItemViewModel(
+                        record.Name, pity4, record.Time, GachaType, isUp: record.IsUp, iconUrl: IconOf(icons, record.ItemId)));
                     pity4 = 0;
                     break;
                 case 3:
@@ -274,4 +277,8 @@ public sealed partial class GachaPoolCardViewModel : ObservableObject
             }
         }
     }
+
+    /// <summary>按 <c>ItemId</c> 从 wiki 信息表里取图标 URL（没有就返回 null，显示占位）。</summary>
+    private static string? IconOf(IReadOnlyDictionary<int, string>? icons, int itemId)
+        => icons is not null && itemId != 0 && icons.TryGetValue(itemId, out string? icon) ? icon : null;
 }

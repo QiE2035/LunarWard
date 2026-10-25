@@ -3,6 +3,7 @@ using LunarWard.Core.Gacha;
 using LunarWard.Core.Gacha.Genshin;
 using LunarWard.Core.Gacha.StarRail;
 using LunarWard.Core.Gacha.ZZZ;
+using LunarWard.Launch.Database;
 
 namespace LunarWard.Launch;
 
@@ -166,6 +167,64 @@ public sealed class GachaService
     /// LunarWard 的记录在页面内存 + JSON 存档里，所以这里返回改名后的列表，由调用方回写。
     /// 名称表按 <c>item_id</c> 索引（原神是 avatar/weapon 两张表的并集）。
     /// </remarks>
+    /// <summary>
+    /// 拉 wiki 物品信息（Name + Icon URL，对应上游 <c>UpdateGachaInfoAsync</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 原神 / 绝区零 / 星铁各走 <c>GachaLogClient</c> 的 wiki 接口；返回的 Id 是 wiki 的物品 id
+    /// （原神/绝区零 = ItemId，星铁 = ItemId）。
+    /// </remarks>
+    public async Task<IReadOnlyList<GachaInfoItem>> FetchGachaInfoAsync(
+        string gameKind,
+        GameBiz gameBiz,
+        string lang,
+        CancellationToken ct = default)
+    {
+        var items = new List<GachaInfoItem>();
+        if (gameKind == "zzz")
+        {
+            ZZZGachaWiki wiki = await new ZZZGachaClient(_httpClient)
+                .GetZZZGachaInfoAsync(gameBiz, lang, ct)
+                .ConfigureAwait(false);
+            foreach (ZZZGachaInfo info in wiki.List ?? [])
+            {
+                if (info.Id != 0)
+                {
+                    items.Add(new GachaInfoItem(info.Id, info.Name, info.Icon));
+                }
+            }
+        }
+        else if (gameKind == "starrail")
+        {
+            StarRailGachaWiki wiki = await new StarRailGachaClient(_httpClient)
+                .GetStarRailGachaInfoAsync(gameBiz, lang, ct)
+                .ConfigureAwait(false);
+            foreach (StarRailGachaInfo info in (wiki.Avatar ?? []).Concat(wiki.Equipment ?? []))
+            {
+                if (info.ItemId != 0)
+                {
+                    items.Add(new GachaInfoItem(info.ItemId, info.ItemName, info.IconUrl));
+                }
+            }
+        }
+        else
+        {
+            GenshinGachaWiki wiki = await new GenshinGachaClient(_httpClient)
+                .GetGenshinGachaInfoAsync(gameBiz, lang, ct)
+                .ConfigureAwait(false);
+            foreach (GenshinGachaInfo info in (wiki.AllAvatar ?? []).Concat(wiki.AllWeapon ?? []))
+            {
+                if (info.Id != 0)
+                {
+                    items.Add(new GachaInfoItem(info.Id, info.Name, info.Icon));
+                }
+            }
+        }
+
+        return items;
+    }
+
+
     public async Task<(IReadOnlyList<GachaRecord> Records, int Renamed)> ChangeItemNamesAsync(
         string gameKind,
         GameBiz gameBiz,
@@ -178,36 +237,15 @@ public sealed class GachaService
             return (records, 0);
         }
 
+        IReadOnlyList<GachaInfoItem> items = await FetchGachaInfoAsync(gameKind, gameBiz, lang, ct)
+            .ConfigureAwait(false);
         var names = new Dictionary<int, string>();
-        if (gameKind == "zzz")
+        foreach (GachaInfoItem item in items)
         {
-            ZZZGachaWiki wiki = await new ZZZGachaClient(_httpClient)
-                .GetZZZGachaInfoAsync(gameBiz, lang, ct)
-                .ConfigureAwait(false);
-            foreach (ZZZGachaInfo info in wiki.List ?? [])
+            if (!string.IsNullOrWhiteSpace(item.Name))
             {
-                if (info.Id != 0 && !string.IsNullOrWhiteSpace(info.Name))
-                {
-                    names[info.Id] = info.Name;
-                }
+                names[item.Id] = item.Name;
             }
-        }
-        else if (gameKind == "genshin")
-        {
-            GenshinGachaWiki wiki = await new GenshinGachaClient(_httpClient)
-                .GetGenshinGachaInfoAsync(gameBiz, lang, ct)
-                .ConfigureAwait(false);
-            foreach (GenshinGachaInfo info in (wiki.AllAvatar ?? []).Concat(wiki.AllWeapon ?? []))
-            {
-                if (info.Id != 0 && !string.IsNullOrWhiteSpace(info.Name))
-                {
-                    names[info.Id] = info.Name;
-                }
-            }
-        }
-        else
-        {
-            throw new NotSupportedException($"Gacha record renaming is not supported for {gameKind}.");
         }
 
         return ApplyItemNames(records, names);

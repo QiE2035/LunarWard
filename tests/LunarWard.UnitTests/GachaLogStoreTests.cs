@@ -138,4 +138,44 @@ public sealed class GachaLogStoreTests : IDisposable
         Assert.Equal(t, item.Time);
         Assert.Equal("测试物品", item.Name);
     }
+
+    [Fact]
+    public void GachaInfo_RoundTrip_And_FillItemIdByName()
+    {
+        var t = new DateTime(2026, 1, 2, 3, 4, 5);
+        _store.Merge(GachaLogStore.Genshin,
+        [
+            new GachaRecord
+            {
+                Id = 1, Name = "芙宁娜", ItemType = "角色", RankType = 5, GachaType = 301,
+                GachaTypeName = GachaService.GetPoolName(GachaLogStore.Genshin, 301),
+                Time = t, Uid = 100000001, ItemId = 0,
+            },
+        ], "zh-cn");
+
+        _store.UpsertGachaInfo(GachaLogStore.Genshin,
+        [
+            new GachaInfoItem(10000089, "芙宁娜", "https://example.com/furina.png"),
+            new GachaInfoItem(15502, "祭礼剑", "https://example.com/sword.png"),
+        ]);
+
+        Assert.Equal(1, _store.UpdateItemIds(GachaLogStore.Genshin));
+        Assert.Equal(10000089, _store.GetAll(GachaLogStore.Genshin)[0].ItemId);
+
+        var icons = _store.GetIconMap(GachaLogStore.Genshin);
+        Assert.Equal("https://example.com/furina.png", icons[10000089]);
+        Assert.Equal(2, icons.Count);
+    }
+
+
+    [Fact]
+    public void GachaInfo_ThreeGames_UseTheirOwnColumns()
+    {
+        _store.UpsertGachaInfo(GachaLogStore.StarRail, [new GachaInfoItem(1205, "刃", "https://example.com/blade.png")]);
+        _store.UpsertGachaInfo(GachaLogStore.Zzz, [new GachaInfoItem(1011, "艾莲", "https://example.com/ellen.png")]);
+
+        Assert.Equal("https://example.com/blade.png", _store.GetIconMap(GachaLogStore.StarRail)[1205]);
+        Assert.Equal("https://example.com/ellen.png", _store.GetIconMap(GachaLogStore.Zzz)[1011]);
+        Assert.Empty(_store.GetIconMap(GachaLogStore.Genshin));
+    }
 }

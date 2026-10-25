@@ -206,14 +206,16 @@
                         Background="{Binding Converter={StaticResource PityProgressConverter}}" />
 
                 <!--
-                  GachaStatsCard.xaml:184-187 是 CachedImage 28×28 的物品图标；
-                  LunarWard 没有图标素材，保留 28 宽占位（任务约定）。
+                  GachaStatsCard.xaml:184-187 CachedImage 28×28：图标 URL 来自
+                  GenshinGachaInfo.Icon（GachaIconCache 下载并磁盘缓存），没有 URL 时
+                  只显示底色占位块，不画假图标。
                 -->
-                <Border Width="28"
-                        Height="28"
-                        HorizontalAlignment="Left"
-                        Background="{StaticResource StarControlFillBrush}"
-                        CornerRadius="4" />
+                <Panel Width="28"
+                       Height="28"
+                       HorizontalAlignment="Left">
+                  <Border Background="{StaticResource StarControlFillBrush}" CornerRadius="4" />
+                  <Image Source="{Binding Icon}" Stretch="Uniform" />
+                </Panel>
 
                 <!-- 非悬停：普通文本 -->
                 <TextBlock Grid.Column="1"
@@ -271,11 +273,11 @@
                   <ColumnDefinition Width="24" />
                 </Grid.ColumnDefinitions>
 
-                <!-- GachaStatsCard.xaml:244-246 CachedImage 28×28；占位 -->
-                <Border Width="28"
-                        Height="28"
-                        Background="{StaticResource StarControlFillBrush}"
-                        CornerRadius="4" />
+                <!-- GachaStatsCard.xaml:244-246 CachedImage 28×28：同 5★ 行，无 URL 时占位 -->
+                <Panel Width="28" Height="28">
+                  <Border Background="{StaticResource StarControlFillBrush}" CornerRadius="4" />
+                  <Image Source="{Binding Icon}" Stretch="Uniform" />
+                </Panel>
 
                 <TextBlock Grid.Column="1"
                            Text="{Binding Name}"
