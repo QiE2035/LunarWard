@@ -226,6 +226,10 @@
 | DC 旧窗口 | `48f2f1e`/`e5adb46` | 删 `GachaWindow`/`ScreenshotWindow`/`GachaViewModel`；`ShellWindow` 归档到 `Views/Starward/Legacy/` |
 | DC-11 注册表常量 | `54b604c` | 删 `GameRegistry.cs` 16 个零引用常量（66 → 34 行） |
 | DC-03 无绑定成员 | `d52dfc1` | 删 9 个「除声明外零出现」的 VM 成员（从 85 个候选里用引用扫描筛出） |
+| DC-05/06 P/Invoke | `d1326a1` | `Libc` 13 个零调用声明删除；`HardLink` 的 `link(2)` 上提为 `Libc.Link`（`InternalsVisibleTo`） |
+| DC-14 命名（1/3） | `aa10bca` | `CaptureMode` 命名空间归位 `LunarWard.App.Services`（17 个引用方补 using） |
+| DC-14 版本解析 | `50f508e` | 三份「InformationalVersion 去掉 +sha」合并为 `AppVersion.Display` |
+| DC-14 常量 | `27af115` | `LUNARWARD_TOOLBOX_DEMO` 14 个页面 → `ToolboxDemo.Enabled` |
 
 验证：build 0 警告；`dotnet test` 537 + 31 + 27 = 595 全过。
 未做：`Libc` 零引用 P/Invoke、`HardLink`/`statx` 上提、命名整理（`CaptureMode` 命名空间、`_camel` 6 文件、`LUNARWARD_TOOLBOX_DEMO` 26 处、版本解析 6 套）、常量抽取。
