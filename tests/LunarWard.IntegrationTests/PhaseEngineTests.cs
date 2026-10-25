@@ -394,8 +394,12 @@ public class PhaseEngineTests
 
         var result = await CreateEngine(sandbox).RunAsync(plan);
 
+        _output.WriteLine($"I10 run: success={result.Success} error={result.Error?.Message}");
+        var clients = sandbox.Processes.GetPrefixClients(sandbox.Prefix);
+        _output.WriteLine($"I10 clients after run: {string.Join(",", clients.Select(c => c.Pid))}");
+
         Assert.True(result.Success, result.Error?.Message);
-        Assert.Empty(sandbox.Processes.GetPrefixClients(sandbox.Prefix));
+        Assert.Empty(clients);
     }
 
 
