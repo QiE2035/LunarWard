@@ -236,6 +236,8 @@
 | B 门禁 | M-02 CI 跑集成、M-09 SDK 钉版、M-15 隐式引用、M-28 parity 脚本、PS-05b 文档 | ✅ `4c5a805` `4d834c1` `640bd29` `f8dd825` |
 | C 死代码（主体） | `Core/Metadata`、Installer 卸载服务、6 个死包、旧窗口、`IFileLock` | ✅ `bd2f9d8` `47a5af6` `36f94a9` `48f2f1e` `75968b9` |
 | E 文案（i18n 部分） | 20×2 组重复键 + 防重复源码守卫 | ✅ `a934e20` `3483b37` |
+| D 可空/警告（M-06 部分） | 9 处真实空值缺陷 + CS8618/CA1416 收敛、`NoWarn` 清空、Debug/Release 双 `-warnaserror` 门禁 | ✅ `6405a43` `6da158f` `cdb3b93` `7f8ab03` `b9c3c8f` |
+| D 测试稳定性 | 集成测试偶发失败排查：`FakeWine` 编译竞争、`RealWineTests` 残留 wineserver、I1/I10/Acceptance 失败诊断、等待上限放宽 | 🟡 近期 9 轮全绿，稳定性改善但未宣称根治 |
 
 ### 未完成（按优先级）
 
