@@ -1,7 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using DialogHostAvalonia;
 using LunarWard.App.Services;
 using LunarWard.App.ViewModels.Starward;
 
@@ -16,7 +19,26 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        UiTypography.ApplyGrayscaleAntialias(this);
         Opened += OnOpened;
+    }
+
+
+    /// <summary>
+    /// 主窗口内的 ContentDialog 宿主。Starward 的对话框（游戏设置、预下载、安装、卸载）
+    /// 都是窗口内的浮层而不是独立窗口，所有对话框统一通过它显示。
+    /// </summary>
+    internal static DialogHost? ContentDialogHost
+    {
+        get
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                return desktop.Windows.OfType<MainWindow>().FirstOrDefault()?.RootDialogHost;
+            }
+
+            return null;
+        }
     }
 
 

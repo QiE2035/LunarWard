@@ -222,15 +222,24 @@ internal static class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            // 拉丁字形沿用 Starward 的 Segoe UI；缺字时回退到随应用分发的 Inter，
+            // 保证未安装 Segoe UI 的机器上度量仍然稳定。
+            .WithInterFont()
             // Starward 在 Windows 上靠系统字体回退把中文交给「微软雅黑」渲染；
-            // Avalonia/Skia 不做隐式回退，这里显式给出回退链，效果与 Windows 一致。
+            // Avalonia/Skia 不做隐式回退，这里显式给出回退链。
+            //
+            // 顺序有意义：CJK 优先 Noto Sans CJK SC（全字重），再退到微软雅黑。
+            // 后者在 Linux 上通常来自 WPS 字体包且只有 Regular，标题会发虚、
+            // 与 Windows 观感不符（见 docs/09-LINUX-DIVERGENCES.md）。
             .With(new FontManagerOptions
             {
                 DefaultFamilyName = "Segoe UI",
                 FontFallbacks =
                 [
-                    new FontFallback { FontFamily = new FontFamily("Microsoft YaHei UI") },
+                    new FontFallback { FontFamily = new FontFamily("Inter") },
                     new FontFallback { FontFamily = new FontFamily("Noto Sans CJK SC") },
+                    new FontFallback { FontFamily = new FontFamily("Microsoft YaHei UI") },
+                    new FontFallback { FontFamily = new FontFamily("Noto Sans CJK JP") },
                     new FontFallback { FontFamily = new FontFamily("Segoe MDL2 Assets") },
                     new FontFallback { FontFamily = new FontFamily("Segoe Fluent Icons") },
                 ],
