@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Threading;
+using System.Reflection;
 
 namespace LunarWard.App;
 
@@ -11,6 +12,19 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // --version / --help：不启动窗口，也不读配置（打包脚本 / 桌面环境探测会调用）。
+        if (args.Contains("--version") || args.Contains("-V"))
+        {
+            Console.WriteLine($"LunarWard {Version}");
+            return;
+        }
+
+        if (args.Contains("--help") || args.Contains("-h"))
+        {
+            PrintUsage();
+            return;
+        }
+
         // 命令行子命令（上游 App.xaml.cs 的 HandleStartupAsync）：startgame 等不打开窗口。
         if (Services.StartupCommands.IsCommand(args))
         {
@@ -106,6 +120,44 @@ internal static class Program
         }
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
+
+
+    /// <summary>版本号（InformationalVersion 去掉 SourceLink 的 +sha 后缀）。</summary>
+    internal static string Version
+    {
+        get
+        {
+            var assembly = typeof(Program).Assembly;
+            string version = assembly
+                .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion
+                ?? assembly.GetName().Version?.ToString(3)
+                ?? "0.0.0";
+            int plus = version.IndexOf('+');
+            return plus >= 0 ? version[..plus] : version;
+        }
+    }
+
+
+    private static void PrintUsage()
+    {
+        Console.WriteLine($"LunarWard {Version} — Linux 下的《原神》/《星穹铁道》/《绝区零》启动器");
+        Console.WriteLine();
+        Console.WriteLine("用法: lunarward [命令] [选项]");
+        Console.WriteLine();
+        Console.WriteLine("命令:");
+        Console.WriteLine("  (无)                         打开启动器");
+        Console.WriteLine("  startgame --biz <biz>        直接启动对应区服（不开窗口）");
+        Console.WriteLine("  playtime --biz <biz> --pid <pid>  盯住外部启动的游戏进程，退出后补记时长");
+        Console.WriteLine("  \"lunarward://startgame/<biz>\"      URL 协议形式（桌面文件传给程序）");
+        Console.WriteLine("  \"lunarward://playtime?biz=<biz>&pid=<pid>\"");
+        Console.WriteLine();
+        Console.WriteLine("选项:");
+        Console.WriteLine("  --version, -V                输出版本号");
+        Console.WriteLine("  --help, -h                   输出本帮助");
+        Console.WriteLine();
+        Console.WriteLine("自检截图开关见 https://github.com/ …/README.md 的「自检与截图」一节。");
     }
 
 
