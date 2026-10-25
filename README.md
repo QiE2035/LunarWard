@@ -171,9 +171,12 @@ dotnet test LunarWard.slnx -m:1         # 串行，规避并发下两个集成�
 ```
 
 `scripts/ci.sh` 与 CI 都是**分项目串行**执行的，串行跑法始终可用。
-此前 `-m` 并行时 `IntegrationTests` 偶发失败已定位并修复：`FakeWine` 的 cc 编译产物用了
-固定文件名（`<tmp>/lunarward-it-native/*`），多个测试同时首次调用 helper 时会读到写了一半的
-二进制；现在编译用独占文件锁串行化，并先写 `.tmp` 再原子改名。
+`IntegrationTests` 曾有偶发失败，目前定位到两个原因并都已修：
+1. `FakeWine` 的 cc 产物用固定文件名，多个测试同时首次编译会读到写了一半的二进制 →
+   编译加独占文件锁，先写 `.tmp` 再原子改名；
+2. `RealWineTests` 结束后没有关掉 prefix 的 `wineserver`，残留的 winedevice 会让下一次
+   运行的 `GetPrefixClients` 扫描串味 → finally 里按 `/proc/<pid>/environ` 里的
+   `WINEPREFIX` 精确杀掉该 root 下的 wineserver/winedevice。
 
 ## 文档索引
 

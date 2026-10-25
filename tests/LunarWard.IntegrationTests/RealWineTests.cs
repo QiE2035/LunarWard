@@ -254,6 +254,7 @@ public class RealWineTests
         }
         finally
         {
+            KillWineserversUnder(root);
             try
             {
                 Directory.Delete(root, recursive: true);
@@ -319,6 +320,7 @@ public class RealWineTests
         }
         finally
         {
+            KillWineserversUnder(root);
             try
             {
                 Directory.Delete(root, recursive: true);
@@ -326,6 +328,45 @@ public class RealWineTests
             catch (Exception)
             {
                 // best effort
+            }
+        }
+    }
+
+    /// <summary>
+    /// 杀掉 <paramref name="root"/> 下所有 prefix 的 wineserver 与 winedevice。
+    /// wineserver 的 cmdline 不带 prefix，只能从它的 /proc/&lt;pid&gt;/environ 里找 WINEPREFIX。
+    /// 不清理会让后续测试（尤其是 PhaseEngine 的进程扫描）读到上一个测试留下的客户端。
+    /// </summary>
+    private static void KillWineserversUnder(string root)
+    {
+        foreach (var dir in Directory.EnumerateDirectories("/proc"))
+        {
+            if (!int.TryParse(Path.GetFileName(dir), out var pid))
+            {
+                continue;
+            }
+
+            try
+            {
+                var cmdline = File.ReadAllText(Path.Join(dir, "cmdline")).Replace('\0', ' ');
+                if (!cmdline.Contains("wineserver", StringComparison.Ordinal)
+                    && !cmdline.Contains("winedevice", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var environ = File.ReadAllText(Path.Join(dir, "environ"));
+                if (!environ.Contains(root, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                using var process = Process.GetProcessById(pid);
+                process.Kill(entireProcessTree: true);
+            }
+            catch (Exception)
+            {
+                // 进程消失/无权限：忽略
             }
         }
     }
