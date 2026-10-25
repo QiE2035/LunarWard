@@ -14,6 +14,28 @@ public class AppStringsTests
     }
 
 
+    /// <summary>中文词条里不该出现纯英文值（上一轮把英文键插进中文字典就是这么暴露的）。</summary>
+    [Fact]
+    public void Chinese_ValuesAreNotAccidentallyEnglish()
+    {
+        AppStrings.Instance.Language = "zh-CN";
+        var suspects = new List<string>();
+        foreach (var key in AppStrings.AllKeys)
+        {
+            var value = AppStrings.Instance[key];
+            // 只抓「纯 ASCII 多词短语」：单缩写（HUD / UID）与带全角符号的值都不算嫌疑
+            bool hasCjkOrFullWidth = value.Any(c => c >= 0x3000 && c <= 0x9FFF);
+            bool isAsciiPhrase = value.All(c => c < 0x80) && value.Contains(' ');
+            if (!hasCjkOrFullWidth && isAsciiPhrase)
+            {
+                suspects.Add($"{key} = {value}");
+            }
+        }
+
+        Assert.True(suspects.Count == 0, "中文字典里疑似混入英文：" + string.Join(" | ", suspects.Take(10)));
+    }
+
+
     [Fact]
     public void BothLanguages_HaveNoEmptyValues()
     {
