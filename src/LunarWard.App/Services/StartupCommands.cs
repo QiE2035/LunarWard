@@ -29,6 +29,7 @@ internal static class StartupCommands
            && (args[0].Equals("startgame", StringComparison.OrdinalIgnoreCase)
                || args[0].Equals("playtime", StringComparison.OrdinalIgnoreCase)
                || args[0].Equals("install-smoke", StringComparison.OrdinalIgnoreCase)
+               || args[0].Equals("components", StringComparison.OrdinalIgnoreCase)
                || args[0].StartsWith("lunarward://", StringComparison.OrdinalIgnoreCase));
 
 
@@ -53,6 +54,11 @@ internal static class StartupCommands
             return await RunInstallSmokeAsync(args).ConfigureAwait(false);
         }
 
+        if (args[0].Equals("components", StringComparison.OrdinalIgnoreCase))
+        {
+            return await RunComponentsAsync(args).ConfigureAwait(false);
+        }
+
         string? biz = ReadArgument(args, "--biz");
         if (string.IsNullOrWhiteSpace(biz))
         {
@@ -61,6 +67,76 @@ internal static class StartupCommands
         }
 
         return await StartByBizAsync(biz).ConfigureAwait(false);
+    }
+
+
+    /// <summary>
+    /// <c>lunarward components list</c> / <c>lunarward components install wine|dxvk &lt;名字&gt;</c>：
+    /// 不打开窗口地更新组件索引、列出可用 wine/dxvk、安装指定组件（对应上游「组件」设置页
+    /// 背后的 <c>ComponentNetwork</c> 能力），也用于 R9「托管 wine」真机验收。
+    /// </summary>
+    private static async Task<int> RunComponentsAsync(string[] args)
+    {
+        try
+        {
+            AppServices.Initialize(XdgPaths.Default);
+            var services = AppServices.Current;
+            Wine.ComponentInstaller installer = services.ComponentInstaller;
+
+            if (args.Length >= 2 && args[1].Equals("list", StringComparison.OrdinalIgnoreCase))
+            {
+                Wine.ComponentIndexUpdateResult update = await installer.UpdateIndexAsync().ConfigureAwait(false);
+                Console.WriteLine($"COMPONENTS_INDEX updated={update.UpdatedFiles} errors={update.Errors.Count}");
+                foreach (string error in update.Errors)
+                {
+                    Console.Error.WriteLine($"  ! {error}");
+                }
+
+                Wine.ComponentIndex index = installer.Repository.ReadIndex();
+                foreach (Wine.ComponentGroup group in index.Wine)
+                {
+                    foreach (Wine.ComponentEntry entry in installer.Repository.ReadGroup("wine", group.Name))
+                    {
+                        Console.WriteLine($"COMPONENT wine {entry.Name}|{entry.Title}|installed={installer.IsInstalled("wine", entry.Name)}");
+                    }
+                }
+                foreach (Wine.ComponentGroup group in index.Dxvk)
+                {
+                    foreach (Wine.ComponentEntry entry in installer.Repository.ReadGroup("dxvk", group.Name))
+                    {
+                        Console.WriteLine($"COMPONENT dxvk {entry.Name}|{entry.Title}|installed={installer.IsInstalled("dxvk", entry.Name)}");
+                    }
+                }
+                return update.Success ? 0 : 1;
+            }
+
+            if (args.Length >= 4 && args[1].Equals("install", StringComparison.OrdinalIgnoreCase))
+            {
+                string kind = args[2];
+                string name = args[3];
+                var progress = new Progress<Wine.ComponentProgress>(p =>
+                {
+                    if (p.Percent is { } percent && (percent >= 1 || ((int)(percent * 100)) % 10 == 0))
+                    {
+                        Console.WriteLine($"COMPONENTS_PROGRESS {p.Name} {percent:P0}");
+                    }
+                });
+
+                string path = kind.Equals("wine", StringComparison.OrdinalIgnoreCase)
+                    ? await installer.InstallWineAsync(name, progress).ConfigureAwait(false)
+                    : await installer.InstallDxvkAsync(name, progress).ConfigureAwait(false);
+                Console.WriteLine($"COMPONENTS_INSTALLED {kind} {name} -> {path}");
+                return 0;
+            }
+
+            Console.Error.WriteLine("用法：lunarward components list | lunarward components install wine|dxvk <名字>");
+            return 2;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"components 失败：{ex.GetType().Name}: {ex.Message}");
+            return 1;
+        }
     }
 
 

@@ -1,4 +1,6 @@
 using System.Formats.Tar;
+using System.Net;
+using System.Net.Http.Headers;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using LunarWard.Platform;
@@ -211,6 +213,7 @@ public sealed class ComponentInstaller
         {
             Directory.CreateDirectory(temp);
             Extract(archive, temp);
+            FlattenSingleRoot(temp);
             MarkExecutable(temp);
 
             if (Directory.Exists(target))
@@ -254,15 +257,35 @@ public sealed class ComponentInstaller
         }
 
         var part = path + ".part";
-        using var response = await _httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+
+        // 断点续传：上次失败留下的 .part 用 Range 续上。组件包动辄上百 MB，
+        // 走 raw.githubusercontent.com 时偶发断流，从头下很浪费。
+        long startOffset = File.Exists(part) ? new FileInfo(part).Length : 0;
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        if (startOffset > 0)
+        {
+            request.Headers.Range = new RangeHeaderValue(startOffset, null);
+        }
+
+        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var total = response.Content.Headers.ContentLength;
+
+        bool resumed = response.StatusCode == HttpStatusCode.PartialContent && startOffset > 0;
+        if (!resumed)
+        {
+            startOffset = 0;
+        }
+
+        long? total = response.Content.Headers.ContentLength is { } length
+            ? length + startOffset
+            : null;
 
         await using (var source = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false))
-        await using (var destination = new FileStream(part, FileMode.Create, FileAccess.Write, FileShare.None, 1 << 16, useAsync: true))
+        await using (var destination = new FileStream(part, resumed ? FileMode.Append : FileMode.Create,
+                         FileAccess.Write, FileShare.None, 1 << 16, useAsync: true))
         {
             var buffer = new byte[1 << 16];
-            long received = 0;
+            long received = startOffset;
             int read;
             while ((read = await source.ReadAsync(buffer, ct).ConfigureAwait(false)) > 0)
             {
@@ -270,9 +293,40 @@ public sealed class ComponentInstaller
                 received += read;
                 progress?.Report(new ComponentProgress(name, received, total));
             }
+
+            if (total is { } expected && received < expected)
+            {
+                throw new IOException($"下载不完整：{received}/{expected} 字节（可用同一命令续传）");
+            }
         }
 
         File.Move(part, path, overwrite: true);
+    }
+
+
+    /// <summary>
+    /// 有的组件包自带一层与组件同名的根目录（<c>name/bin/wine</c>），解压后就不再有
+    /// <c>bin/wine</c>。这里把「只有一个子目录且其中才有 bin/wine」的情况摊平一层。
+    /// </summary>
+    private static void FlattenSingleRoot(string dir)
+    {
+        if (File.Exists(Path.Join(dir, "bin", "wine")))
+        {
+            return;
+        }
+
+        string[] entries = Directory.GetFileSystemEntries(dir);
+        if (entries.Length != 1 || !Directory.Exists(entries[0]) || !File.Exists(Path.Join(entries[0], "bin", "wine")))
+        {
+            return;
+        }
+
+        foreach (string child in Directory.GetFileSystemEntries(entries[0]))
+        {
+            Directory.Move(child, Path.Join(dir, Path.GetFileName(child)));
+        }
+
+        Directory.Delete(entries[0]);
     }
 
 
