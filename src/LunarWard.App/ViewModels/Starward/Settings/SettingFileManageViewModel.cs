@@ -3,6 +3,7 @@ using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.App.Views.Starward;
+using LunarWard.Launch.Database;
 
 namespace LunarWard.App.ViewModels.Starward;
 
@@ -112,6 +113,55 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
 
 
     partial void OnClearLauncherBackgroundChanged(bool value) => SaveClearLauncherBackground(value);
+
+
+    // ── 备份数据库（Starward FileManageSetting.xaml:72-108）──────────────────
+
+    /// <summary>「备份数据库」被点击：由视图层弹保存对话框后回调 <see cref="BackupTo"/>。</summary>
+    public event EventHandler? BackupRequested;
+
+
+    [ObservableProperty]
+    private bool _isBackingUp;
+
+
+    [RelayCommand]
+    private void BackupDatabase() => BackupRequested?.Invoke(this, EventArgs.Empty);
+
+
+    /// <summary>
+    /// 把 <c>LunarWardDatabase.db</c> 的一致性快照写到 <paramref name="path"/>。
+    /// </summary>
+    /// <remarks>
+    /// 用 SQLite 的 <c>VACUUM INTO</c>（<see cref="LunarWard.Launch.Database.LunarWardDatabase.BackupTo"/>）：
+    /// 带事务、单文件、自动合并 WAL，不依赖 <c>sqlite3</c> 命令行。上游用
+    /// <c>File.Copy(StarwardDatabase.db)</c>，在 WAL 模式下可能拷到半个事务；
+    /// 这里换成官方热备份方式，语义等价且更安全（已在类注释里记录偏差）。
+    /// </remarks>
+    public async Task BackupToAsync(string path)
+    {
+        if (IsBackingUp)
+        {
+            return;
+        }
+
+        IsBackingUp = true;
+        Status = Strings["Settings.Files.BackingUp"];
+        try
+        {
+            var database = new LunarWardDatabase(Path.Join(DataHome, LunarWardDatabase.FileName));
+            await Task.Run(() => database.BackupTo(path)).ConfigureAwait(true);
+            Status = string.Format(CultureInfo.CurrentCulture, Strings["Settings.Files.BackupDone"], path);
+        }
+        catch (Exception ex)
+        {
+            Status = string.Format(CultureInfo.CurrentCulture, Strings["Settings.Files.BackupFailed"], ex.Message);
+        }
+        finally
+        {
+            IsBackingUp = false;
+        }
+    }
 
 
     // ── 目录按钮 ────────────────────────────────────────────────────────────

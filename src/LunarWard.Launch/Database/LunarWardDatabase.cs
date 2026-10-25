@@ -54,6 +54,46 @@ public sealed class LunarWardDatabase
 
 
     /// <summary>
+    /// 把整库的一致性快照写到 <paramref name="destination"/>（<c>VACUUM INTO</c>）。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>VACUUM INTO</c> 是 SQLite 官方的「热备份」方式：写入过程带事务、产出单文件，
+    /// 并自动把 WAL 合并进去，不需要 <c>sqlite3</c> 命令行或先 checkpoint。
+    /// </para>
+    /// <para>
+    /// 目标路径已存在时先写同目录的临时文件再原子 rename，避免覆盖到一半留下半个备份
+    /// （<c>VACUUM INTO</c> 本身拒绝写已存在的文件）。
+    /// </para>
+    /// </remarks>
+    public void BackupTo(string destination)
+    {
+        string full = System.IO.Path.GetFullPath(destination);
+        string? dir = System.IO.Path.GetDirectoryName(full);
+        if (!string.IsNullOrWhiteSpace(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+
+        string temp = full + ".tmp";
+        if (File.Exists(temp))
+        {
+            File.Delete(temp);
+        }
+
+        using (SqliteConnection connection = CreateConnection())
+        using (SqliteCommand command = connection.CreateCommand())
+        {
+            command.CommandText = "VACUUM INTO $path";
+            command.Parameters.AddWithValue("$path", temp);
+            command.ExecuteNonQuery();
+        }
+
+        File.Move(temp, full, overwrite: true);
+    }
+
+
+    /// <summary>
     /// 建表（幂等）。DDL 与 Starward 的 <c>DatabaseService.Sql_v1</c>（抽卡表）、
     /// <c>Sql_v7</c>（账号记录 <c>GenshinQueryItem</c> / <c>StarRailQueryItem</c>）、
     /// <c>Sql_v9</c>（ZZZ 表 + <c>ZZZQueryItem</c>）、<c>Sql_v12</c>（GachaLogUrl）、<c>Sql_v16</c>/<c>Sql_v17</c>

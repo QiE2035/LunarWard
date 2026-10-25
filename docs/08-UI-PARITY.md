@@ -38,7 +38,7 @@
 | 关于 | `AboutSetting.xaml`(135) | `SettingAboutView.axaml`(约 190) | 🟡 | 本轮已按源码重排：Logo 160 / 24px Bold / 版本行 / 预览版 Toggle / 检查更新按钮 / 相关链接；检查更新已接线（GitHub `releases/latest`，三种状态：已是最新/有新版可打开发布页/失败，对应上游三态）；预览通道与 Windows 更新器如实禁用 |
 | 通用 | `GeneralSetting.xaml`(87) | `SettingGeneralView.axaml`(约 160) | 🟡 | 关闭行为两选项已可用（托盘用 Avalonia `TrayIcon`≈上游 `SystemTrayWindow` 的 `H.NotifyIcon`；无 SNI 宿主时自动退回退出并写配置）； 本轮已对齐：语言 ComboBox 36/260/圆角 8,18,18,8、帮助翻译链接、关闭窗口两 Radio、注册表账号 Toggle、分隔线、系统效果说明位；**Linux 扩展：开机自启动 Toggle**（写 `$XDG_CONFIG_HOME/autostart/lunarward.desktop`，Exec 带 `--start-hidden`；`--start-hidden` 现在即使关闭行为是「完全退出」也会建托盘，避免窗口藏起来没入口）；LunarWard 主题/启动/公告追加在后 |
 | 下载 | `DownloadSetting.xaml`(104) | `SettingDownloadView.axaml`(约 210) | 🟡 | 本轮已对齐：默认安装路径 + 定位 + 文件夹胶囊、硬链接 Toggle、限速行；Windows 默认路径/硬链接/限速控件禁用并说明 |
-| 文件管理 | `FileManageSetting.xaml`(206) | `SettingFileManageView.axaml`(约 400) | 🟡 | 本轮已对齐：数据文件夹、备份数据库（ProgressRing→ProgressBar）、删除所有设置、日志、缓存五分类真实占用、清理缓存 + 清理背景；SQLite 备份/改目录禁用并说明 |
+| 文件管理 | `FileManageSetting.xaml`(206) | `SettingFileManageView.axaml`(约 400) | 🟡 | 本轮已对齐：数据文件夹、**备份数据库已接线**（`VACUUM INTO` 热备份，保存对话框；上游是 `File.Copy`）（ProgressRing→ProgressBar）、删除所有设置、日志、缓存五分类真实占用、清理缓存 + 清理背景；SQLite 备份/改目录禁用并说明 |
 | 截图设置 | `ScreenshotSetting.xaml`(189) | `SettingScreenshotView.axaml`(约 350) | 🟡 | 本轮已对齐：文件夹按钮/胶囊、快捷键占位、格式质量（Segmented 无等价物→禁用占位）、三个 Toggle、HDR 说明、测试/清缓存、两段 12px 说明；WIC 转码/全局热键禁用并说明 |
 | 快捷键 | `HotkeySetting.xaml`(62) | `SettingHotkeyView.axaml`(约 130) | 🟡 | 本轮已对齐标题/行高/宽度；`HotkeyInput` 用同边框/圆角的禁用占位（Linux 无全局热键） |
 | 手柄增强 | `GamepadControlSetting.xaml`(207) | `SettingGamepadView.axaml`(约 200) | 🟡 | 本轮已按源码重排标题/Toggle/说明/模拟输入/按键映射/三段说明；GameInput 不存在 → 控件禁用 + Linux 替代方案（Steam Input）追加在后 |

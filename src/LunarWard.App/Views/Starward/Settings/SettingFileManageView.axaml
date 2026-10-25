@@ -106,7 +106,9 @@
                 BorderThickness="0"
                 CornerRadius="8,20,20,8"
                 Classes="accent"
-                IsEnabled="False">
+                Command="{Binding BackupDatabaseCommand}"
+                IsEnabled="{Binding !IsBackingUp}"
+                ToolTip.Tip="{Binding Strings[Settings.Files.BackupDatabaseHint]}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Classes="icon" FontSize="16" Text="&#xF413;" />
             <TextBlock Text="{Binding Strings[Settings.Files.BackupDatabase]}" />

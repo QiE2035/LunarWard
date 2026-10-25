@@ -41,6 +41,7 @@
 | 文件占用大小 | 文件 ID 去重 | 同名同大小估算（`GameSelector` 行） |
 | MD5 校验 | 上游清单 | 未实现（下载器用 HTTP Range + 长度校验） |
 | 检查更新 | 自建 API | GitHub releases API（`a6f0464`） |
+| 备份数据库 | `File.Copy(StarwardDatabase.db)` | `VACUUM INTO` 热备份（WAL 合并，单文件） |
 
 ## 四、Linux 独有（上游没有，追加在对应页面）
 
