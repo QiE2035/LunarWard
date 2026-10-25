@@ -11,7 +11,7 @@
 | R8 | 系统 wine | ⏳ | 本机 PATH 里没有 wine（只有 sleepy-launcher 借用与 Steam Proton） |
 | R9 | 托管 wine | ✅（启动到 WineDevice） | 见下：用 `components install` 装官方 runner |
 | R10 | Proton（WineBinary） | ✅（启动到 WineDevice） | 见下 |
-| R12 | 退出无残留 | ✅（部分） | 见下 |
+| R12 / R15 | 退出无残留、崩溃恢复 | ✅ | 见下（R15 用 SIGKILL 实测） |
 | R2–R7、R11、R13–R15 | 见说明 | ⏳ | 需 B 站账号 / 注入器 / 视频资源等前置 |
 
 ## R1 — 官方国服启动
@@ -29,6 +29,15 @@ STARTED hk4e_cn pid=699177
   `PostLaunch`（0 个自动程序）→ `Running` → `Cleanup`
 
 判定：登录界面出现（AwaitReady 命中 WineDevice），符合通过标准。
+
+## R15 — 崩溃恢复（SIGKILL 实测）
+
+- 后台 `startgame --biz hk4e_cn` 起游戏（`wine YuanShen.exe`），确认 `AwaitReady: WineDevice` 后
+  对游戏进程 **SIGKILL**。
+- 启动器侧：`Running` 相位在 4.5s 内捕获 `exit=9`，`Cleanup` 以 0ms 完成并写出 `launch-report.json`；
+  进程表里没有残留的 `wine` / `wineserver`（仅剩无关的 anime-game-launcher 常驻 wineserver）。
+- 再跑一次 `startgame`：`AwaitImage` 1.4s → `AwaitReady` 99ms 命中 WineDevice，说明崩溃后下一次启动
+  不需要人工清理。R12（正常退出无残留）见上一节。
 
 ## R9 — 托管 wine（ComponentInstaller 真机安装）
 
