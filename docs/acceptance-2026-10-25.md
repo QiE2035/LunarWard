@@ -9,9 +9,10 @@
 |---|---|---|---|
 | R1 | 官方国服启动 | ✅ | 见下 |
 | R8 | 系统 wine | ⏳ | 本机 PATH 里没有 wine（只有 sleepy-launcher 借用与 Steam Proton） |
+| R9 | 托管 wine | ✅（启动到 WineDevice） | 见下：用 `components install` 装官方 runner |
 | R10 | Proton（WineBinary） | ✅（启动到 WineDevice） | 见下 |
 | R12 | 退出无残留 | ✅（部分） | 见下 |
-| R2–R7、R9、R11、R13–R15 | 见说明 | ⏳ | 需 B 站账号 / 托管 runner 安装 / 视频资源等前置 |
+| R2–R7、R11、R13–R15 | 见说明 | ⏳ | 需 B 站账号 / 注入器 / 视频资源等前置 |
 
 ## R1 — 官方国服启动
 
@@ -28,6 +29,20 @@ STARTED hk4e_cn pid=699177
   `PostLaunch`（0 个自动程序）→ `Running` → `Cleanup`
 
 判定：登录界面出现（AwaitReady 命中 WineDevice），符合通过标准。
+
+## R9 — 托管 wine（ComponentInstaller 真机安装）
+
+- `lunarward components install wine spritz-wine-tkg-staging-wow64-11.19-1`：
+  从 an-anime-team 组件索引下载（首次在 21% 断流，续传后完成），装到
+  `~/.local/share/lunarward/runners/spritz-wine-tkg-staging-wow64-11.19-1`。
+- 过程中修掉两个真实缺陷：
+  1. 下载不支持续传：raw.githubusercontent.com 偶发断流就从头再来 → 改为 `.part` + `Range` 续传；
+  2. 组件包自带一层同名根目录（`<name>/bin/wine`），解压后找不到 `bin/wine`，
+     导致运行时报「已安装目录里找不到 bin/wine」→ 增加单根目录摊平。
+- 把 runtime 临时指到 Managed 后 `startgame`：`Launch` 用
+  `…/runners/spritz-wine-tkg-staging-wow64-11.19-1/bin/wine`，`AwaitReady` 79ms 命中
+  **WineDevice**，`success=true`。游戏本体随后退出码 9（与 R10 同类，未登录态自退）。
+  测试后配置已还原为 `借用 · spritz-wine-cachyos-wow64-10.0-11`。
 
 ## R10 — Proton 直接调 wine（Proton 10 / Experimental 的 files/bin 布局）
 
