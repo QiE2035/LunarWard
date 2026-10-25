@@ -27,6 +27,28 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     }
 
 
+    /// <summary>
+    /// 开机自动启动（LunarWard 扩展）。上游 Windows 写注册表 <c>Run</c> 键；
+    /// Linux 对应 <c>$XDG_CONFIG_HOME/autostart/lunarward.desktop</c>（带 <c>--start-hidden</c>）。
+    /// </summary>
+    public bool IsAutostartEnabled
+    {
+        get => LunarWard.Platform.AutostartEntry.IsEnabled(Services.Paths.ConfigHome);
+        set
+        {
+            if (value == IsAutostartEnabled)
+            {
+                return;
+            }
+
+            LunarWard.Platform.AutostartEntry.SetEnabled(
+                value, LunarWard.Platform.AutostartEntry.CurrentExecutable(), Services.Paths.ConfigHome);
+            OnPropertyChanged();
+            Status = string.Format(Strings[value ? "Settings.General.AutostartOn" : "Settings.General.AutostartOff"]);
+        }
+    }
+
+
     public SettingGeneralViewModel(PageContext context, bool showDivider = false)
         : base(context, SettingSectionKind.General, "Settings.General", "\uE81E", showDivider)
     {

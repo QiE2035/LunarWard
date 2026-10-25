@@ -475,6 +475,7 @@ public abstract record DxvkSource
 | `DXVK_HUD` 细节 | 固定串 | ✅ 全量可配 |
 | `PROTON_*` | 无 | ✅ |
 | `MANGOHUD_CONFIG` | 无 | ✅ |
+| 开机自启 | 注册表 `Run` 键 | ✅ XDG autostart（`autostart/lunarward.desktop`，`--start-hidden` 进托盘） |
 | 包装器 | `gamemode` 布尔 + `gamescope` 结构 | ✅ 有序包装器链 + 游戏设置页「Linux 性能工具」开关（GameMode / MangoHud，顺序固定） |
 
 ### 4.3 UI

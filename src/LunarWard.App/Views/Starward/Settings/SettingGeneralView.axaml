@@ -84,6 +84,23 @@
                  Foreground="{StaticResource StarTextSecondary}"
                  Text="{Binding Strings[Settings.General.TrayHint]}" />
 
+      <!-- LunarWard 扩展：XDG autostart（上游 Windows 走注册表 Run 键） -->
+      <StackPanel Margin="0,16,0,0" Orientation="Horizontal" Spacing="12">
+        <ToggleSwitch IsChecked="{Binding IsAutostartEnabled, Mode=TwoWay}"
+                      OffContent=""
+                      OnContent="" />
+        <TextBlock VerticalAlignment="Center"
+                   Text="{Binding Strings[Settings.General.Autostart]}" />
+      </StackPanel>
+
+      <TextBlock Margin="0,6,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 FontSize="12"
+                 TextWrapping="Wrap"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding Strings[Settings.General.AutostartHint]}" />
+
       <TextBlock Margin="0,8,0,0"
                  MaxWidth="820"
                  HorizontalAlignment="Left"

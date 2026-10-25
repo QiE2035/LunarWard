@@ -122,16 +122,27 @@ public partial class App : Application
             });
         }
 
-        // 系统托盘：仅在用户选了「最小化到系统托盘」时创建；截图自检不碰托盘。
-        if (!CaptureMode.Enabled
-            && string.Equals(AppServices.Current.Config.Launcher.CloseWindowOption, "Hide", StringComparison.OrdinalIgnoreCase))
+        // 系统托盘：用户选了「最小化到系统托盘」，或本次是开机自启（--start-hidden）时创建；
+        // 截图自检不碰托盘。开机自启必须建托盘，否则藏起来的窗口没有入口（只剩单实例救场）。
+        bool closeToTray = string.Equals(
+            AppServices.Current.Config.Launcher.CloseWindowOption, "Hide", StringComparison.OrdinalIgnoreCase);
+        if (!CaptureMode.Enabled && (closeToTray || CaptureMode.StartHidden))
         {
             _tray = Services.TrayService.TryCreate(window, () => desktop.Shutdown());
             if (_tray is null)
             {
                 // 桌面没有 SNI 宿主：把配置改回「完全退出」，设置页显示的就是实际行为。
-                AppServices.Current.Config.Launcher.CloseWindowOption = "Exit";
-                AppServices.Current.Config.Save(AppServices.Current.Paths.ConfigFile);
+                // 开机自启场景不改配置（用户没做这个选择），只是 --start-hidden 时会退回普通窗口。
+                if (closeToTray)
+                {
+                    AppServices.Current.Config.Launcher.CloseWindowOption = "Exit";
+                    AppServices.Current.Config.Save(AppServices.Current.Paths.ConfigFile);
+                }
+
+                if (CaptureMode.StartHidden)
+                {
+                    window.Show();
+                }
             }
         }
 
