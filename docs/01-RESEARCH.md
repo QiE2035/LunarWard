@@ -382,8 +382,8 @@ gst-plugin-gtk4 0.15.4-1.1
 
 非 Arch 发行版（Debian 系为 `gstreamer1.0-gtk4`）可能未装，仍需软探测。
 
-**Avalonia 路线（采用）**：用 `LibVLCSharp.Avalonia`（3.10.2）的 `VideoView`，
-只依赖 `libvlc`，**不依赖系统 GStreamer 插件**。这套方案与 UI 框架解耦，
+**Avalonia 路线（采用）**：用 `ffmpeg` 子进程解出 BGRA 原始帧、写进 `WriteableBitmap`，
+只要求 PATH 上有 `ffmpeg`，**不依赖系统 GStreamer 插件**、也不依赖 VLC 的插件拆分。这套方案与 UI 框架解耦，
 也不受某发行版是否打包 `gst-plugin-gtk4` 的影响。
 
 ---
@@ -480,7 +480,7 @@ Starward 而非 an-anime-team 的又一理由。
 | `vte4` | 0.84.1（`vte-2.91-gtk4`） | 同上 |
 | `gstreamer` | 1.28.8 | 同上 |
 | `gst-plugin-gtk4` | 0.15.4 | 同上（需求方已装） |
-| **`libvlc`** | **3.0.24**（`/usr/lib/libvlc.so.5`） | ✅ Avalonia 路线视频背景依赖，已满足 |
+| **`ffmpeg`** | **9.0.2** | ✅ Avalonia 路线视频背景依赖，已满足 |
 | `node` / `pnpm` | 26.11.1 / 有 | 无关 |
 
 已有的 launcher 安装（仅作参考，不依赖）：
@@ -511,8 +511,7 @@ Starward 而非 an-anime-team 的又一理由。
 
 | 包 | 版本 | 用途 |
 |---|---|---|
-| `LibVLCSharp.Avalonia` | **3.10.2** | 循环视频背景 |
-| `LibVLCSharp` | 3.10.2 | 配套 |
+
 | `Iciclecreek.Avalonia.Terminal` | 4.1.0 | 环境 shell（候选） |
 | `RoyalApps.RoyalTerminal.Avalonia` | 0.6.3 | 环境 shell（候选，有跨平台 PTY 抽象） |
 | `AvaloniaTerminal` | 1.0.0 | 环境 shell（候选，最轻量） |

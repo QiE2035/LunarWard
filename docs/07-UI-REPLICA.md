@@ -75,7 +75,7 @@
 | 背景切换条 | 背景数 > 1 且悬停底部 60px 区时出现：可点圆点 + 图库/复制/另存为/播放按钮；滚轮切上一张/下一张 |
 | 公告/Update Toast | 底部居中，宽 ≤600，距底 72 |
 
-背景来源（`BackgroundCatalog`）：官方接口 `getAllGameBasicInfo` 的 `backgrounds`（图片 + `type=BACKGROUND_TYPE_VIDEO` 的官方动态背景，LibVLC 直接流播 https）→ 游戏素材版本海报 → `~/.cache/lunarward/background` 下的本地图片/视频；切换条只在可选项 > 1 时出现。
+背景来源（`BackgroundCatalog`）：官方接口 `getAllGameBasicInfo` 的 `backgrounds`（图片 + `type=BACKGROUND_TYPE_VIDEO` 的官方动态背景，`ffmpeg` 直接流式解码 https）→ 游戏素材版本海报 → `~/.cache/lunarward/background` 下的本地图片/视频；切换条只在可选项 > 1 时出现。
 
 ## 3. 视觉 token
 
@@ -117,7 +117,7 @@
    错误行，然后按游戏显示树脂/电量等分区；没有 cookie 时给"去工具箱保存"入口。
 6. **背景**：默认使用当前游戏的官方背景图（HoYoPlay `getGames` 的
    `background`/`backgrounds`），本地自定义背景优先；悬停底部出现切换条；视频背景
-   用 LibVLCSharp（已实现），启动游戏时暂停、退出恢复。
+   用 `ffmpeg` 子进程解码到 `WriteableBitmap`（已实现），启动游戏时暂停（SIGSTOP）、退出恢复。
 7. **窗口关闭**：与上游一致，通用设置里三选一「每次关闭时询问 / 最小化到系统托盘 /
    完全退出」（`LauncherConfig.CloseWindowOption` = `Ask` / `Hide` / `Exit`，上游
    `MainWindowCloseOption` 的 0/1/2 同义）。选 Ask 时点关闭先弹

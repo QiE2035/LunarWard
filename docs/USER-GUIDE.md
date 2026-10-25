@@ -32,13 +32,14 @@ sudo apt install dotnet-runtime-10.0
 
 | 依赖 | 用途 | 缺失时 | Arch | Debian |
 |---|---|---|---|---|
-| `libvlc` | 动态背景视频解码 | 回退静态图 | `pacman -S vlc` | `apt install libvlc5` |
+| `ffmpeg` | 动态背景视频解码 | 回退静态图 | `pacman -S ffmpeg` | `apt install ffmpeg` |
 | `hdiffpatch` | 差量补丁更新 | 记录 `Patch file failed` 警告，该文件走全量下载 | `pacman -S hdiffpatch` | `apt install hdiffpatch` |
 | `7zip` | 解包 `.7z` 安装包 | 抛 `InstallerCapabilityException`（纯 `.zip` 仍可解） | `pacman -S 7zip` | `apt install 7zip` |
 
-> **Arch 上的坑**：`libvlc` 与 VLC 的**插件包是分开的**。只装 `libvlc` 时
-> `libvlc_new()` 会返回 `NULL`（缺 codec 插件），视频背景仍然不可用。
-> 要真能播视频，装**完整的 `vlc`**。装不上时启动器会静默回退静态图，见 §7。
+> **为什么是 `ffmpeg` 而不是 VLC**：VLC 的 `<c>VideoView</c>` 依赖「把视频画进原生 X11 子窗口」，
+> Wayland 会话里没有可嵌入的子窗口（背景全黑）；而且 Arch 把 VLC 拆成 `vlc-plugin-*`
+> 一堆包，只装 `vlc` 时常常连 H.264 都解不了。`ffmpeg` 子进程解码对合成器无要求，
+> 缺了只是回退静态图，见 §7。
 
 ---
 
@@ -359,17 +360,18 @@ shell 拿到的 `Env` 就是真实启动时那份，同一个对象、同一份�
 
 | 项 | 说明 |
 |---|---|
-| 实现 | `LibVLCSharp.Avalonia` 的 `VideoView`，**不依赖系统 GStreamer 插件** |
-| 循环 | `EndReached` → `Dispatcher.UIThread.Post` 回 UI 线程再 `Play()`（VLC 的回调在线程池线程上，不回 UI 线程会死锁；**不能**依赖 `MediaPlayer` 自带的 loop 标志） |
-| 静音 | 始终 `Mute = true` |
-| 省资源 | 游戏 `Running` 时 `Pause()`；窗口失焦降帧/暂停 |
+| 实现 | `ffmpeg -f rawvideo` 子进程解码 → 逐帧写进 `WriteableBitmap`（`VideoBackgroundPlayer`），X11 / Wayland 通用，不依赖 GStreamer、不依赖 VLC |
+| 循环 | `ffmpeg -stream_loop -1 -re` 直接循环，不用自己重播 |
+| 规格 | 固定 1280×720 BGRA、上限 24 fps；`scale=...:force_original_aspect_ratio=increase,crop=...` 铺满不拉伸 |
+| 静音 | `-an`（根本不解音频） |
+| 省资源 | 游戏 `Running` 时向子进程发 `SIGSTOP`（`Pause()`），退出 `SIGCONT` 恢复 |
 | 缓存 | `~/.cache/lunarward/background/`，md5 比对，未变不重下 |
 | 关闭时 | `video_background = false` 时**跳过视频下载**（省带宽） |
 
-**回退静态图**：`video_background = false`、或 VLC 初始化失败时，用
-`Image` + `Stretch="UniformToFill"`，逻辑完全相同、**不崩溃**。
+**回退静态图**：`video_background = false`、或 `ffmpeg` 不存在 / 3 秒内解不出首帧时，
+用 `Image` + `Stretch="UniformToFill"` 显示官方静态图，逻辑完全相同、**不崩溃**。
 
-探测逻辑见 `BackgroundService.ProbeVlc()`；探测失败原因会存下来给 UI 显示安装命令。
+探测逻辑见 `BackgroundService.ProbeFfmpeg()`（`IsVideoAvailable`），探测结果进程内缓存。
 
 ### 7.2 Acrylic 分级
 

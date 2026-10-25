@@ -1354,7 +1354,12 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         IReadOnlyList<BackgroundEntry> entries;
         var art = _context.Shell.Assets.For();
         var launcherId = _context.Shell.CurrentLauncherId;
-        if (string.IsNullOrWhiteSpace(launcherId))
+        if (CaptureMode.BackgroundPath is { Length: > 0 } forcedBackground)
+        {
+            // 自检专用：强制指定背景（验证视频帧回调链路），不影响正常运行。
+            entries = BackgroundCatalog.Merge([], null, BackgroundCatalog.FromFiles([forcedBackground]));
+        }
+        else if (string.IsNullOrWhiteSpace(launcherId))
         {
             entries = BackgroundCatalog.Merge([], art?.Background,
                 BackgroundCatalog.FromFiles(_services.Background.Discover()
@@ -1558,7 +1563,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         SelectedBackgroundIndex = index;
         var item = BackgroundImages[index];
 
-        if (item.IsVideo && _services.Background.IsVlcAvailable && _services.Config.Launcher.VideoBackground)
+        if (item.IsVideo && _services.Background.IsVideoAvailable && _services.Config.Launcher.VideoBackground)
         {
             _context.Shell.ShowVideoBackground(item.VideoSource ?? item.Value);
             return;

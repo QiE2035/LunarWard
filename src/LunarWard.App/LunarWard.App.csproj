@@ -21,8 +21,6 @@
     <PackageReference Include="DialogHost.Avalonia" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="LibVLCSharp" />
-    <PackageReference Include="LibVLCSharp.Avalonia" />
     <PackageReference Include="Iciclecreek.Avalonia.Terminal" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Sinks.File" />

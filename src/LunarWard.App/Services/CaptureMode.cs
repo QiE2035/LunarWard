@@ -39,6 +39,13 @@ internal static class CaptureMode
     public static string? SettingsSection { get; set; }
 
 
+    /// <summary>
+    /// 自检：强制把背景切到指定文件（<c>--background &lt;path&gt;</c>），用于验证视频背景
+    /// 的帧回调链路（Wayland 下没有原生子窗口，只能靠截图里的帧确认）。
+    /// </summary>
+    public static string? BackgroundPath { get; set; }
+
+
     /// <summary>截「游戏设置」弹窗时点亮卸载警告行（<c>--uninstall-warning</c>）。</summary>
     public static bool UninstallWarning { get; set; }
 

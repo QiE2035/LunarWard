@@ -755,7 +755,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             var video = items.FirstOrDefault(x => x.IsVideo);
             var image = items.FirstOrDefault(x => x.ImagePath is not null);
             if (video?.VideoPath is { } videoPath
-                && _services.Background.IsVlcAvailable
+                && _services.Background.IsVideoAvailable
                 && _services.Config.Launcher.VideoBackground)
             {
                 ShowVideoBackground(videoPath);
@@ -786,7 +786,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
 
     /// <summary>
-    /// 切到视频背景：本地文件或官方 https 视频（LibVLC 直接流式播放）。
+    /// 切到视频背景：本地文件或官方 https 视频（ffmpeg 子进程流式解码）。
     /// </summary>
     public void ShowVideoBackground(string source)
     {

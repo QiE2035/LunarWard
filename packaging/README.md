@@ -24,13 +24,13 @@
 
 | 依赖 | 提供的工具 | 缺失时的行为 |
 |---|---|---|
-| **`vlc`** | `libvlc.so` + **VLC 插件包** | 视频背景**回退静态图**，不崩溃 |
+| **`ffmpeg`** | `ffmpeg` 命令 | 视频背景**回退静态图**，不崩溃 |
 | **`hdiffpatch`** | `hpatchz` | 差量补丁失败 → 记录 `Patch file failed` → 该文件走**全量下载** |
 | **`7zip`** | `7z` / `7za` | 抛 `InstallerCapabilityException`；**纯 `.zip` 仍可解**（BCL `ZipFile` 回退） |
 
-> **`vlc` 这个 optdepend 名字必须写 `vlc` 而不是 `libvlc`。**
-> Arch 上 `libvlc` 与 VLC 的**插件包是分开的**：只装 `libvlc` 时
-> `libvlc_new()` 会返回 `NULL`（缺 codec 插件），视频背景依然不可用。
+> **动态背景依赖 `ffmpeg` 命令（不是 libvlc）。**
+> 用 `ffmpeg` 子进程解码可以绕开两件事：VLC 的 X11 子窗口在 Wayland 会话里嵌不进去，
+> 以及 Arch 把 VLC 拆成 `vlc-plugin-*` 多个包后经常缺解码器（连 H.264 都解不了）。
 > 这是本机实测踩过的坑，见 `docs/M0-RESULTS.md` §2.2 与
 > `docs/TROUBLESHOOTING.md` §5.1。
 
@@ -173,7 +173,7 @@ rm -rf ~/.local/share/lunarward
 | 依赖 | Debian / Ubuntu | Fedora |
 |---|---|---|
 | .NET 10 运行时 | `dotnet-runtime-10.0` | `dotnet-runtime-10.0` |
-| 动态背景 | `libvlc5` | `vlc-libs` |
+| 动态背景 | `ffmpeg` | `ffmpeg` |
 | 差量更新 | `hdiffpatch` | `hdiffpatch` |
 | 解包安装 | `7zip` | `p7zip` |
 

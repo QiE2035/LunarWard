@@ -544,40 +544,37 @@ public abstract record DxvkSource
 
 ### 5.4 动态背景（视频/图片轮播）
 
-**用 `LibVLCSharp.Avalonia` 的 `VideoView`**，不依赖系统 GStreamer 插件。
+**用 `ffmpeg` 子进程解码**（`Services/VideoBackgroundPlayer.cs`）。上游 Windows 用
+`MediaPlayerElement`（WinUI 硬件合成），Avalonia 没有等价控件，两条替代路线都不通：
 
-```csharp
-var videoView = new VideoView
-{
-    HorizontalAlignment = HorizontalAlignment.Stretch,
-    VerticalAlignment   = VerticalAlignment.Stretch,
-    MediaPlayer = _mediaPlayer,
-};
+- `LibVLCSharp.Avalonia` 的 `VideoView` 把视频塞进原生 X11 子窗口；
+  Wayland 会话里没有可嵌入的子窗口 → 背景全黑。
+- LibVLC 的 vmem 帧回调能绕开子窗口，但 Arch 把 VLC 拆成 `vlc-plugin-*`，
+  缺 `vlc-plugin-ffmpeg` 时连 H.264 都报 `Codec 'h264' is not supported`，
+  用户是否装齐不可控。
 
-_mediaPlayer = new MediaPlayer(_libVlc)
-{
-    Media = new Media(_libVlc, new Uri(videoPath)),
-    Mute  = true,          // 静音
-    EnableHardwareDecoding = true,
-};
-_mediaPlayer.EndReached += (_, _) =>
-    Dispatcher.UIThread.Post(() => _mediaPlayer.Play());   // 循环
+`ffmpeg` 子进程则与合成器、发行版打包方式都解耦：
+
+```
+ffmpeg -hide_banner -loglevel error -nostdin -re -stream_loop -1 -i <uri>
+       -an -sn -dn -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,fps=24"
+       -pix_fmt bgra -f rawvideo pipe:1
 ```
 
-> ⚠️ **VLC 的 `EndReached` 回调在线程池线程上触发，必须 `Post` 回 UI 线程再重播**，
-> 否则会死锁。不能依赖 `MediaPlayer` 自带的 loop 标志。
+stdout 按 1280×720×4 字节逐帧读，`Dispatcher.UIThread` 上 `Marshal.Copy` 进
+`WriteableBitmap` 再 `InvalidateVisual()`。首帧 3 秒内没到就判失败、回退静态图。
 
 **播放控制**：
-- 游戏 `Running` 相位时 `Pause()`（省 GPU / 省解码器）
-- 窗口失焦时降帧或暂停
-- 始终静音（`Mute = true`）
+- 游戏 `Running` 相位时 `Pause()`（向子进程发 `SIGSTOP`），退出时 `SIGCONT`
+- 始终不解音频（`-an`）
+- 上限 24 fps，避免高帧率视频把 UI 线程刷爆
 
-**静态图回退**：`video_background = false`、或 VLC 初始化失败时，
+**静态图回退**：`video_background = false`、`ffmpeg` 缺失、或 3 秒解不出首帧时，
 用 `Image` + `Stretch="UniformToFill"` 显示背景图，逻辑完全相同。
 
 **运行时依赖**：
-- `libvlc`（Arch: `vlc`；Debian: `libvlc5`；Fedora: `vlc-libs`）
-- 探测失败 → 回退静态图 + UI 提示安装命令，**不崩溃**
+- `ffmpeg`（Arch: `ffmpeg`；Debian/Ubuntu: `ffmpeg`；Fedora: `ffmpeg-free`）
+- 探测失败 → 回退静态图，**不崩溃**
 
 **缓存**：`$XDG_CACHE_HOME/lunarward/background/`，md5 比对，未变不重下。
 `video_background = false` 时**跳过视频下载**（省带宽）。

@@ -316,37 +316,28 @@ f="<游戏目录>/YuanShen_Data/Plugins/PCGameSDK.dll"
 
 ## 五、可选依赖缺失
 
-### 5.1 libvlc 缺失 → 回退静态图
+### 5.1 ffmpeg 缺失 → 回退静态图
 
 **症状**：视频背景不播，显示静态图。**不会崩溃**（这是设计）。
 
 **诊断**：
 
 ```bash
-# Arch: libvlc 与 VLC 插件包是分开的！只装 libvlc 时 libvlc_new() 返回 NULL
-pacman -Q libvlc vlc
-ls /usr/lib/libvlc.so*
+command -v ffmpeg && ffmpeg -version | head -1
 ```
 
-**这是 Arch 上最容易踩的坑**：`libvlc 3.0.24` 已装，`/usr/lib/libvlc.so.5` 也存在，
-但 `libvlc_new()` 返回 `NULL`——因为**缺 codec 插件**（插件在 `vlc` 包里）。
-此时 `BackgroundService.IsVlcAvailable == false`，按设计回退静态图。
+找不到命令时 `BackgroundService.IsVideoAvailable == false`（探测结果进程内缓存），
+`VideoBackgroundPlayer.StartAsync` 直接返回 `false`，外壳回退官方静态图。
 
 **修**：
 
 | 发行版 | 命令 |
 |---|---|
-| Arch / CachyOS | `sudo pacman -S vlc`（**完整 vlc，不是只装 libvlc**） |
-| Debian / Ubuntu | `sudo apt install libvlc5` |
-| Fedora | `sudo dnf install vlc-libs` |
+| Arch / CachyOS | `sudo pacman -S ffmpeg` |
+| Debian / Ubuntu | `sudo apt install ffmpeg` |
+| Fedora | `sudo dnf install ffmpeg` |
 
-验证：
-
-```bash
-vlc --version | head -1        # 有 vlc 命令说明插件包也在了
-```
-
-重开启动器，`IsVlcAvailable` 会重新探测（探测结果有缓存，但**每次进程启动重探**）。
+重开启动器即生效。**如果不想装**：设置 → 关闭 `video_background`，同时跳过视频下载。
 
 **如果不想装**：设置 → 关闭 `video_background`。好处是**同时跳过视频下载**，省带宽。
 

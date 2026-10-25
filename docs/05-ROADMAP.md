@@ -53,13 +53,13 @@ Avalonia 路线下这两个都从"风险"降级为"选包"，但仍需实测。
 **V2a — 视频背景**
 
 ```bash
-dotnet add package LibVLCSharp.Avalonia --version 3.10.2
+pacman -S ffmpeg   # 或 apt install ffmpeg
 ```
 
 **成功标准**：`VideoView` 能循环播放一个 mp4，静音，游戏启动时能 `Pause()`，
 `EndReached` 回调能安全重播（注意必须 `Dispatcher.UIThread.Post` 回主线程）。
 
-**前置**：本机需有 `libvlc`（Arch: `pacman -S vlc`）。**未装时**应能优雅回退静态图。
+**前置**：本机 PATH 上需有 `ffmpeg`。**未装时**应能优雅回退静态图。
 
 **V2b — 终端控件**
 
@@ -186,7 +186,7 @@ cd src/LunarWard.Core && dotnet build
 | R10 | Proton（WineBinary） | 用 Steam Proton 的 `dist/bin/wine` 能启动 |
 | R11 | 沙箱 | 开启 sandbox 后 R4/R5 仍工作 |
 | R12 | 退出无残留 | 游戏退出后 `pgrep -af wineserver` 无残留 |
-| R13 | 动态背景 | 视频循环播放（`libvlc` 已装）；卸载后能回退静态图 |
+| R13 | 动态背景 | 视频循环播放（`ffmpeg` 已装）；卸载后能回退静态图 |
 | R14 | 环境 shell | 打开就能 `wine regedit` |
 | R15 | 崩溃恢复 | 强杀游戏 → 下次启动能清理并正常起来 |
 
@@ -224,7 +224,7 @@ cd src/LunarWard.Core && dotnet build
 | 功能 | 原实现 | 新实现 | 优先级 |
 |---|---|---|---|
 | 账号切换 | registry 操作 | ✅ 完整实现（`Games/WineAccountService.cs` 读写 `user.reg` 的 `hex:` 值 + 账号窗口） | P0 |
-| 动态背景 | `Features/Background`（Win2D） | ✅ `LibVLCSharp.Avalonia` 的 `VideoView` + 静态图回退（`Services/BackgroundService.cs`） | P0 |
+| 动态背景 | `Features/Background`（Win2D） | ✅ `ffmpeg` 子进程解帧 + 静态图回退（`Services/BackgroundService.cs`、`VideoBackgroundPlayer.cs`） | P0 |
 | 游戏时长 | `Features/PlayTime` | 复用相位引擎的起止时间 → ✅ 已实现（`LunarWard.Launch/PlayTimeService.cs`） | P1 |
 | 截图管理 | `Features/Screenshot`（WIC） | ✅ 目录发现 + 预览 + 导出（`ScreenshotService` + `Views/ScreenshotWindow.axaml`） | P1 |
 | 画质设置 | `Features/GameSetting`（registry blob） | ⏳ 未实现（Wine `user.reg` 的 hex，只读也不简单；见风险表） | P1 |
@@ -283,7 +283,7 @@ cd src/LunarWard.Core && dotnet build
 | **Avalonia 12 尚新**（2026 新大版本） | 中 | 中 | M0 的 V1；必要时退到 `11.3.22` |
 | **Acrylic/模糊在 Linux 无法真实现** | **高** | 低 | 分级降级（L1 真模糊 / L2 半透明 / L3 纯色），见 `04-FEATURES.md` §5.6 |
 | 终端控件不满足 PTY / `SIGWINCH` 要求 | 中 | 中 | M0 的 V2b；退路：自建 PTY + 现成 VT 解析器 |
-| `libvlc` 在用户机器上缺失 | 中 | 低 | 软探测 → 回退静态图 + 提示安装 |
+| `ffmpeg` 在用户机器上缺失 | 中 | 低 | 软探测 → 回退静态图 |
 | Proton `ProtonScript` 破坏不变式 | 中 | 中 | 默认 `WineBinary`；UI 标注实验性 |
 | 游戏/补丁更新导致特征码失配 | 高 | 低 | 补丁外部化，本项目不感知 |
 | 组件索引（an-anime-team）停止维护 | 低 | 中 | 用户可手动放索引或改用 System/Custom |

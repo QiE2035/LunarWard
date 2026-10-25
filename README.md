@@ -44,7 +44,7 @@ git clone <repo> && cd lunarward
 
 # 1. 工具链
 dotnet --version          # 需 10.x
-# 可选：libvlc（动态背景）、hdiffpatch（差量更新）、7zip（解包安装）
+# 可选：ffmpeg（动态背景）、hdiffpatch（差量更新）、7zip（解包安装）
 
 # 2. 构建与测试
 dotnet build LunarWard.slnx
@@ -294,7 +294,7 @@ LUNARWARD_REAL_WINE=1 dotnet test tests/LunarWard.IntegrationTests \
 | 解包 | `SharpSevenZip` | 外部 `7z` + BCL `ZipFile` | SharpSevenZip 的 native 只有 Windows |
 | 差量补丁 | `Snap.HPatch` | 外部 `hpatchz` | 同上（nupkg 只有 `runtimes/win-x64/native`） |
 | gRPC | 进度服务端流 | 进程内 `IProgress<T>` + 100ms ticker | 不需要跨进程 |
-| 视频背景 | `LibVLCSharp` 真机播放 | 已实现，但本机 `libvlc_new` 返回 NULL（缺 VLC 插件包）→ **回退静态图** | Arch 上 `libvlc` 与 `vlc` 是分开的包 |
+| 视频背景 | `ffmpeg` 子进程解码 → `WriteableBitmap` | 已实现（X11 / Wayland 通用）；缺 `ffmpeg` 时**回退静态图** | 不用 VLC：`VideoView` 依赖原生 X11 子窗口（Wayland 黑屏），且 Arch 把 VLC 拆成 `vlc-plugin-*` 后常缺解码器 |
 | 托管组件下载 | an-anime-team 索引 + git 同步 | ✅ 已实现，但**不引 git**：直接下载 `components.json` 与分组 JSON（`ComponentInstaller`） | 少一个外部依赖 |
 | 沙箱 | namespace 隔离 | 只记录配置 | 首期不做 |
 | prefix 初始化 | 直接 `wineboot -u` | **必须**加 `WINEDLLOVERRIDES=mscoree,mshtml=` | 否则卡在 wine-mono 下载提示（实测 2分32秒 vs 8秒） |

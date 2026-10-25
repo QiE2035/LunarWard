@@ -6,7 +6,6 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using LunarWard.App.ViewModels;
 using LunarWard.App.ViewModels.Starward;
-using LibVLCSharp.Avalonia;
 
 namespace LunarWard.App.Views.Starward;
 
@@ -17,7 +16,7 @@ namespace LunarWard.App.Views.Starward;
 public partial class StarwardShell : UserControl
 {
     private readonly Dictionary<ShellPage, StarwardPage> _pages = [];
-    private VideoView? _videoView;
+    private VideoBackgroundPlayer? _videoPlayer;
 
     public StarwardShell()
     {
@@ -134,32 +133,32 @@ public partial class StarwardShell : UserControl
     }
 
 
-    private void OnVideoBackgroundRequested(object? sender, string path)
+    private async void OnVideoBackgroundRequested(object? sender, string path)
     {
         try
         {
             var background = ViewModel?.Services.Background;
-            if (background is null || !background.IsVlcAvailable)
+            if (background is null || !background.IsVideoAvailable)
             {
                 return;
             }
 
-            var player = background.EnsurePlayer(() => { });
-            if (player is null)
+            // ffmpeg 子进程解码 → WriteableBitmap。不用 VideoView：Wayland 下没有可嵌入的
+            // X11 子窗口（黑屏），而且 VLC 的编解码依赖用户装齐 vlc-plugin-* 包。
+            _videoPlayer ??= new VideoBackgroundPlayer();
+            background.AttachPlayer(_videoPlayer);
+            VideoBackgroundHost.Content = _videoPlayer.View;
+            if (!await _videoPlayer.StartAsync(path, ViewModel?.Log).ConfigureAwait(true))
             {
-                return;
+                // 拿不到帧就回退官方静态图，别留黑屏。
+                _videoPlayer.Stop();
+                VideoBackgroundHost.Content = null;
+                ViewModel?.Log.Warn($"动态背景无法播放，回退静态图：{path}");
+                if (ViewModel is { } vm)
+                {
+                    await vm.ShowStaticBackgroundAsync(vm.Assets.For()?.Background).ConfigureAwait(true);
+                }
             }
-
-            // 复用同一个 VideoView：LibVLCSharp 的 VideoView 背后是原生窗口，
-            // 每次重建会留下未释放的原生资源（切背景几次后能看到残影/黑块）。
-            _videoView ??= new VideoView
-            {
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
-            };
-            _videoView.MediaPlayer = player;
-            VideoBackgroundHost.Content = _videoView;
-            background.PlayLoop(path);
         }
         catch (Exception ex)
         {
@@ -173,7 +172,9 @@ public partial class StarwardShell : UserControl
         try
         {
             VideoBackgroundHost.Content = null;
-            _videoView = null;
+            _videoPlayer?.Dispose();
+            _videoPlayer = null;
+            ViewModel?.Services.Background.AttachPlayer(null);
             ViewModel?.Services.Background.Stop();
         }
         catch (Exception ex)
