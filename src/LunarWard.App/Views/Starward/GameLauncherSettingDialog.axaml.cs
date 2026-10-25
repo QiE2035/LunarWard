@@ -787,9 +787,9 @@ public partial class GameLauncherSettingDialog : Window
 
             var controller = context.Services.Installer;
             controller.StartOrContinue(request);
-            if (controller.CurrentTask is { } task)
+            if (controller.CurrentRun is { } run)
             {
-                await Task.Run(() => controller.RunAsync(task));
+                await run;
             }
             ShowStatus(null);
         }

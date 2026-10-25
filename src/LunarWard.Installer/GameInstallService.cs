@@ -163,6 +163,15 @@ internal class GameInstallService
 
 
 
+    private readonly object _runGate = new();
+
+    /// <summary>正在跑的 context；用于对「重复启动」做单飞（审计 M-03）。</summary>
+    private readonly HashSet<GameInstallContext> _running = [];
+
+    /// <summary>最近一次由服务自身启动的任务（调用方 await 它而不是再起一份）。</summary>
+    public Task? CurrentRun { get; private set; }
+
+
     /// <summary>
     /// 开始或继续任务
     /// </summary>
@@ -223,7 +232,7 @@ internal class GameInstallService
         }
         context.State = GameInstallState.Waiting;
         context.ErrorMessage = null;
-        _ = PrepareGameInstallTaskAsync(context, context.CancellationToken);
+        CurrentRun = PrepareGameInstallTaskAsync(context, context.CancellationToken);
         return GameInstallProgress.FromTask(context);
     }
 
@@ -279,6 +288,34 @@ internal class GameInstallService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public async Task PrepareGameInstallTaskAsync(GameInstallContext context, CancellationToken cancellationToken = default)
+    {
+        // 同一 context 只允许一条流水线（审计 M-03/RK-02）：StartOrContinueTask 自己会
+        // fire-and-forget 一份，调用方若再 Task.Run(RunAsync) 一次，两条流水线会写同一
+        // 安装目录 → 校验失败/文件交错。这里做单飞，重复调用直接返回。
+        lock (_runGate)
+        {
+            if (!_running.Add(context))
+            {
+                _logger.LogWarning("GameInstallTask already running, ignoring duplicate start. GameBiz: {GameBiz}", context.GameId.GameBiz);
+                return;
+            }
+        }
+
+        try
+        {
+            await PrepareGameInstallTaskCoreAsync(context, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            lock (_runGate)
+            {
+                _running.Remove(context);
+            }
+        }
+    }
+
+
+    private async Task PrepareGameInstallTaskCoreAsync(GameInstallContext context, CancellationToken cancellationToken)
     {
         try
         {

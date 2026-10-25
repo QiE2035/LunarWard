@@ -156,6 +156,8 @@ public partial class App : Application
         {
             // 把 WAL 合并回主库，避免明文凭据留在 0644 的 -wal 里（见 LunarWardDatabase.Checkpoint）。
             LunarWard.Launch.Database.LunarWardDatabase.CheckpointDefault(AppServices.Current.Paths.DataHome);
+            // 安装任务在后台线程继续下载/解压，不显式停掉会让进程退不干净（审计 M-05）。
+            AppServices.Current.ShutdownInstaller();
             Services.SingleInstance.Dispose();
             _tray?.Dispose();
             _tray = null;

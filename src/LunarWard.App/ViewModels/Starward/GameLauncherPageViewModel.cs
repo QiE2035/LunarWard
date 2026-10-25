@@ -972,10 +972,12 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
         var progress = _services.Installer.StartOrContinue(request);
         ApplyInstallProgress(progress);
-        if (_services.Installer.CurrentTask is { } task)
+
+        // 服务在 StartOrContinue 内已经启动了唯一一条流水线（审计 M-03）：
+        // 这里 await 它即可，不能再 Task.Run 第二份。
+        if (_services.Installer.CurrentRun is { } run)
         {
-            // 安装器内部是同步长任务（下载/解压/校验），放到线程池跑，UI 靠 Progress 回调刷新。
-            await Task.Run(() => _services.Installer.RunAsync(task)).ConfigureAwait(true);
+            await run.ConfigureAwait(true);
         }
     }
 
@@ -998,12 +1000,8 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
                 break;
 
             case GameInstallState.Paused or GameInstallState.Error or GameInstallState.Queueing:
-                var progress = _services.Installer.StartOrContinue(_installRequest);
-                ApplyInstallProgress(progress);
-                if (_services.Installer.CurrentTask is { } task)
-                {
-                    _ = Task.Run(() => _services.Installer.RunAsync(task));
-                }
+                // 服务内部已单飞启动；这里只同步状态，不再重复起任务（审计 M-03）。
+                ApplyInstallProgress(_services.Installer.StartOrContinue(_installRequest));
                 break;
 
             case GameInstallState.Decompressing or GameInstallState.Merging or GameInstallState.Verifying:
@@ -1130,12 +1128,8 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
                         return;
 
                     case GameInstallState.Paused or GameInstallState.Error or GameInstallState.Queueing:
-                        var resume = _services.Installer.StartOrContinue(request);
-                        ApplyPredownloadProgress(resume);
-                        if (_services.Installer.CurrentTask is { } pending)
-                        {
-                            _ = Task.Run(() => _services.Installer.RunAsync(pending));
-                        }
+                        // 同 ToggleInstall：StartOrContinue 已启动唯一流水线（审计 M-03）。
+                        ApplyPredownloadProgress(_services.Installer.StartOrContinue(request));
                         return;
                 }
             }

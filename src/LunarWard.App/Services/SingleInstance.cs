@@ -56,14 +56,31 @@ public static class SingleInstance
 
             _ = Task.Run(async () =>
             {
+                bool warned = false;
                 while (_listener is { } listener)
                 {
-                    using Socket connection = await listener.AcceptAsync().ConfigureAwait(false);
-                    var buffer = new byte[64];
-                    int read = await connection.ReceiveAsync(buffer).ConfigureAwait(false);
-                    if (read > 0)
+                    try
                     {
-                        Dispatcher.UIThread.Post(activate);
+                        using Socket connection = await listener.AcceptAsync().ConfigureAwait(false);
+                        var buffer = new byte[64];
+                        int read = await connection.ReceiveAsync(buffer).ConfigureAwait(false);
+                        if (read > 0)
+                        {
+                            Dispatcher.UIThread.Post(activate);
+                        }
+                    }
+                    catch (Exception ex) when (ex is SocketException or IOException or ObjectDisposedException)
+                    {
+                        // 审计 M-22：一次异常连接曾让整个监听循环退出，之后再也唤不回窗口。
+                        if (_listener is null)
+                        {
+                            break; // Dispose 主动关掉监听，正常退出
+                        }
+                        if (!warned)
+                        {
+                            warned = true;
+                            Console.Error.WriteLine($"SINGLE_INSTANCE_ACCEPT_FAILED {ex.GetType().Name}: {ex.Message}");
+                        }
                     }
                 }
             });

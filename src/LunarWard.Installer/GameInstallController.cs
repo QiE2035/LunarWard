@@ -110,6 +110,16 @@ public sealed class GameInstallController : IDisposable
 
 
     /// <summary>宿主退出时停止所有任务。</summary>
+    /// <summary>
+    /// 安装任务主体所在的 Task（由 <c>StartOrContinueTask</c> 启动）。
+    /// </summary>
+    /// <remarks>
+    /// 自检/命令行需要等任务跑完或暂停，过去是在调用 <c>StartOrContinueTask</c> 之后又
+    /// <c>Task.Run(RunAsync)</c> 起一遍；<see cref="GameInstallService"/> 现在是单飞，
+    /// 再起一遍会被拒绝，等待该属性即可。
+    /// </remarks>
+    public Task? CurrentRun => _service.CurrentRun;
+
     public void StopAllTasks(string? reason = null) => _service.StopAllTasks(reason);
 
 

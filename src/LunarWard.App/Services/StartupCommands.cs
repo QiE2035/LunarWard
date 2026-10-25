@@ -189,9 +189,8 @@ internal static class StartupCommands
 
             Installer.GameInstallProgress progress = services.Installer.StartOrContinue(request);
             Console.WriteLine($"INSTALL_SMOKE state={progress.State} total={progress.ProgressDownloadTotalBytes}");
-            if (services.Installer.CurrentTask is { } task)
+            if (services.Installer.CurrentRun is { } run)
             {
-                Task run = Task.Run(() => services.Installer.RunAsync(task));
                 await Task.Delay(TimeSpan.FromSeconds(seconds)).ConfigureAwait(false);
                 progress = run.IsCompleted ? progress : services.Installer.Pause(request);
             }
