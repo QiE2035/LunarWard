@@ -28,6 +28,10 @@ jobs:
       - name: Build
         run: dotnet build LunarWard.slnx -c Release --no-restore
 
+      - name: Debug 构建门禁（覆盖 #if DEBUG 分支）
+        # 只编 Release 会漏掉 #if DEBUG 里的编译错误（2026-10-25 就漏过一次 CS0103/CS0168）。
+        run: dotnet build LunarWard.slnx -c Debug -warnaserror --no-restore
+
       - name: 警告门禁（全量重编，避免增量构建漏报）
         # 增量构建不会重编未改动项目，警告会被漏掉（审计 2026-10-25 误判 CA1416 的教训）。
         run: dotnet build LunarWard.slnx -c Release -t:Rebuild -warnaserror --no-restore

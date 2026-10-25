@@ -6,6 +6,8 @@ cd "$(dirname "$0")/.."
 
 dotnet restore LunarWard.slnx
 dotnet build LunarWard.slnx -c Release --no-restore
+# Debug 构建门禁：覆盖 #if DEBUG 分支（只编 Release 会漏掉那边的编译错误）。
+dotnet build LunarWard.slnx -c Debug -warnaserror --no-restore
 # 警告门禁：-t:Rebuild 强制全量重编，增量构建会漏掉未重编项目的警告。
 dotnet build LunarWard.slnx -c Release -t:Rebuild -warnaserror --no-restore
 rm -rf artifacts/test-results
