@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Media;
@@ -15,7 +15,22 @@ internal static class Program
         // 用于 CI/无人值守验证，不改变正常启动行为。
         //
         //   --screenshot <png>                 启动器页（默认）
-        //   --page launcher|game-setting|screenshot|gacha|toolbox|settings
+        //   --screenshot-folder-dialog        打开「管理截图文件夹」对话框并截图
+        //   --screenshot-seed / --screenshot-hover  截图页样例数据 / 首块磁贴悬停态
+        //   --launcher-setting-dialog         启动器「游戏设置」弹窗（配 --settings-section basic|arguments|background|packages）
+        //   --uninstall-warning               设置弹窗「基本信息」页把卸载警告行亮出来（配 --launcher-setting-dialog）
+        //   --install-info-popup              安装中悬停的「游戏信息 / 下载进度」卡片（配 --install-progress）
+        //   --selector-hover                  游戏选择器第一张卡片悬停态（配 --open-selector）
+        //   --selector-flyout                 游戏选择器第一张卡片的区服列表（配 --open-selector）
+        //   --gacha-seed zzz|genshin          抽卡页样例记录（不碰网络，便于截 ZZZ 统计卡）
+        //   --gacha-delete-dialog             抽卡页「删除指定时间段」对话框（自动用 ZZZ 样例数据）
+        //   --uigf-window                     UIGF v4.2 导出 / 导入窗口（自动用原神样例存档）
+        //   --uigf-import                     配合 --uigf-window，直接切到导入页并灌样例文件
+        //   --gacha-export <path>             把样例记录按 UIGF v3.0 / SRGF v1.0 导出到该路径
+        //   --uigf-export <path>              把本地存档按 UIGF v4.2 导出到该路径（配 --gacha-seed）
+        //   --predownload-dialog              启动器预下载确认框（配 --predownload-dialog-unavailable 看不可用态）
+        //   --window image-viewer             截图片查看器（可加 --image-viewer-gallery / --image-viewer-info）
+        //   --page launcher|game-setting|screenshot|gacha|toolbox|self-query|genshin-beyond|settings
         //   --settings-section <tag>           设置页的二级子页（tag 与 Starward 页面名一致）：
         //                                      about|general|download|files|screenshot|hotkey|
         //                                      gamepad|advanced|toolbox
@@ -29,14 +44,43 @@ internal static class Program
             CaptureMode.TargetWindow = ReadArgument(args, "--window") ?? "main";
             CaptureMode.Page = ReadArgument(args, "--page");
             CaptureMode.SettingsSection = ReadArgument(args, "--settings-section");
+            CaptureMode.UninstallWarning = args.Contains("--uninstall-warning");
+            CaptureMode.InstallInfoPopup = args.Contains("--install-info-popup");
             CaptureMode.ProfileId = ReadArgument(args, "--profile");
             CaptureMode.OpenSelector = args.Contains("--open-selector");
+            CaptureMode.SelectorHover = args.Contains("--selector-hover");
+            CaptureMode.SelectorFlyout = args.Contains("--selector-flyout");
             CaptureMode.GameIcons = args.Contains("--game-icons");
             CaptureMode.OpenDailyNote = args.Contains("--open-daily-note");
             CaptureMode.ShowBackgroundBar = args.Contains("--background-bar");
             CaptureMode.ShowDragOverlay = args.Contains("--drag-overlay");
             CaptureMode.InstallDialog = args.Contains("--install-dialog");
             CaptureMode.InstallProgress = args.Contains("--install-progress");
+            CaptureMode.InstallUpdate = args.Contains("--install-update");
+            CaptureMode.InstallHover = args.Contains("--install-hover");
+            CaptureMode.Predownload = ReadArgument(args, "--predownload");
+            CaptureMode.SelfQuerySelect = args.Contains("--selfquery-select");
+            CaptureMode.SelfQueryInputUrl = args.Contains("--selfquery-url");
+            CaptureMode.BeyondSeed = args.Contains("--beyond-seed");
+            CaptureMode.BeyondPane = args.Contains("--beyond-pane");
+            CaptureMode.BeyondSecondTab = args.Contains("--beyond-second-tab");
+            CaptureMode.AuthLogin = args.Contains("--auth-login");
+            CaptureMode.ScreenshotFolderDialog = args.Contains("--screenshot-folder-dialog");
+            CaptureMode.LauncherSettingDialog = args.Contains("--launcher-setting-dialog");
+            CaptureMode.GachaSeed = ReadArgument(args, "--gacha-seed");
+            CaptureMode.GachaDeleteDialog = args.Contains("--gacha-delete-dialog");
+            CaptureMode.UigfWindow = args.Contains("--uigf-window");
+            CaptureMode.UigfImportPage = args.Contains("--uigf-import");
+            CaptureMode.PredownloadDialog = args.Contains("--predownload-dialog");
+            CaptureMode.Dx12IntroDialog = args.Contains("--dx12-intro");
+            CaptureMode.PredownloadDialogUnavailable = args.Contains("--predownload-dialog-unavailable");
+            CaptureMode.GachaExport = ReadArgument(args, "--gacha-export");
+            CaptureMode.GachaImport = ReadArgument(args, "--gacha-import");
+            CaptureMode.UigfExport = ReadArgument(args, "--uigf-export");
+            CaptureMode.ScreenshotSeed = args.Contains("--screenshot-seed");
+            CaptureMode.ScreenshotHover = args.Contains("--screenshot-hover");
+            CaptureMode.ImageViewerGallery = args.Contains("--image-viewer-gallery");
+            CaptureMode.ImageViewerInfo = args.Contains("--image-viewer-info");
             CaptureMode.Tab = ReadArgument(args, "--tab");
             CaptureMode.Language = ReadArgument(args, "--lang");
             CaptureMode.ExpandRail = args.Contains("--expand-rail");
@@ -78,104 +122,4 @@ internal static class Program
                 ],
             })
             .LogToTrace();
-}
-
-
-/// <summary>自检模式状态（<c>--screenshot</c>）。</summary>
-internal static class CaptureMode
-{
-    public static string? Path { get; set; }
-
-    /// <summary>要截图的旧窗口：<c>main</c>（Starward 外壳）/ settings / account / dailynote / gacha。</summary>
-    public static string TargetWindow { get; set; } = "main";
-
-    /// <summary>要切到的 Starward 页面（<c>launcher</c> 等），null = 启动器页。</summary>
-    public static string? Page { get; set; }
-
-    /// <summary>
-    /// 设置页的二级子页 tag（Starward 页面名）：<c>about</c> / <c>general</c> /
-    /// <c>download</c> / <c>files</c> / <c>screenshot</c> / <c>hotkey</c> /
-    /// <c>gamepad</c> / <c>advanced</c> / <c>toolbox</c>。配合 <c>--page settings</c> 使用。
-    /// </summary>
-    public static string? SettingsSection { get; set; }
-
-    /// <summary>指定档案 id。</summary>
-    public static string? ProfileId { get; set; }
-
-    /// <summary>截图前打开游戏选择层。</summary>
-    public static bool OpenSelector { get; set; }
-
-    /// <summary>截图前展开左上角横排游戏图标条（模拟悬停当前游戏图标）。</summary>
-    public static bool GameIcons { get; set; }
-
-    /// <summary>截图前打开启动器页的每日便笺 Flyout。</summary>
-    public static bool OpenDailyNote { get; set; }
-
-    /// <summary>截图前强制显示启动器底部背景切换条（模拟悬停）。</summary>
-    public static bool ShowBackgroundBar { get; set; }
-
-    /// <summary>截图前强制显示"拖放背景文件"提示条。</summary>
-    public static bool ShowDragOverlay { get; set; }
-
-    /// <summary>截图前打开「选择安装路径」对话框（自检安装器 UI）。</summary>
-    public static bool InstallDialog { get; set; }
-
-    /// <summary>截图前强制显示安装进度弹层（假数据，自检版式）。</summary>
-    public static bool InstallProgress { get; set; }
-
-    /// <summary>工具箱战绩菜单索引（0 起），用于截取选中态/占位版式。</summary>
-    public static string? Tab { get; set; }
-
-    /// <summary>自检时的界面语言（<c>zh-CN</c> / <c>en-US</c>）。</summary>
-    public static string? Language { get; set; }
-
-    /// <summary>自检时把页面里的主 ScrollViewer 滚到该偏移（截长页下半部分）。</summary>
-    public static double ScrollY { get; set; }
-
-    /// <summary>截图前把左栏展开（模拟鼠标悬停）。</summary>
-    public static bool ExpandRail { get; set; }
-
-    /// <summary>渲染前等待时间（毫秒）。</summary>
-    public static int WaitMilliseconds { get; set; } = 1600;
-
-    public static bool Enabled => Path is not null;
-
-
-    /// <summary>渲染窗口到 PNG 并退出。</summary>
-    public static void Capture(Window window)
-    {
-        if (Path is not { } path)
-        {
-            return;
-        }
-
-        DispatcherTimer.RunOnce(() =>
-        {
-            try
-            {
-                var size = new PixelSize(
-                    Math.Max(1, (int)window.Bounds.Width),
-                    Math.Max(1, (int)window.Bounds.Height));
-                using var bitmap = new RenderTargetBitmap(size, new Vector(96, 96));
-                bitmap.Render(window);
-                using (var stream = File.Create(path))
-                {
-                    bitmap.Save(stream, new PngBitmapEncoderOptions());
-                }
-                Console.WriteLine($"SCREENSHOT_OK {path} {size.Width}x{size.Height}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SCREENSHOT_FAIL {ex.GetType().Name}: {ex.Message}");
-            }
-            finally
-            {
-                if (Application.Current?.ApplicationLifetime
-                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    desktop.Shutdown(0);
-                }
-            }
-        }, TimeSpan.FromMilliseconds(WaitMilliseconds));
-    }
 }
