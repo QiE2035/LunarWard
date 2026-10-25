@@ -225,3 +225,26 @@
 
 验证：build 0 警告；`dotnet test` 537 + 31 + 27 = 595 全过。
 未做：`IFileLock/FlockFileLock`、`Libc` 零引用 P/Invoke、`GameRegistry` 常量、14 个无绑定成员、三个旧窗口归档、`HardLink`/`statx` 上提、命名整理、常量抽取。
+
+---
+
+## 九、后续批次状态（2026-10-25 收尾）
+
+| 批次 | 范围 | 状态 |
+|---|---|---|
+| A 止血 | M-01 凭据、M-04 日志泵、M-03 安装双启动、M-05 退出停安装、M-22 监听循环 | ✅ `f46ac48` `d28c7ed` `e8a044d` |
+| B 门禁 | M-02 CI 跑集成、M-09 SDK 钉版、M-15 隐式引用、M-28 parity 脚本、PS-05b 文档 | ✅ `4c5a805` `4d834c1` `640bd29` `f8dd825` |
+| C 死代码（主体） | `Core/Metadata`、Installer 卸载服务、6 个死包、旧窗口、`IFileLock` | ✅ `bd2f9d8` `47a5af6` `36f94a9` `48f2f1e` `75968b9` |
+| E 文案（i18n 部分） | 20×2 组重复键 + 防重复源码守卫 | ✅ `a934e20` `3483b37` |
+
+### 未完成（按优先级）
+
+1. **D 空值缺陷 9 处**（M-06）：审计只给了行号线索，需要逐处读上下文确认；不在本轮做批量替换。
+2. **D 安装器测试**：`ArchiveExtractor` / `SophonManifest` / `DiffPatcher` 在 tests 里 0 命中，需临时目录造包。
+3. **C 尾巴**：`Libc.cs` 16 个零引用 P/Invoke、`GameRegistry` 16 常量、`CaptureMode` 命名空间、`_camel` 6 文件、`LUNARWARD_TOOLBOX_DEMO` 26 处、版本解析 6 套。
+4. **E 剩余**：注释与实现相反的 16 处（审计逐条列在 03-consistency）；设置页过时文案。
+5. **待决策 7 条**：见 §1.3 与 §6。
+
+### 计数基线
+
+`dotnet test LunarWard.slnx` → **538**（Unit）+ **31**（Installer）+ **27**（Integration）= **596**；`scripts/ci.sh` 全绿。
