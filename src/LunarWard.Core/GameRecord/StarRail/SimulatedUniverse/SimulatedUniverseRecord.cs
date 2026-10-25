@@ -5,7 +5,7 @@ namespace LunarWard.Core.GameRecord.StarRail.SimulatedUniverse;
 public class SimulatedUniverseRecord
 {
     [JsonPropertyName("basic")]
-    public SimulatedUniverseRecordBasic Basic { get; set; }
+    public SimulatedUniverseRecordBasic Basic { get; set; } = null!;
 
     [JsonPropertyName("records")]
     public List<SimulatedUniverseRecordItem> Records { get; set; } = [];

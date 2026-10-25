@@ -6,10 +6,10 @@ internal class PkgVersionItem
 {
 
     [JsonPropertyName("remoteName")]
-    public string RemoteName { get; set; }
+    public string RemoteName { get; set; } = default!;
 
     [JsonPropertyName("md5")]
-    public string MD5 { get; set; }
+    public string MD5 { get; set; } = default!;
 
     [JsonPropertyName("fileSize")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
@@ -23,6 +23,6 @@ internal class BlacklistItem
 {
 
     [JsonPropertyName("fileName")]
-    public string FileName { get; set; }
+    public string FileName { get; set; } = default!;
 
 }

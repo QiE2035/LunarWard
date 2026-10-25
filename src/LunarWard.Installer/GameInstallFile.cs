@@ -13,16 +13,16 @@ internal class GameInstallFile
     /// <summary>
     /// 完整路径
     /// </summary>
-    public string FullPath { get; set; }
+    public string FullPath { get; set; } = default!;
 
     /// <summary>
     /// 相对于游戏安装目录的路径
     /// </summary>
-    public string File { get; set; }
+    public string File { get; set; } = default!;
 
-    public string Url { get; set; }
+    public string Url { get; set; } = default!;
 
-    public string MD5 { get; set; }
+    public string MD5 { get; set; } = default!;
 
     /// <summary>
     /// 文件大小，也有可能是 0
@@ -217,16 +217,16 @@ internal class GameInstallFileChunk
 
     public required string UncompressedMD5 { get; set; }
 
-    public string OriginalFileName { get; set; }
+    public string OriginalFileName { get; set; } = default!;
 
     public long OriginalFileSize { get; set; }
 
-    public string OriginalFileMD5 { get; set; }
+    public string OriginalFileMD5 { get; set; } = default!;
 
     /// <summary>
     /// 若本地版本存在相同的 chunk 文件，则为原始文件的完整路径
     /// </summary>
-    public string OriginalFileFullPath { get; set; }
+    public string OriginalFileFullPath { get; set; } = default!;
 
     public long OriginalFileOffset { get; set; }
 

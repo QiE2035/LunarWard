@@ -5,7 +5,7 @@ namespace LunarWard.Core.Gacha;
 public struct GachaLogQuery
 {
 
-    public IGachaType GachaType { get; set; }
+    public IGachaType GachaType { get; set; } = null!;
 
     public int Page { get; set; }
 

@@ -9,25 +9,25 @@ public class ImaginariumTheaterFightStatisic
     /// 击败最多敌人
     /// </summary>
     [JsonPropertyName("max_defeat_avatar")]
-    public ImaginariumTheaterFightStatisicAvatar MaxDefeatAvatar { get; set; }
+    public ImaginariumTheaterFightStatisicAvatar MaxDefeatAvatar { get; set; } = null!;
 
     /// <summary>
     /// 最高伤害输出
     /// </summary>
     [JsonPropertyName("max_damage_avatar")]
-    public ImaginariumTheaterFightStatisicAvatar MaxDamageAvatar { get; set; }
+    public ImaginariumTheaterFightStatisicAvatar MaxDamageAvatar { get; set; } = null!;
 
     /// <summary>
     /// 最高承受伤害
     /// </summary>
     [JsonPropertyName("max_take_damage_avatar")]
-    public ImaginariumTheaterFightStatisicAvatar MaxTakeDamageAvatar { get; set; }
+    public ImaginariumTheaterFightStatisicAvatar MaxTakeDamageAvatar { get; set; } = null!;
 
     /// <summary>
     /// 本次消耗幻剧之花
     /// </summary>
     [JsonPropertyName("total_coin_consumed")]
-    public ImaginariumTheaterFightStatisicAvatar TotalCoinConsumed { get; set; }
+    public ImaginariumTheaterFightStatisicAvatar TotalCoinConsumed { get; set; } = null!;
 
     /// <summary>
     /// 最快完成演出的队伍

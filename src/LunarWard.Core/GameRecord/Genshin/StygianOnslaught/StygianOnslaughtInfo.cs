@@ -9,19 +9,19 @@ public class StygianOnslaughtInfo
 {
 
     [JsonPropertyName("schedule")]
-    public StygianOnslaughtSchedule Schedule { get; set; }
+    public StygianOnslaughtSchedule Schedule { get; set; } = null!;
 
     /// <summary>
     /// 单人挑战
     /// </summary>
     [JsonPropertyName("single")]
-    public StygianOnslaughtBattle SinglePlayer { get; set; }
+    public StygianOnslaughtBattle SinglePlayer { get; set; } = null!;
 
     /// <summary>
     /// 多人挑战
     /// </summary>
     [JsonPropertyName("mp")]
-    public StygianOnslaughtBattle MultiPlayer { get; set; }
+    public StygianOnslaughtBattle MultiPlayer { get; set; } = null!;
 
     /// <summary>
     /// 赋光之人

@@ -15,7 +15,7 @@ public class GameId : IEquatable<GameId>
 
     [JsonPropertyName("biz")]
     [JsonConverter(typeof(GameBizJsonConverter))]
-    public GameBiz GameBiz { get; set; }
+    public GameBiz GameBiz { get; set; } = null!;
 
 
     public static GameId? FromGameBiz(GameBiz gameBiz)

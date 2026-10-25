@@ -24,10 +24,10 @@ public class ApocalypticShadowMeta
     public string Name { get; set; } = null!;
 
     [JsonPropertyName("upper_boss")]
-    public ApocalypticShadowBossMeta UpperBoss { get; set; }
+    public ApocalypticShadowBossMeta UpperBoss { get; set; } = null!;
 
     [JsonPropertyName("lower_boss")]
-    public ApocalypticShadowBossMeta LowerBoss { get; set; }
+    public ApocalypticShadowBossMeta LowerBoss { get; set; } = null!;
 
     [JsonPropertyName("tierce_boss")]
     public ApocalypticShadowBossMeta? TierceBoss { get; set; }

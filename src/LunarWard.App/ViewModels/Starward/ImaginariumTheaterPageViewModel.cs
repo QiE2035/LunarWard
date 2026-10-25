@@ -550,9 +550,9 @@ public sealed class TheaterRoundItem
     public bool HasSplendourBuff { get; }
 
 
-    public string SplendourDesc { get; }
+    public string SplendourDesc { get; } = "";
 
-    public List<TheaterBuffItem> SplendourBuffs { get; }
+    public List<TheaterBuffItem> SplendourBuffs { get; } = [];
 
     public List<TheaterBuffItem> WondrousBuffs { get; }
 

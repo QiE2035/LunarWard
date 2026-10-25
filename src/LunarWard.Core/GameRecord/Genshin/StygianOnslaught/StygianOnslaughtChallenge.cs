@@ -25,7 +25,7 @@ public class StygianOnslaughtChallenge
 
 
     [JsonPropertyName("monster")]
-    public StygianOnslaughtMonster Monster { get; set; }
+    public StygianOnslaughtMonster Monster { get; set; } = null!;
 
 
     [JsonExtensionData]

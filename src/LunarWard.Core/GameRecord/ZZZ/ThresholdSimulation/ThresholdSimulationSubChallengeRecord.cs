@@ -21,10 +21,10 @@ public class ThresholdSimulationSubChallengeRecord
     public List<ZZZAvatar> AvatarList { get; set; } = [];
 
     [JsonPropertyName("buddy")]
-    public ZZZBuddy Buddy { get; set; }
+    public ZZZBuddy Buddy { get; set; } = null!;
 
     [JsonPropertyName("buffer")]
-    public ThresholdSimulationBuff Buff { get; set; }
+    public ThresholdSimulationBuff Buff { get; set; } = null!;
 
 
     [JsonExtensionData]

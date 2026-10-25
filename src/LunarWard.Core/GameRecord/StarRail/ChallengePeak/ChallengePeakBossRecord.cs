@@ -19,7 +19,7 @@ public class ChallengePeakBossRecord
     public List<ChallengePeakAvatar> Avatars { get; set; } = [];
 
     [JsonPropertyName("buff")]
-    public ChallengePeakBuff Buff { get; set; }
+    public ChallengePeakBuff Buff { get; set; } = null!;
 
     [JsonPropertyName("hard_mode")]
     public bool HardMode { get; set; }

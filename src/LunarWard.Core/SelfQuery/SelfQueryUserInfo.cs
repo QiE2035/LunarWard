@@ -24,6 +24,6 @@ public class SelfQueryUserInfo
 
 
     [JsonIgnore]
-    public GameBiz GameBiz { get; set; }
+    public GameBiz GameBiz { get; set; } = null!;
 
 }

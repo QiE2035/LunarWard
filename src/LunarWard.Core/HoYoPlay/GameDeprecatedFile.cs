@@ -10,7 +10,7 @@ public class GameDeprecatedFileConfig
 {
 
     [JsonPropertyName("game")]
-    public GameId GameId { get; set; }
+    public GameId GameId { get; set; } = null!;
 
 
     [JsonPropertyName("deprecated_files")]

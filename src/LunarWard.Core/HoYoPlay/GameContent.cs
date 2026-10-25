@@ -10,7 +10,7 @@ public class GameContent
 {
 
     [JsonPropertyName("game")]
-    public GameId GameId { get; set; }
+    public GameId GameId { get; set; } = null!;
 
 
     [JsonPropertyName("language")]
@@ -50,7 +50,7 @@ public class GameBanner
     public string Id { get; set; } = null!;
 
     [JsonPropertyName("image")]
-    public GameImage Image { get; set; }
+    public GameImage Image { get; set; } = null!;
 
 }
 
@@ -111,13 +111,13 @@ public class GameSocialMedia
     /// 分享图标
     /// </summary>
     [JsonPropertyName("icon")]
-    public GameImage Icon { get; set; }
+    public GameImage Icon { get; set; } = null!;
 
     /// <summary>
     /// 二维码图片
     /// </summary>
     [JsonPropertyName("qr_image")]
-    public GameImage QrImage { get; set; }
+    public GameImage QrImage { get; set; } = null!;
 
 
     [JsonPropertyName("qr_desc")]

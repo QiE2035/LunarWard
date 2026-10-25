@@ -13,19 +13,19 @@ public class ZZZDailyNote
     /// 电量（体力）
     /// </summary>
     [JsonPropertyName("energy")]
-    public Energy Energy { get; set; }
+    public Energy Energy { get; set; } = null!;
 
     /// <summary>
     /// 活跃度
     /// </summary>
     [JsonPropertyName("vitality")]
-    public Vitality Vitality { get; set; }
+    public Vitality Vitality { get; set; } = null!;
 
     /// <summary>
     /// 录像店经营
     /// </summary>
     [JsonPropertyName("vhs_sale")]
-    public VhsSale VhsSale { get; set; }
+    public VhsSale VhsSale { get; set; } = null!;
 
     /// <summary>
     /// 刮刮卡 <see cref="CardSignState"/>
@@ -63,7 +63,7 @@ public class ZZZDailyNote
     /// null
     /// </summary>
     [JsonPropertyName("survey_points")]
-    public object SurveyPoints { get; set; }
+    public object SurveyPoints { get; set; } = null!;
 
     /// <summary>
     /// 深渊刷新剩余时间，秒
@@ -76,7 +76,7 @@ public class ZZZDailyNote
     /// null
     /// </summary>
     [JsonPropertyName("coffee")]
-    public object Coffee { get; set; }
+    public object Coffee { get; set; } = null!;
 
     /// <summary>
     /// 丽都周纪积分
@@ -88,6 +88,6 @@ public class ZZZDailyNote
     /// 绳网会员
     /// </summary>
     [JsonPropertyName("member_card")]
-    public MemberCard MemberCard { get; set; }
+    public MemberCard MemberCard { get; set; } = null!;
 
 }

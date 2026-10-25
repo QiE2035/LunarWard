@@ -6,7 +6,7 @@ namespace LunarWard.Core.GameRecord.ZZZ.ShiyuDefense;
 public class ShiyuDefenseV2FourthLayerDetail
 {
     [JsonPropertyName("buffer")]
-    public ShiyuDefenseBuff Buff { get; set; }
+    public ShiyuDefenseBuff Buff { get; set; } = null!;
 
     [JsonPropertyName("challenge_time")]
     [JsonConverter(typeof(DateTimeObjectJsonConverter))]

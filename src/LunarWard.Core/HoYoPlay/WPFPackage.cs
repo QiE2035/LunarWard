@@ -6,10 +6,10 @@ public class WPFPackageInfo
 {
 
     [JsonPropertyName("game")]
-    public GameId GameId { get; set; }
+    public GameId GameId { get; set; } = null!;
 
     [JsonPropertyName("wpf_package")]
-    public WPFPackage WPFPackage { get; set; }
+    public WPFPackage WPFPackage { get; set; } = null!;
 
 }
 

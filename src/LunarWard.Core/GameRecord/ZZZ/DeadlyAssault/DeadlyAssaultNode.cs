@@ -55,7 +55,7 @@ public class DeadlyAssaultNode
     /// 出战邦布
     /// </summary>
     [JsonPropertyName("buddy")]
-    public ZZZBuddy Buddy { get; set; }
+    public ZZZBuddy Buddy { get; set; } = null!;
 
 
     [JsonExtensionData]

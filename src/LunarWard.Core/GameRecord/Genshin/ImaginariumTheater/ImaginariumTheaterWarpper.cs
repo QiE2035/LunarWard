@@ -14,7 +14,7 @@ internal class ImaginariumTheaterWarpper
 
 
     [JsonPropertyName("links")]
-    public ImaginariumTheaterLinks Links { get; set; }
+    public ImaginariumTheaterLinks Links { get; set; } = null!;
 
 
     [JsonExtensionData]

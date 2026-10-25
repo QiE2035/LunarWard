@@ -13,7 +13,7 @@ public class GameInfo : GameId
     /// 名称、图标、背景、缩略图等
     /// </summary>
     [JsonPropertyName("display")]
-    public GameInfoDisplay Display { get; set; }
+    public GameInfoDisplay Display { get; set; } = null!;
 
 
     /// <summary>
@@ -54,7 +54,7 @@ public class GameInfoDisplay
     /// 图标
     /// </summary>
     [JsonPropertyName("icon")]
-    public GameImage Icon { get; set; }
+    public GameImage Icon { get; set; } = null!;
 
 
 

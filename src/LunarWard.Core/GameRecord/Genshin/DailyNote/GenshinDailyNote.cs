@@ -116,21 +116,21 @@ public class GenshinDailyNote
     /// 参量质变仪
     /// </summary>
     [JsonPropertyName("transformer")]
-    public Transformer Transformer { get; set; }
+    public Transformer Transformer { get; set; } = null!;
 
 
     /// <summary>
     /// 每日任务
     /// </summary>
     [JsonPropertyName("daily_task")]
-    public DailyTask DailyTask { get; set; }
+    public DailyTask DailyTask { get; set; } = null!;
 
 
     /// <summary>
     /// 魔神任务进度
     /// </summary>
     [JsonPropertyName("archon_quest_progress")]
-    public ArchonQuestProgress ArchonQuestProgress { get; set; }
+    public ArchonQuestProgress ArchonQuestProgress { get; set; } = null!;
 
 }
 

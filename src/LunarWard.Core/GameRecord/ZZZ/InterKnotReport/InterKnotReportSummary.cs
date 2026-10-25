@@ -35,7 +35,7 @@ public class InterKnotReportSummary
 
 
     [JsonPropertyName("month_data")]
-    public InterKnotReportMonthData MonthData { get; set; }
+    public InterKnotReportMonthData MonthData { get; set; } = null!;
 
 
     [JsonPropertyName("optional_month")]
@@ -43,7 +43,7 @@ public class InterKnotReportSummary
 
 
     [JsonPropertyName("role_info")]
-    public InterKnotReportRoleInfo RoleInfo { get; set; }
+    public InterKnotReportRoleInfo RoleInfo { get; set; } = null!;
 
 
     [JsonExtensionData]

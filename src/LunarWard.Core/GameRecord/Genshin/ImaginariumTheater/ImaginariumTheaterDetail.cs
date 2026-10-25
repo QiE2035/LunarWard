@@ -12,7 +12,7 @@ public class ImaginariumTheaterDetail
     /// 数据不全，完整数据参考 <see cref="ImaginariumTheaterInfo.Stat"/>
     /// </summary>
     [JsonPropertyName("detail_stat")]
-    public ImaginariumTheaterStat DetailStat { get; set; }
+    public ImaginariumTheaterStat DetailStat { get; set; } = null!;
 
 
     [JsonPropertyName("lineup_link")]
@@ -26,7 +26,7 @@ public class ImaginariumTheaterDetail
 
 
     [JsonPropertyName("fight_statisic")]
-    public ImaginariumTheaterFightStatisic FightStatisic { get; set; }
+    public ImaginariumTheaterFightStatisic FightStatisic { get; set; } = null!;
 
 
     [JsonExtensionData]

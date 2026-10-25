@@ -10,19 +10,19 @@ public class GamePackage
 {
 
     [JsonPropertyName("game")]
-    public GameId GameId { get; set; }
+    public GameId GameId { get; set; } = null!;
 
     /// <summary>
     /// 当前版本
     /// </summary>
     [JsonPropertyName("main")]
-    public GamePackageVersion Main { get; set; }
+    public GamePackageVersion Main { get; set; } = null!;
 
     /// <summary>
     /// 预下载版本
     /// </summary>
     [JsonPropertyName("pre_download")]
-    public GamePackageVersion PreDownload { get; set; }
+    public GamePackageVersion PreDownload { get; set; } = null!;
 
 }
 

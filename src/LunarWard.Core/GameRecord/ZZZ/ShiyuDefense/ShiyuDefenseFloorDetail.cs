@@ -34,13 +34,13 @@ public class ShiyuDefenseFloorDetail
     /// 第一队
     /// </summary>
     [JsonPropertyName("node_1")]
-    public ShiyuDefenseNode Node1 { get; set; }
+    public ShiyuDefenseNode Node1 { get; set; } = null!;
 
     /// <summary>
     /// 第二队
     /// </summary>
     [JsonPropertyName("node_2")]
-    public ShiyuDefenseNode Node2 { get; set; }
+    public ShiyuDefenseNode Node2 { get; set; } = null!;
 
     /// <summary>
     /// 战斗时间，秒

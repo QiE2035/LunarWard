@@ -9,13 +9,13 @@ public class ThresholdSimulationDetailInfo
     /// 主要信息
     /// </summary>
     [JsonPropertyName("void_front_battle_abstract_info_brief")]
-    public ThresholdSimulationBrief Brief { get; set; }
+    public ThresholdSimulationBrief Brief { get; set; } = null!;
 
     /// <summary>
     /// BOSS 节点
     /// </summary>
     [JsonPropertyName("boss_challenge_record")]
-    public ThresholdSimulationBossChallengeRecord BossChallengeRecord { get; set; }
+    public ThresholdSimulationBossChallengeRecord BossChallengeRecord { get; set; } = null!;
 
     /// <summary>
     /// BOSS 前节点
@@ -27,7 +27,7 @@ public class ThresholdSimulationDetailInfo
     /// 账号信息
     /// </summary>
     [JsonPropertyName("role_basic_info")]
-    public ThresholdSimulationRoleBasicInfo RoleBasicInfo { get; set; }
+    public ThresholdSimulationRoleBasicInfo RoleBasicInfo { get; set; } = null!;
 
 
     [JsonExtensionData]
@@ -45,6 +45,6 @@ public class ThresholdSimulationAbstractInfo
 
 
     [JsonPropertyName("void_front_battle_abstract_info_brief")]
-    public ThresholdSimulationBrief Brief { get; set; }
+    public ThresholdSimulationBrief Brief { get; set; } = null!;
 
 }

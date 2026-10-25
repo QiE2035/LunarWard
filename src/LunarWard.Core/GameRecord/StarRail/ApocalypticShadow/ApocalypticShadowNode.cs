@@ -14,7 +14,7 @@ public class ApocalypticShadowNode
     public List<ApocalypticShadowAvatar> Avatars { get; set; } = [];
 
     [JsonPropertyName("buff")]
-    public ApocalypticShadowBuff Buff { get; set; }
+    public ApocalypticShadowBuff Buff { get; set; } = null!;
 
     [JsonPropertyName("score")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]

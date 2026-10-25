@@ -27,7 +27,7 @@ public class GameConfigIni
 
 
     [ConfigurationKeyName("cps")]
-    public string Cps { get; set; }
+    public string Cps { get; set; } = default!;
 
 
     [ConfigurationKeyName("game_version")]
@@ -43,11 +43,11 @@ public class GameConfigIni
 
 
     [ConfigurationKeyName("uapc")]
-    public string Uapc { get; set; }
+    public string Uapc { get; set; } = default!;
 
 
     [ConfigurationKeyName("downloading_mode")]
-    public string DownloadingMode { get; set; }
+    public string DownloadingMode { get; set; } = default!;
 
 
     /// <summary>浅拷贝。</summary>

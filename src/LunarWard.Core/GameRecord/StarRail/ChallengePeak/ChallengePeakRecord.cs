@@ -5,10 +5,10 @@ namespace LunarWard.Core.GameRecord.StarRail.ChallengePeak;
 public class ChallengePeakRecord
 {
     [JsonPropertyName("group")]
-    public ChallengePeakGroup Group { get; set; }
+    public ChallengePeakGroup Group { get; set; } = null!;
 
     [JsonPropertyName("boss_info")]
-    public ChallengePeakBossInfo BossInfo { get; set; }
+    public ChallengePeakBossInfo BossInfo { get; set; } = null!;
 
     [JsonPropertyName("mob_infos")]
     public List<ChallengePeakMobInfo> MobInfos { get; set; } = [];
@@ -20,7 +20,7 @@ public class ChallengePeakRecord
     public int BattleNum { get; set; }
 
     [JsonPropertyName("boss_record")]
-    public ChallengePeakBossRecord BossRecord { get; set; }
+    public ChallengePeakBossRecord BossRecord { get; set; } = null!;
 
     [JsonPropertyName("mob_records")]
     public List<ChallengePeakMobRecord> MobRecords { get; set; } = [];

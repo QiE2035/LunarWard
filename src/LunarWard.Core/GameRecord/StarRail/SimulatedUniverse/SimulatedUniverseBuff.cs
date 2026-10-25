@@ -5,7 +5,7 @@ namespace LunarWard.Core.GameRecord.StarRail.SimulatedUniverse;
 public class SimulatedUniverseBuff
 {
     [JsonPropertyName("base_type")]
-    public SimulatedUniverseBuffType BuffType { get; set; }
+    public SimulatedUniverseBuffType BuffType { get; set; } = null!;
 
     [JsonPropertyName("items")]
     public List<SimulatedUniverseBuffItem> Items { get; set; } = [];

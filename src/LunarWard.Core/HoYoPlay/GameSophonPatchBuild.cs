@@ -58,21 +58,21 @@ public class GameSophonPatchManifest
     /// 清单文件信息
     /// </summary>
     [JsonPropertyName("manifest")]
-    public GameSophonManifestFile Manifest { get; set; }
+    public GameSophonManifestFile Manifest { get; set; } = null!;
 
 
     /// <summary>
     /// 分块文件下载链接前缀
     /// </summary>
     [JsonPropertyName("diff_download")]
-    public GameSophonManifestUrl DiffDownload { get; set; }
+    public GameSophonManifestUrl DiffDownload { get; set; } = null!;
 
 
     /// <summary>
     /// 清单文件下载链接前缀
     /// </summary>
     [JsonPropertyName("manifest_download")]
-    public GameSophonManifestUrl ManifestDownload { get; set; }
+    public GameSophonManifestUrl ManifestDownload { get; set; } = null!;
 
 
     /// <summary>

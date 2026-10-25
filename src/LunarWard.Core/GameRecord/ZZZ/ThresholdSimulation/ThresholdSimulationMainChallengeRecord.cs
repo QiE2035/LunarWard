@@ -43,7 +43,7 @@ public class ThresholdSimulationMainChallengeRecord
 
 
     [JsonPropertyName("buffer")]
-    public ThresholdSimulationBuff Buff { get; set; }
+    public ThresholdSimulationBuff Buff { get; set; } = null!;
 
     /// <summary>
     /// 最高分数
@@ -57,7 +57,7 @@ public class ThresholdSimulationMainChallengeRecord
 
 
     [JsonPropertyName("buddy")]
-    public ZZZBuddy Buddy { get; set; }
+    public ZZZBuddy Buddy { get; set; } = null!;
 
 
     [JsonPropertyName("sub_challenge_record")]

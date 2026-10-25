@@ -34,7 +34,7 @@ public class HoyolabClient : GameRecordClient
     protected override string ApiSalt2 => "h4c1d6ywfq5bsbnbhm1bzq7bxzzv6srt";
 
 
-    private string language;
+    private string language = null!;
     public string Language { get => LanguageUtil.FilterLanguage(language); set => language = LanguageUtil.FilterLanguage(value); }
 
 

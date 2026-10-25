@@ -16,10 +16,10 @@ public class ApocalypticShadowFloorDetail
     public int StarNum => int.Parse(StarNumStr);
 
     [JsonPropertyName("node_1")]
-    public ApocalypticShadowNode Node1 { get; set; }
+    public ApocalypticShadowNode Node1 { get; set; } = null!;
 
     [JsonPropertyName("node_2")]
-    public ApocalypticShadowNode Node2 { get; set; }
+    public ApocalypticShadowNode Node2 { get; set; } = null!;
 
     [JsonPropertyName("node_3")]
     public ApocalypticShadowNode? Node3 { get; set; }

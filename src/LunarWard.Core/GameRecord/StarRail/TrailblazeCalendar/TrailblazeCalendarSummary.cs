@@ -42,13 +42,13 @@ public class TrailblazeCalendarSummary : IJsonOnDeserialized
     /// 月数据
     /// </summary>
     [JsonPropertyName("month_data")]
-    public TrailblazeCalendarMonthData MonthData { get; set; }
+    public TrailblazeCalendarMonthData MonthData { get; set; } = null!;
 
     /// <summary>
     /// 日数据
     /// </summary>
     [JsonPropertyName("day_data")]
-    public TrailblazeCalendarDayData DayData { get; set; }
+    public TrailblazeCalendarDayData DayData { get; set; } = null!;
 
     /// <summary>
     /// 发出请求时的游戏版本

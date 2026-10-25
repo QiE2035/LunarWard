@@ -9,7 +9,7 @@ public class GameDXConfig
 {
 
     [JsonPropertyName("game")]
-    public GameId GameId { get; set; }
+    public GameId GameId { get; set; } = null!;
 
 
     [JsonPropertyName("enable_dx_switch")]

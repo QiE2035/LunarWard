@@ -54,35 +54,35 @@ public class GameSophonChunkManifest
     /// 清单文件信息
     /// </summary>
     [JsonPropertyName("manifest")]
-    public GameSophonManifestFile Manifest { get; set; }
+    public GameSophonManifestFile Manifest { get; set; } = null!;
 
 
     /// <summary>
     /// 分块文件下载链接前缀
     /// </summary>
     [JsonPropertyName("chunk_download")]
-    public GameSophonManifestUrl ChunkDownload { get; set; }
+    public GameSophonManifestUrl ChunkDownload { get; set; } = null!;
 
 
     /// <summary>
     /// 清单文件下载链接前缀
     /// </summary>
     [JsonPropertyName("manifest_download")]
-    public GameSophonManifestUrl ManifestDownload { get; set; }
+    public GameSophonManifestUrl ManifestDownload { get; set; } = null!;
 
 
     /// <summary>
     /// 文件统计信息
     /// </summary>
     [JsonPropertyName("stats")]
-    public GameSophonManifestStats Stats { get; set; }
+    public GameSophonManifestStats Stats { get; set; } = null!;
 
 
     /// <summary>
     /// 去重后的文件统计信息
     /// </summary>
     [JsonPropertyName("deduplicated_stats")]
-    public GameSophonManifestStats DeduplicatedStats { get; set; }
+    public GameSophonManifestStats DeduplicatedStats { get; set; } = null!;
 
 }
 

@@ -10,7 +10,7 @@ public class GameConfig
 {
 
     [JsonPropertyName("game")]
-    public GameId GameId { get; set; }
+    public GameId GameId { get; set; } = null!;
 
 
     /// <summary>

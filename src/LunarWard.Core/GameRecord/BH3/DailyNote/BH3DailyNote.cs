@@ -44,25 +44,25 @@ public class BH3DailyNote
     /// 量子流型
     /// </summary>
     [JsonPropertyName("greedy_endless")]
-    public GreedyEndless GreedyEndless { get; set; }
+    public GreedyEndless GreedyEndless { get; set; } = null!;
 
     /// <summary>
     /// 超弦空间
     /// </summary>
     [JsonPropertyName("ultra_endless")]
-    public UltraEndless UltraEndless { get; set; }
+    public UltraEndless UltraEndless { get; set; } = null!;
 
     /// <summary>
     /// 记忆战场
     /// </summary>
     [JsonPropertyName("battle_field")]
-    public BattleField BattleField { get; set; }
+    public BattleField BattleField { get; set; } = null!;
 
     /// <summary>
     /// 往事乐土
     /// </summary>
     [JsonPropertyName("god_war")]
-    public GodWar GodWar { get; set; }
+    public GodWar GodWar { get; set; } = null!;
 
 
 }

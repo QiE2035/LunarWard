@@ -59,7 +59,7 @@ public class ImaginariumTheaterRoundsData
     /// 辉彩祝福
     /// </summary>
     [JsonPropertyName("splendour_buff")]
-    public ImaginariumTheaterSplendourBuff SplendourBuff { get; set; }
+    public ImaginariumTheaterSplendourBuff SplendourBuff { get; set; } = null!;
 
     /// <summary>
     /// 是否是圣牌挑战

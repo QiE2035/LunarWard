@@ -15,10 +15,10 @@ public class PureFictionFloorDetail
     public int StarNum { get; set; }
 
     [JsonPropertyName("node_1")]
-    public PureFictionNode Node1 { get; set; }
+    public PureFictionNode Node1 { get; set; } = null!;
 
     [JsonPropertyName("node_2")]
-    public PureFictionNode Node2 { get; set; }
+    public PureFictionNode Node2 { get; set; } = null!;
 
     [JsonPropertyName("node_3")]
     public PureFictionNode? Node3 { get; set; }

@@ -12,12 +12,12 @@ namespace LunarWard.Installer;
 public class GameInstallContext
 {
 
-    public GameId GameId { get; init; }
+    public GameId GameId { get; init; } = default!;
 
     /// <summary>
     /// 安装路径
     /// </summary>
-    public string InstallPath { get; init; }
+    public string InstallPath { get; init; } = default!;
 
     public GameInstallOperation Operation { get; set; }
 

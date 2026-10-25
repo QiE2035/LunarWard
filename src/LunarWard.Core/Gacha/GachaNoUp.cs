@@ -15,7 +15,7 @@ namespace LunarWard.Core.Gacha;
 public class GachaNoUp
 {
 
-    public GameBiz Game { get; set; }
+    public GameBiz Game { get; set; } = null!;
 
     public int GachaType { get; set; }
 

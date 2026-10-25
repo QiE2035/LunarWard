@@ -63,5 +63,5 @@ public class GameRecordUser
 internal class GameRecordUserWrapper
 {
     [JsonPropertyName("user_info")]
-    public GameRecordUser User { get; set; }
+    public GameRecordUser User { get; set; } = null!;
 }

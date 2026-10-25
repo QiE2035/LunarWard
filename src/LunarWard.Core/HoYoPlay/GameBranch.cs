@@ -10,14 +10,14 @@ public class GameBranch
 {
 
     [JsonPropertyName("game")]
-    public GameId GameId { get; set; }
+    public GameId GameId { get; set; } = null!;
 
 
     /// <summary>
     /// 当前版本
     /// </summary>
     [JsonPropertyName("main")]
-    public GameBranchPackage Main { get; set; }
+    public GameBranchPackage Main { get; set; } = null!;
 
 
     /// <summary>

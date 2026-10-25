@@ -10,7 +10,7 @@ public class GameBackgroundInfo
 {
 
     [JsonPropertyName("game")]
-    public GameId GameId { get; set; }
+    public GameId GameId { get; set; } = null!;
 
 
     [JsonPropertyName("backgrounds")]
@@ -32,25 +32,25 @@ public class GameBackground
     /// 背景图
     /// </summary>
     [JsonPropertyName("background")]
-    public GameImage Background { get; set; }
+    public GameImage Background { get; set; } = null!;
 
     /// <summary>
     /// 版本亮点
     /// </summary>
     [JsonPropertyName("icon")]
-    public GameImage Icon { get; set; }
+    public GameImage Icon { get; set; } = null!;
 
     /// <summary>
     /// 仅 <see cref="GameImage.Url"/> 有效
     /// </summary>
     [JsonPropertyName("video")]
-    public GameImage Video { get; set; }
+    public GameImage Video { get; set; } = null!;
 
     /// <summary>
     /// 视频背景上的叠加图片
     /// </summary>
     [JsonPropertyName("theme")]
-    public GameImage Theme { get; set; }
+    public GameImage Theme { get; set; } = null!;
 
     /// <summary>
     /// <see cref="BACKGROUND_TYPE_UNSPECIFIED"/> or <see cref="BACKGROUND_TYPE_VIDEO"/>

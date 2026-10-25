@@ -772,7 +772,7 @@ public partial class GamePackageService
     private class IgnoreMatchingField
     {
         [JsonPropertyName("category")]
-        public string Category { get; set; }
+        public string Category { get; set; } = default!;
 
         [JsonPropertyName("is_delete")]
         public bool IsDelete { get; set; }

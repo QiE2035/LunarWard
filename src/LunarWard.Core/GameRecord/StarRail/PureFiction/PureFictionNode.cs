@@ -14,7 +14,7 @@ public class PureFictionNode
     public List<PureFictionAvatar> Avatars { get; set; } = [];
 
     [JsonPropertyName("buff")]
-    public PureFictionBuff Buff { get; set; }
+    public PureFictionBuff Buff { get; set; } = null!;
 
     [JsonPropertyName("score")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]

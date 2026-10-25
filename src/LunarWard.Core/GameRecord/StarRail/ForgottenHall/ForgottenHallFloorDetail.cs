@@ -14,10 +14,10 @@ public class ForgottenHallFloorDetail
     public int StarNum { get; set; }
 
     [JsonPropertyName("node_1")]
-    public ForgottenHallNode Node1 { get; set; }
+    public ForgottenHallNode Node1 { get; set; } = null!;
 
     [JsonPropertyName("node_2")]
-    public ForgottenHallNode Node2 { get; set; }
+    public ForgottenHallNode Node2 { get; set; } = null!;
 
     [JsonPropertyName("node_3")]
     public ForgottenHallNode? Node3 { get; set; }

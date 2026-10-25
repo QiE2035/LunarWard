@@ -17,13 +17,13 @@ public class TravelersDiarySummary : TravelersDiaryBase, IJsonOnDeserialized
     /// 今日数据，查询月份不是当前月时，数据内容均为0
     /// </summary>
     [JsonPropertyName("day_data")]
-    public TravelersDiaryDayData DayData { get; set; }
+    public TravelersDiaryDayData DayData { get; set; } = null!;
 
     /// <summary>
     /// 查询月数据
     /// </summary>
     [JsonPropertyName("month_data")]
-    public TravelersDiaryMonthData MonthData { get; set; }
+    public TravelersDiaryMonthData MonthData { get; set; } = null!;
 
     /// <summary>
     /// 不知道是什么

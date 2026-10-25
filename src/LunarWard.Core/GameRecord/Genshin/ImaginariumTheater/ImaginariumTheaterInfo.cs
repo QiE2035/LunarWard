@@ -49,15 +49,15 @@ public class ImaginariumTheaterInfo
 
 
     [JsonPropertyName("detail")]
-    public ImaginariumTheaterDetail Detail { get; set; }
+    public ImaginariumTheaterDetail Detail { get; set; } = null!;
 
 
     [JsonPropertyName("stat")]
-    public ImaginariumTheaterStat Stat { get; set; }
+    public ImaginariumTheaterStat Stat { get; set; } = null!;
 
 
     [JsonPropertyName("schedule")]
-    public ImaginariumTheaterSchedule Schedule { get; set; }
+    public ImaginariumTheaterSchedule Schedule { get; set; } = null!;
 
 
     [JsonPropertyName("has_data")]

@@ -36,19 +36,19 @@ public class ShiyuDefenseInfoV2 : ShiyuDefenseInfoBase, IJsonOnDeserialized
     /// 通关概要
     /// </summary>
     [JsonPropertyName("brief")]
-    public ShiyuDefenseV2Brief Brief { get; set; }
+    public ShiyuDefenseV2Brief Brief { get; set; } = null!;
 
     /// <summary>
     /// 第五层战斗信息
     /// </summary>
     [JsonPropertyName("fitfh_layer_detail")]
-    public ShiyuDefenseV2FifthLayerDetail FifthLayerDetail { get; set; }
+    public ShiyuDefenseV2FifthLayerDetail FifthLayerDetail { get; set; } = null!;
 
     /// <summary>
     /// 第四层战斗信息
     /// </summary>
     [JsonPropertyName("fourth_layer_detail")]
-    public ShiyuDefenseV2FourthLayerDetail FourthLayerDetail { get; set; }
+    public ShiyuDefenseV2FourthLayerDetail FourthLayerDetail { get; set; } = null!;
 
     /// <summary>
     /// 开始时间

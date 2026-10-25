@@ -12,7 +12,7 @@ public class Energy
     /// 当前电量、最大电量
     /// </summary>
     [JsonPropertyName("progress")]
-    public EnergyProgress Progress { get; set; }
+    public EnergyProgress Progress { get; set; } = null!;
 
     /// <summary>
     /// 电量恢复时间，秒

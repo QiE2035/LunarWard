@@ -13,7 +13,7 @@ internal class GameRecordIndex : IJsonOnDeserialized
 
 
     [JsonPropertyName("role")]
-    public GameRecordIndexRole Role { get; set; }
+    public GameRecordIndexRole Role { get; set; } = null!;
 
 
     [JsonIgnore]

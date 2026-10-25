@@ -14,7 +14,7 @@ public class ShiyuDefenseV2FourthLayerChallengeInfo
     public List<ZZZAvatar> AvatarList { get; set; } = [];
 
     [JsonPropertyName("buddy")]
-    public ZZZBuddy Buddy { get; set; }
+    public ZZZBuddy Buddy { get; set; } = null!;
 
 
     [JsonExtensionData]

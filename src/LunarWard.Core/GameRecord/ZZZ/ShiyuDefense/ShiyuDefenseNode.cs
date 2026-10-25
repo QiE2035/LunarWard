@@ -10,7 +10,7 @@ public class ShiyuDefenseNode
     public List<ZZZAvatar> Avatars { get; set; } = [];
 
     [JsonPropertyName("buddy")]
-    public ZZZBuddy Buddy { get; set; }
+    public ZZZBuddy Buddy { get; set; } = null!;
 
     /// <summary>
     /// 有利属性
@@ -22,7 +22,7 @@ public class ShiyuDefenseNode
     /// 敌人
     /// </summary>
     [JsonPropertyName("monster_info")]
-    public ShiyuDefenseMonsterInfo MonsterInfo { get; set; }
+    public ShiyuDefenseMonsterInfo MonsterInfo { get; set; } = null!;
 
     /// <summary>
     /// 战斗时间，秒

@@ -9,13 +9,13 @@ public class ThresholdSimulationBossChallengeRecord
     /// BOSS 信息
     /// </summary>
     [JsonPropertyName("boss_info")]
-    public ThresholdSimulationBossInfo BossInfo { get; set; }
+    public ThresholdSimulationBossInfo BossInfo { get; set; } = null!;
 
     /// <summary>
     /// 挑战信息
     /// </summary>
     [JsonPropertyName("main_challenge_record")]
-    public ThresholdSimulationMainChallengeRecord MainChallengeRecord { get; set; }
+    public ThresholdSimulationMainChallengeRecord MainChallengeRecord { get; set; } = null!;
 
 
     [JsonExtensionData]

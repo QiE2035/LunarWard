@@ -11,10 +11,10 @@ public class ChallengePeakData
     public bool HasMoreBossRecord { get; set; }
 
     [JsonPropertyName("challenge_peak_best_record_brief")]
-    public ChallengePeakBestRecordBrief ChallengePeakBestRecordBrief { get; set; }
+    public ChallengePeakBestRecordBrief ChallengePeakBestRecordBrief { get; set; } = null!;
 
     [JsonPropertyName("role")]
-    public ChallengePeakRole Role { get; set; }
+    public ChallengePeakRole Role { get; set; } = null!;
 
 
     [JsonExtensionData]

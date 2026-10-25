@@ -6,7 +6,7 @@ public class ImaginariumTheaterSplendourBuff
 {
 
     [JsonPropertyName("summary")]
-    public ImaginariumTheaterSplendourBuffSummary Summary { get; set; }
+    public ImaginariumTheaterSplendourBuffSummary Summary { get; set; } = null!;
 
 
     [JsonPropertyName("buffs")]

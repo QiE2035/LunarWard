@@ -8,7 +8,7 @@ public class ChallengePeakRecordMob
         MobRecord = mobRecord;
     }
 
-    public ChallengePeakMobInfo MobInfo { get; set; }
+    public ChallengePeakMobInfo MobInfo { get; set; } = null!;
 
     public ChallengePeakMobRecord? MobRecord { get; set; }
 

@@ -9,7 +9,7 @@ public class ShiyuDefenseV2FifthLayerChallengeInfo : ShiyuDefenseV2FourthLayerCh
     public string Rating { get; set; } = null!;
 
     [JsonPropertyName("buffer")]
-    public ShiyuDefenseBuff Buff { get; set; }
+    public ShiyuDefenseBuff Buff { get; set; } = null!;
 
     [JsonPropertyName("score")]
     public int Score { get; set; }

@@ -10,7 +10,7 @@ public class GameChannelSDK
 {
 
     [JsonPropertyName("game")]
-    public GameId GameId { get; set; }
+    public GameId GameId { get; set; } = null!;
 
 
     /// <summary>
@@ -21,7 +21,7 @@ public class GameChannelSDK
 
 
     [JsonPropertyName("channel_sdk_pkg")]
-    public GameChannelSDKPackage ChannelSDKPackage { get; set; }
+    public GameChannelSDKPackage ChannelSDKPackage { get; set; } = null!;
 
 
     [JsonPropertyName("pkg_version_file_name")]
