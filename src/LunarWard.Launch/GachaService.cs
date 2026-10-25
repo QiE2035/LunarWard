@@ -25,6 +25,15 @@ public sealed record GachaRecord
 
     public required long Uid { get; init; }
 
+    /// <summary>是否 UP 角色/武器（接口的 <c>is_up</c>；原神老接口没有，恒为 false）。</summary>
+    public bool IsUp { get; init; }
+
+    /// <summary>物品 id（UIGF/SRGF 导出需要）。</summary>
+    public int ItemId { get; init; }
+
+    /// <summary>数量（接口恒为 1，UIGF 要求显式字段）。</summary>
+    public int Count { get; init; } = 1;
+
     public bool IsFiveStar => RankType == 5;
 
     public bool IsFourStar => RankType == 4;
@@ -130,6 +139,116 @@ public sealed class GachaService
 
 
     /// <summary>
+    /// 按指定语言重新命名记录（上游 <c>GachaLogPage</c> 的「应用」→ <c>ChangeGachaItemNameCommand</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 上游先按 uid 读回全部记录、拉对应语言的 wiki 名称表、再逐条改名写库；
+    /// LunarWard 的记录在页面内存 + JSON 存档里，所以这里返回改名后的列表，由调用方回写。
+    /// 名称表按 <c>item_id</c> 索引（原神是 avatar/weapon 两张表的并集）。
+    /// </remarks>
+    public async Task<(IReadOnlyList<GachaRecord> Records, int Renamed)> ChangeItemNamesAsync(
+        string gameKind,
+        GameBiz gameBiz,
+        string lang,
+        IReadOnlyList<GachaRecord> records,
+        CancellationToken ct = default)
+    {
+        if (records.Count == 0)
+        {
+            return (records, 0);
+        }
+
+        var names = new Dictionary<int, string>();
+        if (gameKind == "zzz")
+        {
+            ZZZGachaWiki wiki = await new ZZZGachaClient(_httpClient)
+                .GetZZZGachaInfoAsync(gameBiz, lang, ct)
+                .ConfigureAwait(false);
+            foreach (ZZZGachaInfo info in wiki.List ?? [])
+            {
+                if (info.Id != 0 && !string.IsNullOrWhiteSpace(info.Name))
+                {
+                    names[info.Id] = info.Name;
+                }
+            }
+        }
+        else if (gameKind == "genshin")
+        {
+            GenshinGachaWiki wiki = await new GenshinGachaClient(_httpClient)
+                .GetGenshinGachaInfoAsync(gameBiz, lang, ct)
+                .ConfigureAwait(false);
+            foreach (GenshinGachaInfo info in (wiki.AllAvatar ?? []).Concat(wiki.AllWeapon ?? []))
+            {
+                if (info.Id != 0 && !string.IsNullOrWhiteSpace(info.Name))
+                {
+                    names[info.Id] = info.Name;
+                }
+            }
+        }
+        else
+        {
+            throw new NotSupportedException($"Gacha record renaming is not supported for {gameKind}.");
+        }
+
+        return ApplyItemNames(records, names);
+    }
+
+
+    /// <summary>
+    /// 按 <see cref="GachaRecord.Id"/> 合并两批记录（导入进现有列表）；纯函数。
+    /// </summary>
+    /// <remarks>
+    /// 上游导入直接写数据库、由数据库的主键去重；这里用同一套语义：同 <c>Id</c> 以后者为准，
+    /// 输出按时间倒序（与接口返回顺序一致，页面再自行分组/排序）。
+    /// </remarks>
+    public static IReadOnlyList<GachaRecord> MergeById(
+        IReadOnlyList<GachaRecord> existing,
+        IEnumerable<GachaRecord> incoming)
+    {
+        var byId = new Dictionary<long, GachaRecord>(existing.Count);
+        foreach (GachaRecord record in existing)
+        {
+            byId[record.Id] = record;
+        }
+        foreach (GachaRecord record in incoming)
+        {
+            byId[record.Id] = record;
+        }
+        return byId.Values
+            .OrderByDescending(r => r.Time)
+            .ThenByDescending(r => r.Id)
+            .ToList();
+    }
+
+
+    /// <summary>
+    /// 按 <c>item_id</c> 把记录名换成名称表里的名字；纯函数，便于离线测试。
+    /// </summary>
+    public static (IReadOnlyList<GachaRecord> Records, int Renamed) ApplyItemNames(
+        IReadOnlyList<GachaRecord> records,
+        IReadOnlyDictionary<int, string> names)
+    {
+        var result = new List<GachaRecord>(records.Count);
+        int renamed = 0;
+        foreach (GachaRecord record in records)
+        {
+            if (names.TryGetValue(record.ItemId, out string? name)
+                && !string.IsNullOrWhiteSpace(name)
+                && name != record.Name)
+            {
+                result.Add(record with { Name = name });
+                renamed++;
+            }
+            else
+            {
+                result.Add(record);
+            }
+        }
+        return (result, renamed);
+    }
+
+
+    /// <summary>
     /// 拉取全部抽卡记录。
     /// </summary>
     /// <param name="gameKind"><c>genshin</c> | <c>zzz</c>。</param>
@@ -163,6 +282,9 @@ public sealed class GachaService
             GachaTypeName = GetPoolName(gameKind, item.GachaType),
             Time = item.Time,
             Uid = item.Uid,
+            IsUp = item.IsUp == 1,
+            ItemId = item.ItemId,
+            Count = 1,
         }).ToList();
     }
 

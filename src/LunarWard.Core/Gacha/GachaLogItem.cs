@@ -44,6 +44,15 @@ public class GachaLogItem
     public int ItemId { get; set; }
 
 
+    /// <summary>
+    /// 是否 UP 角色/武器（绝区零与星穹铁道的接口都会返回 <c>is_up</c>：1 是、0 否）。
+    /// 原神的老接口没有该字段，保持默认 0。
+    /// </summary>
+    [JsonPropertyName("is_up")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
+    public int IsUp { get; set; }
+
+
     [JsonPropertyName("count")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
     public int Count { get; set; }

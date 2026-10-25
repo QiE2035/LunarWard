@@ -1,0 +1,317 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+             xmlns:controls="using:LunarWard.App.Controls"
+             x:Class="LunarWard.App.Controls.ZZZGachaStatsCard"
+             x:DataType="vm:GachaPoolCardViewModel">
+
+  <!--
+    1:1 复刻 Starward Features/Gacha/ZZZGachaStatsCard.xaml（绝区零「调频记录」统计卡）。
+    与通用卡（GachaStatsCard）的差别只有三处，其余行序/尺寸/颜色完全一致：
+      1) 稀有度用 S / A / B 表示 5★ / 4★ / 3★，没有 2★ 行；
+      2) 「S 平均」行在两处 Run 后追加「 / UP」与「 / 平均抽数 (UP 数量)」
+         （源码 GachaTypeStats.Avarage_5_Desc_Text / Avarage_5_Up_Text）；
+      3) 保底行与第一条分割线在源码里是注释掉的，这里同样只留空行占位。
+    原先的实现说明：
+    结构：Grid Padding 12,8 + CustomOverlayAcrylic + 圆角 8 + RowSpacing 4，
+    行依次是 类型/计数(16) → 起止时间(12) → 分割线 → 5★平均(Rarity2 绿) →
+    5★/4★/3★ 统计 → Pivot(5★/4★ 列表) + Segmented。
+    数据侧：GachaPoolCardViewModel（字段一一对应 Starward GachaTypeStats）。
+  -->
+
+  <UserControl.Resources>
+    <!-- 稀有度配色：GachaStatsCard.xaml:15-18 原值照抄 -->
+    <SolidColorBrush x:Key="Rarity5ForegroundBrush">#FFA500</SolidColorBrush>
+    <SolidColorBrush x:Key="Rarity4ForegroundBrush">#C864E0</SolidColorBrush>
+    <SolidColorBrush x:Key="Rarity3ForegroundBrush">#5EAAED</SolidColorBrush>
+    <SolidColorBrush x:Key="Rarity2ForegroundBrush">#3BA272</SolidColorBrush>
+
+    <!-- 保底进度条底色：GachaStatsCard.xaml:27 + GachaPityProgressBackgroundBrushConverter.cs -->
+    <controls:GachaPityProgressBackgroundBrushConverter x:Key="PityProgressConverter" />
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <!-- GachaStatsCard.xaml:20-25：卡片内文本统一次要色、垂直居中、单行 -->
+    <Style Selector="TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{StaticResource StarTextSecondary}" />
+      <Setter Property="TextWrapping" Value="NoWrap" />
+      <Setter Property="TextTrimming" Value="None" />
+    </Style>
+
+    <!--
+      Segmented 复刻（Starward 用 CommunityToolkit.WinUI.Controls.Segmented）：
+      容器 ControlFillColorDefaultBrush → StarControlFillBrush，选中项
+      ControlFillColorSecondaryBrush → StarControlFillHoverBrush。
+    -->
+    <Style Selector="Border.segmented">
+      <Setter Property="Background" Value="{StaticResource StarControlFillBrush}" />
+      <Setter Property="BorderBrush" Value="{StaticResource StarCardStrokeBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Height" Value="32" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Padding" Value="0,4" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment:checked /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarControlFillPressedBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <!--
+    Starward GachaStatsCard.xaml:30-35：Padding 12,8,12,8 / CustomOverlayAcrylicBrush /
+    CornerRadius 8 / RowSpacing 4 / ThemeShadow + Translation（Avalonia 无此二项，省略）。
+    Avalonia 的 Grid 没有 Padding / CornerRadius / Background 之外的外框属性，
+    所以外框用 Border（Starward 是 Grid 自带的同名属性）。
+  -->
+  <Border Padding="12,8,12,8"
+          Background="{StaticResource StarOverlayAcrylicBrush}"
+          CornerRadius="8">
+  <Grid RowSpacing="4"
+        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
+
+    <!-- 行 0：GachaStatsCard.xaml:51-66 类型（16，次要色，省略号）+ 右对齐计数（16） -->
+    <Grid Grid.Row="0" ColumnSpacing="8" ColumnDefinitions="*,Auto">
+      <TextBlock Grid.Column="0"
+                 FontSize="16"
+                 Text="{Binding GachaTypeText}"
+                 TextTrimming="CharacterEllipsis" />
+      <TextBlock Grid.Column="1"
+                 FontSize="16"
+                 Text="{Binding CountText}" />
+    </Grid>
+
+    <!-- 行 1：GachaStatsCard.xaml:69-76 起止时间（12，分隔符 "-"） -->
+    <TextBlock Grid.Row="1"
+               FontSize="12"
+               Text="{Binding TimeRangeText}"
+               TextTrimming="CharacterEllipsis" />
+
+    <!-- 行 2：ZZZ 卡的时间下方没有分割线（源码这里没有 MenuFlyoutSeparator） -->
+    <Border Grid.Row="2" Height="1" Background="{StaticResource StarDividerBrush}" />
+
+    <!--
+      行 3：ZZZGachaStatsCard.xaml 的「S 平均」行（Rarity2ForegroundBrush #3BA272）。
+      左边 `S 平均` + ` / UP`，右边 `F2` + ` / UP 平均 (UP 数量)`，后两段都只在有 UP 时才有内容。
+    -->
+    <TextBlock Grid.Row="3"
+               FontSize="14"
+               Foreground="{StaticResource Rarity2ForegroundBrush}">
+      <Run Text="{Binding AverageLabel}" /><Run Text="{Binding AverageDescText}" />
+    </TextBlock>
+    <TextBlock Grid.Row="3"
+               HorizontalAlignment="Right"
+               FontSize="14"
+               Foreground="{StaticResource Rarity2ForegroundBrush}">
+      <Run Text="{Binding AverageValueText}" /><Run Text="{Binding AverageUpText}" />
+    </TextBlock>
+
+    <!-- 行 4：「S 统计」（#FFA500，5★ 稀有度色） -->
+    <TextBlock Grid.Row="4"
+               FontSize="14"
+               Foreground="{StaticResource Rarity5ForegroundBrush}"
+               Text="{Binding Stats5Label}" />
+    <TextBlock Grid.Row="4"
+               HorizontalAlignment="Right"
+               FontSize="14"
+               Foreground="{StaticResource Rarity5ForegroundBrush}"
+               Text="{Binding Stats5ValueText}" />
+
+    <!-- 行 5：「A 统计」（#C864E0） -->
+    <TextBlock Grid.Row="5"
+               FontSize="14"
+               Foreground="{StaticResource Rarity4ForegroundBrush}"
+               Text="{Binding Stats4Label}" />
+    <TextBlock Grid.Row="5"
+               HorizontalAlignment="Right"
+               FontSize="14"
+               Foreground="{StaticResource Rarity4ForegroundBrush}"
+               Text="{Binding Stats4ValueText}" />
+
+    <!-- 行 6：「B 统计」（#5EAAED） -->
+    <TextBlock Grid.Row="6"
+               FontSize="14"
+               Foreground="{StaticResource Rarity3ForegroundBrush}"
+               Text="{Binding Stats3Label}" />
+    <TextBlock Grid.Row="6"
+               HorizontalAlignment="Right"
+               FontSize="14"
+               Foreground="{StaticResource Rarity3ForegroundBrush}"
+               Text="{Binding Stats3ValueText}" />
+
+    <!--
+      行 7：ZZZGachaStatsCard.xaml 的 MenuFlyoutSeparator 是 Visibility=Collapsed，
+      意味着这里没有分割线；为了行号对齐保留空占位（不渲染）。
+    -->
+
+    <!--
+      行 8：GachaStatsCard.xaml:154-288 的 Pivot + Segmented。
+      Starward 的 Segmented 叠在 Pivot 表头（高 36）上，所以这里用 36 高表头行 + 列表行。
+    -->
+    <Grid Grid.Row="8" RowDefinitions="36,*">
+      <Border Grid.Row="0" Classes="segmented" HorizontalAlignment="Stretch">
+        <Grid ColumnDefinitions="*,*">
+          <ToggleButton Grid.Column="0"
+                        Classes="segment"
+                        IsChecked="{Binding IsFiveStarTab, Mode=TwoWay}">
+            <TextBlock Foreground="{StaticResource Rarity5ForegroundBrush}" Text="S" />
+          </ToggleButton>
+          <ToggleButton Grid.Column="1"
+                        Classes="segment"
+                        IsChecked="{Binding IsFourStarTab, Mode=TwoWay}">
+            <TextBlock Foreground="{StaticResource Rarity4ForegroundBrush}" Text="A" />
+          </ToggleButton>
+        </Grid>
+      </Border>
+      <Panel Grid.Row="1" Margin="0,4,0,0">
+        <ItemsControl ItemsSource="{Binding List5}" IsVisible="{Binding IsFiveStarTab}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Vertical" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:GachaStatsItemViewModel">
+              <Grid Height="28"
+                    Background="Transparent"
+                    ToolTip.Tip="{Binding TimeText}"
+                    PointerEntered="OnRarity5RowPointerEntered"
+                    PointerExited="OnRarity5RowPointerExited">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="40" />
+                  <ColumnDefinition />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="Auto" MinWidth="20" />
+                </Grid.ColumnDefinitions>
+
+                <!-- GachaStatsCard.xaml:179-183 保底进度条底 -->
+                <Border Grid.Column="1"
+                        Height="24"
+                        Margin="-4,0,-4,0"
+                        VerticalAlignment="Center"
+                        Background="{Binding Converter={StaticResource PityProgressConverter}}" />
+
+                <!--
+                  GachaStatsCard.xaml:184-187 是 CachedImage 28×28 的物品图标；
+                  LunarWard 没有图标素材，保留 28 宽占位（任务约定）。
+                -->
+                <Border Width="28"
+                        Height="28"
+                        HorizontalAlignment="Left"
+                        Background="{StaticResource StarControlFillBrush}"
+                        CornerRadius="4" />
+
+                <!-- 非悬停：普通文本 -->
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Name}"
+                           TextTrimming="CharacterEllipsis"
+                           IsVisible="{Binding !IsPointerIn}" />
+                <TextBlock Grid.Column="3"
+                           HorizontalAlignment="Right"
+                           Text="{Binding PityText}"
+                           IsVisible="{Binding !IsPointerIn}" />
+
+                <!-- 悬停：GachaStatsCard.xaml:199-211 稀有度色 -->
+                <TextBlock Grid.Column="1"
+                           Foreground="{StaticResource Rarity5ForegroundBrush}"
+                           Text="{Binding Name}"
+                           TextTrimming="CharacterEllipsis"
+                           IsVisible="{Binding IsPointerIn}" />
+                <TextBlock Grid.Column="3"
+                           HorizontalAlignment="Right"
+                           Foreground="{StaticResource Rarity5ForegroundBrush}"
+                           Text="{Binding PityText}"
+                           IsVisible="{Binding IsPointerIn}" />
+
+                <!-- GachaStatsCard.xaml:212-221 up! 标记（IsUp 数据不具备，恒不显示） -->
+                <TextBlock Grid.Column="2"
+                           HorizontalAlignment="Right"
+                           FontSize="12"
+                           FontStyle="Italic"
+                           Foreground="{StaticResource Rarity5ForegroundBrush}"
+                           Opacity="{Binding UpTextOpacity}"
+                           Text="up!"
+                           IsVisible="{Binding HasUpItem}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl ItemsSource="{Binding List4}" IsVisible="{Binding IsFourStarTab}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Vertical" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:GachaStatsItemViewModel">
+              <Grid Height="28"
+                    Background="Transparent"
+                    ColumnSpacing="8"
+                    ToolTip.Tip="{Binding TimeText}"
+                    PointerEntered="OnRarity4RowPointerEntered"
+                    PointerExited="OnRarity4RowPointerExited">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="28" />
+                  <ColumnDefinition />
+                  <ColumnDefinition Width="24" />
+                </Grid.ColumnDefinitions>
+
+                <!-- GachaStatsCard.xaml:244-246 CachedImage 28×28；占位 -->
+                <Border Width="28"
+                        Height="28"
+                        Background="{StaticResource StarControlFillBrush}"
+                        CornerRadius="4" />
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Name}"
+                           TextTrimming="CharacterEllipsis"
+                           IsVisible="{Binding !IsPointerIn}" />
+                <TextBlock Grid.Column="2"
+                           HorizontalAlignment="Right"
+                           Text="{Binding PityText}"
+                           IsVisible="{Binding !IsPointerIn}" />
+                <TextBlock Grid.Column="1"
+                           Foreground="{StaticResource Rarity4ForegroundBrush}"
+                           Text="{Binding Name}"
+                           TextTrimming="CharacterEllipsis"
+                           IsVisible="{Binding IsPointerIn}" />
+                <TextBlock Grid.Column="2"
+                           HorizontalAlignment="Right"
+                           Foreground="{StaticResource Rarity4ForegroundBrush}"
+                           Text="{Binding PityText}"
+                           IsVisible="{Binding IsPointerIn}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Panel>
+    </Grid>
+  </Grid>
+  </Border>
+</UserControl>

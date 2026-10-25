@@ -26,7 +26,8 @@ public sealed partial class GachaPoolCardViewModel : ObservableObject
         GachaPoolStatistics statistics,
         IReadOnlyList<GachaRecord> records,
         string poolText,
-        string pityText)
+        string pityText,
+        bool zzz = false)
     {
         GachaType = statistics.GachaType;
         GachaTypeText = poolText;
@@ -56,12 +57,12 @@ public sealed partial class GachaPoolCardViewModel : ObservableObject
             {
                 case 5:
                     count5++;
-                    list5.Add(new GachaStatsItemViewModel(record.Name, pity5, record.Time, GachaType));
+                    list5.Add(new GachaStatsItemViewModel(record.Name, pity5, record.Time, GachaType, isUp: record.IsUp));
                     pity5 = 0;
                     break;
                 case 4:
                     count4++;
-                    list4.Add(new GachaStatsItemViewModel(record.Name, pity4, record.Time, GachaType));
+                    list4.Add(new GachaStatsItemViewModel(record.Name, pity4, record.Time, GachaType, isUp: record.IsUp));
                     pity4 = 0;
                     break;
                 case 3:
@@ -92,11 +93,32 @@ public sealed partial class GachaPoolCardViewModel : ObservableObject
         List5 = list5;
         List4 = list4;
 
-        // GachaStatsCard.xaml:101-150 的三行标签（"5★" + 平均 / 统计）
-        AverageLabel = "5★" + AppStrings.Instance["Gacha.Average"];
-        Stats5Label = "5★" + AppStrings.Instance["Gacha.Stats"];
-        Stats4Label = "4★" + AppStrings.Instance["Gacha.Stats"];
-        Stats3Label = "3★" + AppStrings.Instance["Gacha.Stats"];
+        // 绝区零用 S/A/B 表示 5/4/3 星（ZZZGachaStatsCard.xaml 的 Run 文本），其余游戏用 "N★"
+        string five = zzz ? "S" : "5★";
+        string four = zzz ? "A" : "4★";
+        string three = zzz ? "B" : "3★";
+        AverageLabel = five + AppStrings.Instance["Gacha.Average"];
+        Stats5Label = five + AppStrings.Instance["Gacha.Stats"];
+        Stats4Label = four + AppStrings.Instance["Gacha.Stats"];
+        Stats3Label = three + AppStrings.Instance["Gacha.Stats"];
+
+        // Starward GachaTypeStats.Count_5_Up / Average_5_Up（ZZZGachaStatsCard 的 "S 平均 … / UP"）
+        var upPities = new List<int>();
+        int runningPity = 0;
+        foreach (var record in ordered)
+        {
+            runningPity++;
+            if (record.RankType == 5)
+            {
+                if (record.IsUp)
+                {
+                    upPities.Add(runningPity);
+                }
+                runningPity = 0;
+            }
+        }
+        Count5Up = upPities.Count;
+        Average5Up = Count5Up == 0 ? 0 : upPities.Average();
     }
 
 
@@ -155,6 +177,20 @@ public sealed partial class GachaPoolCardViewModel : ObservableObject
     public string AverageLabel { get; }
 
     public string AverageValueText => Average5.ToString("F2");
+
+    /// <summary>UP 5★ 数量（Starward <c>GachaTypeStats.Count_5_Up</c>）。</summary>
+    public int Count5Up { get; }
+
+    /// <summary>UP 5★ 的平均抽数（Starward <c>GachaTypeStats.Average_5_Up</c>）。</summary>
+    public double Average5Up { get; }
+
+    /// <summary>ZZZ 卡「S 平均」行末尾的 <c> / UP</c> 前缀（源码 <c>Avarage_5_Desc_Text</c>）。</summary>
+    public string AverageDescText => Count5Up == 0 ? "" : " / UP";
+
+    /// <summary>ZZZ 卡「S 平均」行的数值后缀（源码 <c>Avarage_5_Up_Text</c>）。</summary>
+    public string AverageUpText => Count5Up == 0
+        ? ""
+        : $" / {Average5Up:F2} ({Count5Up})";
 
     public string Stats5Label { get; }
 

@@ -1,0 +1,269 @@
+<Window x:Class="LunarWard.App.Views.Starward.Uigf4GachaWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:LunarWard.App.ViewModels.Starward"
+        mc:Ignorable="d"
+        x:DataType="vm:Uigf4GachaWindowViewModel"
+        x:Name="Root"
+        Width="800"
+        Height="600"
+        MinWidth="640"
+        MinHeight="440"
+        WindowDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        Title="UIGF v4.2">
+
+  <!--
+    复刻 Starward `Features/Gacha/UIGF/UIGF4GachaWindow.xaml`：
+    NavigationView 两项（导出记录 / 导入记录），左侧 200px 导航、右侧内容区。
+    Avalonia 没有 NavigationView，用 ListBox + 两个 IsVisible 面板表达同一结构；
+    导出列表、导入列表、时区偏移输入、全选、底部操作按钮与上游一致。
+    上游窗口没有设尺寸（WinUI 默认大小），这里沿用本仓库对话框的 800×600。
+  -->
+
+  <Border Background="{StaticResource StarAcrylicBrush}"
+          BorderThickness="1"
+          BorderBrush="#14FFFFFF"
+          CornerRadius="8"
+          BoxShadow="0 16 48 0 #99000000">
+    <Grid ColumnDefinitions="200,*">
+
+      <!--  左侧导航（源码 NavigationView 的两个菜单项）  -->
+      <Border Grid.Column="0"
+              Padding="8,16"
+              Background="#0AFFFFFF"
+              BorderBrush="#14FFFFFF"
+              BorderThickness="0,0,1,0"
+              CornerRadius="8,0,0,8">
+        <StackPanel Spacing="4">
+          <TextBlock Margin="12,0,0,12"
+                     FontSize="12"
+                     Classes="secondary"
+                     Text="UIGF v4.2" />
+          <ListBox x:Name="NavList"
+                   Background="Transparent"
+                   BorderThickness="0"
+                   SelectedIndex="{Binding SelectedPage, Mode=TwoWay}">
+            <ListBoxItem Padding="12,10">
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock FontSize="16" Classes="icon" Text="&#xE896;" />
+                <TextBlock Text="{Binding Strings[Gacha.Uigf.ExportNav]}" />
+              </StackPanel>
+            </ListBoxItem>
+            <ListBoxItem Padding="12,10">
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock FontSize="16" Classes="icon" Text="&#xE898;" />
+                <TextBlock Text="{Binding Strings[Gacha.Uigf.ImportNav]}" />
+              </StackPanel>
+            </ListBoxItem>
+          </ListBox>
+        </StackPanel>
+      </Border>
+
+      <!--  ── 导出记录 ───────────────────────────────────────────────  -->
+      <Grid Grid.Column="1"
+            Margin="24,20,24,20"
+            RowDefinitions="Auto,Auto,*,Auto"
+            IsVisible="{Binding IsExportPage}">
+
+        <StackPanel Grid.Row="0" Spacing="8">
+          <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding Strings[Gacha.Uigf.ExportTitle]}" />
+          <TextBlock FontSize="12"
+                     Classes="secondary"
+                     TextWrapping="Wrap"
+                     Text="{Binding Strings[Gacha.Uigf.ExportHint]}" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1"
+                    Margin="0,16,0,8"
+                    Orientation="Horizontal"
+                    Spacing="12">
+          <CheckBox IsThreeState="True"
+                    IsChecked="{Binding AllExportsChecked, Mode=TwoWay}"
+                    Content="{Binding Strings[Gacha.Uigf.SelectAll]}" />
+          <TextBlock VerticalAlignment="Center"
+                     FontSize="12"
+                     Classes="secondary"
+                     IsVisible="{Binding HasNoExports}"
+                     Text="{Binding Strings[Gacha.Uigf.NoArchives]}" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="2">
+          <ItemsControl ItemsSource="{Binding ExportItems}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:Uigf4ExportItemViewModel">
+                <Border Margin="0,0,0,8"
+                        Padding="12,10"
+                        Background="#0AFFFFFF"
+                        CornerRadius="4">
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <CheckBox Grid.Column="0"
+                              Margin="0,0,10,0"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding Title}" />
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock FontSize="12"
+                                   Classes="secondary"
+                                   Text="{Binding CountText}" />
+                        <TextBlock FontSize="12"
+                                   Classes="secondary"
+                                   Text="{Binding LastItemTimeText}" />
+                        <TextBlock FontSize="12"
+                                   Classes="secondary"
+                                   Text="{Binding LastItemName}" />
+                      </StackPanel>
+                    </StackPanel>
+                    <Border Grid.Column="2"
+                            Padding="8,2"
+                            VerticalAlignment="Top"
+                            Background="#14FFFFFF"
+                            CornerRadius="4">
+                      <TextBlock FontSize="11" Text="{Binding LangText}" />
+                    </Border>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="3"
+                    Margin="0,12,0,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="12">
+          <Button MinWidth="120"
+                  Classes="accent"
+                  Command="{Binding ExportCommand}"
+                  Content="{Binding Strings[Gacha.Uigf.ExportButton]}" />
+          <TextBlock VerticalAlignment="Center"
+                     FontSize="12"
+                     Classes="secondary"
+                     IsVisible="{Binding HasStatus}"
+                     Text="{Binding StatusText}" />
+        </StackPanel>
+      </Grid>
+
+      <!--  ── 导入记录 ───────────────────────────────────────────────  -->
+      <Grid Grid.Column="1"
+            Margin="24,20,24,20"
+            RowDefinitions="Auto,Auto,*,Auto"
+            IsVisible="{Binding IsImportPage}">
+
+        <StackPanel Grid.Row="0" Spacing="8">
+          <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding Strings[Gacha.Uigf.ImportTitle]}" />
+          <TextBlock FontSize="12"
+                     Classes="secondary"
+                     TextWrapping="Wrap"
+                     Text="{Binding Strings[Gacha.Uigf.ImportHint]}" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1"
+                    Margin="0,16,0,8"
+                    Spacing="8">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Command="{Binding SelectFileCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock FontSize="16" Classes="icon" Text="&#xE8E5;" />
+                <TextBlock Text="{Binding Strings[Gacha.Uigf.SelectFile]}" />
+              </StackPanel>
+            </Button>
+            <TextBlock VerticalAlignment="Center"
+                       FontSize="12"
+                       Classes="secondary"
+                       Text="{Binding SourceFileName}" />
+          </StackPanel>
+          <CheckBox IsThreeState="True"
+                    IsVisible="{Binding HasImportItems}"
+                    IsChecked="{Binding AllImportsChecked, Mode=TwoWay}"
+                    Content="{Binding Strings[Gacha.Uigf.SelectAll]}" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="2">
+          <ItemsControl ItemsSource="{Binding ImportItems}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:Uigf4ImportItemViewModel">
+                <Border Margin="0,0,0,8"
+                        Padding="12,10"
+                        Background="#0AFFFFFF"
+                        CornerRadius="4">
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <CheckBox Grid.Column="0"
+                              Margin="0,0,10,0"
+                              VerticalAlignment="Center"
+                              IsEnabled="{Binding CanEdit}"
+                              IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding Title}" />
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock FontSize="12"
+                                   Classes="secondary"
+                                   Text="{Binding CountText}" />
+                        <TextBlock FontSize="12"
+                                   Classes="secondary"
+                                   Text="{Binding LastItemTimeText}" />
+                        <TextBlock FontSize="12"
+                                   Classes="secondary"
+                                   Text="{Binding LastItemName}" />
+                      </StackPanel>
+                      <TextBlock FontSize="12"
+                                 Classes="secondary"
+                                 TextWrapping="Wrap"
+                                 IsVisible="{Binding IsUnsupported}"
+                                 Text="{Binding Strings[Gacha.Uigf.Unsupported]}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2"
+                                VerticalAlignment="Top"
+                                Spacing="4">
+                      <TextBlock HorizontalAlignment="Center"
+                                 FontSize="11"
+                                 Classes="secondary"
+                                 Text="{Binding Strings[Gacha.Uigf.Timezone]}" />
+                      <NumericUpDown Width="110"
+                                     Minimum="-12"
+                                     Maximum="14"
+                                     Increment="1"
+                                     FormatString="0"
+                                     IsEnabled="{Binding CanEditTimezone}"
+                                     Value="{Binding Timezone, Mode=TwoWay}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="3"
+                    Margin="0,12,0,0"
+                    Spacing="8">
+          <TextBlock FontSize="12"
+                     Foreground="{StaticResource StarErrorBrush}"
+                     TextWrapping="Wrap"
+                     IsVisible="{Binding HasError}"
+                     Text="{Binding ErrorText}" />
+          <StackPanel HorizontalAlignment="Right"
+                      Orientation="Horizontal"
+                      Spacing="12">
+            <Button MinWidth="120"
+                    Classes="accent"
+                    IsEnabled="{Binding HasImportItems}"
+                    Command="{Binding ImportCommand}"
+                    Content="{Binding Strings[Gacha.Uigf.ImportButton]}" />
+            <TextBlock VerticalAlignment="Center"
+                       FontSize="12"
+                       Classes="secondary"
+                       IsVisible="{Binding HasStatus}"
+                       Text="{Binding StatusText}" />
+          </StackPanel>
+        </StackPanel>
+      </Grid>
+    </Grid>
+  </Border>
+</Window>

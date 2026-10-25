@@ -109,7 +109,22 @@ tr -d '\r' < ~/.nuget/packages/<id>/<ver>/<id>.nuspec | grep -oiE '<license[^>]*
 > 没有 SPDX 表达式。已打开包内 `LICENSE` 文件确认正文为 **MIT**
 > （Copyright (c) 2017 NeoSmart Technologies）。
 
-### 2.5 配置 / 基础设施
+### 2.5 数据库（抽卡记录，与 Starward 同款 SQLite）
+
+| 包 | 版本 | 许可 |
+|---|---|---|
+| `Microsoft.Data.Sqlite` | 10.0.13 | **MIT** |
+| `Microsoft.Data.Sqlite.Core`（传递） | 10.0.13 | **MIT** |
+| `SQLitePCLRaw.bundle_e_sqlite3`（传递） | 2.1.13 | **Apache-2.0** |
+| `SQLitePCLRaw.core`（传递） | 2.1.13 | **Apache-2.0** |
+| `SQLitePCLRaw.lib.e_sqlite3`（传递，内含 SQLite 原生库） | 2.1.13 | **Apache-2.0**；SQLite 本体为 **Public Domain** |
+| `SQLitePCLRaw.provider.e_sqlite3`（传递） | 2.1.13 | **Apache-2.0** |
+
+> SQLite 原生库以 `e_sqlite3` 随包分发（SQLitePCLRaw 的 `lib.e_sqlite3` 提供 Linux
+> `libe_sqlite3.so`），SQLite 本体为 Public Domain，不产生额外义务；SQLitePCLRaw
+> 是 Apache-2.0，随包分发时需保留其 NOTICE/许可文本（NuGet 包内已带 `LICENSE`）。
+
+### 2.6 配置 / 基础设施
 
 | 包 | 版本 | 许可 |
 |---|---|---|
@@ -131,7 +146,7 @@ tr -d '\r' < ~/.nuget/packages/<id>/<ver>/<id>.nuspec | grep -oiE '<license[^>]*
 | `Polly` | 8.8.0 | **BSD-3-Clause** |
 | `Polly.Core`（传递） | 8.8.0 | **BSD-3-Clause** |
 
-### 2.6 压缩与日志
+### 2.7 压缩与日志
 
 | 包 | 版本 | 许可 |
 |---|---|---|
@@ -140,13 +155,13 @@ tr -d '\r' < ~/.nuget/packages/<id>/<ver>/<id>.nuspec | grep -oiE '<license[^>]*
 | `Serilog.Sinks.File` | 7.0.0 | **Apache-2.0** |
 | `Serilog`（传递） | 4.2.0 | **Apache-2.0** |
 
-### 2.7 Markdown 渲染
+### 2.8 Markdown 渲染
 
 | 包 | 版本 | 许可 |
 |---|---|---|
 | `Markdig` | 1.4.2 | **BSD-2-Clause** |
 
-### 2.8 仅测试（不随发行包分发）
+### 2.9 仅测试（不随发行包分发）
 
 以下包只被 `tests/` 引用，**不会出现在 `packages/` 产物或发布目录中**：
 

@@ -3,6 +3,9 @@
     <RootNamespace>LunarWard.Launch</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\LunarWard.Wine\LunarWard.Wine.csproj" />
     <ProjectReference Include="..\LunarWard.Core\LunarWard.Core.csproj" />
   </ItemGroup>

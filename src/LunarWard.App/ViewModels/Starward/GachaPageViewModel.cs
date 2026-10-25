@@ -6,6 +6,8 @@ using LunarWard.App.ViewModels;
 using LunarWard.App.Views.Starward;
 using LunarWard.Games;
 using LunarWard.Launch;
+using LunarWard.Launch.Database;
+using LunarWard.Launch.Uigf4;
 using LunarWard.Platform;
 
 namespace LunarWard.App.ViewModels.Starward;
@@ -25,14 +27,17 @@ namespace LunarWard.App.ViewModels.Starward;
 /// 页面 VM <b>不重算</b>统计口径，只把结果按 Starward 的 <c>GachaTypeStats</c> 整形。
 /// </para>
 /// <para>
-/// 与 Starward 的已知差异（详见实现报告）：
-/// 记录只在本页内存中（无数据库），所以没有「按时间段删除」；
-/// <c>GachaRecord</c> 没有 <c>ItemId</c>，材料统计按名称分组、<c>up!</c> 不显示。
+/// 存储与 Starward 一致：SQLite（<c>&lt;DataHome&gt;/LunarWardDatabase.db</c>，表结构照抄
+/// <c>StarwardDatabase.db</c>），更新记录后写库、删除时间段直接删行、打开页面先从库里读。
+/// 已知差异：<c>up!</c> 需要上游的 <c>GachaNoUp</c> 表，尚未移植，所以从库里读出的记录不显示 UP 标记。
 /// </para>
 /// </remarks>
 public sealed partial class GachaPageViewModel : StarwardPageViewModel
 {
     private readonly GachaService _gacha = new();
+
+    /// <summary>本地抽卡数据库（UIGF v4.2 窗口的数据源，表结构与 Starward 一致）。</summary>
+    private readonly GachaLogStore _archiveStore;
 
     private readonly string _gameDirectory;
 
@@ -52,10 +57,12 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     private bool _disposed;
 
 
-    public GachaPageViewModel(PageContext context) : base(context)
+    public GachaPageViewModel(PageContext context, string? gameKindOverride = null) : base(context)
     {
         _gameDirectory = ProfileConfig.ExpandPath(Profile.Profile.Path);
-        _gameKind = Profile.Profile.Game;
+        _archiveStore = GachaLogStore.OpenDefault(context.Services.Paths.DataHome);
+        // 自检（--gacha-seed zzz）需要在没装绝区零的机器上也算 ZZZ 版式
+        _gameKind = gameKindOverride ?? Profile.Profile.Game;
 
         var definition = Games.GameCatalog.Get(
             Profile.Profile.Game,
@@ -76,6 +83,15 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         // 定位失败时只说一次：错误条已经写清原因与下一步，状态行留空，避免两行说同一件事。
         StatusText = url is null ? "" : Strings["Gacha.UrlFound"];
         ErrorText = url is null ? NormalizeError(error) : null;
+
+        // 上游打开页面就从数据库读已保存的记录（不必先点「更新记录」）
+        _allRecords = _archiveStore.GetAll(_gameKind);
+        if (_allRecords.Count > 0)
+        {
+            RebuildUidList();
+            Rebuild();
+            StatusText = string.Format(Strings["Gacha.LoadedFromDatabase"], _allRecords.Count);
+        }
     }
 
 
@@ -180,6 +196,18 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     /// <summary>是否已经拉到任何记录（Starward 用 <c>GachaTypeStats</c> 是否存在判断）。</summary>
     public bool HasRecords => _allRecords.Count > 0;
 
+    /// <summary>当前记录快照（删除对话框用来算范围内条数）。</summary>
+    public IReadOnlyList<GachaRecord> RecordsSnapshot => _allRecords;
+
+    /// <summary>绝区零用 <c>ZZZGachaStatsCard</c>（Starward <c>IsZZZGachaStatsCardVisible</c>）。</summary>
+    public bool IsZzz => _gameKind == "zzz";
+
+    /// <summary>统计卡：绝区零用 S/A/B 版式，其它游戏用 5★/4★/3★ 版式。</summary>
+    public bool ShowZzzStatsCard => IsZzz && HasPools;
+
+    /// <summary>非绝区零的统计卡。</summary>
+    public bool ShowGenericStatsCard => !IsZzz && HasPools;
+
     /// <summary>没有任何记录 → 整页居中空态（Starward StackPanel_Emoji）。</summary>
     public bool ShowEmptyState => !HasRecords;
 
@@ -187,13 +215,19 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     // ── 设置 Flyout 文案 / 占位状态 ────────────────────────────────────
 
     /// <summary>旧版导出格式名（Starward GachaLogPage.xaml.cs:59-70）：原神 UIGF v3.0，绝区零 JSON。</summary>
-    public string LegacyFormatName => _gameKind == "zzz" ? "JSON" : "UIGF v3.0";
+    public string LegacyFormatName => GachaExport.LegacyFormatName(_gameKind);
 
     /// <summary>「从 UIGF v3.0 导入」按钮文字（Starward <c>LegacyImportText</c>）。</summary>
     public string LegacyImportText => string.Format(Strings["Gacha.ImportFromLegacy"], LegacyFormatName);
 
-    /// <summary>抽卡语言（Starward <c>GachaLanguage</c> 默认跟随链接的 lang）。</summary>
-    public string GachaLanguage => "zh-cn";
+    /// <summary>抽卡语言（Starward <c>GachaLanguage</c>，默认跟随系统语言）。</summary>
+    /// <remarks>
+    /// 上游用 <c>LanguageUtil.FilterLanguage(CultureInfo.CurrentUICulture.Name)</c> 初始化，
+    /// 用户可在设置 Flyout 里改成别的语言，再点「应用」按该语言重命名本地记录。
+    /// </remarks>
+    [ObservableProperty]
+    private string _gachaLanguage = LunarWard.Core.LanguageUtil.FilterLanguage(
+        System.Globalization.CultureInfo.CurrentUICulture.Name);
 
     /// <summary>
     /// UIGF v4 导入导出是否可用。
@@ -202,19 +236,25 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     /// <c>LunarWard.Core</c> 目前还没有 UIGF 读写实现（见 <c>docs/05-ROADMAP.md</c>），
     /// 按契约把入口做成禁用并注明"待接"，不伪造功能。
     /// </remarks>
-    public bool IsUigfAvailable => false;
+    public bool IsUigfAvailable => true;
 
-    public string UigfHint => Strings["Gacha.UigfPending"];
+    public string UigfHint => Strings["Gacha.UigfHint"];
 
-    /// <summary>UIGF/JSON 导入是否可用（Starward 走 ImportGachaLogCommand；本仓库还没有实现）。</summary>
-    public bool IsImportAvailable => false;
+    /// <summary>本地抽卡存档（UIGF 窗口共用同一个文件）。</summary>
+    public GachaLogStore ArchiveStore => _archiveStore;
 
-    public string ImportHint => Strings["Gacha.ImportPending"];
+    /// <summary>当前页面绑定的游戏 kind（<c>genshin</c> / <c>starrail</c> / <c>zzz</c>）。</summary>
+    public string GameKind => _gameKind;
 
-    /// <summary>抽卡语言切换是否可用（需要 LunarWard.Core 透传 lang 参数）。</summary>
-    public bool IsLanguageChangeAvailable => false;
+    /// <summary>UIGF v3.0 / JSON 旧格式导入是否可用（Starward <c>ImportGachaLogCommand</c>）。</summary>
+    public bool IsImportAvailable => true;
 
-    public string LanguageHint => Strings["Gacha.LanguagePending"];
+    public string ImportHint => Strings["Gacha.ImportHint"];
+
+    /// <summary>抽卡语言切换是否可用（wiki 名称表 + 记录改名都已接好）。</summary>
+    public bool IsLanguageChangeAvailable => true;
+
+    public string LanguageHint => Strings["Gacha.LanguageHint"];
 
 
     // ── 主操作 ────────────────────────────────────────────────────────
@@ -265,7 +305,15 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
                 return;
             }
 
-            _allRecords = records;
+            // 上游：先 INSERT OR REPLACE 进数据库，再从库里读出（删除过的区间不会回来）
+            _archiveStore.Merge(_gameKind, records, GachaLanguage);
+            // 上游 GetGachaLogAsync 成功后把链接按 (GameBiz, Uid) 存进 GachaLogUrl 表
+            long uid = records.FirstOrDefault(r => r.Uid > 0)?.Uid ?? 0;
+            if (uid > 0 && !string.IsNullOrWhiteSpace(GachaUrl))
+            {
+                _archiveStore.SaveGachaLogUrl(_gameBiz, uid, GachaUrl);
+            }
+            _allRecords = _archiveStore.GetAll(_gameKind);
             RebuildUidList();
             Rebuild();
             StatusText = string.Format(Strings["Gacha.FetchDone"], _allRecords.Count);
@@ -282,6 +330,125 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     }
 
 
+    /// <summary>自检：把本地存档按 UIGF v4.2 写到指定路径（避开文件对话框）。</summary>
+    public void ExportUigfTo(string path)
+    {
+        try
+        {
+            string json = new Uigf4Service(_archiveStore, "self-test").BuildJson(_archiveStore.GetSummaries());
+            Platform.AtomicFile.WriteAllText(path, json);
+            ErrorText = null;
+            StatusText = string.Format(Strings["Gacha.Uigf.Exported"], path);
+        }
+        catch (Exception ex)
+        {
+            ErrorText = ex.Message;
+        }
+    }
+
+
+    /// <summary>
+    /// 按 <see cref="GachaLanguage"/> 重新命名全部本地记录（上游 <c>ChangeGachaItemNameCommand</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 名称表来自抽卡 wiki（<see cref="GachaService.ChangeItemNamesAsync"/>），改完 UPDATE 库里的
+    /// <c>Name</c> / <c>Lang</c> 两列（上游 <c>ChangeGachaItemNameAsync</c>）；
+    /// 网络失败只落错误条，不动现有记录。
+    /// </remarks>
+    [RelayCommand]
+    private async Task ChangeGachaLanguageAsync()
+    {
+        if (IsBusy || _allRecords.Count == 0)
+        {
+            if (_allRecords.Count == 0)
+            {
+                ErrorText = Strings["Gacha.NoRecordsToRename"];
+            }
+            return;
+        }
+
+        IsBusy = true;
+        ErrorText = null;
+        StatusText = Strings["Gacha.LanguageApplying"];
+
+        try
+        {
+            var (records, renamed) = await _gacha.ChangeItemNamesAsync(
+                _gameKind,
+                new LunarWard.Core.GameBiz(_gameBiz),
+                GachaLanguage,
+                _allRecords).ConfigureAwait(true);
+            if (_disposed)
+            {
+                return;
+            }
+
+            // 上游改名是 UPDATE Name, Lang：只改库里的名字，不重写其它列
+            _archiveStore.Rename(_gameKind, GachaLanguage, records);
+            _allRecords = _archiveStore.GetAll(_gameKind);
+            Rebuild();
+            StatusText = string.Format(Strings["Gacha.LanguageChanged"], GachaLanguage, renamed);
+        }
+        catch (Exception ex)
+        {
+            ErrorText = ex.Message;
+            Log.Warn($"抽卡记录改名失败：{ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
+    /// <summary>页面订阅它来弹「保存文件」对话框（<c>StorageProvider</c> 只能在视图层拿）。</summary>
+    public event Action? ExportJsonRequested;
+
+    /// <summary>页面订阅它来打开 UIGF v4.2 窗口。</summary>
+    public event Action? UigfRequested;
+
+    /// <summary>页面订阅它来弹「打开文件」对话框（旧格式导入）。</summary>
+    public event Action? ImportLegacyRequested;
+
+    /// <summary>旧格式导入按钮：交给视图层选文件（<c>StorageProvider</c> 在视图层）。</summary>
+    [RelayCommand]
+    private void ImportLegacy() => ImportLegacyRequested?.Invoke();
+
+
+    /// <summary>
+    /// 读入旧格式文件（UIGF v3.0 / JSON），按 <c>Id</c> 合并进本地记录并落盘存档。
+    /// </summary>
+    /// <remarks>
+    /// 上游导入是「写数据库 + 刷新」；这里同样写进 SQLite 再从库里重读，失败只落错误条。
+    /// </remarks>
+    /// <returns>导入的记录条数；失败返回 -1 并落错误条。</returns>
+    public int ImportLegacyFrom(string path)
+    {
+        try
+        {
+            var imported = GachaLegacyImport.ParseFile(path, _gameKind);
+            // 上游导入也是写库 + 刷新：这里同样落库后从库里重读
+            _archiveStore.Merge(_gameKind, imported, GachaLanguage);
+            _allRecords = _archiveStore.GetAll(_gameKind);
+            RebuildUidList();
+            Rebuild();
+            ErrorText = null;
+            StatusText = string.Format(Strings["Gacha.ImportDone"], imported.Count, _allRecords.Count);
+            return imported.Count;
+        }
+        catch (Exception ex)
+        {
+            ErrorText = ex.Message;
+            Log.Warn($"导入旧格式抽卡记录失败：{ex.Message}");
+            return -1;
+        }
+    }
+
+
+    [RelayCommand]
+    private void OpenUigf() => UigfRequested?.Invoke();
+
+
     [RelayCommand]
     private void ExportJson()
     {
@@ -291,20 +458,35 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
             return;
         }
 
+        ExportJsonRequested?.Invoke();
+    }
+
+
+    /// <summary>导出建议文件名（UIGF v3.0-UID-时间.json / SRGF v1.0-... / JSON-...）。</summary>
+    public string SuggestedExportFileName
+    {
+        get
+        {
+            long uid = SelectUid ?? _allRecords.FirstOrDefault()?.Uid ?? 0;
+            return GachaExport.FileName(_gameKind, uid, DateTime.Now);
+        }
+    }
+
+
+    /// <summary>
+    /// 写入 UIGF v3.0 / SRGF v1.0（Starward 三个 <c>ExportAsJsonAsync</c> 的信封）。
+    /// </summary>
+    public void ExportJsonTo(string path)
+    {
         try
         {
-            var dir = Path.Join(Services.Paths.DataHome, "gacha");
-            Directory.CreateDirectory(dir);
-            var path = Path.Join(dir, $"{_gameKind}-{DateTime.Now:yyyyMMdd-HHmmss}.json");
-            Platform.AtomicFile.WriteAllText(path,
-                System.Text.Json.JsonSerializer.Serialize(_allRecords,
-                    new System.Text.Json.JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    }));
+            long uid = SelectUid ?? _allRecords.FirstOrDefault()?.Uid ?? 0;
+            string version = typeof(GachaPageViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
+            string json = GachaExport.BuildJson(_allRecords, _gameKind, uid, GachaLanguage, version);
+            Platform.AtomicFile.WriteAllText(path, json);
             ErrorText = null;
             StatusText = string.Format(Strings["Gacha.Exported"], path);
+            Log.Info($"导出抽卡记录到 {path}（{LegacyFormatName}）");
         }
         catch (Exception ex)
         {
@@ -347,11 +529,19 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     private void ToggleItemStatsPane() => IsPaneOpen = !IsPaneOpen;
 
 
-    /// <summary>删除记录 → 全部删除（记录只在内存里，清掉即回到空态）。</summary>
+    /// <summary>删除记录 → 删掉当前 UID 的全部记录（上游 <c>DeleteUid</c>）。</summary>
     [RelayCommand]
     private void ClearRecords()
     {
-        _allRecords = [];
+        if (SelectUid is long uid && uid > 0)
+        {
+            _archiveStore.DeleteUid(_gameKind, uid);
+            _allRecords = _archiveStore.GetAll(_gameKind);
+        }
+        else
+        {
+            _allRecords = [];
+        }
         _selectedPools.Clear();
 
         _suppressUidRebuild = true;
@@ -434,7 +624,8 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
                 statistics,
                 byType[statistics.GachaType],
                 PoolText(statistics.GachaType),
-                Strings["Gacha.Pity"]));
+                Strings["Gacha.Pity"],
+                zzz: _gameKind == "zzz"));
         }
 
         // Starward GachaLogService.cs:251-256：按 ItemId 分组 → 稀有度降序、次数降序、时间降序。
@@ -458,6 +649,8 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         SyncBannerOptions(stats);
 
         OnPropertyChanged(nameof(HasPools));
+        OnPropertyChanged(nameof(ShowZzzStatsCard));
+        OnPropertyChanged(nameof(ShowGenericStatsCard));
         OnPropertyChanged(nameof(HasItemStats));
         OnPropertyChanged(nameof(HasRecords));
         OnPropertyChanged(nameof(ShowEmptyState));
@@ -521,6 +714,47 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         }
 
         Rebuild();
+    }
+
+
+    /// <summary>
+    /// 页面订阅它来弹「删除指定时间段」对话框（Starward 在页面代码里 ShowAsync）。
+    /// </summary>
+    public event Action? DeleteByTimeRequested;
+
+
+    [RelayCommand]
+    private void DeleteByTime() => DeleteByTimeRequested?.Invoke();
+
+
+    /// <summary>
+    /// 删除某个时间段后立刻从内存里摘掉这些记录（对话框确认后由页面调用）。
+    /// </summary>
+    public void ApplyDeletedRange(long uid, DateTime begin, DateTime end)
+    {
+        // 上游 DeleteGachaLogByTime：DELETE FROM 表 WHERE Uid=@uid AND Time BETWEEN
+        int before = _allRecords.Count;
+        _archiveStore.DeleteRange(_gameKind, uid, begin, end);
+        _allRecords = _archiveStore.GetAll(_gameKind);
+        int removed = before - _allRecords.Count;
+        RebuildUidList();
+        Rebuild();
+        StatusText = string.Format(Strings["Gacha.DeletedCount"], removed);
+        Log.Info($"删除抽卡记录 {removed} 条（uid {uid}，{begin:yyyy-MM-dd HH:mm} - {end:yyyy-MM-dd HH:mm}）");
+    }
+
+
+    /// <summary>
+    /// 自检用：直接灌入样例记录（不碰网络、不写用户数据）。
+    /// </summary>
+    public void LoadRecordsForCapture(IReadOnlyList<Launch.GachaRecord> records)
+    {
+        _allRecords = records;
+        // 自检样例也落盘，UIGF 窗口才有存档可导
+        _archiveStore.Merge(_gameKind, _allRecords, GachaLanguage);
+        RebuildUidList();
+        Rebuild();
+        StatusText = string.Format(Strings["Gacha.FetchDone"], _allRecords.Count);
     }
 
 

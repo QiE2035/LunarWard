@@ -147,10 +147,11 @@
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <TextBox Grid.Column="0"
                          MinWidth="100"
-                         Text="{Binding GachaLanguage, Mode=OneWay}"
+                         Text="{Binding GachaLanguage, Mode=TwoWay}"
                          IsEnabled="{Binding IsLanguageChangeAvailable}" />
                 <Button Grid.Column="1"
                         HorizontalAlignment="Stretch"
+                        Command="{Binding ChangeGachaLanguageCommand}"
                         IsEnabled="{Binding IsLanguageChangeAvailable}">
                   <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock Classes="icon" FontSize="16" Margin="0,2,0,0" Text="&#xE8FB;" />
@@ -201,6 +202,7 @@
 
                       <!-- GachaLogPage.xaml:216-225 从旧格式导入（本仓库还没有导入实现） -->
                       <Button HorizontalAlignment="Stretch"
+                              Command="{Binding ImportLegacyCommand}"
                               IsEnabled="{Binding IsImportAvailable}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                           <TextBlock Classes="icon" FontSize="16" Margin="0,2,0,0" Text="&#xEA52;" />
@@ -214,9 +216,10 @@
 
                       <Border Classes="divider" />
 
-                      <!-- GachaLogPage.xaml:228-232 UIGF v4.2（占位：禁用 + 文字说明） -->
+                      <!-- GachaLogPage.xaml:228-232 UIGF v4.2 导出 / 导入窗口 -->
                       <Button HorizontalAlignment="Stretch"
                               IsEnabled="{Binding IsUigfAvailable}"
+                              Command="{Binding OpenUigfCommand}"
                               Content="UIGF v4.2" />
                       <TextBlock FontSize="12"
                                  Classes="secondary"
@@ -263,9 +266,10 @@
                   <MenuFlyout>
                     <MenuItem Header="{Binding Strings[Gacha.DeleteAll]}"
                               Command="{Binding ClearRecordsCommand}" />
-                    <!-- Starward 按时间段删除数据库记录；这里记录只在内存里，只能全部清空 -->
+                    <!-- GachaLogPage.xaml:256-274 → DeleteGachaLogDialog（UID + 时间段） -->
                     <MenuItem Header="{Binding Strings[Gacha.DeleteByTime]}"
-                              IsEnabled="False" />
+                              Command="{Binding DeleteByTimeCommand}"
+                              IsEnabled="{Binding HasRecords}" />
                   </MenuFlyout>
                 </Button.Flyout>
               </Button>
@@ -334,9 +338,14 @@
             <Grid x:Name="Grid_GachaStats"
                   Margin="20,0,20,16"
                   Background="Transparent">
+              <!--
+                Starward GachaLogPage.xaml:318-357 用 x:Load 在
+                GachaStatsCard / ZZZGachaStatsCard 之间切换（IsZZZGachaStatsCardVisible）。
+                Avalonia 这里改成两个等价的 ItemsControl，各自绑同一个 Pools，用 IsVisible 互斥。
+              -->
               <ItemsControl x:Name="ItemsControl_GachaStats"
                             ItemsSource="{Binding Pools}"
-                            IsVisible="{Binding HasPools}">
+                            IsVisible="{Binding ShowGenericStatsCard}">
                 <!-- Starward 的 StackPanel 会把每张卡拉到同一高度（最宽内容决定），这里显式拉伸容器 -->
                 <ItemsControl.ItemContainerTheme>
                   <ControlTheme TargetType="ContentPresenter">
@@ -353,6 +362,27 @@
                   <DataTemplate x:DataType="vm:GachaPoolCardViewModel">
                     <!-- 宽度由页面代码按 Starward GachaLogPage.xaml.cs:393-413 的公式算好放进资源 -->
                     <controls:GachaStatsCard Width="{DynamicResource StarGachaStatsCardWidth}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <ItemsControl x:Name="ItemsControl_ZzzGachaStats"
+                            ItemsSource="{Binding Pools}"
+                            IsVisible="{Binding ShowZzzStatsCard}">
+                <ItemsControl.ItemContainerTheme>
+                  <ControlTheme TargetType="ContentPresenter">
+                    <Setter Property="VerticalAlignment" Value="Stretch" />
+                    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                  </ControlTheme>
+                </ItemsControl.ItemContainerTheme>
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="12" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:GachaPoolCardViewModel">
+                    <controls:ZZZGachaStatsCard Width="{DynamicResource StarGachaStatsCardWidth}" />
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>

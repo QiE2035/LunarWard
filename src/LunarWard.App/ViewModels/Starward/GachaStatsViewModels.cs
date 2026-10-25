@@ -23,13 +23,20 @@ namespace LunarWard.App.ViewModels.Starward;
 /// </remarks>
 public sealed partial class GachaStatsItemViewModel : ObservableObject
 {
-    public GachaStatsItemViewModel(string name, int pity, DateTime time, int gachaType, bool isPityRow = false)
+    public GachaStatsItemViewModel(
+        string name,
+        int pity,
+        DateTime time,
+        int gachaType,
+        bool isPityRow = false,
+        bool isUp = false)
     {
         Name = name;
         Pity = pity;
         Time = time;
         GachaType = gachaType;
         IsPityRow = isPityRow;
+        IsUp = isUp;
     }
 
 
@@ -50,11 +57,11 @@ public sealed partial class GachaStatsItemViewModel : ObservableObject
     /// <summary>Starward <c>ToolTipService.ToolTip="{x:Bind Time.ToString('yyyy-MM-dd HH:mm:ss')}"</c>。</summary>
     public string TimeText => Time.ToString("yyyy-MM-dd HH:mm:ss");
 
-    /// <summary>Starward <c>GachaLogItemEx.HasUpItem</c>（GachaNoUp 表命中才有）。</summary>
-    public bool HasUpItem => false;
+    /// <summary>这一发是 UP（接口的 <c>is_up</c>；原神老接口没有该字段）。</summary>
+    public bool IsUp { get; }
 
-    /// <summary>Starward <c>GachaLogItemEx.IsUp</c>（见类注释的偏差说明）。</summary>
-    public bool IsUp => false;
+    /// <summary>Starward <c>GachaLogItemEx.HasUpItem</c>：行尾的「up!」标记。</summary>
+    public bool HasUpItem => IsUp;
 
     /// <summary>Starward <c>GachaLogItemEx.UpTextOpacity</c>：UP 时 1，否则 0。</summary>
     public double UpTextOpacity => IsUp ? 1 : 0;

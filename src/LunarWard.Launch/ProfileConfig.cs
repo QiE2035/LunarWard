@@ -41,6 +41,12 @@ public sealed class ProfileConfig
 
     public List<ExternalProgram> ExternalPrograms { get; set; } = [];
 
+    /// <summary>
+    /// 额外的截图文件夹（Starward <c>GetExternalScreenshotFolder</c>）。
+    /// 图库会把游戏截图目录与这些目录里的图片合并显示，文件名重复时以先出现的为准。
+    /// </summary>
+    public List<string> ScreenshotFolders { get; set; } = [];
+
     /// <summary>高级项：<c>AwaitReady</c> 的 grace 毫秒数（默认 6000）。</summary>
     public int ReadyGraceMs { get; set; } = 6000;
 

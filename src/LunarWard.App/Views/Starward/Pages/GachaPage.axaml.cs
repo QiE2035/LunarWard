@@ -6,6 +6,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using LunarWard.App.ViewModels.Starward;
 
@@ -57,9 +58,53 @@ public partial class GachaPage : StarwardPage
     public GachaPage(PageContext context) : base(context)
     {
         InitializeComponent();
-        _viewModel = new GachaPageViewModel(context);
+        var seed = CaptureMode.GachaSeed
+            ?? (CaptureMode.GachaDeleteDialog ? "zzz" : null)
+            ?? (CaptureMode.UigfWindow ? "genshin" : null)
+            ?? (CaptureMode.UigfExport is null ? null : "genshin")
+            ?? (CaptureMode.GachaExport is null ? null : "genshin")
+            ?? (CaptureMode.GachaImport is null ? null : "genshin");
+        _viewModel = new GachaPageViewModel(context, seed is "zzz" or "genshin" ? seed : null);
         DataContext = _viewModel;
 
+        if (seed is "zzz" or "genshin")
+        {
+            _viewModel.LoadRecordsForCapture(CreateSeedRecords(seed == "zzz"));
+        }
+
+        if (CaptureMode.UigfExport is { } uigfPath)
+        {
+            _viewModel.ExportUigfTo(uigfPath);
+            Console.WriteLine($"EXPORT_OK {uigfPath}");
+        }
+
+        if (CaptureMode.GachaExport is { } exportPath)
+        {
+            _viewModel.ExportJsonTo(exportPath);
+            Console.WriteLine($"EXPORT_OK {exportPath}");
+        }
+
+        if (CaptureMode.GachaImport is { } importPath)
+        {
+            int imported = _viewModel.ImportLegacyFrom(importPath);
+            Console.WriteLine($"IMPORT_OK {importPath} {imported}");
+        }
+
+        if (CaptureMode.GachaDeleteDialog)
+        {
+            // 等页面挂到窗口再弹，否则 Show 的 owner 还没准备好
+            Dispatcher.UIThread.Post(OnDeleteByTimeRequested, DispatcherPriority.Loaded);
+        }
+
+        if (CaptureMode.UigfWindow)
+        {
+            Dispatcher.UIThread.Post(OnUigfRequested, DispatcherPriority.Loaded);
+        }
+
+        _viewModel.DeleteByTimeRequested += OnDeleteByTimeRequested;
+        _viewModel.UigfRequested += OnUigfRequested;
+        _viewModel.ExportJsonRequested += OnExportJsonRequested;
+        _viewModel.ImportLegacyRequested += OnImportLegacyRequested;
         _viewModel.Pools.CollectionChanged += OnPoolsChanged;
         SizeChanged += OnSizeChanged;
         QueueStatsCardLayout();
@@ -67,6 +112,201 @@ public partial class GachaPage : StarwardPage
 
 
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e) => QueueStatsCardLayout();
+
+
+    /// <summary>
+    /// 导出旧格式（UIGF v3.0 / SRGF v1.0）：先弹保存对话框再写文件（Starward 用 FileSavePicker）。
+    /// </summary>
+    private async void OnExportJsonRequested()
+    {
+        if (_viewModel is null || TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+        {
+            return;
+        }
+
+        try
+        {
+            var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = _viewModel.Strings["Gacha.ExportAs"],
+                SuggestedFileName = _viewModel.SuggestedExportFileName,
+                DefaultExtension = "json",
+                FileTypeChoices =
+                [
+                    new FilePickerFileType("JSON") { Patterns = ["*.json"] },
+                ],
+            });
+
+            string? path = file?.TryGetLocalPath();
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                _viewModel.ExportJsonTo(path);
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.NotifyError(ex.Message);
+        }
+    }
+
+
+    /// <summary>
+    /// 旧格式导入（UIGF v3.0 / JSON）：先弹打开对话框再读文件（Starward <c>ImportGachaLogCommand</c>）。
+    /// </summary>
+    private async void OnImportLegacyRequested()
+    {
+        if (_viewModel is null || TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+        {
+            return;
+        }
+
+        try
+        {
+            var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = _viewModel.Strings["Gacha.ImportFromLegacy"],
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("JSON") { Patterns = ["*.json"] },
+                ],
+            });
+
+            string? path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                _viewModel.ImportLegacyFrom(path);
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.NotifyError(ex.Message);
+        }
+    }
+
+
+    /// <summary>
+    /// 打开 UIGF v4.2 导出 / 导入窗口（Starward <c>UIGF4GachaWindow</c>）。
+    /// </summary>
+    private async void OnUigfRequested()
+    {
+        if (_viewModel is null || TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        var window = new Uigf4GachaWindow(Context);
+
+        if (CaptureMode.UigfWindow)
+        {
+            if (CaptureMode.UigfImportPage)
+            {
+                window.ShowImportPageForCapture();
+            }
+            window.Show(owner);
+            window.CaptureSelf(CaptureMode.Path + ".dialog.png", 600);
+            return;
+        }
+
+        await window.ShowDialog(owner);
+    }
+
+
+    /// <summary>
+    /// 打开「删除指定时间段」对话框（Starward <c>DeleteGachaLogDialog</c>）。
+    /// </summary>
+    private async void OnDeleteByTimeRequested()
+    {
+        if (_viewModel is null || !_viewModel.HasRecords)
+        {
+            return;
+        }
+
+        if (TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
+        var dialog = new DeleteGachaLogDialog(
+            Context,
+            _viewModel.RecordsSnapshot,
+            _viewModel.SelectUid,
+            _viewModel.GameKind);
+
+        if (CaptureMode.GachaDeleteDialog)
+        {
+            dialog.Show(owner);
+            dialog.CaptureSelf(CaptureMode.Path + ".dialog.png", 600);
+            return;
+        }
+
+        await dialog.ShowDialog(owner);
+
+        if (dialog.Deleted is var (uid, begin, end))
+        {
+            _viewModel.ApplyDeletedRange(uid, begin, end);
+        }
+    }
+
+
+    /// <summary>
+    /// 自检样例：造出「S 平均 / S 统计 / A 统计 / B 统计」都有内容的记录。
+    /// </summary>
+    /// <remarks>
+    /// 保底长度按 60~90 抽分布，5★ 里每隔一发标 UP（<c>is_up=1</c>），
+    /// 这样 ZZZ 卡的「 / UP」与「 / 平均抽数 (UP 数量)」两段后缀都能截到。
+    /// </remarks>
+    private static IReadOnlyList<Launch.GachaRecord> CreateSeedRecords(bool zzz)
+    {
+        var pools = zzz ? new[] { 2, 3 } : new[] { 200, 301 };
+        var records = new List<Launch.GachaRecord>();
+        long id = 1_0000_0000_0000;
+        var start = DateTime.Now.AddDays(-30);
+
+        foreach (int pool in pools)
+        {
+            int pity = 0;
+            int pulls = 0;
+            int fiveCount = 0;
+            for (int i = 0; i < 90; i++)
+            {
+                pity++;
+                pulls++;
+                id++;
+                int rank = pity >= 74 ? 5 : pity % 10 == 0 ? 4 : 3;
+                if (rank == 5)
+                {
+                    fiveCount++;
+                    pity = 0;
+                }
+
+                var name = rank switch
+                {
+                    5 => zzz ? (fiveCount % 2 == 1 ? "耀嘉音" : "月城柳") : "芙宁娜",
+                    4 => zzz ? "苍角" : "夏沃蕾",
+                    _ => zzz ? "音擎材料" : "祭礼剑",
+                };
+                records.Add(new Launch.GachaRecord
+                {
+                    Id = id,
+                    Name = name,
+                    ItemType = rank == 5 ? (zzz ? "音擎" : "角色") : "材料",
+                    RankType = rank,
+                    GachaType = pool,
+                    GachaTypeName = zzz ? "独家频段" : "角色活动祈愿",
+                    Time = start.AddMinutes(records.Count * 7),
+                    Uid = 1_0000_0001,
+                    IsUp = rank == 5 && fiveCount % 2 == 1,
+                });
+                if (pulls >= 90)
+                {
+                    break;
+                }
+            }
+        }
+
+        return records;
+    }
 
 
     private void OnPoolsChanged(object? sender, NotifyCollectionChangedEventArgs e) => QueueStatsCardLayout();
