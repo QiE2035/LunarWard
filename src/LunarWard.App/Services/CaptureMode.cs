@@ -130,6 +130,10 @@ internal static class CaptureMode
     /// <summary>自检：把样例记录按旧格式导出到该路径（验证 UIGF v3.0 / SRGF v1.0 信封）。</summary>
     public static string? GachaExport { get; set; }
 
+    /// <summary>自检：把样例记录按 Excel 模板导出到该路径（<c>--gacha-excel</c>）。</summary>
+    public static string? GachaExcel { get; set; }
+
+
     /// <summary>自检：读入旧格式文件并合并进页面列表（配合 <c>--gacha-export</c> 做往返验证）。</summary>
     public static string? GachaImport { get; set; }
 

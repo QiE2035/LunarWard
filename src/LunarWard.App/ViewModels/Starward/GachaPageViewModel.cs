@@ -409,6 +409,9 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
     /// <summary>页面订阅它来弹「保存文件」对话框（<c>StorageProvider</c> 只能在视图层拿）。</summary>
     public event Action? ExportJsonRequested;
 
+    /// <summary>页面订阅它来弹「保存文件」对话框（Excel 导出）。</summary>
+    public event Action? ExportExcelRequested;
+
     /// <summary>页面订阅它来打开 UIGF v4.2 窗口。</summary>
     public event Action? UigfRequested;
 
@@ -452,6 +455,55 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
 
     [RelayCommand]
     private void OpenUigf() => UigfRequested?.Invoke();
+
+
+    /// <summary>Excel 模板是否随程序分发（<c>Assets/Template/GachaLog.xlsx</c>）。</summary>
+    public bool IsExcelAvailable => GachaExcelExport.IsAvailable;
+
+
+    [RelayCommand]
+    private void ExportExcel()
+    {
+        if (_allRecords.Count == 0)
+        {
+            ErrorText = Strings["Gacha.NoExport"];
+            return;
+        }
+
+        ExportExcelRequested?.Invoke();
+    }
+
+
+    /// <summary>Excel 导出建议文件名（<c>UIGF_UID_时间.xlsx</c> 的等价物：<c>GachaLog-Uid-时间.xlsx</c>）。</summary>
+    public string SuggestedExcelFileName
+    {
+        get
+        {
+            long uid = SelectUid ?? _allRecords.FirstOrDefault()?.Uid ?? 0;
+            return $"GachaLog-{uid}-{DateTime.Now:yyyyMMdd-HHmmss}.xlsx";
+        }
+    }
+
+
+    /// <summary>
+    /// 按 MiniExcel 模板写出 Excel（Starward <c>ExportAsExcelAsync</c> 的等价物）。
+    /// </summary>
+    public async Task ExportExcelToAsync(string path)
+    {
+        try
+        {
+            long uid = SelectUid ?? _allRecords.FirstOrDefault()?.Uid ?? 0;
+            await GachaExcelExport.ExportAsync(path, uid, _allRecords);
+            ErrorText = null;
+            StatusText = string.Format(Strings["Gacha.Exported"], path);
+            Log.Info($"导出抽卡记录到 {path}（Excel）");
+        }
+        catch (Exception ex)
+        {
+            ErrorText = ex.Message;
+            Log.Warn($"导出 Excel 失败：{ex.Message}");
+        }
+    }
 
 
     [RelayCommand]

@@ -71,6 +71,7 @@ dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
 #                 --gacha-delete-dialog（抽卡页「删除指定时间段」对话框，自动用 ZZZ 样例数据）、
 #                 --gacha-export <path>（把样例记录按 UIGF v3.0 导出到该路径）、
 #                 --gacha-import <path>（读回 UIGF v3.0 / JSON 并合并，做往返自检）、
+#                 --gacha-excel <path>（把样例记录按 Starward 的 Excel 模板导出到该路径）、
 #                 --uigf-window（UIGF v4.2 导出/导入窗口，自动用原神样例存档；加 --uigf-import 切到导入页）、
 #                 自检一律使用临时库 $TMP/lunarward-capture/capture.db，不写用户的 LunarWardDatabase.db、
 #                 --predownload-dialog（预下载确认框；加 --predownload-dialog-unavailable 看不可用态）、

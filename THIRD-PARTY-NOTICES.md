@@ -124,7 +124,17 @@ tr -d '\r' < ~/.nuget/packages/<id>/<ver>/<id>.nuspec | grep -oiE '<license[^>]*
 > `libe_sqlite3.so`），SQLite 本体为 Public Domain，不产生额外义务；SQLitePCLRaw
 > 是 Apache-2.0，随包分发时需保留其 NOTICE/许可文本（NuGet 包内已带 `LICENSE`）。
 
-### 2.6 配置 / 基础设施
+### 2.6 Excel 导出（抽卡记录）
+
+| 包 | 版本 | 许可 |
+|---|---|---|
+| `MiniExcel` | 1.46.0 | **Apache-2.0** |
+
+> 用 MiniExcel 的模板语法填充 `Assets/Template/GachaLog.xlsx`（同一个包把模板行展开）。
+> 模板文件本身复制自 Starward 的 `Assets/Template/GachaLog.xlsx`（Starward 以 MIT 发布，
+> 模板是其抽卡导出功能的配套素材），随程序分发在 `Assets/Template/` 下。
+
+### 2.7 配置 / 基础设施
 
 | 包 | 版本 | 许可 |
 |---|---|---|
@@ -146,7 +156,7 @@ tr -d '\r' < ~/.nuget/packages/<id>/<ver>/<id>.nuspec | grep -oiE '<license[^>]*
 | `Polly` | 8.8.0 | **BSD-3-Clause** |
 | `Polly.Core`（传递） | 8.8.0 | **BSD-3-Clause** |
 
-### 2.7 压缩与日志
+### 2.8 压缩与日志
 
 | 包 | 版本 | 许可 |
 |---|---|---|
@@ -155,13 +165,13 @@ tr -d '\r' < ~/.nuget/packages/<id>/<ver>/<id>.nuspec | grep -oiE '<license[^>]*
 | `Serilog.Sinks.File` | 7.0.0 | **Apache-2.0** |
 | `Serilog`（传递） | 4.2.0 | **Apache-2.0** |
 
-### 2.8 Markdown 渲染
+### 2.9 Markdown 渲染
 
 | 包 | 版本 | 许可 |
 |---|---|---|
 | `Markdig` | 1.4.2 | **BSD-2-Clause** |
 
-### 2.9 仅测试（不随发行包分发）
+### 2.10 仅测试（不随发行包分发）
 
 以下包只被 `tests/` 引用，**不会出现在 `packages/` 产物或发布目录中**：
 

@@ -92,6 +92,16 @@ public partial class GachaPage : StarwardPage
             Console.WriteLine($"EXPORT_OK {exportPath}");
         }
 
+        if (CaptureMode.GachaExcel is { } excelPath)
+        {
+            // MiniExcel 是异步 API；自检要等它写完再截图/退出
+            Dispatcher.UIThread.Post(async () =>
+            {
+                await _viewModel.ExportExcelToAsync(excelPath);
+                Console.WriteLine($"EXPORT_OK {excelPath}");
+            }, DispatcherPriority.Loaded);
+        }
+
         if (CaptureMode.GachaImport is { } importPath)
         {
             int imported = _viewModel.ImportLegacyFrom(importPath);
@@ -112,6 +122,7 @@ public partial class GachaPage : StarwardPage
         _viewModel.DeleteByTimeRequested += OnDeleteByTimeRequested;
         _viewModel.UigfRequested += OnUigfRequested;
         _viewModel.ExportJsonRequested += OnExportJsonRequested;
+        _viewModel.ExportExcelRequested += OnExportExcelRequested;
         _viewModel.ImportLegacyRequested += OnImportLegacyRequested;
         _viewModel.Pools.CollectionChanged += OnPoolsChanged;
         SizeChanged += OnSizeChanged;
@@ -120,6 +131,40 @@ public partial class GachaPage : StarwardPage
 
 
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e) => QueueStatsCardLayout();
+
+
+    /// <summary>
+    /// 导出 Excel：先弹保存对话框再按模板写文件（Starward <c>FileSavePicker</c> + MiniExcel 模板）。
+    /// </summary>
+    private async void OnExportExcelRequested()
+    {
+        if (_viewModel is null || TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+        {
+            return;
+        }
+
+        try
+        {
+            var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = _viewModel.Strings["Gacha.ExportAs"],
+                SuggestedFileName = _viewModel.SuggestedExcelFileName,
+                DefaultExtension = "xlsx",
+                FileTypeChoices =
+                [
+                    new FilePickerFileType("Excel") { Patterns = ["*.xlsx"] },
+                ],
+            });
+            if (file?.TryGetLocalPath() is { } path)
+            {
+                await _viewModel.ExportExcelToAsync(path);
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.ErrorText = ex.Message;
+        }
+    }
 
 
     /// <summary>
