@@ -74,6 +74,21 @@ public sealed class GachaExcelExportTests
 
 
     [Fact]
+    public void BuildRows_ZzzResetsPityOnS()
+    {
+        var rows = GachaExcelExport.BuildRows(100000001,
+        [
+            Record(1, 1, 3),
+            Record(2, 1, 4),
+            Record(3, 1, 3),
+        ], "zzz");
+
+        // 绝区零的 S 是 RankType 4（不是原神/星铁的 5）
+        Assert.Equal(new[] { 1, 2, 1 }, rows.Select(x => x.Pity));
+    }
+
+
+    [Fact]
     public async Task ExportAsync_WritesWorkbook()
     {
         var dir = Path.Join(Path.GetTempPath(), "lunarward-excel-" + Guid.NewGuid().ToString("N"));
@@ -81,7 +96,7 @@ public sealed class GachaExcelExportTests
         var output = Path.Join(dir, "gacha.xlsx");
         try
         {
-            await GachaExcelExport.ExportAsync(output, 100000001,
+            await GachaExcelExport.ExportAsync(output, "genshin", 100000001,
             [
                 Record(1, 301, 3),
                 Record(2, 301, 4),
@@ -107,8 +122,10 @@ public sealed class GachaExcelExportTests
     [Fact]
     public void Template_IsShippedNextToBinary()
     {
-        // 模板随 Launch 项目输出到 bin/<config>/Assets/Template/GachaLog.xlsx
-        var path = Path.Join(AppContext.BaseDirectory, GachaExcelExport.TemplateRelativePath);
-        Assert.True(File.Exists(path), path);
+        // 模板随 Launch 项目输出到 bin/<config>/Assets/Template/（原神/星铁一份、绝区零一份）
+        Assert.True(File.Exists(GachaExcelExport.TemplatePathFor("genshin")));
+        Assert.True(File.Exists(GachaExcelExport.TemplatePathFor("starrail")));
+        Assert.True(File.Exists(GachaExcelExport.TemplatePathFor("zzz")));
+        Assert.True(GachaExcelExport.IsAvailable("zzz"));
     }
 }

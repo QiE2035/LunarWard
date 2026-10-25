@@ -458,7 +458,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
 
 
     /// <summary>Excel 模板是否随程序分发（<c>Assets/Template/GachaLog.xlsx</c>）。</summary>
-    public bool IsExcelAvailable => GachaExcelExport.IsAvailable;
+    public bool IsExcelAvailable => GachaExcelExport.IsAvailable(_gameKind);
 
 
     [RelayCommand]
@@ -493,7 +493,7 @@ public sealed partial class GachaPageViewModel : StarwardPageViewModel
         try
         {
             long uid = SelectUid ?? _allRecords.FirstOrDefault()?.Uid ?? 0;
-            await GachaExcelExport.ExportAsync(path, uid, _allRecords);
+            await GachaExcelExport.ExportAsync(path, _gameKind, uid, _allRecords);
             ErrorText = null;
             StatusText = string.Format(Strings["Gacha.Exported"], path);
             Log.Info($"导出抽卡记录到 {path}（Excel）");

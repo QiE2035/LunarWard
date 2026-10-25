@@ -9,6 +9,7 @@
   <ItemGroup>
     <!-- 抽卡 Excel 模板：照抄 Starward `Assets/Template/GachaLog.xlsx`（MiniExcel 模板语法的唯一数据源） -->
     <None Include="Assets/Template/GachaLog.xlsx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="Assets/Template/ZZZGachaLog.xlsx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LunarWard.Wine\LunarWard.Wine.csproj" />

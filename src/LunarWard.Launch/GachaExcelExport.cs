@@ -22,33 +22,40 @@ namespace LunarWard.Launch;
 /// </remarks>
 public static class GachaExcelExport
 {
-    /// <summary>模板相对路径（与上游一样放在输出目录的 <c>Assets/Template</c> 下）。</summary>
+    /// <summary>原神 / 星铁共用的模板（与上游一样放在输出目录的 <c>Assets/Template</c> 下）。</summary>
     public const string TemplateRelativePath = "Assets/Template/GachaLog.xlsx";
 
+    /// <summary>绝区零模板（上游 <c>ZZZGachaService.ExportAsExcelAsync</c> 用的另一份素材）。</summary>
+    public const string ZzzTemplateRelativePath = "Assets/Template/ZZZGachaLog.xlsx";
 
-    /// <summary>模板文件绝对路径；文件不存在时导出应被禁用。</summary>
-    public static string TemplatePath => Path.Join(AppContext.BaseDirectory, TemplateRelativePath);
+
+    /// <summary>按游戏取模板绝对路径；文件不存在时导出应被禁用。</summary>
+    public static string TemplatePathFor(string gameKind) => Path.Join(
+        AppContext.BaseDirectory,
+        string.Equals(gameKind, "zzz", StringComparison.OrdinalIgnoreCase) ? ZzzTemplateRelativePath : TemplateRelativePath);
 
 
-    public static bool IsAvailable => File.Exists(TemplatePath);
+    public static bool IsAvailable(string gameKind) => File.Exists(TemplatePathFor(gameKind));
 
 
     /// <summary>
     /// 把记录写进模板并保存到 <paramref name="output"/>（覆盖）。
     /// </summary>
-    public static async Task ExportAsync(string output, long uid, IReadOnlyList<GachaRecord> records)
+    public static async Task ExportAsync(string output, string gameKind, long uid, IReadOnlyList<GachaRecord> records)
     {
-        var rows = BuildRows(uid, records);
-        await MiniExcel.SaveAsByTemplateAsync(output, TemplatePath, new { list = rows });
+        var rows = BuildRows(uid, records, gameKind);
+        await MiniExcel.SaveAsByTemplateAsync(output, TemplatePathFor(gameKind), new { list = rows });
     }
 
 
     /// <summary>
     /// 生成模板行（单独拆出来便于单测；顺序 = <c>ORDER BY Id</c>）。
     /// </summary>
-    public static List<GachaExcelRow> BuildRows(long uid, IReadOnlyList<GachaRecord> records)
+    public static List<GachaExcelRow> BuildRows(long uid, IReadOnlyList<GachaRecord> records, string gameKind = "genshin")
     {
         var ordered = records.OrderBy(x => x.Id).ToList();
+        // 上游：原神/星铁出 5★ 归零保底，绝区零出 S（RankType=4）归零
+        var topRank = string.Equals(gameKind, "zzz", StringComparison.OrdinalIgnoreCase) ? 4 : 5;
 
         // 上游：先按 Id 排好整个列表并返回；Index/Pity 是「按卡池分别遍历」时算出来的
         var positions = new Dictionary<long, (int Index, int Pity)>(ordered.Count);
@@ -61,7 +68,7 @@ public static class GachaExcelExport
                 index++;
                 pity++;
                 positions[record.Id] = (index, pity);
-                if (record.RankType == 5)
+                if (record.RankType == topRank)
                 {
                     pity = 0;
                 }
