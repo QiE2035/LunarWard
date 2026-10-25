@@ -123,6 +123,9 @@ internal static class CaptureMode
     /// <summary>自检时把页面里的主 ScrollViewer 滚到该偏移（截长页下半部分）。</summary>
     public static double ScrollY { get; set; }
 
+    /// <summary>截图自检：按控件名指定要滚动的 ScrollViewer（如 <c>WallScroller</c>）；空则用默认策略。</summary>
+    public static string? ScrollTarget { get; set; }
+
     /// <summary>抽卡页自检：<c>zzz</c> 造绝区零样例记录，<c>genshin</c> 造原神样例记录（不碰网络）。</summary>
     public static string? GachaSeed { get; set; }
 

@@ -166,6 +166,11 @@ internal static class Program
             {
                 CaptureMode.ScrollY = scrollY;
             }
+
+            if (ReadArgument(args, "--scroll-target") is { Length: > 0 } scrollTarget)
+            {
+                CaptureMode.ScrollTarget = scrollTarget;
+            }
             if (int.TryParse(ReadArgument(args, "--wait"), out var wait) && wait >= 0)
             {
                 CaptureMode.WaitMilliseconds = wait;

@@ -186,6 +186,13 @@ public partial class MainWindow : Window
     /// </summary>
     private void ScrollPage(double y)
     {
+        if (CaptureMode.ScrollTarget is { Length: > 0 } target
+            && this.FindControl<ScrollViewer>(target) is { } named)
+        {
+            named.Offset = new Avalonia.Vector(0, y);
+            return;
+        }
+
         var viewer = this.GetVisualDescendants()
             .OfType<ScrollViewer>()
             .Where(x => x.IsVisible && x.Bounds.Width > 400 && x.Bounds.Height > 200)
