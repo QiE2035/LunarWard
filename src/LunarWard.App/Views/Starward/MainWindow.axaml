@@ -26,9 +26,9 @@
   <!--
     最外层 DialogHost：Windows/WinUI 里 ContentDialog 是"窗口内的浮层"，不是独立窗口；
     Avalonia 没有内建等价物，这里用 DialogHost.Avalonia 提供同一语义
-    （暗化底层内容 + 居中卡片 + 圆角/阴影），对话框内容本身仍是普通 UserControl。
+    （暗化底层内容 + 居中卡片 + 圆角/阴影；OverlayBackground 对应 WinUI ContentDialogSmokeFill #66000000），对话框内容本身仍是普通 UserControl。
   -->
-  <dh:DialogHost x:Name="RootDialogHost" CloseOnClickAway="False">
+  <dh:DialogHost x:Name="RootDialogHost" CloseOnClickAway="False" OverlayBackground="#66000000">
     <Grid RowDefinitions="48,*">
 
     <!-- 内容层：从 y=0 开始，被标题栏覆盖（背景铺满整窗，和 Starward 一致） -->

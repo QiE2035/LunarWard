@@ -6,6 +6,7 @@ using Avalonia.Media;
 using LunarWard.App.Controls;
 using LunarWard.App.Localization;
 using LunarWard.App.Services;
+using LunarWard.App.Views.Starward.Controls;
 using LunarWard.Launch;
 using System.Globalization;
 
@@ -20,7 +21,7 @@ namespace LunarWard.App.Views.Starward;
 /// 数据只来自本机 SQLite 库的 <c>PlayTimeStats</c> 表（<see cref="PlayTimeService" />），
 /// 派生口径与 Starward 相同（见 <see cref="PlayTimeStats" />）。
 /// </remarks>
-public partial class PlayTimeStatsDialog : Window
+public partial class PlayTimeStatsDialog : StarwardContentDialog
 {
     private static AppStrings Strings => AppStrings.Instance;
 
@@ -42,6 +43,8 @@ public partial class PlayTimeStatsDialog : Window
         _stats = services is null
             ? PlayTimeStats.FromSpans([])
             : PlayTimeStats.FromSessions(services.PlayTime.Sessions(gameBiz), gameBiz);
+
+        CloseButtonText = Strings["Common.Close"];
 
         BuildStatCards();
         if (int.TryParse(Environment.GetEnvironmentVariable("LUNARWARD_PLAYTIME_RANGE"), out int range)
@@ -150,43 +153,6 @@ public partial class PlayTimeStatsDialog : Window
             _range = range;
             UpdateRange();
         }
-    }
-
-
-    private void OnCloseClick(object? sender, RoutedEventArgs e) => Close();
-
-
-    /// <summary>自检截图：渲染本弹窗到 PNG 后退出（弹窗是独立 Window，主窗口截不到）。</summary>
-    public void CaptureSelf(string path, int delayMs)
-    {
-        Avalonia.Threading.DispatcherTimer.RunOnce(() =>
-        {
-            try
-            {
-                var size = new PixelSize(
-                    Math.Max(1, (int)Bounds.Width),
-                    Math.Max(1, (int)Bounds.Height));
-                using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(size, new Vector(96, 96));
-                bitmap.Render(this);
-                using (var stream = System.IO.File.Create(path))
-                {
-                    bitmap.Save(stream, new Avalonia.Media.Imaging.PngBitmapEncoderOptions());
-                }
-                Console.WriteLine($"SCREENSHOT_OK {path} {size.Width}x{size.Height}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SCREENSHOT_FAIL {ex.GetType().Name}: {ex.Message}");
-            }
-            finally
-            {
-                if (Application.Current?.ApplicationLifetime
-                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    desktop.Shutdown(0);
-                }
-            }
-        }, TimeSpan.FromMilliseconds(delayMs));
     }
 
 

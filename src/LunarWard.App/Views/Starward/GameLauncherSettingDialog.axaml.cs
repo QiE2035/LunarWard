@@ -8,6 +8,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using LunarWard.App.Localization;
 using LunarWard.App.Services;
+using LunarWard.App.Views.Starward.Controls;
 using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Games;
@@ -33,7 +34,7 @@ namespace LunarWard.App.Views.Starward;
 /// （文件名 / 大小 / MD5 / 下载链接）、拖放背景、背景音量。
 /// </para>
 /// </remarks>
-public partial class GameLauncherSettingDialog : Window
+public partial class GameLauncherSettingDialog : StarwardContentDialog
 {
 
     private static AppStrings Strings => AppStrings.Instance;
@@ -53,11 +54,13 @@ public partial class GameLauncherSettingDialog : Window
         InitializeComponent();
         _gameBiz = new GameBiz("");
         _installPath = "";
+        CloseButtonText = Strings["Common.Close"];
     }
 
 
     public GameLauncherSettingDialog(PageContext context) : this()
     {
+        CloseButtonText = Strings["Common.Close"];
         LatestPackagesList.ItemTemplate = new FuncDataTemplate<PackageGroup>((group, _) => BuildPackageGroupView(group));
         PrePackagesList.ItemTemplate = new FuncDataTemplate<PackageGroup>((group, _) => BuildPackageGroupView(group));
         _context = context;
@@ -669,38 +672,6 @@ public partial class GameLauncherSettingDialog : Window
     }
 
 
-    /// <summary>自检截图：渲染本弹窗到 PNG 后退出进程（独立 Window，主窗口截不到）。</summary>
-    public void CaptureSelf(string path, int delayMs)
-    {
-        Avalonia.Threading.DispatcherTimer.RunOnce(() =>
-        {
-            try
-            {
-                var size = new PixelSize(Math.Max(1, (int)Bounds.Width), Math.Max(1, (int)Bounds.Height));
-                using var bitmap = new RenderTargetBitmap(size, new Vector(96, 96));
-                bitmap.Render(this);
-                using (var stream = File.Create(path))
-                {
-                    bitmap.Save(stream, new PngBitmapEncoderOptions());
-                }
-                Console.WriteLine($"SCREENSHOT_OK {path} {size.Width}x{size.Height}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SCREENSHOT_FAIL {ex.GetType().Name}: {ex.Message}");
-            }
-            finally
-            {
-                if (Application.Current?.ApplicationLifetime
-                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    desktop.Shutdown(0);
-                }
-            }
-        }, TimeSpan.FromMilliseconds(delayMs));
-    }
-
-
     private void ShowPanel(int index)
     {
         PanelBasic.IsVisible = index == 0;
@@ -727,7 +698,12 @@ public partial class GameLauncherSettingDialog : Window
         {
             return;
         }
-        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        if (TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+        {
+            return;
+        }
+
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = Strings["Launcher.LocateGame"],
             AllowMultiple = false,
@@ -889,7 +865,12 @@ public partial class GameLauncherSettingDialog : Window
         {
             return;
         }
-        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        if (TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+        {
+            return;
+        }
+
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = Strings["LauncherSetting.CustomStartExecutable"],
             AllowMultiple = false,
@@ -926,7 +907,12 @@ public partial class GameLauncherSettingDialog : Window
 
         try
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            if (TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+            {
+                return;
+            }
+
+            var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = Strings["LauncherSetting.CustomBackground"],
                 AllowMultiple = false,
@@ -980,10 +966,10 @@ public partial class GameLauncherSettingDialog : Window
     }
 
 
-    /// <summary>关闭前把「命令行参数 / 启动后行为」写回（源码是 TwoWay 绑到 AppConfig）。</summary>
-    protected override void OnClosing(WindowClosingEventArgs e)
+    /// <summary>关闭后把「命令行参数 / 启动后行为」写回（源码是 TwoWay 绑到 AppConfig）。</summary>
+    protected override void OnDialogClosed()
     {
-        base.OnClosing(e);
+        base.OnDialogClosed();
         if (_context is not { } context || _loading)
         {
             return;
