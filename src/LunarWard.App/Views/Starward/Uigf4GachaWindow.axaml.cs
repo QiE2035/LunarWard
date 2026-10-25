@@ -42,7 +42,7 @@ public sealed partial class Uigf4GachaWindow : Window
         store ??= GachaLogStore.OpenDefault(context.Services.Paths.DataHome);
         _viewModel = new Uigf4GachaWindowViewModel(new Uigf4Service(
             store,
-            ReadVersion(),
+            AppVersion.Display,
             CaptureMode.Enabled
                 ? CaptureMode.CreateBeyondStore()
                 : Launch.Database.GenshinBeyondGachaStore.OpenDefault(context.Services.Paths.DataHome)));
@@ -166,15 +166,4 @@ public sealed partial class Uigf4GachaWindow : Window
     }
 
 
-    private static string ReadVersion()
-    {
-        var assembly = typeof(Uigf4GachaWindow).Assembly;
-        var informational = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        if (!string.IsNullOrWhiteSpace(informational))
-        {
-            int plus = informational.IndexOf('+');
-            return plus > 0 ? informational[..plus] : informational;
-        }
-        return assembly.GetName().Version?.ToString(3) ?? "0.0.0";
-    }
 }

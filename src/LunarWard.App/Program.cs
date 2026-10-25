@@ -176,21 +176,8 @@ internal static class Program
     }
 
 
-    /// <summary>版本号（InformationalVersion 去掉 SourceLink 的 +sha 后缀）。</summary>
-    internal static string Version
-    {
-        get
-        {
-            var assembly = typeof(Program).Assembly;
-            string version = assembly
-                .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?
-                .InformationalVersion
-                ?? assembly.GetName().Version?.ToString(3)
-                ?? "0.0.0";
-            int plus = version.IndexOf('+');
-            return plus >= 0 ? version[..plus] : version;
-        }
-    }
+    /// <summary>版本号（唯一实现在 <see cref="AppVersion"/>）。</summary>
+    internal static string Version => AppVersion.Display;
 
 
     private static void PrintUsage()

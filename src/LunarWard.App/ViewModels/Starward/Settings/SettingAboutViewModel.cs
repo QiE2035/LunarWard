@@ -28,7 +28,7 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
     public SettingAboutViewModel(PageContext context, bool showDivider = false)
         : base(context, SettingSectionKind.About, "Settings.About", "\uE946", showDivider)
     {
-        Version = ReadVersion();
+        Version = AppVersion.Display;
 
         // LunarWard 追加：Starward 的关于页只有应用版本，没有系统环境；
         // Linux 上显卡/会话信息对排查启动问题非常有用，放在版本号下面。
@@ -154,19 +154,6 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
     }
 
 
-    private static string ReadVersion()
-    {
-        var assembly = typeof(SettingAboutViewModel).Assembly;
-        var informational = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        if (!string.IsNullOrWhiteSpace(informational))
-        {
-            // 去掉 SourceLink 的后缀（1.0.0+abcdef）
-            var plus = informational.IndexOf('+');
-            return plus > 0 ? informational[..plus] : informational;
-        }
-
-        return assembly.GetName().Version?.ToString(3) ?? "0.0.0";
-    }
 }
 
 
