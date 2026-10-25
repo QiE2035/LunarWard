@@ -249,13 +249,13 @@ cd src/LunarWard.Core && dotnet build
 
 ## 四、交付前检查清单
 
-> 状态更新（2026-10-23）。✅ = 已完成并有证据；⏳ = 待真机/后续。
+> 状态更新（2026-10-25）。✅ = 已完成并有证据；⏳ = 待真机/后续。
 
 | 检查项 | 状态 | 证据 |
 |---|---|---|
 | `dotnet build` 无警告 | ✅ | `dotnet build LunarWard.slnx` → 0 warning / 0 error |
-| 全部单元测试通过 | ✅ | **276**（Unit）+ **31**（Installer）= 307 |
-| 集成测试 I1–I13 通过 | ✅ | **27** 个集成测试（I1–I13 + S1–S5 + 真 wine 2 个）；合计 **334** 全绿 |
+| 全部单元测试通过 | ✅ | **508**（Unit）+ **31**（Installer）= 539 |
+| 集成测试 I1–I13 通过 | ✅ | **27** 个集成测试（I1–I13 + S1–S5 + 真 wine 2 个）；合计 **566** 全绿 |
 | 真机清单 R1–R15 全部记录 | ⚠️ | 已记录：R9/R12 ✅、R1/R13/R15 ⚠️、其余 ⏳ → `acceptance-2026-10-23.md` |
 | `launch-report.json` 能正确输出 | ✅ | `I13` / `Report_HasSevenPhasesAndFullChain` |
 | 配置损坏时能恢复 | ✅ | `U13` / `PlayTimeTests.CorruptStore_IsBackedUpAndReset` |
@@ -265,6 +265,7 @@ cd src/LunarWard.Core && dotnet build
 | 文档：README、用户手册、排障指南 | ✅ | `README.md` / `docs/USER-GUIDE.md` / `docs/TROUBLESHOOTING.md` |
 | 许可文件与第三方声明 | ✅ | `LICENSE` / `THIRD-PARTY-NOTICES.md` |
 | **不包含**任何补丁二进制 | ✅ | 仓库内无 `.exe`/`.dll` 补丁；`git ls-files` 可核 |
+| 首启空态（无游戏、无记录）各页可渲染 | ✅ | 隔离 HOME/XDG 下 `scripts/smoke-screenshots.sh` 八页全 OK；抽卡页显示「没有抽卡记录」空态、启动器显示「安装游戏 / 配置游戏目录」 |
 | `.desktop` 文件 + 图标 | ✅ | `packaging/lunarward.desktop`（`desktop-file-validate` 通过）+ `Assets/lunarward.ico` |
 | Flatpak 或 AppImage 打包 | ⏳ | 首期只做源码 + Arch（`packaging/PKGBUILD`），Flatpak 后续（Q8） |
 
