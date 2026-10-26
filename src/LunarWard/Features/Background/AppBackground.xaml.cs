@@ -364,7 +364,7 @@ public partial class AppBackground : UserControl, INotifyPropertyChanged
     {
         cancellationToken.ThrowIfCancellationRequested();
         double scale = GetUIScaleFactor();
-        int targetWidth = (int)Math.Max(1, ActualWidth * scale);
+        int targetWidth = (int)Math.Max(1, Bounds.Width * scale);
         using var fs = File.OpenRead(file);
         Bitmap bitmap;
         try
@@ -457,7 +457,7 @@ public partial class AppBackground : UserControl, INotifyPropertyChanged
                 {
                     return;
                 }
-                if (filePath == _lastBackgroundFile)
+                if (filePath is not null && filePath == _lastBackgroundFile)
                 {
                     if (BackgroundService.FileIsSupportedVideo(filePath))
                     {
@@ -543,6 +543,11 @@ public partial class AppBackground : UserControl, INotifyPropertyChanged
                 VideoHost.Content = _videoPlayer.View;
                 bool started = await _videoPlayer.StartAsync(file, AppConfig.GetService<LogService>());
                 IsVideoPlaying = started;
+                if (!started)
+                {
+                    // 平台替换：Linux 视频背景走 ffmpeg 子进程，失败时回退为静态图并明确提示，避免静默黑屏。
+                    InAppToast.Show("视频背景不可用", "已回退为静态背景图（视频播放需要 ffmpeg）");
+                }
                 if (started)
                 {
                     BackgroundImageOpacity = 0;

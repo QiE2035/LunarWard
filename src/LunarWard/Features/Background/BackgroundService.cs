@@ -81,7 +81,7 @@ public class BackgroundService
     /// <summary>
     /// 文件是否是支持的视频格式，支持 mp4、mkv、webm
     /// </summary>
-    public static bool FileIsSupportedVideo(string? name)
+    public static bool FileIsSupportedVideo(string name)
     {
         return Path.GetExtension(name).ToLowerInvariant() switch
         {

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using LunarWard.Helpers;
 using LunarWard.Language;
 using Microsoft.Extensions.Logging;
 
@@ -112,7 +113,8 @@ public partial class BackgroundViewPage : UserControl, INotifyPropertyChanged
         {
             if (SetProperty(ref _mutliSelect, value))
             {
-                ListView_Images.SelectionMode = value ? SelectionMode.Multiple : SelectionMode.None;
+                // 平台替换：Avalonia 的 SelectionMode 没有 None，非多选时用 Single + 选择后立即清空（见 SelectionChanged）。
+                ListView_Images.SelectionMode = value ? SelectionMode.Multiple : SelectionMode.Single;
                 UpdateSelectCountText();
             }
         }
@@ -238,6 +240,11 @@ public partial class BackgroundViewPage : UserControl, INotifyPropertyChanged
 
     private void OnImagesSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
+        if (!MutliSelect && ListView_Images.SelectedItem is not null)
+        {
+            // 对齐上游 ListViewSelectionMode.None：单选态下不保留选中项（点按只用于打开/拖动）。
+            ListView_Images.SelectedItem = null;
+        }
         UpdateSelectCountText();
     }
 
@@ -295,7 +302,7 @@ public partial class BackgroundViewPage : UserControl, INotifyPropertyChanged
             }
             if (paths.Count > 0 && TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             {
-                await clipboard.SetTextAsync(string.Join(Environment.NewLine, paths));
+                ClipboardHelper.SetText(string.Join(Environment.NewLine, paths));
             }
         }
         catch (Exception ex)
