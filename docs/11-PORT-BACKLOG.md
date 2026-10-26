@@ -2,7 +2,7 @@
 
 > 由 `python3 scripts/port-backlog.py --write` 生成，勿手改表格；人工结论写在每节标题下的「备注」里。
 
-上游文件 **314** 个，本地已有同名落点 **22** 个，**缺 292** 个；本地独有文件 **228** 个（需并入 Features 或删除）。
+上游文件 **314** 个，本地已有同名落点 **301** 个，**缺 13** 个；本地独有文件 **338** 个（需并入 Features 或删除）。
 
 判定标准：上游相对路径在本地存在（`.xaml` ↔ `.axaml`）。「有文件」只说明路径对齐，内容是否已按上游实现，需要逐节核对。
 
@@ -10,464 +10,216 @@
 
 | 分组 | 上游文件 | 已有 | 缺失 |
 |---|---:|---:|---:|
-| Features/GameRecord | 47 | 0 | 47 |
-| Features/Gacha | 40 | 0 | 40 |
-| Features/GameLauncher | 26 | 0 | 26 |
-| Features/Setting | 25 | 19 | 6 |
-| Features/Screenshot | 23 | 0 | 23 |
-| Features/ViewHost | 20 | 0 | 20 |
-| Helpers | 16 | 0 | 16 |
-| Features/PlayTime | 14 | 0 | 14 |
-| Features/Background | 13 | 0 | 13 |
-| Converters | 11 | 0 | 11 |
-| Features/GameInstall | 9 | 0 | 9 |
-| Features/Codec | 8 | 0 | 8 |
-| Features/Update | 8 | 0 | 8 |
-| Features/GameSetting | 7 | 0 | 7 |
-| Features/GameSelector | 6 | 0 | 6 |
-| Controls | 5 | 0 | 5 |
-| Features/GameAccount | 5 | 0 | 5 |
-| Features/Overlay | 4 | 0 | 4 |
-| Features/SelfQuery | 4 | 0 | 4 |
-| Features/CloudGame | 3 | 0 | 3 |
-| Features/GamepadControl | 3 | 0 | 3 |
-| Features/UrlProtocol | 3 | 0 | 3 |
-| Features/Database | 2 | 0 | 2 |
-| Frameworks | 2 | 0 | 2 |
+| Features/GameRecord | 47 | 47 | 0 |
+| Features/Gacha | 40 | 40 | 0 |
+| Features/GameLauncher | 26 | 26 | 0 |
+| Features/Setting | 25 | 25 | 0 |
+| Features/Screenshot | 23 | 19 | 4 |
+| Features/ViewHost | 20 | 18 | 2 |
+| Helpers | 16 | 14 | 2 |
+| Features/PlayTime | 14 | 14 | 0 |
+| Features/Background | 13 | 13 | 0 |
+| Converters | 11 | 11 | 0 |
+| Features/GameInstall | 9 | 9 | 0 |
+| Features/Codec | 8 | 8 | 0 |
+| Features/Update | 8 | 8 | 0 |
+| Features/GameSetting | 7 | 7 | 0 |
+| Features/GameSelector | 6 | 5 | 1 |
+| Controls | 5 | 3 | 2 |
+| Features/GameAccount | 5 | 5 | 0 |
+| Features/Overlay | 4 | 2 | 2 |
+| Features/SelfQuery | 4 | 4 | 0 |
+| Features/CloudGame | 3 | 3 | 0 |
+| Features/GamepadControl | 3 | 3 | 0 |
+| Features/UrlProtocol | 3 | 3 | 0 |
+| Features/Database | 2 | 2 | 0 |
+| Frameworks | 2 | 2 | 0 |
 | App.xaml | 1 | 1 | 0 |
 | App.xaml.cs | 1 | 1 | 0 |
-| AppConfig.Common.cs | 1 | 0 | 1 |
-| AppConfig.Configuration.cs | 1 | 0 | 1 |
-| AppConfig.ServiceProvider.cs | 1 | 0 | 1 |
-| AppConfig.Setting.cs | 1 | 0 | 1 |
-| Features/GameFeatureConfig.cs | 1 | 0 | 1 |
-| Features/HoYoPlay | 1 | 0 | 1 |
-| Features/RPC | 1 | 0 | 1 |
+| AppConfig.Common.cs | 1 | 1 | 0 |
+| AppConfig.Configuration.cs | 1 | 1 | 0 |
+| AppConfig.ServiceProvider.cs | 1 | 1 | 0 |
+| AppConfig.Setting.cs | 1 | 1 | 0 |
+| Features/GameFeatureConfig.cs | 1 | 1 | 0 |
+| Features/HoYoPlay | 1 | 1 | 0 |
+| Features/RPC | 1 | 1 | 0 |
 | Program.cs | 1 | 1 | 0 |
 
-## Features/GameRecord（0/47）
+## Features/GameRecord（47/47）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/GameRecord/AvatarRankHelper.cs` | ❌ 缺 |
-| `Features/GameRecord/BBSWebBridge.xaml` | ❌ 缺 |
-| `Features/GameRecord/BBSWebBridge.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/BattleChronicleWindow.xaml` | ❌ 缺 |
-| `Features/GameRecord/BattleChronicleWindow.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/ColorToSolidColorBrushConverter.cs` | ❌ 缺 |
-| `Features/GameRecord/DailyNote/DailyNoteButton.xaml` | ❌ 缺 |
-| `Features/GameRecord/DailyNote/DailyNoteButton.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/GameRecordPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/GameRecordPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/GameRecordRoleChangedMessage.cs` | ❌ 缺 |
-| `Features/GameRecord/GameRecordService.cs` | ❌ 缺 |
-| `Features/GameRecord/GameRecordVerifyAccountMessage.cs` | ❌ 缺 |
-| `Features/GameRecord/Genshin/ImaginariumTheaterPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/Genshin/ImaginariumTheaterPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/Genshin/SpiralAbyssBattleAvatarsSelectConverter.cs` | ❌ 缺 |
-| `Features/GameRecord/Genshin/SpiralAbyssPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/Genshin/SpiralAbyssPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/Genshin/StygianOnslaughtPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/Genshin/StygianOnslaughtPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/Genshin/TravelersDiaryPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/Genshin/TravelersDiaryPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/LoginPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/LoginPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/ApocalypticShadowPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/StarRail/ApocalypticShadowPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/ChallengePeakPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/StarRail/ChallengePeakPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/ForgottenHallPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/StarRail/ForgottenHallPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/PureFictionPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/StarRail/PureFictionPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/SimulatedUniverseBuffBgConverter.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/SimulatedUniverseBuffIconConverter.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/SimulatedUniversePage.xaml` | ❌ 缺 |
-| `Features/GameRecord/StarRail/SimulatedUniversePage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/SimulatedUniverseRomanNumberConverter.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/SimulatedUniverseWorldIconConverter.cs` | ❌ 缺 |
-| `Features/GameRecord/StarRail/TrailblazeCalendarPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/StarRail/TrailblazeCalendarPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/ZZZ/DeadlyAssaultPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/ZZZ/DeadlyAssaultPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/ZZZ/InterKnotMonthlyReportPage.xaml` | ❌ 缺 |
-| `Features/GameRecord/ZZZ/InterKnotMonthlyReportPage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/ZZZ/ShiyuDefensePage.xaml` | ❌ 缺 |
-| `Features/GameRecord/ZZZ/ShiyuDefensePage.xaml.cs` | ❌ 缺 |
-| `Features/GameRecord/ZZZ/ZZZRarityToIconConverter.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/Gacha（0/40）
+## Features/Gacha（40/40）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/Gacha/CloudGameGachaWindow.xaml` | ❌ 缺 |
-| `Features/Gacha/CloudGameGachaWindow.xaml.cs` | ❌ 缺 |
-| `Features/Gacha/DeleteGachaLogDialog.xaml` | ❌ 缺 |
-| `Features/Gacha/DeleteGachaLogDialog.xaml.cs` | ❌ 缺 |
-| `Features/Gacha/GachaBanner.cs` | ❌ 缺 |
-| `Features/Gacha/GachaLogExportFile.cs` | ❌ 缺 |
-| `Features/Gacha/GachaLogItemEx.cs` | ❌ 缺 |
-| `Features/Gacha/GachaLogPage.xaml` | ❌ 缺 |
-| `Features/Gacha/GachaLogPage.xaml.cs` | ❌ 缺 |
-| `Features/Gacha/GachaLogService.cs` | ❌ 缺 |
-| `Features/Gacha/GachaLogUrl.cs` | ❌ 缺 |
-| `Features/Gacha/GachaNoUp.cs` | ❌ 缺 |
-| `Features/Gacha/GachaPityProgressBackgroundBrushConverter.cs` | ❌ 缺 |
-| `Features/Gacha/GachaStatsCard.xaml` | ❌ 缺 |
-| `Features/Gacha/GachaStatsCard.xaml.cs` | ❌ 缺 |
-| `Features/Gacha/GachaTypeStats.cs` | ❌ 缺 |
-| `Features/Gacha/GenshinBeyondGachaPage.xaml` | ❌ 缺 |
-| `Features/Gacha/GenshinBeyondGachaPage.xaml.cs` | ❌ 缺 |
-| `Features/Gacha/GenshinBeyondGachaService.cs` | ❌ 缺 |
-| `Features/Gacha/GenshinGachaService.cs` | ❌ 缺 |
-| `Features/Gacha/RarityToGIBgConverter.cs` | ❌ 缺 |
-| `Features/Gacha/RarityToSRBgConverter.cs` | ❌ 缺 |
-| `Features/Gacha/RarityToZZZIconConverter.cs` | ❌ 缺 |
-| `Features/Gacha/StarRailGachaService.cs` | ❌ 缺 |
-| `Features/Gacha/UIGF/GachaUidArchiveDisplay.cs` | ❌ 缺 |
-| `Features/Gacha/UIGF/UIGF3File.cs` | ❌ 缺 |
-| `Features/Gacha/UIGF/UIGF4File.cs` | ❌ 缺 |
-| `Features/Gacha/UIGF/UIGF4GachaWindow.xaml` | ❌ 缺 |
-| `Features/Gacha/UIGF/UIGF4GachaWindow.xaml.cs` | ❌ 缺 |
-| `Features/Gacha/UIGF/UIGF4ImportException.cs` | ❌ 缺 |
-| `Features/Gacha/UIGF/UIGFGachaService.cs` | ❌ 缺 |
-| `Features/Gacha/UIGF/UIGFGenshinGachaItem.cs` | ❌ 缺 |
-| `Features/Gacha/UpdateGachaLogMessage.cs` | ❌ 缺 |
-| `Features/Gacha/ZZZGachaService.cs` | ❌ 缺 |
-| `Features/Gacha/ZZZGachaStatsCard.xaml` | ❌ 缺 |
-| `Features/Gacha/ZZZGachaStatsCard.xaml.cs` | ❌ 缺 |
-| `Features/Gacha/ZZZGachaToolbox/IconInfo.cs` | ❌ 缺 |
-| `Features/Gacha/ZZZGachaToolbox/ItemList.cs` | ❌ 缺 |
-| `Features/Gacha/ZZZGachaToolbox/ZZZGachaInfoWindow.xaml` | ❌ 缺 |
-| `Features/Gacha/ZZZGachaToolbox/ZZZGachaInfoWindow.xaml.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/GameLauncher（0/26）
+## Features/GameLauncher（26/26）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/GameLauncher/CompactCheckBoxStyle.xaml` | ❌ 缺 |
-| `Features/GameLauncher/DX12IntroDialog.xaml` | ❌ 缺 |
-| `Features/GameLauncher/DX12IntroDialog.xaml.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameAnnouncementSettingChangedMessage.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameAuthLoginButton.xaml` | ❌ 缺 |
-| `Features/GameLauncher/GameAuthLoginButton.xaml.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameAuthLoginService.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameBannerAndPost.xaml` | ❌ 缺 |
-| `Features/GameLauncher/GameBannerAndPost.xaml.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameConfigIni.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameInstallPathChangedMessage.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameLauncherPage.xaml` | ❌ 缺 |
-| `Features/GameLauncher/GameLauncherPage.xaml.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameLauncherService.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameLauncherSettingDialog.xaml` | ❌ 缺 |
-| `Features/GameLauncher/GameLauncherSettingDialog.xaml.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameNoticeService.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameNoticeWindow.xaml` | ❌ 缺 |
-| `Features/GameLauncher/GameNoticeWindow.xaml.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameNoticeWindowClosedMessage.cs` | ❌ 缺 |
-| `Features/GameLauncher/GamePostGroup.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameStartedMessage.cs` | ❌ 缺 |
-| `Features/GameLauncher/GameState.cs` | ❌ 缺 |
-| `Features/GameLauncher/StartGameAction.cs` | ❌ 缺 |
-| `Features/GameLauncher/StartGameButton.xaml` | ❌ 缺 |
-| `Features/GameLauncher/StartGameButton.xaml.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/Setting（19/25）
+## Features/Setting（25/25）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/Setting/AboutSetting.xaml` | `Features/Setting/AboutSetting.axaml` |
-| `Features/Setting/AboutSetting.xaml.cs` | `Features/Setting/AboutSetting.axaml.cs` |
-| `Features/Setting/AdvancedSetting.xaml` | `Features/Setting/AdvancedSetting.axaml` |
-| `Features/Setting/AdvancedSetting.xaml.cs` | `Features/Setting/AdvancedSetting.axaml.cs` |
-| `Features/Setting/DownloadSetting.xaml` | `Features/Setting/DownloadSetting.axaml` |
-| `Features/Setting/DownloadSetting.xaml.cs` | `Features/Setting/DownloadSetting.axaml.cs` |
-| `Features/Setting/FileManageSetting.xaml` | `Features/Setting/FileManageSetting.axaml` |
-| `Features/Setting/FileManageSetting.xaml.cs` | `Features/Setting/FileManageSetting.axaml.cs` |
-| `Features/Setting/GamepadControlSetting.xaml` | ❌ 缺 |
-| `Features/Setting/GamepadControlSetting.xaml.cs` | ❌ 缺 |
-| `Features/Setting/GeneralSetting.xaml` | `Features/Setting/GeneralSetting.axaml` |
-| `Features/Setting/GeneralSetting.xaml.cs` | `Features/Setting/GeneralSetting.axaml.cs` |
-| `Features/Setting/HotkeyInput.xaml` | ❌ 缺 |
-| `Features/Setting/HotkeyInput.xaml.cs` | ❌ 缺 |
-| `Features/Setting/HotkeyManager.cs` | ❌ 缺 |
-| `Features/Setting/HotkeySetting.xaml` | `Features/Setting/HotkeySetting.axaml` |
-| `Features/Setting/HotkeySetting.xaml.cs` | `Features/Setting/HotkeySetting.axaml.cs` |
-| `Features/Setting/LanguageChangedMessage.cs` | ❌ 缺 |
-| `Features/Setting/ScreenshotSetting.xaml` | `Features/Setting/ScreenshotSetting.axaml` |
-| `Features/Setting/ScreenshotSetting.xaml.cs` | `Features/Setting/ScreenshotSetting.axaml.cs` |
-| `Features/Setting/SettingPage.xaml` | `Features/Setting/SettingPage.axaml` |
-| `Features/Setting/SettingPage.xaml.cs` | `Features/Setting/SettingPage.axaml.cs` |
-| `Features/Setting/ToolboxItem.cs` | `Features/Setting/ToolboxItem.cs` |
-| `Features/Setting/ToolboxSetting.xaml` | `Features/Setting/ToolboxSetting.axaml` |
-| `Features/Setting/ToolboxSetting.xaml.cs` | `Features/Setting/ToolboxSetting.axaml.cs` |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/Screenshot（0/23）
+## Features/Screenshot（19/23）
 
 | 上游文件 | 本地落点 |
 |---|---|
 | `Features/Screenshot/ImageBatchConvertWindow.xaml` | ❌ 缺 |
 | `Features/Screenshot/ImageBatchConvertWindow.xaml.cs` | ❌ 缺 |
-| `Features/Screenshot/ImageViewWindow.xaml` | ❌ 缺 |
-| `Features/Screenshot/ImageViewWindow.xaml.cs` | ❌ 缺 |
-| `Features/Screenshot/ImageViewWindow2.xaml` | ❌ 缺 |
-| `Features/Screenshot/ImageViewWindow2.xaml.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenCaptureContext.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenCaptureHelper.cs` | ❌ 缺 |
+| `Features/Screenshot/ImageViewWindow.xaml` | `Features/Screenshot/ImageViewWindow.axaml` |
+| `Features/Screenshot/ImageViewWindow.xaml.cs` | `Features/Screenshot/ImageViewWindow.axaml.cs` |
+| `Features/Screenshot/ImageViewWindow2.xaml` | `Features/Screenshot/ImageViewWindow2.axaml` |
+| `Features/Screenshot/ImageViewWindow2.xaml.cs` | `Features/Screenshot/ImageViewWindow2.axaml.cs` |
+| `Features/Screenshot/ScreenCaptureContext.cs` | `Features/Screenshot/ScreenCaptureContext.cs` |
+| `Features/Screenshot/ScreenCaptureHelper.cs` | `Features/Screenshot/ScreenCaptureHelper.cs` |
 | `Features/Screenshot/ScreenCaptureInfoWindow.xaml` | ❌ 缺 |
 | `Features/Screenshot/ScreenCaptureInfoWindow.xaml.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenCaptureItem.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenCaptureService.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenshotFolder.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenshotFolderManageDialog.xaml` | ❌ 缺 |
-| `Features/Screenshot/ScreenshotFolderManageDialog.xaml.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenshotHelper.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenshotItem.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenshotPage.xaml` | ❌ 缺 |
-| `Features/Screenshot/ScreenshotPage.xaml.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenshotPage2.xaml` | ❌ 缺 |
-| `Features/Screenshot/ScreenshotPage2.xaml.cs` | ❌ 缺 |
-| `Features/Screenshot/ScrollViewerExtensions.cs` | ❌ 缺 |
-| `Features/Screenshot/ZoomFactorPercentConverter.cs` | ❌ 缺 |
+| `Features/Screenshot/ScreenCaptureItem.cs` | `Features/Screenshot/ScreenCaptureItem.cs` |
+| `Features/Screenshot/ScreenCaptureService.cs` | `Features/Screenshot/ScreenCaptureService.cs` |
+| `Features/Screenshot/ScreenshotFolder.cs` | `Features/Screenshot/ScreenshotFolder.cs` |
+| `Features/Screenshot/ScreenshotFolderManageDialog.xaml` | `Features/Screenshot/ScreenshotFolderManageDialog.axaml` |
+| `Features/Screenshot/ScreenshotFolderManageDialog.xaml.cs` | `Features/Screenshot/ScreenshotFolderManageDialog.axaml.cs` |
+| `Features/Screenshot/ScreenshotHelper.cs` | `Features/Screenshot/ScreenshotHelper.cs` |
+| `Features/Screenshot/ScreenshotItem.cs` | `Features/Screenshot/ScreenshotItem.cs` |
+| `Features/Screenshot/ScreenshotPage.xaml` | `Features/Screenshot/ScreenshotPage.axaml` |
+| `Features/Screenshot/ScreenshotPage.xaml.cs` | `Features/Screenshot/ScreenshotPage.axaml.cs` |
+| `Features/Screenshot/ScreenshotPage2.xaml` | `Features/Screenshot/ScreenshotPage2.axaml` |
+| `Features/Screenshot/ScreenshotPage2.xaml.cs` | `Features/Screenshot/ScreenshotPage2.axaml.cs` |
+| `Features/Screenshot/ScrollViewerExtensions.cs` | `Features/Screenshot/ScrollViewerExtensions.cs` |
+| `Features/Screenshot/ZoomFactorPercentConverter.cs` | `Features/Screenshot/ZoomFactorPercentConverter.cs` |
 
-## Features/ViewHost（0/20）
+## Features/ViewHost（18/20）
 
 | 上游文件 | 本地落点 |
 |---|---|
-| `Features/ViewHost/BH3GlobalGameServerChangedMessage.cs` | ❌ 缺 |
-| `Features/ViewHost/BlankPage.xaml` | ❌ 缺 |
-| `Features/ViewHost/BlankPage.xaml.cs` | ❌ 缺 |
-| `Features/ViewHost/MainView.xaml` | ❌ 缺 |
-| `Features/ViewHost/MainView.xaml.cs` | ❌ 缺 |
-| `Features/ViewHost/MainViewNavigateMessage.cs` | ❌ 缺 |
-| `Features/ViewHost/MainWindow.xaml` | ❌ 缺 |
-| `Features/ViewHost/MainWindow.xaml.cs` | ❌ 缺 |
-| `Features/ViewHost/MainWindowCloseDialog.xaml` | ❌ 缺 |
-| `Features/ViewHost/MainWindowCloseDialog.xaml.cs` | ❌ 缺 |
-| `Features/ViewHost/MainWindowCloseOption.cs` | ❌ 缺 |
-| `Features/ViewHost/MainWindowStateChangedMessage.cs` | ❌ 缺 |
-| `Features/ViewHost/NoPermissionWindow.xaml` | ❌ 缺 |
-| `Features/ViewHost/NoPermissionWindow.xaml.cs` | ❌ 缺 |
-| `Features/ViewHost/RemovableStorageDeviceChangedMessage.cs` | ❌ 缺 |
+| `Features/ViewHost/BH3GlobalGameServerChangedMessage.cs` | `Features/ViewHost/BH3GlobalGameServerChangedMessage.cs` |
+| `Features/ViewHost/BlankPage.xaml` | `Features/ViewHost/BlankPage.axaml` |
+| `Features/ViewHost/BlankPage.xaml.cs` | `Features/ViewHost/BlankPage.axaml.cs` |
+| `Features/ViewHost/MainView.xaml` | `Features/ViewHost/MainView.axaml` |
+| `Features/ViewHost/MainView.xaml.cs` | `Features/ViewHost/MainView.axaml.cs` |
+| `Features/ViewHost/MainViewNavigateMessage.cs` | `Features/ViewHost/MainViewNavigateMessage.cs` |
+| `Features/ViewHost/MainWindow.xaml` | `Features/ViewHost/MainWindow.axaml` |
+| `Features/ViewHost/MainWindow.xaml.cs` | `Features/ViewHost/MainWindow.axaml.cs` |
+| `Features/ViewHost/MainWindowCloseDialog.xaml` | `Features/ViewHost/MainWindowCloseDialog.axaml` |
+| `Features/ViewHost/MainWindowCloseDialog.xaml.cs` | `Features/ViewHost/MainWindowCloseDialog.axaml.cs` |
+| `Features/ViewHost/MainWindowCloseOption.cs` | `Features/ViewHost/MainWindowCloseOption.cs` |
+| `Features/ViewHost/MainWindowStateChangedMessage.cs` | `Features/ViewHost/MainWindowStateChangedMessage.cs` |
+| `Features/ViewHost/NoPermissionWindow.xaml` | `Features/ViewHost/NoPermissionWindow.axaml` |
+| `Features/ViewHost/NoPermissionWindow.xaml.cs` | `Features/ViewHost/NoPermissionWindow.axaml.cs` |
+| `Features/ViewHost/RemovableStorageDeviceChangedMessage.cs` | `Features/ViewHost/RemovableStorageDeviceChangedMessage.cs` |
 | `Features/ViewHost/SystemTrayWindow.xaml` | ❌ 缺 |
 | `Features/ViewHost/SystemTrayWindow.xaml.cs` | ❌ 缺 |
-| `Features/ViewHost/WelcomePageFinishedMessage.cs` | ❌ 缺 |
-| `Features/ViewHost/WelcomeWindow.xaml` | ❌ 缺 |
-| `Features/ViewHost/WelcomeWindow.xaml.cs` | ❌ 缺 |
+| `Features/ViewHost/WelcomePageFinishedMessage.cs` | `Features/ViewHost/WelcomePageFinishedMessage.cs` |
+| `Features/ViewHost/WelcomeWindow.xaml` | `Features/ViewHost/WelcomeWindow.axaml` |
+| `Features/ViewHost/WelcomeWindow.xaml.cs` | `Features/ViewHost/WelcomeWindow.axaml.cs` |
 
-## Helpers（0/16）
+## Helpers（14/16）
 
 | 上游文件 | 本地落点 |
 |---|---|
 | `Helpers/AccentColorHelper.cs` | ❌ 缺 |
-| `Helpers/BindConverter.cs` | ❌ 缺 |
-| `Helpers/ClipboardHelper.cs` | ❌ 缺 |
-| `Helpers/DriveHelper.cs` | ❌ 缺 |
-| `Helpers/Enumeration/EnumItemsSource.cs` | ❌ 缺 |
-| `Helpers/Enumeration/LocalizationKeyAttribute.cs` | ❌ 缺 |
-| `Helpers/FileCache.cs` | ❌ 缺 |
-| `Helpers/FileDialogHelper.cs` | ❌ 缺 |
+| `Helpers/BindConverter.cs` | `Helpers/BindConverter.cs` |
+| `Helpers/ClipboardHelper.cs` | `Helpers/ClipboardHelper.cs` |
+| `Helpers/DriveHelper.cs` | `Helpers/DriveHelper.cs` |
+| `Helpers/Enumeration/EnumItemsSource.cs` | `Helpers/Enumeration/EnumItemsSource.cs` |
+| `Helpers/Enumeration/LocalizationKeyAttribute.cs` | `Helpers/Enumeration/LocalizationKeyAttribute.cs` |
+| `Helpers/FileCache.cs` | `Helpers/FileCache.cs` |
+| `Helpers/FileDialogHelper.cs` | `Helpers/FileDialogHelper.cs` |
 | `Helpers/FileDialogNative.cs` | ❌ 缺 |
-| `Helpers/FileHashHelper.cs` | ❌ 缺 |
-| `Helpers/InAppToast.cs` | ❌ 缺 |
-| `Helpers/PointerCursor.cs` | ❌ 缺 |
-| `Helpers/SystemBackdropHelper.cs` | ❌ 缺 |
-| `Helpers/SystemUIHelper.cs` | ❌ 缺 |
-| `Helpers/TransparentBackdrop.cs` | ❌ 缺 |
-| `Helpers/XamlRootExtension.cs` | ❌ 缺 |
+| `Helpers/FileHashHelper.cs` | `Helpers/FileHashHelper.cs` |
+| `Helpers/InAppToast.cs` | `Helpers/InAppToast.cs` |
+| `Helpers/PointerCursor.cs` | `Helpers/PointerCursor.cs` |
+| `Helpers/SystemBackdropHelper.cs` | `Helpers/SystemBackdropHelper.cs` |
+| `Helpers/SystemUIHelper.cs` | `Helpers/SystemUIHelper.cs` |
+| `Helpers/TransparentBackdrop.cs` | `Helpers/TransparentBackdrop.cs` |
+| `Helpers/XamlRootExtension.cs` | `Helpers/XamlRootExtension.cs` |
 
-## Features/PlayTime（0/14）
+## Features/PlayTime（14/14）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/PlayTime/Charts/BarChart.cs` | ❌ 缺 |
-| `Features/PlayTime/Charts/CalendarHeatmap.cs` | ❌ 缺 |
-| `Features/PlayTime/Charts/ChartHelpers.cs` | ❌ 缺 |
-| `Features/PlayTime/Charts/ChartItems.cs` | ❌ 缺 |
-| `Features/PlayTime/Charts/HoverCard.cs` | ❌ 缺 |
-| `Features/PlayTime/PlayTimeButton.xaml` | ❌ 缺 |
-| `Features/PlayTime/PlayTimeButton.xaml.cs` | ❌ 缺 |
-| `Features/PlayTime/PlayTimeItem.cs` | ❌ 缺 |
-| `Features/PlayTime/PlayTimeRecordService.cs` | ❌ 缺 |
-| `Features/PlayTime/PlayTimeState.cs` | ❌ 缺 |
-| `Features/PlayTime/PlayTimeStatsDialog.xaml` | ❌ 缺 |
-| `Features/PlayTime/PlayTimeStatsDialog.xaml.cs` | ❌ 缺 |
-| `Features/PlayTime/PlayTimeStatsService.cs` | ❌ 缺 |
-| `Features/PlayTime/StatCardItem.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/Background（0/13）
+## Features/Background（13/13）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/Background/AccentColorChangedMessage.cs` | ❌ 缺 |
-| `Features/Background/AccentColorHelper.cs` | ❌ 缺 |
-| `Features/Background/AppBackground.xaml` | ❌ 缺 |
-| `Features/Background/AppBackground.xaml.cs` | ❌ 缺 |
-| `Features/Background/AppBackgroundImageExStyle.xaml` | ❌ 缺 |
-| `Features/Background/BackgroundChangedMessage.cs` | ❌ 缺 |
-| `Features/Background/BackgroundFileItem.cs` | ❌ 缺 |
-| `Features/Background/BackgroundService.cs` | ❌ 缺 |
-| `Features/Background/BackgroundViewPage.xaml` | ❌ 缺 |
-| `Features/Background/BackgroundViewPage.xaml.cs` | ❌ 缺 |
-| `Features/Background/BackgroundViewWindow.xaml` | ❌ 缺 |
-| `Features/Background/BackgroundViewWindow.xaml.cs` | ❌ 缺 |
-| `Features/Background/VideoBgVolumeChangedMessage.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Converters（0/11）
+## Converters（11/11）
+
+路径已全部对齐（内容仍需逐文件核对）。
+
+## Features/GameInstall（9/9）
+
+路径已全部对齐（内容仍需逐文件核对）。
+
+## Features/Codec（8/8）
+
+路径已全部对齐（内容仍需逐文件核对）。
+
+## Features/Update（8/8）
+
+路径已全部对齐（内容仍需逐文件核对）。
+
+## Features/GameSetting（7/7）
+
+路径已全部对齐（内容仍需逐文件核对）。
+
+## Features/GameSelector（5/6）
 
 | 上游文件 | 本地落点 |
 |---|---|
-| `Converters/BoolReversedConverter.cs` | ❌ 缺 |
-| `Converters/BoolToVisibilityConverter.cs` | ❌ 缺 |
-| `Converters/ByteLengthToStringConverter.cs` | ❌ 缺 |
-| `Converters/CollectionToVisibilityConverter.cs` | ❌ 缺 |
-| `Converters/ColorToSolidColorBrushConverter.cs` | ❌ 缺 |
-| `Converters/Int32NotZeroToVisibilityConverter.cs` | ❌ 缺 |
-| `Converters/ObjectToBoolConverter.cs` | ❌ 缺 |
-| `Converters/ObjectToVisibilityConverter.cs` | ❌ 缺 |
-| `Converters/TimeSpanToStringConverter.cs` | ❌ 缺 |
-| `Converters/VisibilityToBoolConverter.cs` | ❌ 缺 |
-| `Converters/WhiteSpaceStringToVisibilityConverter.cs` | ❌ 缺 |
-
-## Features/GameInstall（0/9）
-
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/GameInstall/GameInstallService.cs` | ❌ 缺 |
-| `Features/GameInstall/GameInstallTaskStartedMessage.cs` | ❌ 缺 |
-| `Features/GameInstall/GamePackageService.cs` | ❌ 缺 |
-| `Features/GameInstall/InstallGameDialog.xaml` | ❌ 缺 |
-| `Features/GameInstall/InstallGameDialog.xaml.cs` | ❌ 缺 |
-| `Features/GameInstall/PreDownloadButton.xaml` | ❌ 缺 |
-| `Features/GameInstall/PreDownloadButton.xaml.cs` | ❌ 缺 |
-| `Features/GameInstall/PreDownloadDialog.xaml` | ❌ 缺 |
-| `Features/GameInstall/PreDownloadDialog.xaml.cs` | ❌ 缺 |
-
-## Features/Codec（0/8）
-
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/Codec/HDR10GammaEffect.cs` | ❌ 缺 |
-| `Features/Codec/ImageInfo.cs` | ❌ 缺 |
-| `Features/Codec/ImageLoader.cs` | ❌ 缺 |
-| `Features/Codec/ImageSaver.cs` | ❌ 缺 |
-| `Features/Codec/ImageThumbnail.cs` | ❌ 缺 |
-| `Features/Codec/SrgbGammaEffect.cs` | ❌ 缺 |
-| `Features/Codec/UhdrGainmapEffect.cs` | ❌ 缺 |
-| `Features/Codec/VP9Helper.cs` | ❌ 缺 |
-
-## Features/Update（0/8）
-
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/Update/LogUploadClient.cs` | ❌ 缺 |
-| `Features/Update/LogUploadRequestBase.cs` | ❌ 缺 |
-| `Features/Update/LogUploadService.cs` | ❌ 缺 |
-| `Features/Update/SetupService.cs` | ❌ 缺 |
-| `Features/Update/UpdateService.cs` | ❌ 缺 |
-| `Features/Update/UpdateState.cs` | ❌ 缺 |
-| `Features/Update/UpdateWindow.xaml` | ❌ 缺 |
-| `Features/Update/UpdateWindow.xaml.cs` | ❌ 缺 |
-
-## Features/GameSetting（0/7）
-
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/GameSetting/GameSettingPage.xaml` | ❌ 缺 |
-| `Features/GameSetting/GameSettingPage.xaml.cs` | ❌ 缺 |
-| `Features/GameSetting/GameSettingService.cs` | ❌ 缺 |
-| `Features/GameSetting/GenshinHDRLuminanceSettingDialog.xaml` | ❌ 缺 |
-| `Features/GameSetting/GenshinHDRLuminanceSettingDialog.xaml.cs` | ❌ 缺 |
-| `Features/GameSetting/GraphicsSettings_Model_h2986158309.cs` | ❌ 缺 |
-| `Features/GameSetting/GraphicsSettings_PCResolution_h431323223.cs` | ❌ 缺 |
-
-## Features/GameSelector（0/6）
-
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/GameSelector/GameBizDisplay.cs` | ❌ 缺 |
-| `Features/GameSelector/GameBizIcon.cs` | ❌ 缺 |
-| `Features/GameSelector/GameSelector.xaml` | ❌ 缺 |
-| `Features/GameSelector/GameSelector.xaml.cs` | ❌ 缺 |
-| `Features/GameSelector/MainWindowDragRectAdaptToGameIconMessage.cs` | ❌ 缺 |
+| `Features/GameSelector/GameBizDisplay.cs` | `Features/GameSelector/GameBizDisplay.cs` |
+| `Features/GameSelector/GameBizIcon.cs` | `Features/GameSelector/GameBizIcon.cs` |
+| `Features/GameSelector/GameSelector.xaml` | `Features/GameSelector/GameSelector.axaml` |
+| `Features/GameSelector/GameSelector.xaml.cs` | `Features/GameSelector/GameSelector.axaml.cs` |
+| `Features/GameSelector/MainWindowDragRectAdaptToGameIconMessage.cs` | `Features/GameSelector/MainWindowDragRectAdaptToGameIconMessage.cs` |
 | `Features/GameSelector/NoAnimationImageExStyle.xaml` | ❌ 缺 |
 
-## Controls（0/5）
+## Controls（3/5）
 
 | 上游文件 | 本地落点 |
 |---|---|
-| `Controls/CachedImage.cs` | ❌ 缺 |
+| `Controls/CachedImage.cs` | `Controls/CachedImage.cs` |
 | `Controls/ColorRectChart.xaml` | ❌ 缺 |
 | `Controls/ColorRectChart.xaml.cs` | ❌ 缺 |
-| `Controls/ColorfulTextBlock.xaml` | ❌ 缺 |
-| `Controls/ColorfulTextBlock.xaml.cs` | ❌ 缺 |
+| `Controls/ColorfulTextBlock.xaml` | `Controls/ColorfulTextBlock.axaml` |
+| `Controls/ColorfulTextBlock.xaml.cs` | `Controls/ColorfulTextBlock.axaml.cs` |
 
-## Features/GameAccount（0/5）
+## Features/GameAccount（5/5）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/GameAccount/GameAccount.cs` | ❌ 缺 |
-| `Features/GameAccount/GameAccountService.cs` | ❌ 缺 |
-| `Features/GameAccount/GameAccountSwitcher.xaml` | ❌ 缺 |
-| `Features/GameAccount/GameAccountSwitcher.xaml.cs` | ❌ 缺 |
-| `Features/GameAccount/GameAccountUidStringConverter.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/Overlay（0/4）
+## Features/Overlay（2/4）
 
 | 上游文件 | 本地落点 |
 |---|---|
 | `Features/Overlay/OverlayWindow.xaml` | ❌ 缺 |
 | `Features/Overlay/OverlayWindow.xaml.cs` | ❌ 缺 |
-| `Features/Overlay/RunningGame.cs` | ❌ 缺 |
-| `Features/Overlay/RunningGameService.cs` | ❌ 缺 |
+| `Features/Overlay/RunningGame.cs` | `Features/Overlay/RunningGame.cs` |
+| `Features/Overlay/RunningGameService.cs` | `Features/Overlay/RunningGameService.cs` |
 
-## Features/SelfQuery（0/4）
+## Features/SelfQuery（4/4）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/SelfQuery/SelfQueryPage.xaml` | ❌ 缺 |
-| `Features/SelfQuery/SelfQueryPage.xaml.cs` | ❌ 缺 |
-| `Features/SelfQuery/SelfQueryService.cs` | ❌ 缺 |
-| `Features/SelfQuery/SelfQueryStatsNumberConverter.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/CloudGame（0/3）
+## Features/CloudGame（3/3）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/CloudGame/CloudGameButton.xaml` | ❌ 缺 |
-| `Features/CloudGame/CloudGameButton.xaml.cs` | ❌ 缺 |
-| `Features/CloudGame/CloudGameService.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/GamepadControl（0/3）
+## Features/GamepadControl（3/3）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/GamepadControl/GamepadController.cs` | ❌ 缺 |
-| `Features/GamepadControl/SimulateInputTipsWindow.xaml` | ❌ 缺 |
-| `Features/GamepadControl/SimulateInputTipsWindow.xaml.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/UrlProtocol（0/3）
+## Features/UrlProtocol（3/3）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/UrlProtocol/TestUrlProtocolWindow.xaml` | ❌ 缺 |
-| `Features/UrlProtocol/TestUrlProtocolWindow.xaml.cs` | ❌ 缺 |
-| `Features/UrlProtocol/UrlProtocolService.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/Database（0/2）
+## Features/Database（2/2）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/Database/DapperSqlMapper.cs` | ❌ 缺 |
-| `Features/Database/DatabaseService.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Frameworks（0/2）
+## Frameworks（2/2）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Frameworks/PageBase.cs` | ❌ 缺 |
-| `Frameworks/WindowEx.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
 ## App.xaml（1/1）
 
@@ -477,47 +229,33 @@
 
 路径已全部对齐（内容仍需逐文件核对）。
 
-## AppConfig.Common.cs（0/1）
+## AppConfig.Common.cs（1/1）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `AppConfig.Common.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## AppConfig.Configuration.cs（0/1）
+## AppConfig.Configuration.cs（1/1）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `AppConfig.Configuration.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## AppConfig.ServiceProvider.cs（0/1）
+## AppConfig.ServiceProvider.cs（1/1）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `AppConfig.ServiceProvider.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## AppConfig.Setting.cs（0/1）
+## AppConfig.Setting.cs（1/1）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `AppConfig.Setting.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/GameFeatureConfig.cs（0/1）
+## Features/GameFeatureConfig.cs（1/1）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/GameFeatureConfig.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/HoYoPlay（0/1）
+## Features/HoYoPlay（1/1）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/HoYoPlay/HoYoPlayService.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/RPC（0/1）
+## Features/RPC（1/1）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/RPC/RpcService.cs` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
 ## Program.cs（1/1）
 
@@ -531,12 +269,131 @@
 - `App.axaml.cs`
 - `AppServices.cs`
 - `Controls/ColorRectChart.cs`
+- `Controls/ColorfulTextBlock.axaml`
+- `Controls/ColorfulTextBlock.axaml.cs`
 - `Controls/GachaStatsCard.axaml`
 - `Controls/GachaStatsCard.axaml.cs`
 - `Controls/PlayTimeBarChart.cs`
 - `Controls/PlayTimeCalendarHeatmap.cs`
 - `Controls/ZZZGachaStatsCard.axaml`
 - `Controls/ZZZGachaStatsCard.axaml.cs`
+- `Features/Background/AppBackground.axaml`
+- `Features/Background/AppBackground.axaml.cs`
+- `Features/Background/AppBackgroundImageExStyle.axaml`
+- `Features/Background/BackgroundViewPage.axaml`
+- `Features/Background/BackgroundViewPage.axaml.cs`
+- `Features/Background/BackgroundViewWindow.axaml`
+- `Features/Background/BackgroundViewWindow.axaml.cs`
+- `Features/CloudGame/CloudGameButton.axaml`
+- `Features/CloudGame/CloudGameButton.axaml.cs`
+- `Features/Codec/ColorPrimaries.cs`
+- `Features/Codec/PngCodec.cs`
+- `Features/Gacha/CloudGameGachaWindow.axaml`
+- `Features/Gacha/CloudGameGachaWindow.axaml.cs`
+- `Features/Gacha/DeleteGachaLogDialog.axaml`
+- `Features/Gacha/DeleteGachaLogDialog.axaml.cs`
+- `Features/Gacha/GachaLogPage.axaml`
+- `Features/Gacha/GachaLogPage.axaml.cs`
+- `Features/Gacha/GachaProgressToast.cs`
+- `Features/Gacha/GachaStatsCard.axaml`
+- `Features/Gacha/GachaStatsCard.axaml.cs`
+- `Features/Gacha/GenshinBeyondGachaPage.axaml`
+- `Features/Gacha/GenshinBeyondGachaPage.axaml.cs`
+- `Features/Gacha/UIGF/UIGF4GachaWindow.axaml`
+- `Features/Gacha/UIGF/UIGF4GachaWindow.axaml.cs`
+- `Features/Gacha/ZZZGachaStatsCard.axaml`
+- `Features/Gacha/ZZZGachaStatsCard.axaml.cs`
+- `Features/Gacha/ZZZGachaToolbox/ZZZGachaInfoWindow.axaml`
+- `Features/Gacha/ZZZGachaToolbox/ZZZGachaInfoWindow.axaml.cs`
+- `Features/GameAccount/GameAccountSwitcher.axaml`
+- `Features/GameAccount/GameAccountSwitcher.axaml.cs`
+- `Features/GameInstall/InstallGameDialog.axaml`
+- `Features/GameInstall/InstallGameDialog.axaml.cs`
+- `Features/GameInstall/PreDownloadButton.axaml`
+- `Features/GameInstall/PreDownloadButton.axaml.cs`
+- `Features/GameInstall/PreDownloadDialog.axaml`
+- `Features/GameInstall/PreDownloadDialog.axaml.cs`
+- `Features/GameLauncher/CompactCheckBoxStyle.axaml`
+- `Features/GameLauncher/DX12IntroDialog.axaml`
+- `Features/GameLauncher/DX12IntroDialog.axaml.cs`
+- `Features/GameLauncher/GameAuthLoginButton.axaml`
+- `Features/GameLauncher/GameAuthLoginButton.axaml.cs`
+- `Features/GameLauncher/GameBannerAndPost.axaml`
+- `Features/GameLauncher/GameBannerAndPost.axaml.cs`
+- `Features/GameLauncher/GameLauncherPage.axaml`
+- `Features/GameLauncher/GameLauncherPage.axaml.cs`
+- `Features/GameLauncher/GameLauncherSettingDialog.axaml`
+- `Features/GameLauncher/GameLauncherSettingDialog.axaml.cs`
+- `Features/GameLauncher/GameNoticeWindow.axaml`
+- `Features/GameLauncher/GameNoticeWindow.axaml.cs`
+- `Features/GameLauncher/GamePrefixContext.cs`
+- `Features/GameLauncher/StartGameButton.axaml`
+- `Features/GameLauncher/StartGameButton.axaml.cs`
+- `Features/GameRecord/BBSWebBridge.axaml`
+- `Features/GameRecord/BBSWebBridge.axaml.cs`
+- `Features/GameRecord/BattleChronicleWindow.axaml`
+- `Features/GameRecord/BattleChronicleWindow.axaml.cs`
+- `Features/GameRecord/DailyNote/DailyNoteButton.axaml`
+- `Features/GameRecord/DailyNote/DailyNoteButton.axaml.cs`
+- `Features/GameRecord/GameRecordAssets.cs`
+- `Features/GameRecord/GameRecordPage.axaml`
+- `Features/GameRecord/GameRecordPage.axaml.cs`
+- `Features/GameRecord/Genshin/ImaginariumTheaterPage.axaml`
+- `Features/GameRecord/Genshin/ImaginariumTheaterPage.axaml.cs`
+- `Features/GameRecord/Genshin/SpiralAbyssPage.axaml`
+- `Features/GameRecord/Genshin/SpiralAbyssPage.axaml.cs`
+- `Features/GameRecord/Genshin/StygianOnslaughtPage.axaml`
+- `Features/GameRecord/Genshin/StygianOnslaughtPage.axaml.cs`
+- `Features/GameRecord/Genshin/TravelersDiaryPage.axaml`
+- `Features/GameRecord/Genshin/TravelersDiaryPage.axaml.cs`
+- `Features/GameRecord/LoginPage.axaml`
+- `Features/GameRecord/LoginPage.axaml.cs`
+- `Features/GameRecord/ObservableSupport.cs`
+- `Features/GameRecord/StarRail/ApocalypticShadowPage.axaml`
+- `Features/GameRecord/StarRail/ApocalypticShadowPage.axaml.cs`
+- `Features/GameRecord/StarRail/ChallengePeakPage.axaml`
+- `Features/GameRecord/StarRail/ChallengePeakPage.axaml.cs`
+- `Features/GameRecord/StarRail/ForgottenHallPage.axaml`
+- `Features/GameRecord/StarRail/ForgottenHallPage.axaml.cs`
+- `Features/GameRecord/StarRail/PureFictionPage.axaml`
+- `Features/GameRecord/StarRail/PureFictionPage.axaml.cs`
+- `Features/GameRecord/StarRail/SimulatedUniversePage.axaml`
+- `Features/GameRecord/StarRail/SimulatedUniversePage.axaml.cs`
+- `Features/GameRecord/StarRail/TrailblazeCalendarPage.axaml`
+- `Features/GameRecord/StarRail/TrailblazeCalendarPage.axaml.cs`
+- `Features/GameRecord/ZZZ/DeadlyAssaultPage.axaml`
+- `Features/GameRecord/ZZZ/DeadlyAssaultPage.axaml.cs`
+- `Features/GameRecord/ZZZ/InterKnotMonthlyReportPage.axaml`
+- `Features/GameRecord/ZZZ/InterKnotMonthlyReportPage.axaml.cs`
+- `Features/GameRecord/ZZZ/ShiyuDefensePage.axaml`
+- `Features/GameRecord/ZZZ/ShiyuDefensePage.axaml.cs`
+- `Features/GameSelector/GameSelector.axaml`
+- `Features/GameSelector/GameSelector.axaml.cs`
+- `Features/GameSetting/GameSettingPage.axaml`
+- `Features/GameSetting/GameSettingPage.axaml.cs`
+- `Features/GameSetting/GenshinHDRLuminanceSettingDialog.axaml`
+- `Features/GameSetting/GenshinHDRLuminanceSettingDialog.axaml.cs`
+- `Features/GamepadControl/GamepadTypes.cs`
+- `Features/GamepadControl/SdlGameController.cs`
+- `Features/GamepadControl/SimulateInputTipsWindow.axaml`
+- `Features/GamepadControl/SimulateInputTipsWindow.axaml.cs`
+- `Features/GamepadControl/X11Input.cs`
+- `Features/PlayTime/PlayTimeButton.axaml`
+- `Features/PlayTime/PlayTimeButton.axaml.cs`
+- `Features/PlayTime/PlayTimeStatsDialog.axaml`
+- `Features/PlayTime/PlayTimeStatsDialog.axaml.cs`
+- `Features/Screenshot/ImageViewWindow.axaml`
+- `Features/Screenshot/ImageViewWindow.axaml.cs`
+- `Features/Screenshot/ImageViewWindow2.axaml`
+- `Features/Screenshot/ImageViewWindow2.axaml.cs`
+- `Features/Screenshot/ScreenshotFolderManageDialog.axaml`
+- `Features/Screenshot/ScreenshotFolderManageDialog.axaml.cs`
+- `Features/Screenshot/ScreenshotPage.axaml`
+- `Features/Screenshot/ScreenshotPage.axaml.cs`
+- `Features/Screenshot/ScreenshotPage2.axaml`
+- `Features/Screenshot/ScreenshotPage2.axaml.cs`
+- `Features/SelfQuery/SelfQueryPage.axaml`
+- `Features/SelfQuery/SelfQueryPage.axaml.cs`
 - `Features/Setting/AboutSetting.axaml`
 - `Features/Setting/AboutSetting.axaml.cs`
 - `Features/Setting/AdvancedSetting.axaml`
@@ -545,10 +402,12 @@
 - `Features/Setting/DownloadSetting.axaml.cs`
 - `Features/Setting/FileManageSetting.axaml`
 - `Features/Setting/FileManageSetting.axaml.cs`
-- `Features/Setting/GamepadSetting.axaml`
-- `Features/Setting/GamepadSetting.axaml.cs`
+- `Features/Setting/GamepadControlSetting.axaml`
+- `Features/Setting/GamepadControlSetting.axaml.cs`
 - `Features/Setting/GeneralSetting.axaml`
 - `Features/Setting/GeneralSetting.axaml.cs`
+- `Features/Setting/HotkeyInput.axaml`
+- `Features/Setting/HotkeyInput.axaml.cs`
 - `Features/Setting/HotkeySetting.axaml`
 - `Features/Setting/HotkeySetting.axaml.cs`
 - `Features/Setting/ScreenshotSetting.axaml`
@@ -557,15 +416,42 @@
 - `Features/Setting/SettingPage.axaml`
 - `Features/Setting/SettingPage.axaml.cs`
 - `Features/Setting/SettingPageBase.cs`
+- `Features/Setting/SettingShellActions.cs`
 - `Features/Setting/ToolboxSetting.axaml`
 - `Features/Setting/ToolboxSetting.axaml.cs`
+- `Features/Update/UpdateWindow.axaml`
+- `Features/Update/UpdateWindow.axaml.cs`
+- `Features/UrlProtocol/TestUrlProtocolWindow.axaml`
+- `Features/UrlProtocol/TestUrlProtocolWindow.axaml.cs`
+- `Features/ViewHost/BlankPage.axaml`
+- `Features/ViewHost/BlankPage.axaml.cs`
+- `Features/ViewHost/MainView.axaml`
+- `Features/ViewHost/MainView.axaml.cs`
+- `Features/ViewHost/MainWindow.axaml`
+- `Features/ViewHost/MainWindow.axaml.cs`
+- `Features/ViewHost/MainWindowCloseDialog.axaml`
+- `Features/ViewHost/MainWindowCloseDialog.axaml.cs`
+- `Features/ViewHost/NoPermissionWindow.axaml`
+- `Features/ViewHost/NoPermissionWindow.axaml.cs`
+- `Features/ViewHost/SystemTrayWindow.cs`
+- `Features/ViewHost/WelcomeWindow.axaml`
+- `Features/ViewHost/WelcomeWindow.axaml.cs`
+- `Frameworks/FontIcon.cs`
+- `Frameworks/Frame.cs`
+- `Frameworks/NavigationView.cs`
+- `Frameworks/StartupUi.cs`
 - `Frameworks/WebView/CoreWebView2Compat.cs`
 - `Frameworks/WebView/GtkRuntime.cs`
 - `Frameworks/WebView/Interop/NativeMethods.cs`
+- `Frameworks/WebView/SelfTest.Avalonia/Program.cs`
+- `Frameworks/WebView/SelfTest.Avalonia/XProbe.axaml`
+- `Frameworks/WebView/SelfTest.Avalonia/XProbe.axaml.cs`
+- `Frameworks/WebView/SelfTest/Program.cs`
 - `Frameworks/WebView/VirtualHostMapping.cs`
 - `Frameworks/WebView/WebKitWebViewCore.cs`
 - `Frameworks/WebView/WebView.cs`
 - `Frameworks/WebView/WebViewAvailability.cs`
+- `Helpers/ToastItem.cs`
 - `Localization/AppStrings.cs`
 - `Services/AnnouncementService.cs`
 - `Services/AppVersion.cs`
@@ -612,9 +498,6 @@
 - `ViewModels/Starward/GameAuthLoginViewModel.cs`
 - `ViewModels/Starward/GameChoiceViewModel.cs`
 - `ViewModels/Starward/GameLauncherPageViewModel.cs`
-- `ViewModels/Starward/GameSettingOptions.cs`
-- `ViewModels/Starward/GameSettingPageViewModel.cs`
-- `ViewModels/Starward/GameSettingProgramViewModel.cs`
 - `ViewModels/Starward/GenshinBeyondGachaPageViewModel.cs`
 - `ViewModels/Starward/ImageViewWindow2State.cs`
 - `ViewModels/Starward/ImageViewWindow2ViewModel.cs`
@@ -627,18 +510,6 @@
 - `ViewModels/Starward/ScreenshotMonthIndex.cs`
 - `ViewModels/Starward/ScreenshotPageViewModel.cs`
 - `ViewModels/Starward/SelfQueryPageViewModel.cs`
-- `ViewModels/Starward/SettingPageViewModel.cs`
-- `ViewModels/Starward/SettingShellActions.cs`
-- `ViewModels/Starward/Settings/SettingAboutViewModel.cs`
-- `ViewModels/Starward/Settings/SettingAdvancedViewModel.cs`
-- `ViewModels/Starward/Settings/SettingDownloadViewModel.cs`
-- `ViewModels/Starward/Settings/SettingFileManageViewModel.cs`
-- `ViewModels/Starward/Settings/SettingGamepadViewModel.cs`
-- `ViewModels/Starward/Settings/SettingGeneralViewModel.cs`
-- `ViewModels/Starward/Settings/SettingHotkeyViewModel.cs`
-- `ViewModels/Starward/Settings/SettingLanguageOption.cs`
-- `ViewModels/Starward/Settings/SettingScreenshotViewModel.cs`
-- `ViewModels/Starward/Settings/SettingToolboxViewModel.cs`
 - `ViewModels/Starward/ShellViewModel.cs`
 - `ViewModels/Starward/ShiyuDefensePageViewModel.cs`
 - `ViewModels/Starward/SimulatedUniversePageViewModel.cs`
@@ -686,8 +557,6 @@
 - `Views/Starward/Pages/GachaPage.axaml.cs`
 - `Views/Starward/Pages/GameLauncherPage.axaml`
 - `Views/Starward/Pages/GameLauncherPage.axaml.cs`
-- `Views/Starward/Pages/GameSettingPage.axaml`
-- `Views/Starward/Pages/GameSettingPage.axaml.cs`
 - `Views/Starward/Pages/GenshinBeyondGachaPage.axaml`
 - `Views/Starward/Pages/GenshinBeyondGachaPage.axaml.cs`
 - `Views/Starward/Pages/Record/ApocalypticShadowPage.axaml`
@@ -720,8 +589,6 @@
 - `Views/Starward/Pages/ScreenshotPage.axaml.cs`
 - `Views/Starward/Pages/SelfQueryPage.axaml`
 - `Views/Starward/Pages/SelfQueryPage.axaml.cs`
-- `Views/Starward/Pages/SettingPage.axaml`
-- `Views/Starward/Pages/SettingPage.axaml.cs`
 - `Views/Starward/Pages/ToolboxPage.axaml`
 - `Views/Starward/Pages/ToolboxPage.axaml.cs`
 - `Views/Starward/PlayTimeStatsDialog.axaml`
@@ -730,25 +597,6 @@
 - `Views/Starward/PreDownloadDialog.axaml.cs`
 - `Views/Starward/ScreenshotFolderManageDialog.axaml`
 - `Views/Starward/ScreenshotFolderManageDialog.axaml.cs`
-- `Views/Starward/Settings/SettingAboutView.axaml`
-- `Views/Starward/Settings/SettingAboutView.axaml.cs`
-- `Views/Starward/Settings/SettingAdvancedView.axaml`
-- `Views/Starward/Settings/SettingAdvancedView.axaml.cs`
-- `Views/Starward/Settings/SettingDownloadView.axaml`
-- `Views/Starward/Settings/SettingDownloadView.axaml.cs`
-- `Views/Starward/Settings/SettingFileManageView.axaml`
-- `Views/Starward/Settings/SettingFileManageView.axaml.cs`
-- `Views/Starward/Settings/SettingGamepadView.axaml`
-- `Views/Starward/Settings/SettingGamepadView.axaml.cs`
-- `Views/Starward/Settings/SettingGeneralView.axaml`
-- `Views/Starward/Settings/SettingGeneralView.axaml.cs`
-- `Views/Starward/Settings/SettingHotkeyView.axaml`
-- `Views/Starward/Settings/SettingHotkeyView.axaml.cs`
-- `Views/Starward/Settings/SettingScreenshotView.axaml`
-- `Views/Starward/Settings/SettingScreenshotView.axaml.cs`
-- `Views/Starward/Settings/SettingSectionView.cs`
-- `Views/Starward/Settings/SettingToolboxView.axaml`
-- `Views/Starward/Settings/SettingToolboxView.axaml.cs`
 - `Views/Starward/StarwardPage.cs`
 - `Views/Starward/StarwardShell.axaml`
 - `Views/Starward/StarwardShell.axaml.cs`
