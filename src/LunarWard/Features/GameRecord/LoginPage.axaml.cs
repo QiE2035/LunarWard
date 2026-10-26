@@ -146,11 +146,11 @@ public sealed partial class LoginPage : PageBase
     }
 
 
-    private void TextBox_Uri_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void TextBox_Uri_KeyDown(object? sender, KeyEventArgs e)
     {
         try
         {
-            if (e.Key == Windows.System.VirtualKey.Enter)
+            if (e.Key == Key.Enter)
             {
                 var url = TextBox_Uri.Text;
                 if (!(url.StartsWith("https://") || url.StartsWith("http://")))

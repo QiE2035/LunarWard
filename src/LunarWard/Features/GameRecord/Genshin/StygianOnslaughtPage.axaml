@@ -2,7 +2,6 @@
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.Genshin.StygianOnslaughtPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:cwc="clr-namespace:CommunityToolkit.WinUI.Controls"
              xmlns:lang="clr-namespace:LunarWard.Language"
              xmlns:linq="clr-namespace:System.Linq"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.Genshin"
@@ -75,19 +74,20 @@
             </Button>
         </StackPanel>
 
-        <ListView  x:Name="ListView_StygianOnslaughtPageList"
+        <ListBox  x:Name="ListView_StygianOnslaughtPageList"
                   Grid.Row="1"
                   Padding="12,0,12,0"
                   ItemsSource="{Binding SOList}"
                   SelectionChanged="ListView_StygianOnslaughtPageList_SelectionChanged"
                   SelectionMode="Single">
-            <ListView.ItemContainerStyle>
-                <Style BasedOn="{DynamicResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
                     <Setter Property="Margin" Value="0,4,0,4" />
                     <Setter Property="Padding" Value="4,0,4,0" />
+                
                 </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="so:StygianOnslaughtInfo">
                     <Grid
                          
@@ -111,8 +111,8 @@
                         </TextBlock>
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
 
 
@@ -153,14 +153,14 @@
                     </StackPanel>
 
                     <!--  单人/多人模式切换  -->
-                    <cwc:Segmented x:Name="Segmented_PlayerMode"
+                    <TabControl x:Name="Segmented_PlayerMode"
                                    HorizontalAlignment="Right"
                                    SelectionChanged="Segmented_PlayerMode_SelectionChanged">
-                        <cwc:SegmentedItem Content="{Binding lang:Lang.StygianOnslaughtPage_SinglePlayer}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                        <cwc:SegmentedItem x:Name="SegmentedItem_MultiPlayer"
+                        <TabItem Content="{Binding lang:Lang.StygianOnslaughtPage_SinglePlayer}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TabItem x:Name="SegmentedItem_MultiPlayer"
                                            Content="{Binding lang:Lang.StygianOnslaughtPage_CoOp}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    </cwc:Segmented>
+                    </TabControl>
 
                 </Grid>
 

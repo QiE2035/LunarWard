@@ -126,7 +126,7 @@
                         <Button.Flyout>
                             <Flyout x:Name="Flyout_GameRoles" Placement="BottomEdgeAlignedRight">
                                 <Flyout.FlyoutPresenterStyle>
-                                    <Style BasedOn="{DynamicResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                                    <Style TargetType="FlyoutPresenter">
                                         <Setter Property="Background" Value="{DynamicResource CustomAcrylicBrush}" />
                                         <Setter Property="BorderThickness" Value="0" />
                                         <Setter Property="Padding" Value="4" />
@@ -187,13 +187,13 @@
 
                                     <MenuFlyoutSeparator Grid.Row="1" Grid.ColumnSpan="2" />
 
-                                    <ListView  x:Name="ListView_GameRoles"
+                                    <ListBox  x:Name="ListView_GameRoles"
                                               Grid.Row="2"
                                               Grid.ColumnSpan="2"
                                               ItemsSource="{Binding GameRoleList}"
                                               SelectionChanged="ListView_GameRoles_SelectionChanged"
                                               SelectionMode="Single">
-                                        <ListView.ItemTemplate>
+                                        <ListBox.ItemTemplate>
                                             <DataTemplate x:DataType="scg:GameRecordRole">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
@@ -240,8 +240,8 @@
                                                     </Button>
                                                 </Grid>
                                             </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
                                 </Grid>
                             </Flyout>
                         </Button.Flyout>

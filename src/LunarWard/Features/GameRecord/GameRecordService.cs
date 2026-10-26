@@ -78,6 +78,9 @@ internal class GameRecordService
     }
 
 
+
+
+
     /// <summary>
     /// 更新设备指纹信息
     /// </summary>
@@ -107,7 +110,11 @@ internal class GameRecordService
     }
 
 
+
+
+
     #region Game Role
+
 
 
     public async Task<GameRecordUser> AddRecordUserAsync(string cookie, CancellationToken cancellationToken = default)
@@ -122,16 +129,20 @@ internal class GameRecordService
     }
 
 
+
     public List<GameRecordUser> GetRecordUsers()
     {
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<GameRecordUser>("SELECT * FROM GameRecordUser WHERE IsHoyolab = @IsHoyolab;", new { IsHoyolab });
         return list.ToList();
     }
 
 
+
     public async Task<List<GameRecordRole>> AddGameRolesAsync(string cookie, CancellationToken cancellationToken = default)
     {
         var list = await _gameRecordClient.GetAllGameRolesAsync(cookie, cancellationToken);
+        using var dapper = DatabaseService.CreateConnection();
         using var t = dapper.BeginTransaction();
         dapper.Execute("""
             INSERT OR REPLACE INTO GameRecordRole (Uid, GameBiz, Nickname, Level, Region, RegionName, Cookie, HeadIcon)
@@ -142,15 +153,20 @@ internal class GameRecordService
     }
 
 
+
+
     public List<GameRecordRole> GetGameRoles(GameBiz gameBiz)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<GameRecordRole>("SELECT * FROM GameRecordRole WHERE GameBiz = @gameBiz;", new { gameBiz });
         return list.ToList();
     }
 
 
+
     public GameRecordRole? GetLastSelectGameRecordRoleOrTheFirstOne(GameBiz gameBiz)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var role = dapper.QueryFirstOrDefault<GameRecordRole>("""
             SELECT r.* FROM GameRecordRole r INNER JOIN Setting s ON s.Value = r.Uid WHERE r.GameBiz = @gameBiz AND s.Key = @key LIMIT 1;
             """, new { gameBiz, key = $"last_select_game_record_role_{gameBiz}" });
@@ -158,14 +174,17 @@ internal class GameRecordService
     }
 
 
+
     public void SetLastSelectGameRecordRole(GameBiz gameBiz, GameRecordRole role)
     {
+        using var dapper = DatabaseService.CreateConnection();
         dapper.Execute("INSERT OR REPLACE INTO Setting (Key, Value) VALUES (@key, @value);", new { key = $"last_select_game_record_role_{gameBiz}", value = role.Uid.ToString() });
     }
 
 
     public GameRecordRole? GetLastSelectGachaSyncRoleOrTheFirstOne(GameBiz gameBiz)
     {
+        using var dapper = DatabaseService.CreateConnection();
         GameRecordRole? role = dapper.QueryFirstOrDefault<GameRecordRole>("""
             SELECT r.* FROM GameRecordRole r INNER JOIN Setting s ON s.Value = r.Uid WHERE r.GameBiz = @gameBiz AND s.Key = @key LIMIT 1;
             """, new { gameBiz, key = $"last_select_gacha_sync_role_{gameBiz}" });
@@ -187,6 +206,7 @@ internal class GameRecordService
 
     public void SetLastSelectGachaSyncRole(GameBiz gameBiz, GameRecordRole role)
     {
+        using var dapper = DatabaseService.CreateConnection();
         dapper.Execute("INSERT OR REPLACE INTO Setting (Key, Value) VALUES (@key, @value);", new { key = $"last_select_gacha_sync_role_{gameBiz}", value = role.Uid.ToString() });
     }
 
@@ -197,8 +217,10 @@ internal class GameRecordService
         {
             return null;
         }
+        using var dapper = DatabaseService.CreateConnection();
         return dapper.QueryFirstOrDefault<GameRecordUser>("SELECT * FROM GameRecordUser WHERE Cookie = @Cookie LIMIT 1;", new { role.Cookie });
     }
+
 
 
     public async Task RefreshAllGameRolesInfoAsync()
@@ -219,12 +241,14 @@ internal class GameRecordService
     }
 
 
+
     public async Task UpdateGameRoleHeadIconAsync(GameRecordRole role)
     {
         string key = $"game_record_role_head_icon_{role.GameBiz}_{role.Region}_{role.Uid}";
         if (!_memoryCache.TryGetValue(key, out bool _))
         {
             role = await _gameRecordClient.UpdateGameRoleHeadIconAsync(role);
+            using var dapper = DatabaseService.CreateConnection();
             dapper.Execute("""
                 INSERT OR REPLACE INTO GameRecordRole (Uid, GameBiz, Nickname, Level, Region, RegionName, Cookie, HeadIcon)
                 VALUES (@Uid, @GameBiz, @Nickname, @Level, @Region, @RegionName, @Cookie, @HeadIcon);
@@ -232,6 +256,7 @@ internal class GameRecordService
             _memoryCache.Set(key, true, TimeSpan.FromMinutes(5));
         }
     }
+
 
 
     /// <summary>
@@ -242,6 +267,8 @@ internal class GameRecordService
     public bool DeleteGameRole(GameRecordRole role)
     {
         bool deletedUser = false;
+        using var dapper = DatabaseService.CreateConnection();
+        using var t = dapper.BeginTransaction();
         dapper.Execute("DELETE FROM GameRecordRole WHERE GameBiz = @GameBiz AND Uid = @Uid;", role, t);
         _logger.LogInformation("Deleted game roles with ({nickname}, {gameBiz}, {uid}).", role.Nickname, role.GameBiz, role.Uid);
         if (dapper.QueryFirstOrDefault<int>("SELECT Count(*) FROM GameRecordRole WHERE Cookie = @Cookie;", role, t) == 0)
@@ -255,7 +282,10 @@ internal class GameRecordService
     }
 
 
+
     #endregion
+
+
 
 
     #region Spiral Abyss
@@ -283,6 +313,7 @@ internal class GameRecordService
             info.TotalStar,
             Value = JsonSerializer.Serialize(info, AppConfig.JsonSerializerOptions),
         };
+        using var dapper = DatabaseService.CreateConnection();
         dapper.Execute("""
             INSERT OR REPLACE INTO GenshinSpiralAbyssInfo (Uid, ScheduleId, StartTime, EndTime, TotalBattleCount, TotalWinCount, MaxFloor, TotalStar, Value)
             VALUES (@Uid, @ScheduleId, @StartTime, @EndTime, @TotalBattleCount, @TotalWinCount, @MaxFloor, @TotalStar, @Value);
@@ -291,12 +322,15 @@ internal class GameRecordService
     }
 
 
+
+
     public List<SpiralAbyssInfo> GetSpiralAbyssInfoList(GameRecordRole role)
     {
         if (role is null)
         {
             return new List<SpiralAbyssInfo>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<SpiralAbyssInfo>("""
             SELECT Uid, ScheduleId, StartTime, EndTime, TotalBattleCount, TotalWinCount, MaxFloor, TotalStar FROM GenshinSpiralAbyssInfo WHERE Uid = @Uid ORDER BY ScheduleId DESC;
             """, new { role.Uid });
@@ -304,8 +338,10 @@ internal class GameRecordService
     }
 
 
+
     public SpiralAbyssInfo? GetSpiralAbyssInfo(GameRecordRole role, int scheduleId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var value = dapper.QueryFirstOrDefault<string>("""
             SELECT Value FROM GenshinSpiralAbyssInfo WHERE Uid = @Uid And ScheduleId = @scheduleId LIMIT 1;
             """, new { role.Uid, scheduleId });
@@ -325,7 +361,10 @@ internal class GameRecordService
     #endregion
 
 
+
+
     #region Traveler's Diary
+
 
 
     public async Task<TravelersDiarySummary> GetTravelersDiarySummaryAsync(GameRecordRole role, int month = 0)
@@ -335,6 +374,7 @@ internal class GameRecordService
         {
             return summary;
         }
+        using var dapper = DatabaseService.CreateConnection();
         dapper.Execute("""
             INSERT OR REPLACE INTO GenshinTravelersDiaryMonthData
             (Uid, Year, Month, CurrentPrimogems, CurrentMora, LastPrimogems, LastMora, CurrentPrimogemsLevel, PrimogemsChangeRate, MoraChangeRate, PrimogemsGroupBy)
@@ -350,9 +390,11 @@ internal class GameRecordService
         {
             return new List<TravelersDiaryMonthData>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<TravelersDiaryMonthData>("SELECT * FROM GenshinTravelersDiaryMonthData WHERE Uid = @Uid ORDER BY Year DESC, Month DESC;", new { role.Uid });
         return list.ToList();
     }
+
 
 
     public async Task<int> GetTravelersDiaryDetailAsync(GameRecordRole role, int month, int type, int limit = 100)
@@ -363,11 +405,13 @@ internal class GameRecordService
             return 0;
         }
         var list = detail.List;
+        using var dapper = DatabaseService.CreateConnection();
         var existCount = dapper.QuerySingleOrDefault<int>("SELECT COUNT(*) FROM GenshinTravelersDiaryAwardItem WHERE Uid=@Uid AND Year=@Year AND Month=@Month AND Type=@Type;", list.FirstOrDefault());
         if (existCount == list.Count)
         {
             return 0;
         }
+        using var t = dapper.BeginTransaction();
         dapper.Execute($"DELETE FROM GenshinTravelersDiaryAwardItem WHERE Uid=@Uid AND Year=@Year AND Month=@Month AND Type=@Type;", list.FirstOrDefault(), t);
         dapper.Execute("""
                 INSERT INTO GenshinTravelersDiaryAwardItem (Uid, Year, Month, Type, ActionId, ActionName, Time, Number)
@@ -378,16 +422,24 @@ internal class GameRecordService
     }
 
 
+
     public List<TravelersDiaryAwardItem> GetTravelersDiaryDetailItems(long uid, int year, int month, int type)
     {
+        using var dapper = DatabaseService.CreateConnection();
         return dapper.Query<TravelersDiaryAwardItem>("SELECT * FROM GenshinTravelersDiaryAwardItem WHERE Uid=@uid AND Year=@year AND Month=@month AND Type=@type ORDER BY Time;", new { uid, year, month, type }).ToList();
     }
+
+
+
 
 
     #endregion
 
 
+
+
     #region Imaginarium Theater
+
 
 
     /// <summary>
@@ -403,6 +455,8 @@ internal class GameRecordService
         {
             return;
         }
+        using var dapper = DatabaseService.CreateConnection();
+        using var t = dapper.BeginTransaction();
         foreach (var info in infos)
         {
             var obj = new
@@ -426,12 +480,15 @@ internal class GameRecordService
     }
 
 
+
+
     public List<ImaginariumTheaterInfo> GetImaginariumTheaterInfoList(GameRecordRole role)
     {
         if (role is null)
         {
             return new List<ImaginariumTheaterInfo>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<ImaginariumTheaterInfo>("""
             SELECT Uid, ScheduleId, StartTime, EndTime, DifficultyId, MaxRoundId, Heraldry, MedalNum FROM GenshinImaginariumTheaterInfo WHERE Uid = @Uid ORDER BY ScheduleId DESC;
             """, new { role.Uid });
@@ -439,8 +496,10 @@ internal class GameRecordService
     }
 
 
+
     public ImaginariumTheaterInfo? GetImaginariumTheaterInfo(GameRecordRole role, int scheduleId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var value = dapper.QueryFirstOrDefault<string>("""
             SELECT Value FROM GenshinImaginariumTheaterInfo WHERE Uid = @Uid And ScheduleId = @scheduleId LIMIT 1;
             """, new { role.Uid, scheduleId });
@@ -452,10 +511,15 @@ internal class GameRecordService
     }
 
 
+
+
     #endregion
 
 
+
+
     #region Simulated Universe
+
 
 
     public async Task<SimulatedUniverseInfo> GetSimulatedUniverseInfoAsync(GameRecordRole role, bool detail)
@@ -463,6 +527,8 @@ internal class GameRecordService
         var info = await _gameRecordClient.GetSimulatedUniverseInfoAsync(role, detail);
         if (detail)
         {
+            using var dapper = DatabaseService.CreateConnection();
+            using var t = dapper.BeginTransaction();
             var obj = new
             {
                 role.Uid,
@@ -497,16 +563,20 @@ internal class GameRecordService
     }
 
 
+
     public List<SimulatedUniverseRecordBasic> GetSimulatedUniverseRecordBasics(GameRecordRole role)
     {
+        using var dapper = DatabaseService.CreateConnection();
         return dapper.Query<SimulatedUniverseRecordBasic>("""
             SELECT ScheduleId, FinishCount, ScheduleBegin, ScheduleEnd FROM StarRailSimulatedUniverseRecord WHERE Uid=@Uid ORDER BY ScheduleId DESC;
             """, new { role.Uid }).ToList();
     }
 
 
+
     public SimulatedUniverseRecord? GetSimulatedUniverseRecord(GameRecordRole role, int scheduleId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var value = dapper.QueryFirstOrDefault<string>("""
             SELECT Value FROM StarRailSimulatedUniverseRecord WHERE Uid=@Uid AND ScheduleId=@scheduleId LIMIT 1;
             """, new { role.Uid, scheduleId });
@@ -518,10 +588,14 @@ internal class GameRecordService
     }
 
 
+
     #endregion
 
 
+
+
     #region Forgotten Hall
+
 
 
     public async Task<ForgottenHallInfo> RefreshForgottenHallInfoAsync(GameRecordRole role, int schedule, CancellationToken cancellationToken = default)
@@ -540,6 +614,7 @@ internal class GameRecordService
             info.HasData,
             Value = JsonSerializer.Serialize(info, AppConfig.JsonSerializerOptions),
         };
+        using var dapper = DatabaseService.CreateConnection();
         dapper.Execute("""
             INSERT OR REPLACE INTO StarRailForgottenHallInfo (Uid, ScheduleId, BeginTime, EndTime, StarNum, ExtraStarNum, MaxFloor, BattleNum, HasData, Value)
             VALUES (@Uid, @ScheduleId, @BeginTime, @EndTime, @StarNum, @ExtraStarNum, @MaxFloor, @BattleNum, @HasData, @Value);
@@ -548,12 +623,14 @@ internal class GameRecordService
     }
 
 
+
     public List<ForgottenHallInfo> GetForgottenHallInfoList(GameRecordRole role)
     {
         if (role is null)
         {
             return new List<ForgottenHallInfo>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<ForgottenHallInfo>("""
             SELECT Uid, ScheduleId, BeginTime, EndTime, StarNum, ExtraStarNum, MaxFloor, BattleNum, HasData FROM StarRailForgottenHallInfo WHERE Uid = @Uid ORDER BY ScheduleId DESC;
             """, new { role.Uid });
@@ -561,8 +638,10 @@ internal class GameRecordService
     }
 
 
+
     public ForgottenHallInfo? GetForgottenHallInfo(GameRecordRole role, int scheduleId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var value = dapper.QueryFirstOrDefault<string>("""
             SELECT Value FROM StarRailForgottenHallInfo WHERE Uid = @Uid And ScheduleId = @scheduleId LIMIT 1;
             """, new { role.Uid, scheduleId });
@@ -574,10 +653,14 @@ internal class GameRecordService
     }
 
 
+
     #endregion
 
 
+
+
     #region Pure Fiction
+
 
 
     public async Task<PureFictionInfo> RefreshPureFictionInfoAsync(GameRecordRole role, int schedule, CancellationToken cancellationToken = default)
@@ -600,6 +683,7 @@ internal class GameRecordService
             info.HasData,
             Value = JsonSerializer.Serialize(info, AppConfig.JsonSerializerOptions),
         };
+        using var dapper = DatabaseService.CreateConnection();
         dapper.Execute("""
             INSERT OR REPLACE INTO StarRailPureFictionInfo (Uid, ScheduleId, BeginTime, EndTime, StarNum, ExtraStarNum, MaxFloor, BattleNum, HasData, Value)
             VALUES (@Uid, @ScheduleId, @BeginTime, @EndTime, @StarNum, @ExtraStarNum, @MaxFloor, @BattleNum, @HasData, @Value);
@@ -608,12 +692,14 @@ internal class GameRecordService
     }
 
 
+
     public List<PureFictionInfo> GetPureFictionInfoList(GameRecordRole role)
     {
         if (role is null)
         {
             return new List<PureFictionInfo>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<PureFictionInfo>("""
             SELECT Uid, ScheduleId, BeginTime, EndTime, StarNum, ExtraStarNum, MaxFloor, BattleNum, HasData FROM StarRailPureFictionInfo WHERE Uid = @Uid ORDER BY ScheduleId DESC;
             """, new { role.Uid });
@@ -621,8 +707,10 @@ internal class GameRecordService
     }
 
 
+
     public PureFictionInfo? GetPureFictionInfo(GameRecordRole role, int scheduleId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var value = dapper.QueryFirstOrDefault<string>("""
             SELECT Value FROM StarRailPureFictionInfo WHERE Uid = @Uid And ScheduleId = @scheduleId LIMIT 1;
             """, new { role.Uid, scheduleId });
@@ -634,10 +722,14 @@ internal class GameRecordService
     }
 
 
+
     #endregion
 
 
+
+
     #region Apocalyptic Shadow
+
 
 
     public async Task<ApocalypticShadowInfo> RefreshApocalypticShadowInfoAsync(GameRecordRole role, int schedule, CancellationToken cancellationToken = default)
@@ -663,6 +755,7 @@ internal class GameRecordService
             info.HasData,
             Value = JsonSerializer.Serialize(info, AppConfig.JsonSerializerOptions),
         };
+        using var dapper = DatabaseService.CreateConnection();
         dapper.Execute("""
             INSERT OR REPLACE INTO StarRailApocalypticShadowInfo (Uid, ScheduleId, BeginTime, EndTime, UpperBossIcon, LowerBossIcon, TierceBossIcon, StarNum, ExtraStarNum, MaxFloor, BattleNum, HasData, Value)
             VALUES (@Uid, @ScheduleId, @BeginTime, @EndTime, @UpperBossIcon, @LowerBossIcon, @TierceBossIcon, @StarNum, @ExtraStarNum, @MaxFloor, @BattleNum, @HasData, @Value);
@@ -671,12 +764,14 @@ internal class GameRecordService
     }
 
 
+
     public List<ApocalypticShadowInfo> GetApocalypticShadowInfoList(GameRecordRole role)
     {
         if (role is null)
         {
             return new List<ApocalypticShadowInfo>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<ApocalypticShadowInfo>("""
             SELECT Uid, ScheduleId, BeginTime, EndTime, UpperBossIcon, LowerBossIcon, TierceBossIcon, StarNum, ExtraStarNum, MaxFloor, BattleNum, HasData FROM StarRailApocalypticShadowInfo WHERE Uid = @Uid ORDER BY ScheduleId DESC;
             """, new { role.Uid });
@@ -684,8 +779,10 @@ internal class GameRecordService
     }
 
 
+
     public ApocalypticShadowInfo? GetApocalypticShadowInfo(GameRecordRole role, int scheduleId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var value = dapper.QueryFirstOrDefault<string>("""
             SELECT Value FROM StarRailApocalypticShadowInfo WHERE Uid = @Uid And ScheduleId = @scheduleId LIMIT 1;
             """, new { role.Uid, scheduleId });
@@ -697,10 +794,14 @@ internal class GameRecordService
     }
 
 
+
     #endregion
 
 
+
+
     #region Trailblaze Calendar
+
 
 
     public async Task<TrailblazeCalendarSummary> GetTrailblazeCalendarSummaryAsync(GameRecordRole role, string month = "")
@@ -710,6 +811,7 @@ internal class GameRecordService
         {
             return summary;
         }
+        using var dapper = DatabaseService.CreateConnection();
         dapper.Execute("""
             INSERT OR REPLACE INTO StarRailTrailblazeCalendarMonthData (Uid, Month, CurrentHcoin, CurrentRailsPass, LastHcoin, LastRailsPass, HcoinRate, RailsRate, GroupBy)
             VALUES (@Uid, @Month, @CurrentHcoin, @CurrentRailsPass, @LastHcoin, @LastRailsPass, @HcoinRate, @RailsRate, @GroupBy);
@@ -724,9 +826,11 @@ internal class GameRecordService
         {
             return new List<TrailblazeCalendarMonthData>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<TrailblazeCalendarMonthData>("SELECT * FROM StarRailTrailblazeCalendarMonthData WHERE Uid = @Uid ORDER BY Month DESC;", new { role.Uid });
         return list.ToList();
     }
+
 
 
     public async Task<int> GetTrailblazeCalendarDetailAsync(GameRecordRole role, string month, int type)
@@ -736,6 +840,7 @@ internal class GameRecordService
         {
             return 0;
         }
+        using var dapper = DatabaseService.CreateConnection();
         var existCount = dapper.QuerySingleOrDefault<int>("SELECT COUNT(*) FROM StarRailTrailblazeCalendarDetailItem WHERE Uid = @Uid AND Month = @month AND Type = @type;", new { role.Uid, month, type });
         if (existCount == total)
         {
@@ -743,6 +848,7 @@ internal class GameRecordService
         }
         var detail = await _gameRecordClient.GetTrailblazeCalendarDetailAsync(role, month, type);
         var list = detail.List;
+        using var t = dapper.BeginTransaction();
         dapper.Execute($"DELETE FROM StarRailTrailblazeCalendarDetailItem WHERE Uid = @Uid AND Month = @Month AND Type = @Type;", list.FirstOrDefault(), t);
         dapper.Execute("""
                 INSERT INTO StarRailTrailblazeCalendarDetailItem (Uid, Month, Type, Action, ActionName, Time, Number)
@@ -753,21 +859,29 @@ internal class GameRecordService
     }
 
 
+
     public List<TrailblazeCalendarDetailItem> GetTrailblazeCalendarDetailItems(long uid, string month, int type)
     {
+        using var dapper = DatabaseService.CreateConnection();
         return dapper.Query<TrailblazeCalendarDetailItem>("SELECT * FROM StarRailTrailblazeCalendarDetailItem WHERE Uid=@uid AND Month=@month AND Type=@type ORDER BY Time;", new { uid, month, type }).ToList();
     }
+
+
 
 
     #endregion
 
 
+
+
     #region Inter Knot Report
+
 
 
     public async Task<InterKnotReportSummary> GetInterKnotReportSummaryAsync(GameRecordRole role, string month = "")
     {
         var summary = await _gameRecordClient.GetInterKnotReportSummaryAsync(role, month);
+        using var dapper = DatabaseService.CreateConnection();
         var obj = new
         {
             summary.Uid,
@@ -787,6 +901,7 @@ internal class GameRecordService
         {
             return new List<InterKnotReportSummary>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var values = dapper.Query<string>("SELECT Value FROM ZZZInterKnotReportSummary WHERE Uid = @Uid ORDER BY DataMonth DESC;", new { role.Uid });
         return values.Select(v => JsonSerializer.Deserialize<InterKnotReportSummary>(v)!).ToList();
     }
@@ -798,6 +913,7 @@ internal class GameRecordService
         {
             return null;
         }
+        using var dapper = DatabaseService.CreateConnection();
         string? value = dapper.QueryFirstOrDefault<string>("SELECT Value FROM ZZZInterKnotReportSummary WHERE Uid = @Uid AND DataMonth = @DataMonth LIMIT 1;", summary);
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -807,6 +923,7 @@ internal class GameRecordService
     }
 
 
+
     public async Task<int> GetInterKnotReportDetailAsync(GameRecordRole role, string month, string type)
     {
         int total = (await _gameRecordClient.GetInterKnotReportDetailByPageAsync(role, month, type, 1, 1)).Total;
@@ -814,6 +931,7 @@ internal class GameRecordService
         {
             return 0;
         }
+        using var dapper = DatabaseService.CreateConnection();
         var existCount = dapper.QuerySingleOrDefault<int>("SELECT COUNT(*) FROM ZZZInterKnotReportDetailItem WHERE Uid = @Uid AND DataMonth = @month AND DataType = @type;", new { role.Uid, month, type });
         if (existCount == total)
         {
@@ -821,6 +939,7 @@ internal class GameRecordService
         }
         var detail = await _gameRecordClient.GetInterKnotReportDetailAsync(role, month, type);
         var list = detail.List;
+        using var t = dapper.BeginTransaction();
         dapper.Execute($"DELETE FROM ZZZInterKnotReportDetailItem WHERE Uid = @Uid AND DataMonth = @DataMonth AND DataType = @DataType;", list.FirstOrDefault(), t);
         dapper.Execute("""
                 INSERT OR REPLACE INTO ZZZInterKnotReportDetailItem (Uid, Id, DataMonth, DataType, Action, Time, Number)
@@ -831,8 +950,10 @@ internal class GameRecordService
     }
 
 
+
     public List<InterKnotReportDetailItem> GetInterKnotReportDetailItems(long uid, string month, string type)
     {
+        using var dapper = DatabaseService.CreateConnection();
         return dapper.Query<InterKnotReportDetailItem>("SELECT * FROM ZZZInterKnotReportDetailItem WHERE Uid=@uid AND DataMonth=@month AND DataType=@type ORDER BY Time;", new { uid, month, type }).ToList();
     }
 
@@ -858,10 +979,15 @@ internal class GameRecordService
     }
 
 
+
+
     #endregion
 
 
+
+
     #region Shiyu Defense
+
 
 
     public async Task<ShiyuDefenseWrapper> RefreshShiyuDefenseInfoAsync(GameRecordRole role, int schedule, CancellationToken cancellationToken = default)
@@ -885,6 +1011,7 @@ internal class GameRecordService
                     info.MaxLayer,
                     Value = JsonSerializer.Serialize(info, AppConfig.JsonSerializerOptions),
                 };
+                using var dapper = DatabaseService.CreateConnection();
                 dapper.Execute("""
                     INSERT OR REPLACE INTO ZZZShiyuDefenseInfo (Uid, ScheduleId, BeginTime, EndTime, Version, HasData, MaxRating, MaxRatingTimes, MaxLayer, Value)
                     VALUES (@Uid, @ScheduleId, @BeginTime, @EndTime, @Version, @HasData, @MaxRating, @MaxRatingTimes, @MaxLayer, @Value);
@@ -910,6 +1037,7 @@ internal class GameRecordService
                         info.V2Score,
                         Value = JsonSerializer.Serialize(info, AppConfig.JsonSerializerOptions),
                     };
+                    using var dapper = DatabaseService.CreateConnection();
                     dapper.Execute("""
                         INSERT OR REPLACE INTO ZZZShiyuDefenseInfo (Uid, ScheduleId, BeginTime, EndTime, Version, HasData, MaxRating, V2Score, Value)
                         VALUES (@Uid, @ScheduleId, @BeginTime, @EndTime, @Version, @HasData, @MaxRating, @V2Score, @Value);
@@ -921,12 +1049,14 @@ internal class GameRecordService
     }
 
 
+
     public List<ShiyuDefenseInfo> GetShiyuDefenseInfoList(GameRecordRole role)
     {
         if (role is null)
         {
             return new List<ShiyuDefenseInfo>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<ShiyuDefenseInfo>("""
             SELECT Uid, ScheduleId, BeginTime, EndTime, Version, HasData, MaxRating, MaxRatingTimes, MaxLayer, V2Score FROM ZZZShiyuDefenseInfo WHERE Uid = @Uid ORDER BY ScheduleId DESC;
             """, new { role.Uid });
@@ -934,8 +1064,10 @@ internal class GameRecordService
     }
 
 
+
     public ShiyuDefenseInfoBase? GetShiyuDefenseInfo(GameRecordRole role, int scheduleId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         (string version, string value) = dapper.QueryFirstOrDefault<(string Version, string Value)>("""
             SELECT Version, Value FROM ZZZShiyuDefenseInfo WHERE Uid = @Uid And ScheduleId = @scheduleId LIMIT 1;
             """, new { role.Uid, scheduleId });
@@ -955,10 +1087,14 @@ internal class GameRecordService
     }
 
 
+
     #endregion
 
 
+
+
     #region Deadly Assault
+
 
 
     public async Task<DeadlyAssaultInfo> RefreshDeadlyAssaultInfoAsync(GameRecordRole role, int schedule, CancellationToken cancellationToken = default)
@@ -983,6 +1119,7 @@ internal class GameRecordService
             HardTotalStar = info.HardNodes?.Sum(x => x.Star) ?? 0,
             Value = JsonSerializer.Serialize(info, AppConfig.JsonSerializerOptions),
         };
+        using var dapper = DatabaseService.CreateConnection();
         dapper.Execute("""
             INSERT OR REPLACE INTO ZZZDeadlyAssaultInfo (Uid, ZoneId, StartTime, EndTime, HasData, RankPercent, TotalScore, TotalStar, HasHard, HardTotalScore, HardTotalStar, Value)
             VALUES (@Uid, @ZoneId, @StartTime, @EndTime, @HasData, @RankPercent, @TotalScore, @TotalStar, @HasHard, @HardTotalScore, @HardTotalStar, @Value);
@@ -993,12 +1130,14 @@ internal class GameRecordService
     }
 
 
+
     public List<DeadlyAssaultInfo> GetDeadlyAssaultInfoList(GameRecordRole role)
     {
         if (role is null)
         {
             return new List<DeadlyAssaultInfo>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<DeadlyAssaultInfo>("""
             SELECT Uid, ZoneId, StartTime, EndTime, HasData, RankPercent, TotalScore, TotalStar, HasHard, HardTotalScore, HardTotalStar FROM ZZZDeadlyAssaultInfo WHERE Uid = @Uid ORDER BY ZoneId DESC;
             """, new { role.Uid });
@@ -1006,8 +1145,10 @@ internal class GameRecordService
     }
 
 
+
     public DeadlyAssaultInfo? GetDeadlyAssaultInfo(GameRecordRole role, int zoneId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var value = dapper.QueryFirstOrDefault<string>("""
             SELECT Value FROM ZZZDeadlyAssaultInfo WHERE Uid = @Uid And ZoneId = @zoneId LIMIT 1;
             """, new { role.Uid, zoneId });
@@ -1025,10 +1166,14 @@ internal class GameRecordService
     }
 
 
+
     #endregion
 
 
+
+
     #region Daily Note
+
 
 
     public async Task<BH3DailyNote> GetBH3DailyNoteAsync(GameRecordRole role, bool forceUpdate = false, CancellationToken cancellationToken = default)
@@ -1043,6 +1188,7 @@ internal class GameRecordService
     }
 
 
+
     public async Task<GenshinDailyNote> GetGenshinDailyNoteAsync(GameRecordRole role, bool forceUpdate = false, CancellationToken cancellationToken = default)
     {
         string key = $"{nameof(GenshinDailyNote)}_{role.Region}_{role.Uid}";
@@ -1053,6 +1199,7 @@ internal class GameRecordService
         }
         return note!;
     }
+
 
 
     public async Task<StarRailDailyNote> GetStarRailDailyNoteAsync(GameRecordRole role, bool forceUpdate = false, CancellationToken cancellationToken = default)
@@ -1079,7 +1226,11 @@ internal class GameRecordService
     }
 
 
+
+
     #endregion
+
+
 
 
     #region Stygian Onslaught
@@ -1092,6 +1243,8 @@ internal class GameRecordService
         {
             return infos;
         }
+        using var dapper = DatabaseService.CreateConnection();
+        using var t = dapper.BeginTransaction();
         foreach (var info in infos)
         {
             var obj = new
@@ -1114,8 +1267,10 @@ internal class GameRecordService
     }
 
 
+
     public List<StygianOnslaughtInfo> GetStygianOnslaughtInfoList(GameRecordRole role)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<StygianOnslaughtInfo>("""
             SELECT Uid, ScheduleId, StartDateTime, EndDateTime, Difficulty, Second FROM GenshinStygianOnslaughtInfo WHERE Uid = @Uid ORDER BY ScheduleId DESC;
             """, new { role.Uid });
@@ -1123,8 +1278,10 @@ internal class GameRecordService
     }
 
 
+
     public StygianOnslaughtInfo? GetStygianOnslaughtInfo(GameRecordRole role, int scheduleId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var value = dapper.QueryFirstOrDefault<string>("""
             SELECT Value FROM GenshinStygianOnslaughtInfo WHERE Uid = @Uid And ScheduleId = @scheduleId LIMIT 1;
             """, new { role.Uid, scheduleId });
@@ -1136,10 +1293,15 @@ internal class GameRecordService
     }
 
 
+
     #endregion
 
 
+
+
     #region Star Rail Challenge Peak
+
+
 
 
     public List<ChallengePeakData> GetStarRailChallengePeakDataList(GameRecordRole role)
@@ -1148,6 +1310,7 @@ internal class GameRecordService
         {
             return new List<ChallengePeakData>();
         }
+        using var dapper = DatabaseService.CreateConnection();
         var list = dapper.Query<ChallengePeakData>("""
             SELECT Uid, GroupId, GameVersion, BossStars, MobStars, BossIcon FROM StarRailChallengePeakData WHERE Uid = @Uid ORDER BY GroupId DESC;
             """, new { role.Uid });
@@ -1155,8 +1318,10 @@ internal class GameRecordService
     }
 
 
+
     public async Task RefreshStarRailChallengePeakDataAsync(GameRecordRole role, CancellationToken cancellationToken = default)
     {
+        using var dapper = DatabaseService.CreateConnection();
 
         var data = await _gameRecordClient.GetStarRailChallengePeakDataAsync(role, 1, cancellationToken);
         if (data.ChallengePeakRecords?.Count == 1)
@@ -1245,8 +1410,10 @@ internal class GameRecordService
     }
 
 
+
     public ChallengePeakData? GetStarRailChallengePeakData(GameRecordRole role, int groupId)
     {
+        using var dapper = DatabaseService.CreateConnection();
         var queryText = dapper.QueryFirstOrDefault<string>("""
                     SELECT Value FROM StarRailChallengePeakData WHERE Uid = @Uid AND GroupId = @groupId LIMIT 1;
                     """, new { role.Uid, groupId });
@@ -1256,6 +1423,8 @@ internal class GameRecordService
         }
         return null;
     }
+
+
 
 
     #endregion

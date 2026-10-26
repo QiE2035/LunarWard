@@ -77,20 +77,21 @@
         </StackPanel>
 
 
-        <ListView  x:Name="ListView_SimulatedUniverse"
+        <ListBox  x:Name="ListView_SimulatedUniverse"
                   Grid.Row="1"
                   Padding="12,0,12,0"
                   ItemsSource="{Binding RecordBasicList}"
                   SelectionChanged="ListView_SimulatedUniverse_SelectionChanged"
                   SelectionMode="Single"
                   IsVisible="{Binding RecordBasicList, Converter={DynamicResource ObjectToVisibilityConverter}}">
-            <ListView.ItemContainerStyle>
-                <Style BasedOn="{DynamicResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
                     <Setter Property="Margin" Value="0,4,0,4" />
                     <Setter Property="Padding" Value="4,0,4,0" />
+                
                 </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="su:SimulatedUniverseRecordBasic">
                     <Grid
                          
@@ -103,8 +104,8 @@
                         <TextBlock Text="{Binding ScheduleBegin, StringFormat='{}{0:yyyy-MM-dd}'}" />
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
 
 

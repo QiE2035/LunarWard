@@ -1,6 +1,7 @@
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.LoginPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:webview="clr-namespace:LunarWard.Frameworks.WebView"
              xmlns:lang="clr-namespace:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord"
              xmlns:sf="clr-namespace:LunarWard.Frameworks">
@@ -72,7 +73,7 @@
                 <FlyoutBase.AttachedFlyout>
                     <Flyout Placement="BottomEdgeAlignedLeft">
                         <Flyout.FlyoutPresenterStyle>
-                            <Style BasedOn="{DynamicResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                            <Style TargetType="FlyoutPresenter">
                                 <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
                                 <Setter Property="Padding" Value="16,12,16,12" />
                                 <Setter Property="BorderThickness" Value="0" />
@@ -90,11 +91,7 @@
         </Grid>
 
         <Border Grid.Row="1">
-            <WebView2  x:Name="webview" DefaultBackgroundColor="#303030">
-                <WebView2.Resources>
-                    <SolidColorBrush x:Key="BrushForThemeBackgroundColor" Color="#303030" />
-                </WebView2.Resources>
-            </WebView2>
+            <webview:WebView x:Name="webview" />
         </Border>
 
 

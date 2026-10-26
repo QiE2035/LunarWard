@@ -82,19 +82,20 @@
             </Button>
         </StackPanel>
 
-        <ListView  x:Name="ListView_TheaterList"
+        <ListBox  x:Name="ListView_TheaterList"
                   Grid.Row="1"
                   Padding="12,0,12,0"
                   ItemsSource="{Binding TheaterList}"
                   SelectionChanged="ListView_TheaterList_SelectionChanged"
                   SelectionMode="Single">
-            <ListView.ItemContainerStyle>
-                <Style BasedOn="{DynamicResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
                     <Setter Property="Margin" Value="0,4,0,4" />
                     <Setter Property="Padding" Value="4,0,4,0" />
+                
                 </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="scggi:ImaginariumTheaterInfo">
                     <Grid
                          
@@ -132,8 +133,8 @@
                         </TextBlock>
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <ScrollViewer Grid.RowSpan="2"
                       Grid.Column="1"
