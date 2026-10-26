@@ -5,12 +5,17 @@ using LunarWard.Core.GameNotice;
 using LunarWard.Core.GameRecord;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Core.SelfQuery;
+using LunarWard.Features.Background;
 using LunarWard.Features.Database;
 using LunarWard.Features.Gacha;
 using LunarWard.Features.Gacha.UIGF;
 using LunarWard.Features.GameAccount;
+using LunarWard.Features.GameInstall;
 using LunarWard.Features.GameLauncher;
 using LunarWard.Features.HoYoPlay;
+using LunarWard.Features.PlayTime;
+using LunarWard.Features.RPC;
+using LunarWard.Features.SelfQuery;
 using LunarWard.Features.Update;
 using LunarWard.Setup.Core;
 using Microsoft.Data.Sqlite;
@@ -19,6 +24,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using System.Net;
 using System.Net.Http;
+using LunarWard.Features.GameRecord;
 
 namespace LunarWard;
 
@@ -49,10 +55,9 @@ public static partial class AppConfig
             sc.AddSingleton<HoYoPlayClient>();
             sc.AddSingleton<GameNoticeClient>();
             sc.AddSingleton<HoYoPlayService>();
-            // TODO(port): BackgroundService（Features/Background 落地后）
+            sc.AddSingleton<BackgroundService>();
             sc.AddSingleton<GameLauncherService>();
-            // TODO(port): GamePackageService（Features/GameInstall 落地后）
-            // TODO(port): PlayTimeRecordService / PlayTimeStatsService（Features/PlayTime 落地后）
+            sc.AddSingleton<GamePackageService>();
             sc.AddSingleton<GameNoticeService>();
             sc.AddSingleton<SetupService>();
 
@@ -68,15 +73,19 @@ public static partial class AppConfig
 
             sc.AddSingleton<HoyolabClient>();
             sc.AddSingleton<HyperionClient>();
-            // TODO(port): GameRecordService（Features/GameRecord 落地后）
+            sc.AddSingleton<GameRecordService>();
+
+            sc.AddSingleton<PlayTimeStatsService>();
+            sc.AddSingleton<PlayTimeRecordService>();
 
             sc.AddSingleton<SelfQueryClient>();
-            // TODO(port): SelfQueryService
+            sc.AddSingleton<SelfQueryService>();
 
             sc.AddHttpClient<ReleaseClient>().ConfigLunarWardHttpClient();
             sc.AddTransient<UpdateService>();
 
-            // TODO(port): RpcService / GameInstallService
+            sc.AddSingleton<RpcService>();
+            sc.AddSingleton<GameInstallService>();
 
             sc.AddSingleton<GameAuthLoginService>();
             sc.AddSingleton<GameAccountService>();
