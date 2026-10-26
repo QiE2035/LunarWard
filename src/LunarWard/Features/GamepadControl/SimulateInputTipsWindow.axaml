@@ -1,0 +1,146 @@
+<sf:WindowEx xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.GamepadControl"
+             xmlns:sf="using:LunarWard.Frameworks"
+             x:Class="LunarWard.Features.GamepadControl.SimulateInputTipsWindow"
+             x:DataType="local:SimulateInputTipsWindow"
+             Title="SimulateInputTipsWindow"
+             CanResize="False"
+             ShowInTaskbar="False"
+             SystemDecorations="None"
+             Topmost="True">
+
+  <!--
+    上游 Starward/Features/GamepadControl/SimulateInputTipsWindow.xaml 的逐结构移植。
+    平台替换（详见 docs/09-LINUX-DIVERGENCES.md）：
+      · WinUI Composition 的「矩形挖圆孔」几何裁剪（CompositionGeometricClip + CanvasGeometry.CombineWith）
+        → Avalonia CombinedGeometry(Exclude)，由 code-behind 每帧按鼠标位置重算；
+      · XboxFluent2 图标字体（E9CD/E992/E991/E98F/E990/E9A0/E9A3/E9AA/E9A8/E9A4/E9C8）
+        在 LunarWard 里不是 AvaloniaResource，改用项目已有的 Segoe Fluent Icons（类 icon），
+        具体字形在 code-behind 的备注里逐个对应；
+      · ScalarTransition → Avalonia DoubleTransition（Expander 透明度）。
+  -->
+
+  <Grid x:Name="RootGrid">
+
+    <!--  上游 Border_CursorMask：整屏压暗 + 光标处挖一个圆孔（这里用 Path 画“矩形减圆”）。  -->
+    <Path x:Name="Border_CursorMask"
+          Fill="#A0000000"
+          Stretch="None" />
+
+    <Expander x:Name="Expander_ButtonHints"
+              MinWidth="200"
+              Margin="60,120,0,0"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Top"
+              HorizontalContentAlignment="Left"
+              Background="#A0000000"
+              BorderThickness="0"
+              CornerRadius="8"
+              IsExpanded="True"
+              Opacity="0">
+      <Expander.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+        </Transitions>
+      </Expander.Transitions>
+
+      <!--  模拟输入已激活  -->
+      <Expander.Header>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_ControllerSimulatedInputIsActive}" />
+        </StackPanel>
+      </Expander.Header>
+
+      <StackPanel Spacing="10">
+        <!--  按键提醒  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_ShowHideButtonHints}" />
+        </StackPanel>
+        <!--  左摇杆，移动鼠标  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_MouseMove}" />
+        </StackPanel>
+        <!--  右摇杆，鼠标滚轮  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_MouseWheel}" />
+        </StackPanel>
+        <!--  A 鼠标左键  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_MouseLeftButton}" />
+        </StackPanel>
+        <!--  B 鼠标右键  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_MouseRightButton}" />
+        </StackPanel>
+        <!--  X 键盘 Enter 键  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_KeyboardEnterKey}" />
+        </StackPanel>
+        <!--  Y 键盘 Esc 键  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_KeyboardEscKey}" />
+        </StackPanel>
+        <!--  DPad 键盘方向键  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_KeyboardArrowKeys}" />
+        </StackPanel>
+        <!--  LT 定位鼠标指针  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_LocateMousePointer}" />
+        </StackPanel>
+        <!--  LB RB 切换窗口  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="8,0,0,0" Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_SwitchWindows}" />
+        </StackPanel>
+        <!--  停止模拟输入  -->
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="4,0,4,0" VerticalAlignment="Center" FontSize="20" Text="+" />
+          <TextBlock Classes="icon" FontSize="24" Text="&#xE7FC;" />
+          <TextBlock Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="{x:Static lang:Lang.SimulateInputTipsWindow_StopSimualteInput}" />
+        </StackPanel>
+
+      </StackPanel>
+    </Expander>
+
+  </Grid>
+
+</sf:WindowEx>
