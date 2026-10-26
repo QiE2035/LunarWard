@@ -171,8 +171,29 @@ internal static class CaptureMode
     /// <summary>自检：把本地存档按 UIGF v4.2 导出到该路径。</summary>
     public static string? UigfExport { get; set; }
 
-    /// <summary>截启动器「游戏设置」弹窗（配 --settings-section basic|arguments|background|packages）。</summary>
+    /// <summary>
+    /// 旧开关：截启动器「游戏设置」弹窗。<b>已经不再由 <c>Program</c> 设置</b>。
+    /// </summary>
+    /// <remarks>
+    /// 对话框以前是独立 <see cref="Avalonia.Controls.Window"/>，由
+    /// <c>GameLauncherPage</c> 的构造函数自己打开、自己截图；改成窗口内
+    /// <c>DialogHost</c> 浮层之后那条路失效——页面会被构造两次，第二次的对话框被
+    /// <see cref="DialogService"/> 的防重入挡下，日志只剩 <c>DIALOG_IGNORED</c>。
+    /// 新路径见 <see cref="LauncherSettingOverlay"/>。
+    /// </remarks>
     public static bool LauncherSettingDialog { get; set; }
+
+    /// <summary>
+    /// 自检：把启动器「游戏设置」弹窗作为<b>窗口内浮层</b>打开后再截整窗
+    /// （<c>--launcher-setting-dialog</c>，配 <c>--settings-section
+    /// basic|arguments|background|packages</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 由 <c>MainWindow</c> 的截图分支统一打开：走和齿轮按钮完全相同的
+    /// <see cref="DialogService.ShowAsync"/> 路径，等包体页真的加载完再
+    /// <see cref="Capture(Window)"/>，这样 <c>packages</c> 页才截得到。
+    /// </remarks>
+    public static bool LauncherSettingOverlay { get; set; }
 
     /// <summary>截图页自检：把图库换成临时目录里的样例图（不碰用户游戏目录）。</summary>
     public static bool ScreenshotSeed { get; set; }

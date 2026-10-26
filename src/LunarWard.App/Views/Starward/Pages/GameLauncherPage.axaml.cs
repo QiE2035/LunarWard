@@ -20,6 +20,12 @@ public partial class GameLauncherPage : StarwardPage
 
     private GameLauncherPageViewModel? _viewModel;
 
+    /// <summary>切换条每个背景对应的圆点（重建时整批替换，切换时只改大小/亮度）。</summary>
+    private readonly List<PipButton> _pips = [];
+
+    /// <summary>指针离开切换条后延迟收起，避免圆点重建/切换中的指针抖动把条收掉。</summary>
+    private readonly DispatcherTimer _barHideTimer = new() { Interval = TimeSpan.FromMilliseconds(280) };
+
 
     public GameLauncherPage(PageContext context) : base(context)
     {
@@ -37,6 +43,7 @@ public partial class GameLauncherPage : StarwardPage
         RootGrid.AddHandler(DragDrop.DragLeaveEvent, OnRootGridDragLeave);
         RootGrid.AddHandler(DragDrop.DropEvent, OnRootGridDrop);
         _viewModel.BackgroundImages.CollectionChanged += (_, _) => RebuildPips();
+        _barHideTimer.Tick += OnBarHideTimerTick;
         _viewModel.RefreshBackgroundImages();
         if (CaptureMode.ShowBackgroundBar)
         {
@@ -370,10 +377,16 @@ public partial class GameLauncherPage : StarwardPage
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(GameLauncherPageViewModel.SelectedBackgroundIndex)
-            or nameof(GameLauncherPageViewModel.ShowBackgroundBar))
+        if (e.PropertyName is nameof(GameLauncherPageViewModel.SelectedBackgroundIndex))
         {
-            RebuildPips();
+            // 只改现有圆点的大小/亮度：重建会把指针下面的按钮换掉，PointerExited 随即把切换条收起，
+            // 用户看到的就是「点一下圆点、条闪一下消失」。
+            UpdatePipSelection();
+        }
+        else if (e.PropertyName is nameof(GameLauncherPageViewModel.ShowBackgroundBar)
+                 && _viewModel is { ShowBackgroundBar: true })
+        {
+            UpdatePipSelection();
         }
     }
 
@@ -426,6 +439,8 @@ public partial class GameLauncherPage : StarwardPage
     /// Starward 的 <c>PipsPager_SwitchBackgroundImage</c>：每个背景一个可点圆点，
     /// 选中的圆点更大更亮（源码里选中/普通字形同号但字号 8/6）。
     /// </summary>
+    private sealed record PipButton(Avalonia.Controls.Shapes.Ellipse Dot, Button Button);
+
     private void RebuildPips()
     {
         if (_viewModel is null)
@@ -434,15 +449,12 @@ public partial class GameLauncherPage : StarwardPage
         }
 
         PipsPanel.Children.Clear();
+        _pips.Clear();
         for (var i = 0; i < _viewModel.BackgroundImages.Count; i++)
         {
             var index = i;
-            var selected = i == _viewModel.SelectedBackgroundIndex;
             var dot = new Avalonia.Controls.Shapes.Ellipse
             {
-                Width = selected ? 8 : 6,
-                Height = selected ? 8 : 6,
-                Fill = new SolidColorBrush(Color.Parse(selected ? "#FFFFFFFF" : "#88FFFFFF")),
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             };
             var button = new Button
@@ -454,8 +466,40 @@ public partial class GameLauncherPage : StarwardPage
                 Content = dot,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             };
-            button.Click += (_, _) => _viewModel.SelectBackgroundCommand.Execute(index);
+            button.Click += (_, _) =>
+            {
+                // 点圆点时先别收起：收起会让指针落到下层、触发一次 PointerExited。
+                _barHideTimer.Stop();
+                _viewModel?.OnBackgroundBarPointerEnter();
+                _viewModel?.SelectBackgroundCommand.Execute(index);
+            };
             PipsPanel.Children.Add(button);
+            _pips.Add(new PipButton(dot, button));
+        }
+
+        UpdatePipSelection();
+    }
+
+
+    /// <summary>
+    /// 只更新圆点大小/亮度，不重建控件。
+    /// Starward 的 <c>PipsPager</c> 本身就是「同一个圆点换字形」，重建会导致指针抖动。
+    /// </summary>
+    private void UpdatePipSelection()
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        var selected = _viewModel.SelectedBackgroundIndex;
+        for (var i = 0; i < _pips.Count; i++)
+        {
+            var isSelected = i == selected;
+            var dot = _pips[i].Dot;
+            dot.Width = isSelected ? 8 : 6;
+            dot.Height = isSelected ? 8 : 6;
+            dot.Fill = new SolidColorBrush(Color.Parse(isSelected ? "#FFFFFFFF" : "#88FFFFFF"));
         }
     }
 
@@ -646,10 +690,40 @@ public partial class GameLauncherPage : StarwardPage
     }
 
 
-    private void OnBackgroundBarPointerEntered(object? sender, PointerEventArgs e) => _viewModel?.OnBackgroundBarPointerEnter();
+    private void OnBackgroundBarPointerEntered(object? sender, PointerEventArgs e)
+    {
+        _barHideTimer.Stop();
+        _viewModel?.OnBackgroundBarPointerEnter();
+    }
 
 
-    private void OnBackgroundBarPointerExited(object? sender, PointerEventArgs e) => _viewModel?.OnBackgroundBarPointerExit();
+    private void OnBackgroundBarPointerExited(object? sender, PointerEventArgs e)
+    {
+        // 不立即收起：切换/圆点更新期间指针会短暂离开再回来，立刻收起就是用户看到的「闪一下」。
+        _barHideTimer.Stop();
+        _barHideTimer.Start();
+    }
+
+
+    private void OnBarHideTimerTick(object? sender, EventArgs e)
+    {
+        _barHideTimer.Stop();
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        if (_viewModel.IsSwitchingBackground)
+        {
+            // 切换还没结束：保持可见，等下一次 tick 再看。
+            _barHideTimer.Start();
+            return;
+        }
+
+        _viewModel.OnBackgroundBarPointerExit();
+    }
+
+
 
 
     /// <summary>便笺 Flyout 打开：绑定 Flyout VM 并刷新一次（Starward 的按钮 Loaded 时拉取）。</summary>

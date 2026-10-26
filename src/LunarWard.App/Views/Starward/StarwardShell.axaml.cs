@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using LunarWard.App.Services;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -17,6 +19,10 @@ public partial class StarwardShell : UserControl
 {
     private readonly Dictionary<ShellPage, StarwardPage> _pages = [];
     private VideoBackgroundPlayer? _videoPlayer;
+    private readonly SemaphoreSlim _videoSwitchGate = new(1, 1);
+    private int _videoRequestId;
+    private Window? _window;
+    private bool _windowActive = true;
 
     public StarwardShell()
     {
@@ -42,6 +48,16 @@ public partial class StarwardShell : UserControl
     protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        if (TopLevel.GetTopLevel(this) is Window window)
+        {
+            _window = window;
+            _windowActive = window.IsActive;
+            window.Activated -= OnWindowActivated;
+            window.Activated += OnWindowActivated;
+            window.Deactivated -= OnWindowDeactivated;
+            window.Deactivated += OnWindowDeactivated;
+        }
+
         if (ViewModel is { } vm)
         {
             vm.PageChanged -= OnPageChanged;
@@ -73,6 +89,13 @@ public partial class StarwardShell : UserControl
     protected override void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        if (_window is { } window)
+        {
+            window.Activated -= OnWindowActivated;
+            window.Deactivated -= OnWindowDeactivated;
+            _window = null;
+        }
+
         if (ViewModel is { } vm)
         {
             vm.PageChanged -= OnPageChanged;
@@ -80,6 +103,42 @@ public partial class StarwardShell : UserControl
             vm.GameSelectorVisibilityChanged -= OnGameSelectorVisibilityChanged;
             vm.VideoBackgroundRequested -= OnVideoBackgroundRequested;
             vm.VideoBackgroundCleared -= OnVideoBackgroundCleared;
+        }
+    }
+
+
+    private void OnWindowActivated(object? sender, EventArgs e)
+    {
+        _windowActive = true;
+        UpdateVideoPlaybackState();
+    }
+
+
+    private void OnWindowDeactivated(object? sender, EventArgs e)
+    {
+        _windowActive = false;
+        UpdateVideoPlaybackState();
+    }
+
+
+    /// <summary>
+    /// 只有「窗口在前台 + 当前页是启动器」时才让视频背景跑：
+    /// 其它时候 SIGSTOP 冻结 ffmpeg 子进程，CPU 立刻归零（用户反馈的持续占用主要来自后台播放）。
+    /// </summary>
+    private void UpdateVideoPlaybackState()
+    {
+        if (_videoPlayer is null)
+        {
+            return;
+        }
+
+        if (_windowActive && ViewModel?.CurrentPage == ShellPage.Launcher)
+        {
+            _videoPlayer.Resume();
+        }
+        else
+        {
+            _videoPlayer.Pause();
         }
     }
 
@@ -103,6 +162,8 @@ public partial class StarwardShell : UserControl
             toolboxPage.SelectTab(context.Shell.PendingToolboxTab);
             context.Shell.PendingToolboxTab = -1;
         }
+
+        UpdateVideoPlaybackState();
     }
 
 
@@ -135,35 +196,67 @@ public partial class StarwardShell : UserControl
 
     private async void OnVideoBackgroundRequested(object? sender, string path)
     {
+        // 一次只跑一个切换：滚轮连滚/连点圆点会连续发请求，旧实现两次 StartAsync 互踩，
+        // 表现为「切一次背景后开始闪、再也点不动」。这里用「最新请求胜出 + 串行执行」。
+        var requestId = Interlocked.Increment(ref _videoRequestId);
         try
         {
-            var background = ViewModel?.Services.Background;
-            if (background is null || !background.IsVideoAvailable)
+            await _videoSwitchGate.WaitAsync().ConfigureAwait(true);
+            try
             {
-                return;
-            }
-
-            // ffmpeg 子进程解码 → WriteableBitmap。不用 VideoView：Wayland 下没有可嵌入的
-            // X11 子窗口（黑屏），而且 VLC 的编解码依赖用户装齐 vlc-plugin-* 包。
-            _videoPlayer ??= new VideoBackgroundPlayer();
-            background.AttachPlayer(_videoPlayer);
-            VideoBackgroundHost.Content = _videoPlayer.View;
-            if (!await _videoPlayer.StartAsync(path, ViewModel?.Log).ConfigureAwait(true))
-            {
-                // 拿不到帧就回退官方静态图，别留黑屏。
-                _videoPlayer.Stop();
-                VideoBackgroundHost.Content = null;
-                ViewModel?.Log.Warn($"动态背景无法播放，回退静态图：{path}");
-                if (ViewModel is { } vm)
+                if (requestId != Volatile.Read(ref _videoRequestId))
                 {
-                    await vm.ShowStaticBackgroundAsync(vm.Assets.For()?.Background).ConfigureAwait(true);
+                    return;
                 }
+
+                var background = ViewModel?.Services.Background;
+                if (background is null || !background.IsVideoAvailable)
+                {
+                    return;
+                }
+
+                // 官方背景视频先落本地缓存再播（上游 BackgroundService 同款）：否则
+                // `-stream_loop -1` 每循环一圈都会重新拉一遍整段视频，带宽和首帧都遭殃。
+                var localPath = await background.EnsureVideoCachedAsync(path).ConfigureAwait(true);
+                if (requestId != Volatile.Read(ref _videoRequestId))
+                {
+                    return;
+                }
+
+                if (localPath is { Length: > 0 })
+                {
+                    path = localPath;
+                }
+
+                // ffmpeg 子进程解码 → WriteableBitmap。不用 VideoView：Wayland 下没有可嵌入的
+                // X11 子窗口（黑屏），而且 VLC 的编解码依赖用户装齐 vlc-plugin-* 包。
+                _videoPlayer ??= new VideoBackgroundPlayer();
+                await _videoPlayer.StopAsync().ConfigureAwait(true);
+                background.AttachPlayer(_videoPlayer);
+                VideoBackgroundHost.Content = _videoPlayer.View;
+                if (!await _videoPlayer.StartAsync(path, ViewModel?.Log).ConfigureAwait(true))
+                {
+                    // 拿不到帧就回退官方静态图，别留黑屏。
+                    _videoPlayer.Stop();
+                    VideoBackgroundHost.Content = null;
+                    ViewModel?.Log.Warn($"动态背景无法播放，回退静态图：{path}");
+                    if (ViewModel is { } vm)
+                    {
+                        await vm.ShowStaticBackgroundAsync(vm.Assets.For()?.Background).ConfigureAwait(true);
+                    }
+                }
+            }
+            finally
+            {
+                _videoSwitchGate.Release();
             }
         }
         catch (Exception ex)
         {
             ViewModel?.Log.Warn($"视频背景挂载失败：{ex.Message}");
         }
+
+        UpdateVideoPlaybackState();
     }
 
 
@@ -171,6 +264,8 @@ public partial class StarwardShell : UserControl
     {
         try
         {
+            // 取消可能在排队的播放请求：清空背景后不应再被旧请求重新挂上。
+            Interlocked.Increment(ref _videoRequestId);
             VideoBackgroundHost.Content = null;
             _videoPlayer?.Dispose();
             _videoPlayer = null;

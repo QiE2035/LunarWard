@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Security.Cryptography;
+using System.Text;
 using LunarWard.Platform;
 using Serilog;
 using Serilog.Events;
@@ -37,6 +39,17 @@ public sealed class BackgroundService : IDisposable
     };
 
     private static readonly Lazy<bool> Ffmpeg = new(ProbeFfmpeg);
+
+    private static readonly TimeSpan OfficialCacheTtl = TimeSpan.FromMinutes(10);
+
+    private readonly HttpClient _download = new()
+    {
+        // 官方背景视频是整文件下载（十几 MB 起），不能沿用 15s 的接口超时。
+        Timeout = TimeSpan.FromMinutes(5),
+    };
+
+    private readonly object _officialLock = new();
+    private readonly Dictionary<string, (IReadOnlyList<BackgroundEntry> Entries, DateTimeOffset At)> _officialCache = [];
 
     private VideoBackgroundPlayer? _activePlayer;
 
@@ -178,6 +191,44 @@ public sealed class BackgroundService : IDisposable
         string? posterUrl,
         CancellationToken cancellationToken = default)
     {
+        // 只缓存「官方接口 + 海报」这一段：本地背景目录随时会被拖入/删除文件，必须每次现扫。
+        var official = GetOfficialBackgrounds(launcherId, gameBiz, posterUrl, cancellationToken);
+        var files = DiscoverCacheFiles();
+        return BackgroundCatalog.Merge(await official.ConfigureAwait(false), posterUrl, files);
+    }
+
+
+    /// <summary>
+    /// 官方背景（10 分钟内存缓存）。切换区服 / 页面重建时会重复问一次，
+    /// 上游 <c>HoYoPlayService</c> 同样缓存 <c>GetGameBackgroundsAsync</c> 的结果。
+    /// </summary>
+    private Task<IReadOnlyList<BackgroundEntry>> GetOfficialBackgrounds(
+        string launcherId,
+        string gameBiz,
+        string? posterUrl,
+        CancellationToken cancellationToken)
+    {
+        var key = $"{launcherId}|{gameBiz}|{posterUrl}";
+        lock (_officialLock)
+        {
+            if (_officialCache.TryGetValue(key, out var hit)
+                && DateTimeOffset.UtcNow - hit.At < OfficialCacheTtl)
+            {
+                return Task.FromResult(hit.Entries);
+            }
+        }
+
+        return FetchOfficialBackgroundsAsync(key, launcherId, gameBiz, posterUrl, cancellationToken);
+    }
+
+
+    private async Task<IReadOnlyList<BackgroundEntry>> FetchOfficialBackgroundsAsync(
+        string key,
+        string launcherId,
+        string gameBiz,
+        string? posterUrl,
+        CancellationToken cancellationToken)
+    {
         IReadOnlyList<BackgroundEntry> official = [];
         try
         {
@@ -189,18 +240,32 @@ public sealed class BackgroundService : IDisposable
                 official = BackgroundCatalog.FromApi(info);
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // 离线/接口改动：退化为海报 + 本地背景
             ProbeError ??= ex.Message;
         }
 
-        IReadOnlyList<string> files = [];
+        IReadOnlyList<BackgroundEntry> entries = posterUrl is { Length: > 0 }
+            ? BackgroundCatalog.Merge(official, posterUrl, [])
+            : official;
+
+        lock (_officialLock)
+        {
+            _officialCache[key] = (entries, DateTimeOffset.UtcNow);
+        }
+
+        return entries;
+    }
+
+
+    private IReadOnlyList<BackgroundEntry> DiscoverCacheFiles()
+    {
         try
         {
             if (Directory.Exists(CacheDirectory))
             {
-                files = Directory.EnumerateFiles(CacheDirectory).OrderBy(x => x).ToList();
+                return BackgroundCatalog.FromFiles(Directory.EnumerateFiles(CacheDirectory).OrderBy(x => x));
             }
         }
         catch (Exception)
@@ -208,7 +273,96 @@ public sealed class BackgroundService : IDisposable
             // 目录不可读就当成没有本地背景
         }
 
-        return BackgroundCatalog.Merge(official, posterUrl, BackgroundCatalog.FromFiles(files));
+        return [];
+    }
+
+
+    /// <summary>官方背景视频的本地缓存目录（上游是 <c>%CacheFolder%/bg</c>）。</summary>
+    public string BackgroundVideoCacheDirectory
+    {
+        get
+        {
+            var parent = Path.GetDirectoryName(CacheDirectory.TrimEnd(Path.DirectorySeparatorChar));
+            return Path.Join(string.IsNullOrEmpty(parent) ? CacheDirectory : parent, "bg");
+        }
+    }
+
+
+    /// <summary>
+    /// 把官方背景视频下到本地再交给播放器：上游 <c>BackgroundService.GetGameBackgroundsAsync</c>
+    /// 就是这么做的（下载一次、之后本地循环），避免每圈「重新拉一遍」的带宽和卡顿。
+    /// </summary>
+    /// <returns>本地文件路径；下载失败返回 <c>null</c>（调用方回退为直接流播）。</returns>
+    public async Task<string?> EnsureVideoCachedAsync(string source, CancellationToken cancellationToken = default)
+    {
+        if (!Uri.TryCreate(source, UriKind.Absolute, out var uri)
+            || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return File.Exists(source) ? source : null;
+        }
+
+        var extension = Path.GetExtension(uri.AbsolutePath).ToLowerInvariant();
+        if (extension is not (".mp4" or ".webm" or ".mkv"))
+        {
+            extension = ".mp4";
+        }
+
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(uri.AbsoluteUri)))[..16];
+        var directory = BackgroundVideoCacheDirectory;
+        var target = Path.Join(directory, hash + extension);
+        if (File.Exists(target) && new FileInfo(target).Length > 0)
+        {
+            return target;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(directory);
+            var temporary = target + ".part";
+            using (var response = await _download.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                       .ConfigureAwait(false))
+            {
+                response.EnsureSuccessStatusCode();
+                await using var file = File.Create(temporary);
+                await response.Content.CopyToAsync(file, cancellationToken).ConfigureAwait(false);
+            }
+
+            File.Move(temporary, target, overwrite: true);
+            PruneVideoCache(directory);
+            return target;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            ProbeError ??= ex.Message;
+            return null;
+        }
+    }
+
+
+    /// <summary>缓存上限 512 MiB，按最后写入时间淘汰。</summary>
+    private static void PruneVideoCache(string directory)
+    {
+        try
+        {
+            const long limit = 512L * 1024 * 1024;
+            var files = new DirectoryInfo(directory).EnumerateFiles()
+                .Where(x => x.Name.EndsWith(".part", StringComparison.Ordinal) is false)
+                .OrderByDescending(x => x.LastWriteTimeUtc)
+                .ToList();
+            var total = 0L;
+            foreach (var file in files)
+            {
+                total += file.Length;
+                if (total > limit)
+                {
+                    file.Delete();
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // 清理失败不影响播放
+        }
     }
 
 
@@ -225,6 +379,7 @@ public sealed class BackgroundService : IDisposable
         }
 
         _http.Dispose();
+        _download.Dispose();
     }
 }
 

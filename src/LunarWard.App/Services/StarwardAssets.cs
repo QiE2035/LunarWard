@@ -39,29 +39,47 @@ public sealed class StarwardAssets : IDisposable
 
     private readonly ConcurrentDictionary<string, GameInfo> _gameInfos = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>每个 launcher 的 <c>getGames</c> 只请求一次（失败才移除，下次重试）。</summary>
+    private readonly ConcurrentDictionary<string, Lazy<Task<IReadOnlyList<GameInfo>>>> _launcherGames = new(StringComparer.Ordinal);
+
+    /// <summary>按 <c>launcherId|gameId|lang</c> 缓存的资讯；不同游戏各自一份，绝不共用。</summary>
+    private readonly ConcurrentDictionary<string, GameContent> _contentCache = new(StringComparer.Ordinal);
+
     private readonly ConcurrentDictionary<string, DateTimeOffset> _contentFetchedAt = new(StringComparer.Ordinal);
+
+    /// <summary>同一 key 并发请求只发一次 HTTP（<see cref="Lazy{T}"/> 保证只有一个任务真正启动）。</summary>
+    private readonly ConcurrentDictionary<string, Lazy<Task<GameContent?>>> _contentTasks = new(StringComparer.Ordinal);
 
     /// <summary>同一个 URL 的下载只跑一次（页面与外壳会并发请求同一张图）。</summary>
     private readonly ConcurrentDictionary<string, Task<string?>> _downloadTasks = new(StringComparer.Ordinal);
+
+    private static readonly TimeSpan ContentLifetime = TimeSpan.FromMinutes(30);
 
     private readonly HoYoPlayClient _client;
 
     private readonly string _cacheRoot;
 
-    private string _language = "zh-cn";
-
 
     public StarwardAssets(IXdgPaths paths, LogService log)
+        : this(paths, log, null)
+    {
+    }
+
+
+    /// <param name="handler">测试用 HTTP handler；为 null 时使用默认的 <see cref="HttpClientHandler"/>。</param>
+    public StarwardAssets(IXdgPaths paths, LogService log, HttpMessageHandler? handler)
     {
         _paths = paths;
         _log = log;
         _cacheRoot = Path.Join(paths.CacheHome, "starward");
         Directory.CreateDirectory(_cacheRoot);
-        _http = new HttpClient(new HttpClientHandler { AutomaticDecompression = System.Net.DecompressionMethods.All })
-        {
-            DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher,
-            Timeout = TimeSpan.FromSeconds(20),
-        };
+        _http = handler is null
+            ? new HttpClient(new HttpClientHandler { AutomaticDecompression = System.Net.DecompressionMethods.All })
+            {
+                DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher,
+                Timeout = TimeSpan.FromSeconds(20),
+            }
+            : new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(20) };
         _client = new HoYoPlayClient(_http);
     }
 
@@ -74,76 +92,77 @@ public sealed class StarwardAssets : IDisposable
     public string? CurrentGameBiz { get; private set; }
 
 
-    /// <summary>Starward 的「活动 / 公告 / 资讯」三组资讯 + 轮播图。</summary>
-    public GameContent? Content { get; private set; }
-
-
-    /// <summary>已经拉过 <c>getGames</c> 的 launcher id（避免重复请求）。</summary>
-    private readonly ConcurrentDictionary<string, bool> _loadedLaunchers = new(StringComparer.Ordinal);
-
-
     /// <summary>
-    /// 拉取某个游戏组合的全部素材（图标、背景、轮播图、资讯）。
+    /// 拉取当前游戏的素材（图标、缩略图、Logo、背景）并记为 <see cref="Art"/>。
     /// </summary>
     /// <remarks>
     /// Starward 每个游戏用自己的 launcher id（国服 / 国际服 / B 站各一条），
     /// 所以游戏选择层要看到全部游戏的卡片就必须把用到的 launcher id 都拉一遍。
+    /// 启动器页的资讯不在这里加载，见 <see cref="GetContentAsync"/>。
     /// </remarks>
     public async Task LoadAsync(string launcherId, string gameBiz, CancellationToken cancellationToken = default)
     {
         try
         {
-            _language = PickLanguage();
-            var infos = await _client.GetGameInfoAsync(launcherId, _language, cancellationToken).ConfigureAwait(false);
-            _loadedLaunchers[launcherId] = true;
-            foreach (var info in infos)
-            {
-                if (info is not null && info.GameBiz.Value is { Length: > 0 } biz)
-                {
-                    _gameInfos[biz] = info;
-                }
-            }
-
-            if (!_gameInfos.TryGetValue(gameBiz, out var target))
-            {
-                _log.Warn($"素材：{launcherId} 的 getGames 里没有 {gameBiz}");
-                CurrentGameBiz = gameBiz;
-                Art = null;
-                Content = null;
-                return;
-            }
-
-            CurrentGameBiz = gameBiz;
-            var display = target.Display;
-            Art = new GameArt(
-                gameBiz,
-                await CacheAsync(display?.Icon?.Url, "icon", cancellationToken).ConfigureAwait(false),
-                await CacheAsync(display?.Thumbnail?.Url, "thumb", cancellationToken).ConfigureAwait(false),
-                await CacheAsync(display?.Logo?.Url, "logo", cancellationToken).ConfigureAwait(false),
-                await CacheAsync(display?.Background?.Url, "background", cancellationToken).ConfigureAwait(false));
-
-            await LoadContentAsync(launcherId, gameBiz, target.Id, cancellationToken).ConfigureAwait(false);
+            Art = await GetArtAsync(launcherId, gameBiz, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _log.Warn($"素材加载失败（{gameBiz}）：{ex.Message}");
+            Art = null;
+        }
+        finally
+        {
             CurrentGameBiz = gameBiz;
         }
     }
 
 
-    /// <summary>只刷新资讯/轮播图（Starward 定时 1 小时刷新一次内容）。</summary>
+    /// <summary>
+    /// 取某个游戏的素材路径。找不到该游戏时返回 null，不会回落到别的游戏。
+    /// </summary>
+    public async Task<GameArt?> GetArtAsync(string launcherId, string gameBiz, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(launcherId) || string.IsNullOrWhiteSpace(gameBiz))
+        {
+            return null;
+        }
+
+        var language = PickLanguage();
+        await EnsureGameInfosAsync(launcherId, language).ConfigureAwait(false);
+        if (!_gameInfos.TryGetValue(gameBiz, out var target))
+        {
+            _log.Warn($"素材：{launcherId} 的 getGames 里没有 {gameBiz}");
+            return null;
+        }
+
+        var display = target.Display;
+        return new GameArt(
+            gameBiz,
+            await CacheAsync(display?.Icon?.Url, "icon", cancellationToken).ConfigureAwait(false),
+            await CacheAsync(display?.Thumbnail?.Url, "thumb", cancellationToken).ConfigureAwait(false),
+            await CacheAsync(display?.Logo?.Url, "logo", cancellationToken).ConfigureAwait(false),
+            await CacheAsync(display?.Background?.Url, "background", cancellationToken).ConfigureAwait(false));
+    }
+
+
+    /// <summary>
+    /// 只刷新资讯/轮播图：先让该游戏的缓存失效，再重新拉取（Starward 定时 1 小时刷新一次内容）。
+    /// </summary>
     public async Task RefreshContentAsync(string launcherId, string gameBiz, CancellationToken cancellationToken = default)
     {
         try
         {
-            if (!_gameInfos.TryGetValue(gameBiz, out var info))
+            var language = PickLanguage();
+            if (_gameInfos.TryGetValue(gameBiz, out var info) && info.Id is { Length: > 0 } gameId)
             {
-                await LoadAsync(launcherId, gameBiz, cancellationToken).ConfigureAwait(false);
-                return;
+                var key = ContentKey(launcherId, gameId, language);
+                _contentCache.TryRemove(key, out _);
+                _contentFetchedAt.TryRemove(key, out _);
+                _contentTasks.TryRemove(key, out _);
             }
 
-            await LoadContentAsync(launcherId, gameBiz, info.Id, cancellationToken).ConfigureAwait(false);
+            await GetContentAsync(launcherId, gameBiz, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -152,28 +171,123 @@ public sealed class StarwardAssets : IDisposable
     }
 
 
-    private async Task LoadContentAsync(string launcherId, string gameBiz, string? gameId, CancellationToken cancellationToken)
+    /// <summary>
+    /// 取某个游戏的资讯（轮播图 + 活动/公告/资讯三组）。
+    /// </summary>
+    /// <remarks>
+    /// 纯查询 API：没有共享的「当前 Content」字段，调用方拿到什么就展示什么，
+    /// 因此并发请求两个游戏也不会互相覆盖。同一 <paramref name="gameBiz"/> 的并发
+    /// 请求会共用一次 HTTP；30 分钟内的重复请求直接返回该游戏自己的缓存。
+    /// </remarks>
+    public async Task<GameContent?> GetContentAsync(string launcherId, string gameBiz, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(gameId))
+        if (string.IsNullOrWhiteSpace(launcherId) || string.IsNullOrWhiteSpace(gameBiz))
         {
-            return;
-        }
-
-        var key = $"{launcherId}|{gameId}|{_language}";
-        if (_contentFetchedAt.TryGetValue(key, out var at) && DateTimeOffset.Now - at < TimeSpan.FromMinutes(30))
-        {
-            return;
+            return null;
         }
 
         try
         {
-            Content = await _client.GetGameContentAsync(
-                launcherId, _language, new GameId { Id = gameId, GameBiz = gameBiz }, cancellationToken).ConfigureAwait(false);
-            _contentFetchedAt[key] = DateTimeOffset.Now;
+            var language = PickLanguage();
+            await EnsureGameInfosAsync(launcherId, language).ConfigureAwait(false);
+            if (!_gameInfos.TryGetValue(gameBiz, out var info) || info.Id is not { Length: > 0 } gameId)
+            {
+                _log.Warn($"资讯：{launcherId} 的 getGames 里没有 {gameBiz}");
+                return null;
+            }
+
+            var key = ContentKey(launcherId, gameId, language);
+            if (_contentCache.TryGetValue(key, out var cached) &&
+                _contentFetchedAt.TryGetValue(key, out var fetchedAt))
+            {
+                if (DateTimeOffset.Now - fetchedAt < ContentLifetime)
+                {
+                    return cached;
+                }
+
+                // 过期：丢掉旧的单飞任务，否则重新拉取时还会拿到第一次的结果。
+                _contentTasks.TryRemove(key, out _);
+            }
+
+            var lazy = _contentTasks.GetOrAdd(key, _ =>
+                new Lazy<Task<GameContent?>>(() => FetchContentAsync(key, launcherId, language, gameBiz, gameId)));
+            return await lazy.Value.ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _log.Warn($"getGameContent 失败（{gameBiz}）：{ex.Message}");
+            return null;
+        }
+    }
+
+
+    private async Task<GameContent?> FetchContentAsync(string key, string launcherId, string language, string gameBiz, string gameId)
+    {
+        try
+        {
+            var content = await _client.GetGameContentAsync(
+                launcherId, language, new GameId { Id = gameId, GameBiz = gameBiz }).ConfigureAwait(false);
+
+            // 万一接口返回了别的游戏的内容，宁可当作失败也不能串给当前页面。
+            var returnedId = content?.GameId?.Id;
+            if (content is null ||
+                (returnedId is { Length: > 0 } && !string.Equals(returnedId, gameId, StringComparison.OrdinalIgnoreCase)))
+            {
+                _log.Warn($"getGameContent 返回了不匹配的游戏（期望 {gameId}，实际 {returnedId ?? "null"}）");
+                _contentTasks.TryRemove(key, out _);
+                return null;
+            }
+
+            _contentCache[key] = content;
+            _contentFetchedAt[key] = DateTimeOffset.Now;
+            return content;
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"getGameContent 失败（{gameBiz}）：{ex.Message}");
+            _contentTasks.TryRemove(key, out _);
+            return null;
+        }
+    }
+
+
+    private static string ContentKey(string launcherId, string gameId, string language)
+        => $"{launcherId}|{gameId}|{language}";
+
+
+    /// <summary>
+    /// 确保某个 launcher 的 <c>getGames</c> 结果已就绪；并发调用共用一个 HTTP 请求。
+    /// </summary>
+    private Task<IReadOnlyList<GameInfo>> EnsureGameInfosAsync(string launcherId, string language)
+    {
+        var key = $"{launcherId}|{language}";
+        var lazy = _launcherGames.GetOrAdd(key, _ =>
+            new Lazy<Task<IReadOnlyList<GameInfo>>>(() => FetchGameInfosAsync(key, launcherId, language)));
+        return lazy.Value;
+    }
+
+
+    private async Task<IReadOnlyList<GameInfo>> FetchGameInfosAsync(string key, string launcherId, string language)
+    {
+        try
+        {
+            var infos = await _client.GetGameInfoAsync(launcherId, language).ConfigureAwait(false);
+            foreach (var info in infos)
+            {
+                if (info is not null && info.GameBiz.Value is { Length: > 0 } biz)
+                {
+                    _gameInfos[biz] = info;
+                }
+            }
+
+            return infos;
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"素材：launcher {launcherId} 拉取失败（{ex.Message}）");
+            // 失败不缓存，下次调用还能重试
+            _launcherGames.TryRemove(key, out _);
+            return [];
         }
     }
 
@@ -184,30 +298,11 @@ public sealed class StarwardAssets : IDisposable
     /// </summary>
     public async Task LoadAllLaunchersAsync(IEnumerable<string> launcherIds, CancellationToken cancellationToken = default)
     {
+        var language = PickLanguage();
         foreach (var launcherId in launcherIds.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct())
         {
-            if (_loadedLaunchers.ContainsKey(launcherId))
-            {
-                continue;
-            }
-
-            try
-            {
-                _language = PickLanguage();
-                var infos = await _client.GetGameInfoAsync(launcherId, _language, cancellationToken).ConfigureAwait(false);
-                _loadedLaunchers[launcherId] = true;
-                foreach (var info in infos)
-                {
-                    if (info is not null && info.GameBiz.Value is { Length: > 0 } biz)
-                    {
-                        _gameInfos[biz] = info;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _log.Warn($"素材：launcher {launcherId} 拉取失败（{ex.Message}）");
-            }
+            cancellationToken.ThrowIfCancellationRequested();
+            await EnsureGameInfosAsync(launcherId, language).ConfigureAwait(false);
         }
     }
 

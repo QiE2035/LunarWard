@@ -21,7 +21,7 @@
     入口，沿用 Starward 的卡片版式，没有替换 Starward 设置页里的任何条目。
   -->
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <ItemsControl ItemsSource="{Binding Items}" Padding="0,0,24,24">
+    <ItemsControl ItemsSource="{Binding Items}" Padding="0,0,0,4">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
           <WrapPanel Orientation="Horizontal" />

@@ -6,7 +6,7 @@
 
   <!--
     1:1 复刻 Starward Features/Setting/GeneralSetting.xaml（87 行）：
-      15      StackPanel Padding="0,0,24,0"（Avalonia 无 Padding → 用 Margin="0,0,24,0" 等价）
+      15      StackPanel Padding="0,0,24,0"（Avalonia 无 Padding；LunarWard 改由 SettingPage 的 SectionHost 统一留白）
       19      20px「语言」
       20-27   0,12 ComboBox（Height 36 / MinWidth 260 / Padding 18.5,0,0,0 /
               BorderThickness 0 / CornerRadius 8,18,18,8）
@@ -28,7 +28,8 @@
       · 末尾「主题 / 启动行为 / 公告与动态背景」是 LunarWard 追加，排在 Starward 条目之后。
   -->
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="0,0,24,0">
+    <!-- 右侧/底部留白由 SettingPage 的 SectionHost(Margin 24) 统一提供，子页不再重复。 -->
+    <StackPanel>
 
       <!-- GeneralSetting.xaml:19 -->
       <TextBlock Classes="section" Text="{Binding Strings[Settings.Language]}" />

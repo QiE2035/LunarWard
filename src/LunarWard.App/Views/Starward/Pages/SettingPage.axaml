@@ -18,8 +18,11 @@
     悬停/选中底色则是内缩 4px 的圆角块。
   -->
     <UserControl.Styles>
+      <!--
+        条目高度只能是"至少 40"：工具箱那一项在 40px 面板上方还有一条分隔线
+        （Starward 的 NavigationViewItemSeparator），写死 Height=40 会把多出来的部分裁掉。
+      -->
       <Style Selector="ListBox#SectionList ListBoxItem">
-        <Setter Property="Height" Value="40" />
         <Setter Property="MinHeight" Value="40" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
@@ -32,6 +35,32 @@
       <Style Selector="ListBox#SectionList ListBoxItem /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="CornerRadius" Value="0" />
+      </Style>
+
+      <!--
+        条目自身的选中/悬停底色也要压掉：Fluent 主题的 :selected /template/ ContentPresenter
+        优先级高于上面的无状态样式，会把 40px 面板外的区域（分隔线那一条）一起染亮，
+        看起来像"项里多了一块底色"（问题 6 截图里工具箱项上方那截灰色）。
+        底色统一由条内的 Border.nav-bg 画。
+      -->
+      <Style Selector="ListBox#SectionList ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+
+      <!--
+        子页最外层是 ScrollViewer；Fluent 的滚动条是浮在内容上的（约 4px），
+        右边留 8 给它，避免长行文字压在滚动条下面。
+      -->
+      <Style Selector="ContentControl#SectionHost ScrollViewer">
+        <Setter Property="Margin" Value="0,0,8,0" />
       </Style>
 
       <!-- 悬停/选中底色画在条目内部（内缩 4，圆角 4） -->
@@ -88,16 +117,20 @@
         </ListBox.ItemsPanel>
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:SettingSectionViewModel">
-            <Grid RowDefinitions="Auto,*">
+            <!--
+              分隔线不叠在 40px 条目里：Starward 的 NavigationViewItemSeparator 是菜单中的
+              独立元素，占自己的高度（1 线 + 上下各 8）。以前把它塞进固定 40 高的条目，
+              工具箱项内容（约 57）被裁掉一半，才会出现"文字下移 + 左上角半截横线"（问题 6）。
+            -->
+            <StackPanel>
 
               <!-- Starward 的 NavigationViewItemSeparator（工具箱前那一根） -->
-              <Border Grid.Row="0"
-                      Height="1"
+              <Border Height="1"
                       Margin="12,8,12,8"
                       Background="{StaticResource StarDividerBrush}"
                       IsVisible="{Binding ShowDivider}" />
 
-              <Panel Grid.Row="1" Height="40">
+              <Panel Height="40">
                 <Border Classes="nav-bg"
                         Margin="4,0"
                         CornerRadius="4" />
@@ -122,16 +155,21 @@
                              Text="{Binding Title}" />
                 </Grid>
               </Panel>
-            </Grid>
+            </StackPanel>
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
     </Grid>
 
-    <!-- ── 右：子页宿主（Starward 的 Frame_Setting Margin=24,24,0,0）── -->
+    <!--
+      ── 右：子页宿主 ──
+      Starward 的 Frame_Setting 是 Margin=24,24,0,0，但它的 Frame 本身带着导航栏的
+      安全边距；我们这里没有那一层，底部为 0 会让子页最后一行文字压在窗口底边上（问题 6），
+      所以四边都留 24。
+    -->
     <ContentControl Grid.Column="1"
                     x:Name="SectionHost"
-                    Margin="24,24,0,0" />
+                    Margin="24,24,24,24" />
 
     <!-- ── 页内二次确认（等价 ContentDialog，覆盖整个设置页）────────── -->
     <Grid Grid.Column="0" Grid.ColumnSpan="2"

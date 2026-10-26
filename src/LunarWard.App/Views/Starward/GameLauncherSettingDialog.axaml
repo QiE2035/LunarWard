@@ -320,26 +320,46 @@
                   完整包 + 每个增量包（组头右侧复制该组全部下载链接）。  -->
             <TabControl x:Name="PackageTabs" Background="Transparent" Padding="0">
               <TabItem x:Name="LatestPackagesTab" Header="—">
-                <ScrollViewer>
-                  <ItemsControl x:Name="LatestPackagesList" Margin="0,0,8,0">
-                    <ItemsControl.ItemsPanel>
-                      <ItemsPanelTemplate>
-                        <StackPanel Spacing="8" />
-                      </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                  </ItemsControl>
-                </ScrollViewer>
+                <Grid RowDefinitions="Auto,*">
+                  <!--  副标题：包体清单（getGamePackages）里的版本。标签页标题固定是游戏版本，
+                        两者互不覆盖（问题 7，见 docs/09-LINUX-DIVERGENCES.md）。  -->
+                  <TextBlock x:Name="LatestPackageManifestText"
+                             Grid.Row="0"
+                             Margin="0,0,8,8"
+                             FontSize="12"
+                             TextWrapping="Wrap"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="—" />
+                  <ScrollViewer Grid.Row="1">
+                    <ItemsControl x:Name="LatestPackagesList" Margin="0,0,8,0">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <StackPanel Spacing="8" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                  </ScrollViewer>
+                </Grid>
               </TabItem>
               <TabItem x:Name="PrePackagesTab" Header="—">
-                <ScrollViewer>
-                  <ItemsControl x:Name="PrePackagesList" Margin="0,0,8,0">
-                    <ItemsControl.ItemsPanel>
-                      <ItemsPanelTemplate>
-                        <StackPanel Spacing="8" />
-                      </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                  </ItemsControl>
-                </ScrollViewer>
+                <Grid RowDefinitions="Auto,*">
+                  <TextBlock x:Name="PrePackageManifestText"
+                             Grid.Row="0"
+                             Margin="0,0,8,8"
+                             FontSize="12"
+                             TextWrapping="Wrap"
+                             Foreground="{StaticResource StarTextSecondary}"
+                             Text="—" />
+                  <ScrollViewer Grid.Row="1">
+                    <ItemsControl x:Name="PrePackagesList" Margin="0,0,8,0">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <StackPanel Spacing="8" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                  </ScrollViewer>
+                </Grid>
               </TabItem>
             </TabControl>
           </StackPanel>
