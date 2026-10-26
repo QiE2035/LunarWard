@@ -1,0 +1,161 @@
+<sf:PageBase x:Class="LunarWard.Features.GameSetting.GameSettingPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.GameSetting"
+             xmlns:sf="using:LunarWard.Frameworks">
+  <!-- 移植自 Starward/src/Starward/Features/GameSetting/GameSettingPage.xaml。
+       替换：Visibility→IsVisible、ThemeResource→DynamicResource、NumberBox→NumericUpDown、
+       InfoBar→Border 内文字（Avalonia 无 InfoBar）、x:Bind→Binding。 -->
+  <Grid RowDefinitions="*,60">
+
+    <ScrollViewer>
+      <Grid Margin="24,20,24,24" ColumnDefinitions="*,*" ColumnSpacing="24">
+        <Button Width="0" Height="0" IsHitTestVisible="False" />
+
+        <StackPanel Margin="0,0,12,0" IsVisible="{Binding IsBaseSettingEnable}">
+          <!--  分辨率  -->
+          <TextBlock FontSize="20" FontWeight="Bold" Text="{x:Static lang:Lang.GameSettingPage_Resolution}" />
+          <!--  全屏  -->
+          <CheckBox Margin="0,8,0,0" Content="{x:Static lang:Lang.GameSettingPage_FullScreen}" IsChecked="{Binding EnableFullScreen, Mode=TwoWay}" />
+          <!--  无边框窗口  -->
+          <CheckBox Margin="0,8,0,0" Content="{x:Static lang:Lang.GameSettingPage_UsePopupWindow}" IsChecked="{Binding UsePopupWindow, Mode=TwoWay}" />
+          <!--  自定义分辨率  -->
+          <CheckBox Margin="0,8,0,0" Content="{x:Static lang:Lang.GameSettingPage_CustomResolution}" IsChecked="{Binding EnableCustomResolution, Mode=TwoWay}" />
+          <ComboBox Name="ComboBox_Resolution"
+                    Width="160"
+                    Margin="0,8,0,0"
+                    IsEnabled="{Binding !EnableCustomResolution}"
+                    SelectionChanged="ComboBox_Resolution_SelectionChanged" />
+          <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="12">
+            <NumericUpDown Width="120"
+                           IsEnabled="{Binding EnableCustomResolution}"
+                           Minimum="0"
+                           Value="{Binding ResolutionWidth, Mode=TwoWay}" />
+            <TextBlock VerticalAlignment="Center"
+                       FontSize="20"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="×" />
+            <NumericUpDown Width="120"
+                           IsEnabled="{Binding EnableCustomResolution}"
+                           Minimum="0"
+                           Value="{Binding ResolutionHeight, Mode=TwoWay}" />
+          </StackPanel>
+
+          <!--  语音  -->
+          <TextBlock Margin="0,20,0,0"
+                     FontSize="20"
+                     FontWeight="Bold"
+                     Text="{x:Static lang:Lang.GameSettingPage_VoiceLanguage}"
+                     IsVisible="{Binding IsLanguageSettingEnable}" />
+          <!--  首次启动游戏前设置此值可以避免下载部分语音资源  -->
+          <TextBlock Margin="0,12,0,0"
+                     Text="{x:Static lang:Lang.GameSettingPage_VoiceLanguageDescription}"
+                     TextWrapping="Wrap"
+                     IsVisible="{Binding IsLanguageSettingEnable}" />
+          <ComboBox Width="160"
+                    Margin="0,8,0,0"
+                    SelectedIndex="{Binding LanguageIndex, Mode=TwoWay}"
+                    IsVisible="{Binding IsLanguageSettingEnable}">
+            <!--  汉英日韩  -->
+            <ComboBoxItem Content="{x:Static lang:Lang.Language_Chinese}" />
+            <ComboBoxItem Content="{x:Static lang:Lang.Language_English}" />
+            <ComboBoxItem Content="{x:Static lang:Lang.Language_Japanese}" />
+            <ComboBoxItem Content="{x:Static lang:Lang.Language_Korean}" />
+          </ComboBox>
+        </StackPanel>
+
+
+        <StackPanel Grid.Column="1" Spacing="12" IsVisible="{Binding IsGraphicsSettingEnable}">
+          <!--  图形设置  -->
+          <TextBlock FontSize="20" FontWeight="Bold" Text="{x:Static lang:Lang.GameSettingPage_GraphicsSetting}" />
+
+          <!--  星铁帧率  -->
+          <StackPanel Name="StackPanel_StarRailFPS" Spacing="8" IsVisible="False">
+            <TextBlock VerticalAlignment="Bottom" FontWeight="Bold" Text="{x:Static lang:Lang.GameSettingPage_FPS}" />
+            <ComboBox Width="120" SelectedIndex="{Binding StarRailFpsIndex, Mode=TwoWay}">
+              <ComboBoxItem Content="30" />
+              <ComboBoxItem Content="60" />
+              <ComboBoxItem Content="120" />
+            </ComboBox>
+            <!--  请勿将游戏内「图像质量」修改为「自定义」以外的选项  -->
+            <TextBlock Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.GameSettingPage_StarRailFpsTip}" TextWrapping="Wrap" />
+          </StackPanel>
+
+          <!--  原神 HDR  -->
+          <StackPanel Name="StackPanel_GenshinHDR" Spacing="8" IsVisible="False">
+            <TextBlock FontWeight="Bold" Text="HDR" />
+            <CheckBox Content="{x:Static lang:Lang.GameSettingPage_EnableHDR}" IsChecked="{Binding EnableGenshinHDR, Mode=TwoWay}" />
+            <Button Command="{Binding OpenGenshinHDRLumianceSettingWindowCommand}" Content="{x:Static lang:Lang.GameSettingPage_HDRBrightnessSetting}" />
+            <TextBlock Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.GameSettingPage_IfYouHaveMultipleMonitorsYouNeedToSetTheHDRSupportedMonitorAsThePrimaryDisplay}"
+                       TextWrapping="Wrap" />
+            <!-- 上游 InfoBar Severity=Warning，Avalonia 无 InfoBar，用 Border 承载 -->
+            <Border Name="InfoBar_HDRNotSupported"
+                    Margin="0,0,24,0"
+                    Padding="12,8,12,8"
+                    Background="{DynamicResource StarCardBackgroundBrush}"
+                    CornerRadius="4"
+                    IsVisible="{Binding HDRNotSupported}">
+              <TextBlock Foreground="{DynamicResource StarCautionBrush}" Text="{x:Static lang:Lang.GameSettingPage_TheCurrentMonitorDoesNotSupportHDR}" TextWrapping="Wrap" />
+            </Border>
+            <Border Name="InfoBar_HDRNotEnabled"
+                    Margin="0,0,24,0"
+                    Padding="12,8,12,8"
+                    Background="{DynamicResource StarCardBackgroundBrush}"
+                    CornerRadius="4"
+                    IsVisible="{Binding HDRNotEnabled}">
+              <TextBlock Foreground="{DynamicResource StarCautionBrush}" Text="{x:Static lang:Lang.GameSettingPage_WindowsHDRIsNotTurnedOn}" TextWrapping="Wrap" />
+            </Border>
+          </StackPanel>
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+
+    <!--  游戏未安装  -->
+    <StackPanel Name="StackPanel_Emoji"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16"
+                IsVisible="False">
+      <Image Name="Image_Emoji" Width="160" Height="160" />
+      <TextBlock Name="TextBlock_GameNotInstalled"
+                 HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{DynamicResource StarTextSecondary}"
+                 Text="{x:Static lang:Lang.GameSettingPage_GameNotInstalled}" />
+    </StackPanel>
+
+
+    <Grid Name="Grid_ApplyBackground"
+          Grid.Row="1"
+          Background="{DynamicResource StarOverlayAcrylicBrush}"
+          CornerRadius="8,0,0,0">
+      <StackPanel Margin="24,0,24,0"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  Orientation="Horizontal">
+        <Button Height="36"
+                Classes="accent"
+                BorderThickness="0"
+                Command="{Binding ApplySettingCommand}"
+                CornerRadius="18"
+                IsEnabled="{Binding IsApplyButtonEnable}">
+          <StackPanel Margin="12,0,12,0" Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon"
+                       VerticalAlignment="Center"
+                       FontSize="16"
+                       Text="&#xE8FB;" />
+            <!--  应用  -->
+            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.Common_Apply}" />
+          </StackPanel>
+        </Button>
+        <TextBlock Margin="24,0,0,0"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource StarTextSecondary}"
+                   Text="{Binding ErrorMessage}"
+                   TextTrimming="CharacterEllipsis" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</sf:PageBase>

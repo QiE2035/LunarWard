@@ -1,0 +1,171 @@
+<controls:StarwardContentDialog xmlns="https://github.com/avaloniaui"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:controls="using:LunarWard.Views.Starward.Controls"
+                               xmlns:lang="using:LunarWard.Language"
+                               xmlns:local="using:LunarWard.Features.GameSetting"
+                               x:Class="LunarWard.Features.GameSetting.GenshinHDRLuminanceSettingDialog"
+                               x:DataType="local:GenshinHDRLuminanceSettingDialog"
+                               Background="Transparent"
+                               BorderThickness="0">
+  <!-- 移植自 Starward/src/Starward/Features/GameSetting/GenshinHDRLuminanceSettingDialog.xaml。
+       Win2D CanvasSwapChainPanel（HDR 线性增益预览）在 Avalonia 无对应实现，
+       预览区改为普通 Image + 近似亮度（见 docs/09）。 -->
+  <Grid Width="1200"
+        Height="680"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Background="{DynamicResource StarOverlayAcrylicBrush}">
+
+    <Grid Width="1180"
+          Height="660"
+          ColumnDefinitions="460,*"
+          RowDefinitions="*,360,Auto"
+          RowSpacing="12">
+
+      <!--  显示器信息  -->
+      <StackPanel Margin="48,48,0,0" Spacing="4">
+        <TextBlock FontSize="20" Text="{x:Static lang:Lang.GenshinHDRLuminanceSettingDialog_MonitorInformation}" />
+        <TextBlock Foreground="{DynamicResource StarTextSecondary}" Text="{Binding DisplayInfomation}" />
+      </StackPanel>
+
+      <!--  操作按键  -->
+      <StackPanel Grid.Column="1"
+                  Margin="40,48,40,0"
+                  VerticalAlignment="Center"
+                  Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <!--  保存  -->
+          <Button Classes="accent" Command="{Binding SaveCommand}" Content="{x:Static lang:Lang.Common_Save}" />
+          <!--  取消  -->
+          <Button Command="{Binding CloseDialogCommand}" Content="{x:Static lang:Lang.Common_Cancel}" />
+          <Separator />
+          <!--  适应显示器亮度  -->
+          <Button Command="{Binding AutoAdjustCommand}"
+                  Content="{x:Static lang:Lang.GenshinHDRLuminanceSettingDialog_AdaptToMonitorBrightness}"
+                  IsEnabled="{Binding HDREnabled}" />
+          <!--  恢复默认值  -->
+          <Button Command="{Binding ResetCommand}" Content="{x:Static lang:Lang.Common_RestoreDefaults}" />
+        </StackPanel>
+        <!-- 上游 InfoBar，Avalonia 无该控件，改 Border 承载 -->
+        <Border Padding="12,8,12,8"
+                Background="{DynamicResource StarCardBackgroundBrush}"
+                CornerRadius="4"
+                IsVisible="{Binding HDRNotSupported}">
+          <TextBlock Foreground="{DynamicResource StarCautionBrush}" Text="{x:Static lang:Lang.GameSettingPage_TheCurrentMonitorDoesNotSupportHDR}" TextWrapping="Wrap" />
+        </Border>
+        <Border Padding="12,8,12,8"
+                Background="{DynamicResource StarCardBackgroundBrush}"
+                CornerRadius="4"
+                IsVisible="{Binding HDRNotEnabled}">
+          <TextBlock Foreground="{DynamicResource StarCautionBrush}" Text="{x:Static lang:Lang.GameSettingPage_WindowsHDRIsNotTurnedOn}" TextWrapping="Wrap" />
+        </Border>
+      </StackPanel>
+
+
+      <!--  摩拉图  -->
+      <Image Name="CanvasSwapChainPanel_Mora"
+             Grid.Row="1"
+             Width="360"
+             Height="360"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Bottom"
+             IsVisible="{Binding MoraVisibility}"
+             Opacity="{Binding MoraPreviewOpacity}"
+             Source="avares://LunarWard/Assets/Image/Sign.png"
+             Stretch="Uniform" />
+      <!--  最大亮度  -->
+      <Grid Grid.Row="2"
+            Width="360"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            RowDefinitions="*,*">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.GenshinHDRLuminanceSettingDialog_MaxLuminance}" />
+          <ToggleButton Padding="2" VerticalAlignment="Center" IsChecked="{Binding MoraVisibility, Mode=TwoWay}">
+            <Grid>
+              <TextBlock Classes="icon" FontSize="14" Text="&#xE7B3;" IsVisible="{Binding MoraVisibility}" />
+              <TextBlock Classes="icon"
+                         FontSize="14"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="&#xED1A;"
+                         IsVisible="{Binding !MoraVisibility}" />
+            </Grid>
+          </ToggleButton>
+        </StackPanel>
+        <NumericUpDown MinWidth="80"
+                       HorizontalAlignment="Right"
+                       Increment="100"
+                       Maximum="2000"
+                       Minimum="300"
+                       Value="{Binding MaxLuminance, Mode=TwoWay}" />
+        <Slider Grid.Row="1"
+                Maximum="2000"
+                Minimum="300"
+                Value="{Binding MaxLuminance, Mode=TwoWay}" />
+      </Grid>
+
+
+      <!--  场景图  -->
+      <Border Name="CanvasSwapChainPanel_Scene"
+              Grid.Row="1"
+              Grid.Column="1"
+              Width="640"
+              Height="360"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Bottom"
+              Background="#202020"
+              CornerRadius="8">
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource StarTextSecondary}"
+                   Text="HDR 预览（Linux 无 Win2D 等价实现）"
+                   TextWrapping="Wrap" />
+      </Border>
+
+      <!--  场景亮度，UI亮度  -->
+      <Grid Grid.Row="2"
+            Grid.Column="1"
+            Width="440"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            ColumnDefinitions="Auto,*,Auto"
+            ColumnSpacing="8"
+            RowDefinitions="*,*">
+        <!--  场景亮度  -->
+        <TextBlock Text="{x:Static lang:Lang.GenshinHDRLuminanceSettingDialog_SceneryBrightness}" />
+        <NumericUpDown Grid.Column="2"
+                       MinWidth="80"
+                       VerticalAlignment="Center"
+                       Increment="10"
+                       Maximum="500"
+                       Minimum="100"
+                       Value="{Binding SceneLuminance, Mode=TwoWay}" />
+        <Slider Grid.ColumnSpan="2"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom"
+                Maximum="500"
+                Minimum="100"
+                Value="{Binding SceneLuminance, Mode=TwoWay}" />
+        <!--  UI亮度  -->
+        <TextBlock Grid.Row="1" Text="{x:Static lang:Lang.GenshinHDRLuminanceSettingDialog_UIBrightness}" />
+        <NumericUpDown Grid.Row="1"
+                       Grid.Column="2"
+                       MinWidth="80"
+                       VerticalAlignment="Center"
+                       Increment="10"
+                       Maximum="550"
+                       Minimum="150"
+                       Value="{Binding UILuminance, Mode=TwoWay}" />
+        <Slider Grid.Row="1"
+                Grid.ColumnSpan="2"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom"
+                Maximum="550"
+                Minimum="150"
+                Value="{Binding UILuminance, Mode=TwoWay}" />
+      </Grid>
+    </Grid>
+  </Grid>
+</controls:StarwardContentDialog>
