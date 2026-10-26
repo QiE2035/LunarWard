@@ -44,38 +44,59 @@ public sealed partial class StartGameButton : UserControl, INotifyPropertyChange
 
 
 
-    public ICommand? GameCommand { get; set => SetProperty(ref field, value); }
+    public static readonly StyledProperty<ICommand?> GameCommandProperty =
+        AvaloniaProperty.Register<StartGameButton, ICommand?>(nameof(GameCommand));
+
+    public static readonly StyledProperty<ICommand?> SettingCommandProperty =
+        AvaloniaProperty.Register<StartGameButton, ICommand?>(nameof(SettingCommand));
+
+    public static readonly StyledProperty<string?> RunningGameTimeProperty =
+        AvaloniaProperty.Register<StartGameButton, string?>(nameof(RunningGameTime));
+
+    public static readonly StyledProperty<string?> RunningGameInfoProperty =
+        AvaloniaProperty.Register<StartGameButton, string?>(nameof(RunningGameInfo));
+
+    public static readonly StyledProperty<GameState> GameStateProperty =
+        AvaloniaProperty.Register<StartGameButton, GameState>(nameof(GameState));
 
 
-    public ICommand? SettingCommand { get; set => SetProperty(ref field, value); }
+    static StartGameButton()
+    {
+        // 对应上游 GameState 属性 setter 里的 UpdateActionButtonState()。
+        GameStateProperty.Changed.AddClassHandler<StartGameButton>((sender, _) => sender.UpdateActionButtonState());
+        RunningGameTimeProperty.Changed.AddClassHandler<StartGameButton>((sender, _) => sender.OnPropertyChanged(nameof(StartGameButtonText)));
+    }
 
+
+    public ICommand? GameCommand
+    {
+        get => GetValue(GameCommandProperty);
+        set => SetValue(GameCommandProperty, value);
+    }
+
+    public ICommand? SettingCommand
+    {
+        get => GetValue(SettingCommandProperty);
+        set => SetValue(SettingCommandProperty, value);
+    }
 
     public string? RunningGameTime
     {
-        get; set
-        {
-            if (SetProperty(ref field, value))
-            {
-                OnPropertyChanged(nameof(StartGameButtonText));
-            }
-        }
+        get => GetValue(RunningGameTimeProperty);
+        set => SetValue(RunningGameTimeProperty, value);
     }
 
-
-    public string? RunningGameInfo { get; set => SetProperty(ref field, value); }
-
+    public string? RunningGameInfo
+    {
+        get => GetValue(RunningGameInfoProperty);
+        set => SetValue(RunningGameInfoProperty, value);
+    }
 
     public GameState GameState
     {
-        get; set
-        {
-            if (SetProperty(ref field, value))
-            {
-                UpdateActionButtonState();
-            }
-        }
+        get => GetValue(GameStateProperty);
+        set => SetValue(GameStateProperty, value);
     }
-
 
     public bool ActionButtonPointerOver
     {
@@ -88,7 +109,6 @@ public sealed partial class StartGameButton : UserControl, INotifyPropertyChange
         }
     }
 
-
     public bool SettingButtonPointerOver
     {
         get; set
@@ -99,7 +119,6 @@ public sealed partial class StartGameButton : UserControl, INotifyPropertyChange
             }
         }
     }
-
 
     public bool GameStateIsInstalling => GameState is GameState.Installing;
 

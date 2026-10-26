@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using CommunityToolkit.Mvvm.Input;
@@ -49,7 +50,14 @@ public sealed partial class CloudGameButton : UserControl, INotifyPropertyChange
     public ICommand InstallGameCommand { get; }
 
 
-    public GameId CurrentGameId { get; set; }
+    public static readonly StyledProperty<GameId?> CurrentGameIdProperty =
+        AvaloniaProperty.Register<CloudGameButton, GameId?>(nameof(CurrentGameId));
+
+    public GameId? CurrentGameId
+    {
+        get => GetValue(CurrentGameIdProperty);
+        set => SetValue(CurrentGameIdProperty, value);
+    }
 
 
     public string? ExePath

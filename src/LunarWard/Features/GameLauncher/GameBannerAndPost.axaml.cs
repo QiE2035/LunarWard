@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -60,7 +61,14 @@ public sealed partial class GameBannerAndPost : UserControl, System.ComponentMod
     private readonly GameNoticeService _gameNoticeService = AppConfig.GetService<GameNoticeService>();
 
 
-    public GameId CurrentGameId { get; set; }
+    public static readonly StyledProperty<GameId> CurrentGameIdProperty =
+        AvaloniaProperty.Register<GameBannerAndPost, GameId>(nameof(CurrentGameId));
+
+    public GameId CurrentGameId
+    {
+        get => GetValue(CurrentGameIdProperty);
+        set => SetValue(CurrentGameIdProperty, value);
+    }
 
 
 

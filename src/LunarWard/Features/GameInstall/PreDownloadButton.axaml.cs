@@ -1,3 +1,4 @@
+using Avalonia;
 using LunarWard.RPC.GameInstall;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -41,11 +42,30 @@ public sealed partial class PreDownloadButton : UserControl
 
 
 
-    public ICommand PredownloadCommand { get; set => SetProperty(ref field, value); }
+    public static readonly StyledProperty<ICommand?> PredownloadCommandProperty =
+        AvaloniaProperty.Register<PreDownloadButton, ICommand?>(nameof(PredownloadCommand));
+
+    public ICommand? PredownloadCommand
+    {
+        get => GetValue(PredownloadCommandProperty);
+        set => SetValue(PredownloadCommandProperty, value);
+    }
 
     public GameInstallState State { get; set { if (SetProperty(ref field, value)) { UpdateButtonState(); } } }
 
-    public bool IsPredownloadFinished { get; set { if (SetProperty(ref field, value)) { UpdateButtonState(); } } }
+    public static readonly StyledProperty<bool> IsPredownloadFinishedProperty =
+        AvaloniaProperty.Register<PreDownloadButton, bool>(nameof(IsPredownloadFinished));
+
+    public bool IsPredownloadFinished
+    {
+        get => GetValue(IsPredownloadFinishedProperty);
+        set => SetValue(IsPredownloadFinishedProperty, value);
+    }
+
+    static PreDownloadButton()
+    {
+        IsPredownloadFinishedProperty.Changed.AddClassHandler<PreDownloadButton>((sender, _) => sender.UpdateButtonState());
+    }
 
     public bool PointerOver { get; set => SetProperty(ref field, value); }
 

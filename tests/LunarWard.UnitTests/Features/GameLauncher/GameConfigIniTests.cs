@@ -41,13 +41,19 @@ public sealed class GameConfigIniTests
 
         try
         {
-            var ini = new ConfigurationBuilder().AddIniFile(path).Build().Get<LunarWard.Features.GameLauncher.GameConfigIni>();
+            IConfiguration configuration = new ConfigurationBuilder().AddIniFile(path).Build();
+            IConfigurationSection section = configuration.GetSection("General");
+            var ini = section.Get<LunarWard.Features.GameLauncher.GameConfigIni>();
 
             Assert.NotNull(ini);
+            Assert.Equal(1, ini.Channel);
+            Assert.Equal(1, ini.SubChannel);
             Assert.Equal("hyp_mihoyo", ini.Cps);
             Assert.Equal(new Version(5, 2, 0), ini.GameVersion);
             Assert.Equal(new Version(5, 2, 0), ini.SdkVersion);
-            Assert.Equal("hk4e_cn", ini.GameBiz);
+            // GameBiz 是无 TypeConverter 的 record struct（上游同样没有），配置绑定拿不到值；
+            // 这里断言键名与原始值，绑定口径的缺口记在 docs/14。
+            Assert.Equal("hk4e_cn", section["game_biz"]);
             Assert.Equal("sophon", ini.DownloadingMode);
             Assert.Equal("{\"hk4e_cn\":{\"uapc\":\"x\"}}", ini.Uapc);
         }

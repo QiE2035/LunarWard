@@ -409,7 +409,7 @@ public sealed partial class PreDownloadDialog : StarwardContentDialog
 
 
     [RelayCommand]
-    private void Close()
+    private void CloseDialog()
     {
         this.Close();
     }

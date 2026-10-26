@@ -40,7 +40,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
     private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
 
-    protected bool SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+    private bool SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
     {
         if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -126,7 +126,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
 
 
     [RelayCommand]
-    private void Close()
+    private void CloseDialog()
     {
         this.Close();
     }

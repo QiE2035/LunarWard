@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using LunarWard.Core;
@@ -25,7 +26,14 @@ public sealed partial class PlayTimeButton : UserControl, INotifyPropertyChanged
 {
 
     /// <summary>当前游戏（用于查询 <c>playtime_total_{gameBiz}</c> 并传给统计对话框）。</summary>
-    public GameBiz CurrentGameBiz { get; set; }
+    public static readonly StyledProperty<GameBiz> CurrentGameBizProperty =
+        AvaloniaProperty.Register<PlayTimeButton, GameBiz>(nameof(CurrentGameBiz));
+
+    public GameBiz CurrentGameBiz
+    {
+        get => GetValue(CurrentGameBizProperty);
+        set => SetValue(CurrentGameBizProperty, value);
+    }
 
 
     private readonly ILogger<PlayTimeButton> _logger = AppConfig.GetLogger<PlayTimeButton>();

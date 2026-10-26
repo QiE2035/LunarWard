@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -81,7 +82,14 @@ public sealed partial class GameAccountSwitcher : UserControl, INotifyPropertyCh
 
 
 
-    public GameBiz CurrentGameBiz { get; set; }
+    public static readonly StyledProperty<GameBiz> CurrentGameBizProperty =
+        AvaloniaProperty.Register<GameAccountSwitcher, GameBiz>(nameof(CurrentGameBiz));
+
+    public GameBiz CurrentGameBiz
+    {
+        get => GetValue(CurrentGameBizProperty);
+        set => SetValue(CurrentGameBizProperty, value);
+    }
 
 
 

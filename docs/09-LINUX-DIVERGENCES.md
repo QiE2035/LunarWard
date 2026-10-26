@@ -859,3 +859,22 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 
 > 本应用固定深色主题（`App.axaml` 的 `RequestedThemeVariant="Dark"`），因此这些别名取深色主题下 WinUI 的固定色值（`#FFFFFFFF` / `#C5FFFFFF` / `#87FFFFFF` 等），**不做浅色映射**；将来若支持浅色需改成 `ThemeVariantScope` 下的两套字典。
 > `BoolReversed`、`ObjectToVisibility` 两个短键也在 `App.axaml` 里补了同名转换器别名（上游 `App.xaml` 的键是全名，个别移植件引用了短名）。
+
+## 二十四、启动器簇 XAML 全量重建修复（2026-10-26，launcher-port）
+
+全量重建（`--no-incremental`）暴露此前增量构建掩盖的问题：Avalonia XAML 编译器在 `.axaml` 未变时跳过整段编译，导致页面级错误长期不可见。本轮按 `docs/16-XAML-MAPPING.md` 把 6 个目录的错误从 3420 行（去重 88 项）清零，其中属于「平台能力不等价」的项目登记如下。
+
+| # | 位置 | 上游（WinUI/Starward） | 本仓库（Avalonia/LunarWard） | 原因 | 待办 |
+|---|---|---|---|---|---|
+| 1 | `Features/GameLauncher/GameLauncherPage.axaml` 背景轮播页码 | `PipsPager` 控件 + `PipsPagerItem` 模板（含 `PipsPagerItemsRepeater`/`StackLayout`） | `ItemsControl` + 水平 `StackPanel` 的 6×6 圆点（`CornerRadius=3`），绑定 `BackgroundImages` | Avalonia 无 `PipsPager` | 若要还原页码器，需自写 `PipsPager` 控件（`Controls/` 由 task-4 负责） |
+| 2 | `Features/GameSelector/GameSelector.axaml` 图标区 | `ListView` + 400 行 `ListViewItemPresenter`/`DefaultListViewItemStyle` 模板 | `ItemsControl`（水平 `StackPanel`）+ 原 `ItemTemplate` | Avalonia 无 `ListViewItemPresenter`，且上游模板是为触摸选中态定制 | 若需要选中态，改用 `ListBox` + Avalonia 主题模板 |
+| 3 | `Features/GameSelector/GameSelector.axaml` 图标圆角/背景 | `sc:CachedImage` 的 `CornerRadius`、`Image` 的 `Background` | 删除这两个属性（图片为方形、无底色） | Avalonia `Image` 无 `CornerRadius`/`Background`；`CachedImage` 虽然支持 `CornerRadius`（task-4 已加），但此处仍是 `Image` | `CachedImage` 落地后改用它即可恢复圆角 |
+| 4 | 全部 6 个目录 | `ThemeShadow` + `Translation="0,0,16"` | `Border.BoxShadow="0 0 16 0 #40000000"` | Avalonia 无 WinUI 的 `ThemeShadow` 语义 | 深色主题下视觉等价 |
+| 5 | `Features/GameLauncher/GameLauncherPage.axaml`、`GameLauncherSettingDialog.axaml` 等 | `Grid.Padding`/`CornerRadius`/`Translation`、`StackPanel.Padding` | 外包一层 `Border` 承载这些属性 | Avalonia 的 `Grid`/`StackPanel` 无 `Padding`/`CornerRadius` | 无 |
+| 6 | 拖动区域 | `AllowDrop`/`DragOver`/`DragLeave`/`Drop` 事件属性 | `DragDrop.AllowDrop` 等附加属性 + `DragEventArgs` | Avalonia 用附加属性提供拖放 | 无 |
+| 7 | `GameLauncherSettingDialog.axaml` 页签名 | `Pivot` + `DefaultPivotHeaderItemStyle` + `PivotItemMargin` | `Frameworks.Pivot`（`TabControl` 派生）/`PivotItem`（`TabItem` 派生），删除 `Pivot.Resources` 里的样式 | Avalonia 无 `Pivot`；`Pivot.Resources` 的 `Style` 在 XAML 编译器里引发 `KeyValuePair` 解析错误 | 页签高度/字号由主题默认值决定 |
+| 8 | 受绑定控件（`StartGameButton`/`GameBannerAndPost`/`GameAccountSwitcher`/`GameAuthLoginButton`/`PreDownloadButton`/`PlayTimeButton`/`CloudGameButton`/`DailyNoteButton`） | 普通 CLR 属性 + `{x:Bind}` | 改 `StyledProperty<T>`（含 `Changed.AddClassHandler` 复刻原 setter 副作用） | Avalonia 中作为**绑定目标**的属性必须是 `AvaloniaProperty` | 无 |
+| 9 | `GameLauncherPage.axaml.cs` 的 `Hyperlink_*_Click` | `(Button sender, RoutedEventArgs)` | `(object? sender, RoutedEventArgs)` | Avalonia 事件委托是 `EventHandler<RoutedEventArgs>` | 无 |
+| 10 | `GameLauncherSettingDialog`/`PreDownloadDialog` 的 `Close` 命令 | `[RelayCommand] Close()` 调用 `Hide()` | 方法改名 `CloseDialog()`，XAML 绑 `CloseDialogCommand` | `Close` 与 `StarwardContentDialog.Close()` 同名会递归 | 无 |
+
+> 同批修掉：`ToolTipService.ToolTip` → `ToolTip.Tip`、`ToggleSwitch.IsOn` → `IsChecked`、`AppBarSeparator` → `Separator`、`Style` 资源键 → `Classes="accent"`、`BitmapImage` → `Image.Source` 直接绑定、`IsSpellCheckEnabled`/`IsTextScaleFactorEnabled`/`DesiredPlacement` 删除、`FontIcon` → `Frameworks.FontIcon`、`x:Bind` → `Binding`（`{x:Static lang:Lang.X}` 单独二次置换）。

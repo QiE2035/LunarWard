@@ -342,15 +342,10 @@ internal partial class GameLauncherService
                     exe = e;
                 }
             }
-            bool thirdPartyTool = false;
             if (string.IsNullOrWhiteSpace(exe) && AppConfig.GetEnableThirdPartyTool(gameId.GameBiz))
             {
                 exe = GetThirdPartyToolPath(gameId);
-                if (File.Exists(exe))
-                {
-                    thirdPartyTool = true;
-                }
-                else
+                if (!File.Exists(exe))
                 {
                     SetThirdPartyToolPath(gameId, null);
                     _logger.LogWarning("Third party tool not found: {path}", exe);

@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using CommunityToolkit.Mvvm.Input;
@@ -59,7 +60,14 @@ public sealed partial class GameAuthLoginButton : UserControl, INotifyPropertyCh
 
 
 
-    public GameId CurrentGameId { get; set; }
+    public static readonly StyledProperty<GameId?> CurrentGameIdProperty =
+        AvaloniaProperty.Register<GameAuthLoginButton, GameId?>(nameof(CurrentGameId));
+
+    public GameId? CurrentGameId
+    {
+        get => GetValue(CurrentGameIdProperty);
+        set => SetValue(CurrentGameIdProperty, value);
+    }
 
 
     private long? _hyperionAid;

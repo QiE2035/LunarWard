@@ -32,18 +32,24 @@ public sealed partial class DailyNoteButton : UserControl
     }
 
 
-    public GameId CurrentGameId
+    public static readonly StyledProperty<GameId?> CurrentGameIdProperty =
+        AvaloniaProperty.Register<DailyNoteButton, GameId?>(nameof(CurrentGameId));
+
+    public GameId? CurrentGameId
     {
-        get; set
+        get => GetValue(CurrentGameIdProperty);
+        set => SetValue(CurrentGameIdProperty, value);
+    }
+
+    static DailyNoteButton()
+    {
+        CurrentGameIdProperty.Changed.AddClassHandler<DailyNoteButton>((sender, _) =>
         {
-            if (SetProperty(ref field, value))
-            {
-                OnPropertyChanged(nameof(IsBH3Enabled));
-                OnPropertyChanged(nameof(IsGenshinEnabled));
-                OnPropertyChanged(nameof(IsStarRailEnabled));
-                OnPropertyChanged(nameof(IsZZZEnabled));
-            }
-        }
+            sender.OnPropertyChanged(nameof(IsBH3Enabled));
+            sender.OnPropertyChanged(nameof(IsGenshinEnabled));
+            sender.OnPropertyChanged(nameof(IsStarRailEnabled));
+            sender.OnPropertyChanged(nameof(IsZZZEnabled));
+        });
     }
 
 

@@ -42,7 +42,7 @@ public sealed partial class GameLauncherPage : PageBase
     private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
 
-    protected bool SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+    private bool SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
     {
         if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -410,7 +410,7 @@ public sealed partial class GameLauncherPage : PageBase
     /// <summary>
     /// 显示 DX12 说明对话框
     /// </summary>
-    private async void Hyperlink_DX12Intro_Click(Button sender, RoutedEventArgs args)
+    private async void Hyperlink_DX12Intro_Click(object? sender, RoutedEventArgs args)
     {
         if (_dxConfig is not null)
         {
@@ -456,7 +456,7 @@ public sealed partial class GameLauncherPage : PageBase
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="args"></param>
-    private async void Hyperlink_LocateGame_Click(Button sender, RoutedEventArgs args)
+    private async void Hyperlink_LocateGame_Click(object? sender, RoutedEventArgs args)
     {
         await LocateGameAsync();
     }

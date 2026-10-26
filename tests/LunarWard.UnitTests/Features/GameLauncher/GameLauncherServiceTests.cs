@@ -104,8 +104,9 @@ public sealed class GameLauncherServiceTests
         GameId zzz = Id("nap_cn");
         GameId genshin = Id("hk4e_cn");
 
-        var zzzInfo = GameLauncherService.BuildStartInfo(zzz, "/games/ZZZ/ZenlessZoneZero.exe", null);
-        var genshinInfo = GameLauncherService.BuildStartInfo(genshin, "/games/Genshin/YuanShen.exe", null);
+        // enableDX12 显式传入，避免测试依赖 AppConfig 的磁盘配置（生产路径仍由 AppConfig.GetEnableDX12 决定）。
+        var zzzInfo = GameLauncherService.BuildStartInfo(zzz, "/games/ZZZ/ZenlessZoneZero.exe", null, enableDX12: true);
+        var genshinInfo = GameLauncherService.BuildStartInfo(genshin, "/games/Genshin/YuanShen.exe", null, enableDX12: true);
 
         // 上游在 Windows 上走原生 DX12；Linux 经 DXVK/VKD3D 才需要这两个变量（GameAdapter 口径）。
         Assert.Equal("1", zzzInfo.Environment["DXVK_ENABLE_NVAPI"]);
