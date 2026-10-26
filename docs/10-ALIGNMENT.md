@@ -120,35 +120,43 @@ src/LunarWard/
 
 | 项 | 上游 | 现状 | 差距 |
 |---|---|---|---|
-| 工程数 | 7 | 7（但构成不同） | 缺 Language/RPC/Setup.Core/Setup/Launcher；多 Games/Installer/Launch/Platform/Wine |
-| 主程序文件 | 232 `.cs` / 82 `.xaml` | 462 `.cs` / 54 `.axaml` | 组织与文件数均偏离 |
+| 工程数 | 7 | 8 | Language/Setup.Core 已建；RPC 暂缓（见 §8）；Setup 以 Installer 等价；Launcher 以 Program.cs+Launch 等价 |
+| 主程序文件 | 314 | 202 个同名落点 | 缺 112（见 §4.5）；本地独有 263 个待并入/删除（见 §7） |
+
+已落地工程：`LunarWard.Core`、`LunarWard.Language`、`LunarWard.Setup.Core`、`LunarWard`（=上游 Starward）、
+`LunarWard.Launch`（启动期辅助，收尾时并入 `LunarWard`）、`LunarWard.Installer`（=上游 Starward.Setup 的 Avalonia 等价）、
+`LunarWard.Games`/`LunarWard.Platform`（Linux 平台抽象，收尾时并入 `LunarWard/Frameworks` 或删除）、`LunarWard.Wine`（本 goal 不碰）。
 
 ### 4.2 Core
 
-`comm` 结果：上游 236 个 `.cs`，本地 232 个。
-
-- **上游有、本地无（9）**：
-  `GameRecord/Genshin/StygianOnslaught/StygianOnslaughtMonsterTag.cs`、
-  `Metadata/`（8 个：`MetadataClient`、`MetadataJsonContext`、`VersionRelease`、
-  `Github/GithubAsset|GithubAuthor|GithubMarkdownRequest|GithubRelease|GithubUploader`）
-- **本地有、上游无（5）**：
-  `Account/GameAuthLoginClient.cs`（应落 `Features/GameLauncher/GameAuthLoginService`）、
-  `Gacha/GachaNoUp.cs`（上游在同目录 `Features/Gacha/GachaNoUp.cs`，位置对齐即可）、
-  `IGameInstallPathProvider.cs` + `SelfQuery/ISelfQueryStore.cs` + `SelfQuery/SelfQueryService.cs`
-  （Linux 抽象，保留并登记）
+`comm` 结果已收敛：此前缺的 Metadata 8 文件已补齐（`src/LunarWard.Core/Metadata/`）。
+本地独有的 5 个文件按 §3 规则保留并登记：`Account/GameAuthLoginClient.cs`、`Gacha/GachaNoUp.cs`、
+`IGameInstallPathProvider.cs`、`SelfQuery/ISelfQueryStore.cs`、`SelfQuery/SelfQueryService.cs`。
 
 ### 4.3 数据层（Dapper，需求方点名）
 
-- 上游：`Features/Database/DatabaseService.cs`（1065 行，Dapper + `DatabaseSqls` 版本化 +
-  `DapperSqlMapper` 类型处理器）；`Features/Gacha/*Service` 用 `con.Query/Execute`。
-- 本地：`src/LunarWard.Launch/Database/{LunarWardDatabase,GachaLogStore,PlayTimeStore,
-  SelfQueryLogStore,GenshinBeyondGachaStore}.cs` 手写 `SqliteCommand`（约 1700 行）。
-- 动作：引入 Dapper → 移植 `DapperSqlMapper` + `DatabaseService`（文件名校对上游
-  `StarwardDatabase.db` 的命名策略）→ 五个 Store 重写成上游同款 `Query/Execute` 调用。
+- **已完成**（提交 f825be9 / c458997）：`Directory.Packages.props` 引入 Dapper 2.1.79；
+  `src/LunarWard/Features/Database/{DatabaseService,DapperSqlMapper}.cs` 按上游落地；
+  四个 Store 的业务 SQL 全部改为 `con.Query/Execute`，`grep "new SqliteCommand" src/LunarWard.Launch/Database` = 0。
+- 遗留：`LunarWard.Launch/Database/LunarWardDatabase.cs` 是启动期/安装器用的旧建库器，收尾时并入 `DatabaseService` 后删除。
 
 ### 4.4 WebView2
 
-上游 6 处窗口 + Welcome 检测；本地无 WebView。动作见 §2.2。
+- **已完成**（提交 7fbe85a）：`src/LunarWard/Frameworks/WebView/`，`WebView : NativeControlHost` +
+  WebKitGTK 4.1 + GTK3，WebView2 形状门面（`CoreWebView2`/`Settings`/`Profile`/`CookieManager`/全套事件参数）；
+  自检 9~11 项 PASS，XWayland 下可嵌入、无 XID 时降级独立 GTK 窗口。
+- 已知缺口见 `09-LINUX-DIVERGENCES.md` §五「尚未覆盖」。
+
+### 4.5 进度看板（同名落点/上游文件）
+
+| 分组 | 进度 |
+|---|---|
+| GameRecord 47/47、Setting 25/25、Converters 11/11、Codec 8/8、GameAccount 5/5、UrlProtocol 3/3、Database 2/2、Frameworks 2/2、AppConfig 4/4 | 路径全齐 |
+| Gacha 31/40、GameLauncher 17/26、Screenshot 7/23、Background 6/13 | 进行中 |
+| PlayTime 0/14、GameInstall 0/9、Update 0/8、Overlay 0/4、SelfQuery 0/4、CloudGame 0/3、GamepadControl 0/3、ViewHost 6/20 | 未开始/待收尾 |
+
+总览随时用 `python3 scripts/port-backlog.py` 重算（`--write` 写回 `docs/11-PORT-BACKLOG.md`）。
+注意：「有文件」只代表路径对齐，内容是否按上游实现要逐节核对。
 
 ## 5. 阶段计划
 
@@ -169,3 +177,32 @@ src/LunarWard/
 2. `dotnet build LunarWard.slnx` 0 错误；`dotnet test` 全绿。
 3. 每处与上游的偏差都能在 `09-LINUX-DIVERGENCES.md` 找到平台依据；
    找不到依据的偏差视为未完成。
+
+## 7. 收尾删除计划（endgame，P6）
+
+移植期允许「新 Features 文件」与「旧 Views/ViewModels/Services」并存（否则无法渐进切换）。
+**最终态不允许并存**。删除顺序（每一项都要先确认对应 Features 已完整可用、截图自检通过）：
+
+| 顺序 | 删除对象 | 数量 | 替代 |
+|---|---|---|---|
+| 1 | `src/LunarWard/Views/Starward/Pages/Record/**`（13 个战绩页） | 13 | `Features/GameRecord/<Game>/` |
+| 2 | `src/LunarWard/Views/Starward/Pages/{GameLauncher,Gacha,Screenshot,…}` + `Views/Starward/Dialogs/*` | ~40 | 对应 `Features/*` |
+| 3 | `src/LunarWard/ViewModels/**`（含 `StarwardPage`/`PageContext` 体系） | 49 | 逻辑已并入上游 `.axaml.cs` |
+| 4 | `src/LunarWard/Services/**`（26 个） | 26 | 上游 `Features/*Service` + `AppConfig` |
+| 5 | `src/LunarWard/Views/Starward/MainWindow.axaml(.cs)` 外壳 | 2 | `Features/ViewHost/MainWindow+MainView` |
+| 6 | `src/LunarWard.Launch/**`（69 个，含旧 Database/启动逻辑） | 69 | 并入 `LunarWard`（Features/GameLauncher、DatabaseService） |
+| 7 | `src/LunarWard.Games`、`src/LunarWard.Platform` | 2 工程 | 并入 `LunarWard/Frameworks` 或删除 |
+| 8 | `src/LunarWard/Localization/AppStrings.cs`、`Styles/Starward.axaml` 等本地独有层 | ~10 | `LunarWard.Language` + `Features/*` 样式 |
+
+删除前置条件：`scripts/check-alignment.py`（待写）报告「本地独有文件数 = 已登记白名单」。
+
+## 8. 开放决策（需 Lead 拍板，暂记）
+
+1. **RPC 工程**：上游 `Starward.RPC` 是独立进程（NamedPipe + Windows ACL + `Starward.NativeLib` zstd + Vanara）。
+   Linux 无 NamedPipe ACL、NativeLib 是 Windows 原生库 —— 属「严重平台局限」，本轮**不建**该进程，
+   进程内服务先行；`Features/RPC/RpcClientFactory.cs` 落地时按接口保留。待 GameInstall 完整对齐后复评。
+2. **Setup 安装器**：上游用 `Aprillz.MewUI`（Windows 专有 UI）。等价物 = 现有 `LunarWard.Installer`（Avalonia），
+   不复刻 MewUI。
+3. **Launcher（C++ 壳）**：上游 3 个 C++ 文件负责启动前环境；Linux 由 `Program.cs` + `.desktop` 承担，不写 C++。
+4. **`Controls/ColorRectChart`**：本地已有等价 Avalonia 实现（`ChartLegend` 记录 + 硬边渐变），不重复造，登记 §09。
+5. **`Helpers/FileDialogNative.cs`**：Win32 COM 对话框细节，StorageProvider 已覆盖，**不移植**。
