@@ -24,6 +24,18 @@
     <PackageReference Include="Iciclecreek.Avalonia.Terminal" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Sinks.File" />
+    <!-- 以下与上游 src/Starward/Starward.csproj 的依赖清单逐项对齐（平台专有包除外），
+         供 AppConfig.*（DI/配置/日志）与 Helpers/FileCache 直接使用。 -->
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Ini" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="NuGet.Versioning" />
+    <PackageReference Include="System.IO.Hashing" />
+    <PackageReference Include="ZiggyCreatures.FusionCache" />
     <!-- 区服 logo / 游戏图标等品牌素材，来自上游的内容包（contentFiles 拷进输出 Assets/） -->
     <PackageReference Include="Starward.Assets" />
   </ItemGroup>

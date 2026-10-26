@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
@@ -18,14 +18,27 @@
   <ItemGroup Label="Infrastructure">
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Ini" Version="10.0.11" />
-    <PackageVersion Include="Polly" Version="8.8.0" />
+    <PackageVersion Include="Polly" Version="8.7.0" />
     <PackageVersion Include="ZstdSharp.Port" Version="0.8.8" />
     <PackageVersion Include="Serilog" Version="4.2.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.11" />
     <!-- 上游 src/Starward/Starward.csproj 用 Dapper 2.1.79；本仓库同步引入以对齐 Features/Database 的写法。 -->
     <PackageVersion Include="Dapper" Version="2.1.79" />
     <PackageVersion Include="MiniExcel" Version="1.46.0" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.11" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="NuGet.Versioning" Version="7.9.0" />
+    <PackageVersion Include="System.IO.Hashing" Version="10.0.11" />
+    <!-- 上游 HEAD 的 src/Starward/Helpers/FileCache.cs 用 ZiggyCreatures.Caching.Fusion，
+         但上游 Starward.csproj 漏了 PackageReference（HEAD df8ae07 提交『filecache powered by fusioncache』
+         未同步依赖，属上游缺陷）。这里按代码需要补上，版本取 2.x 最新稳定。 -->
+    <PackageVersion Include="ZiggyCreatures.FusionCache" Version="2.9.0" />
+
   </ItemGroup>
 
   <ItemGroup Label="Assets">
