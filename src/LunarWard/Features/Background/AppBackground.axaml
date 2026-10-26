@@ -1,0 +1,81 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:LunarWard.Features.Background"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="LunarWard.Features.Background.AppBackground"
+             x:DataType="local:AppBackground"
+             IsHitTestVisible="False">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="avares://LunarWard/Features/Background/AppBackgroundImageExStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid ClipToBounds="True" Background="Transparent">
+
+        <!--  占位图（上游 ImageEx Template 的 PlaceholderImage）  -->
+        <Image x:Name="Image_Placeholder"
+               Classes="app-background-placeholder"
+               Source="{Binding PlacehoderImageSource}"
+               Opacity="{Binding PlaceholderOpacity}" />
+
+        <!--  背景图（上游 ImageEx Template 的 Image）  -->
+        <Image x:Name="Image_Background"
+               Classes="app-background-image"
+               Source="{Binding BackgroundImageSource}"
+               Opacity="{Binding BackgroundImageOpacity}" />
+
+        <!--  视频背景（VideoBackgroundPlayer 的 Image 控件挂在这里）  -->
+        <ContentControl x:Name="VideoHost"
+                        IsVisible="{Binding IsVideoPlaying}"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+
+        <!--  视频叠加图（游戏 logo / 海报）  -->
+        <Image x:Name="Image_VideoOverlay"
+               Classes="app-background-video-overlay"
+               Source="{Binding VideoOverlayImageSource}"
+               IsVisible="{Binding IsVideoPlaying}"
+               Stretch="UniformToFill"
+               HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+        <!--  右下角渐变，保证内容可读  -->
+        <Rectangle>
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#00FFFFFF" Offset="0" />
+                    <GradientStop Color="#30000000" Offset="1" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle>
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#00FFFFFF" Offset="0" />
+                    <GradientStop Color="#30000000" Offset="1" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle>
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#00FFFFFF" Offset="0.4" />
+                    <GradientStop Color="#60000000" Offset="1" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <!--  背景更新进度条  -->
+        <ProgressBar IsIndeterminate="True"
+                     IsVisible="{Binding IsUpdateBackgroundRunning}"
+                     Width="300" Height="4"
+                     VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                     Margin="0,0,0,24" />
+
+    </Grid>
+
+</UserControl>

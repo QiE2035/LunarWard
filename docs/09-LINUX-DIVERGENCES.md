@@ -300,3 +300,67 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | `Features/Screenshot/ScreenshotPage.xaml(.cs)` | 695 行；`GridView` + 分组 `CollectionViewSource` + 多选 + 右键菜单（信息/打开/复制文件/复制为 JPG/在文件夹中/打开方式/删除）+ 调用 `ImageBatchConvertWindow` | 下一步优先（导航按 `nameof(ScreenshotPage)` 注册，是真实入口）；现有旧实现 `Views/Starward/Pages/ScreenshotPage.axaml(.cs)` 可作行为参照，但需按上游结构重排 |
 | `Features/Screenshot/ImageViewWindow.xaml(.cs)` | 上游早期单图查看器（被 `ImageViewWindow2` 取代），当前仓库无调用方 | 低优先；最后补形状 |
 | `Features/Screenshot/ImageBatchConvertWindow.xaml(.cs)` | 909 行；依赖 JxlSharp/ImageSharp/WIC 编码器与 `ScreenCaptureService.BuildXMPMetadata` | 与图片编解码（task-9 `Features/Codec`）一起做 |
+
+---
+
+## 九、Features/Background（2026-10-26，settings-migrate / task-6）
+
+上游 `src/Starward/Features/Background/`（13 文件，`AppBackground` 637 行 + `BackgroundViewPage` 546 行 + 图库窗口）。
+落点：`src/LunarWard/Features/Background/`，类名/成员名/文件名（`.xaml`→`.axaml`）与上游一致。
+本节**逐条**记录渲染管线差异，不是「差不多的等价物」：
+
+| # | 位置 | 上游（WinUI） | 本仓库（Avalonia/Skia） | 原因与判据 |
+|---|---|---|---|---|
+| 1 | `AppBackground.xaml` 的 `swi:ImageEx` + `AppBackgroundImageExStyle.xaml` | `Scighost.WinUI.ImageEx`：模板内 `PlaceholderImage`（Opacity 1）+ `Image`（Opacity 0）+ `VisualStateManager` 三态——`Loaded`：Image 0→1（0.3s，BeginTime 0）且 Placeholder 延迟 0.3s 后 1→0；`Failed`：Image=0/Placeholder=1；`Unloaded`：瞬时 1/0 | 两层普通 `Image`（`Classes="app-background-placeholder"` / `"app-background-image"`）+ `AppBackgroundImageExStyle.xaml` 里 `DoubleTransition(Opacity, 0.3s)`；三态由 `ApplyLoadedVisualState` / `ApplyFailedVisualState` / `ApplyUnloadedVisualState` 实现，参数逐字对应上游 Storyboard（占位图 300ms 延迟用 `Task.Delay(300)`；`Unloaded` 临时摘掉 `Transitions` 再赋值以做到「瞬时」） | Avalonia 无 ImageEx 控件、无 VisualStateManager；`ImageStretch`/`PlaceholderStretch` 折叠为 `Stretch="UniformToFill"`。判据：切换背景时旧图淡出、新图 0.3s 淡入、解码失败只留占位图，与上游一致 |
+| 2 | `AppBackground.xaml.cs` `XamlRoot_Changed` | `XamlRoot.Changed` + `RasterizationScale` 变化时重取背景（按新物理像素解码） | `TopLevel.ScalingChanged` + `TopLevel.RenderScaling`（`GetUIScaleFactor()`），`_lastScale` 比较后 `UpdateBackgroundAsync()` | Avalonia 无 `XamlRoot`；同一个「缩放变化→按新尺寸重解码」语义 |
+| 3 | `ChangeBackgroundImageAsync` | `BitmapDecoder` + Win2D `CanvasBitmap`/`CanvasRenderTarget`，按 `ActualWidth × RasterizationScale` 缩放取样后再 `WriteableBitmap` | `Bitmap.DecodeToWidth(fs, (int)(ActualWidth * RenderScaling))`（Skia 缩放解码），失败回退 `new Bitmap(fs)` 交给 `Stretch` | 无 Win2D/WIC；解码尺寸策略（不超过窗口物理像素）保持一致，避免 4K 背景整图常驻 |
+| 4 | `UpdateBackgroundAsync` 图片解码异常分支 | `COMException 0x88982F8B`（WebP 解码失败）→ `InAppToast` + Microsoft Store「WebP 图像扩展」按钮；VP9 视频扩展提示 `SuggestToInstallVP9Decoder` | 删除该分支（Skia 内置 WebP/VP9 解码，无扩展安装概念）；解码失败走 `ApplyFailedVisualState()` + `ILogger.LogError` | 平台能力差异，非功能退化；`Lang.AppBackground_PleaseInstallTheWebPImageExtension` 等键保留未用 |
+| 5 | `AppBackground.xaml` 视频层 | `MediaPlayer` + `CompositionVideoSurface` + `MediaPlayerElement` 硬件解码，`CanvasBitmap` 逐帧与 `Theme` 叠加图合成 | `VideoHost`（`ContentControl`）内嵌 `VideoBackgroundPlayer`：ffmpeg 子进程解帧 → `WriteableBitmap`（960×540 BGRA、24fps 上限、`-an` 无音轨、失焦 SIGSTOP）；视频叠加图（`gameBackground.Theme` 海报/logo）独立 `Image` 层 `UniformToFill` 叠在视频帧上，替代上游每帧 CPU 合成 | Avalonia 无 MediaPlayer/视频 surface（详细取舍见 §四）；独立叠层画面等价且省每帧合成开销 |
+| 6 | `AppBackground.xaml.cs` 强调色 | 取背景主色后 `AccentColorHelper.ChangeAppAccentColor`；`AccentColorChangedMessage` 负责窗口重绘 | 保留 `AccentColorHelper`（取色算法逐字移植）+ `WeakReferenceMessenger` 消息；`AppBackground` 订阅 `AccentColorChangedMessage` 只做资源失效（Avalonia `DynamicResource` 自动刷新），不再翻转 `RequestedTheme` | 上游 `RequestedTheme` 翻转是 WinUI 的强制重绘 workaround，Avalonia 无此问题 |
+| 7 | `BackgroundViewWindow.xaml(.cs)` | `WindowEx` + `AppWindow.TitleBar`（ExtendsContentIntoTitleBar/图标/按钮颜色）+ `DesktopAcrylicBackdrop` + `OverlappedPresenter`（不可缩放/居中）+ `DisplayArea.GetFromPoint`（光标所在屏） | 普通 `Window`（`WindowStartupLocation=CenterScreen`、`CanResize=false`）+ `ExtendClientAreaToDecorationsHint` + 32px 拖拽条；标题「LunarWard - Background Viewer」；`Escape` 关闭；`AccentColorChangedMessage` 回调留空 | Avalonia 无 AppWindow/Backdrop API；**多显示器时居中按主屏**（上游按光标所在屏），登记为差异 |
+| 8 | `BackgroundViewPage.xaml(.cs)` 图库 | `GridView`+`UniformGridLayout`、`ItemClick`、`DragItemsStarting`+`StorageFile`+`DataPackage`、`RadioMenuFlyoutItem` 筛选/排序、`Launcher.LaunchUriAsync/LaunchFolderAsync/LaunchFileAsync`、`ClipboardHelper.SetStorageItems`、`StorageFile.DeleteAsync`、`ImageThumbnail`（WIC 缩略图） | `ListBox` + `WrapPanel`（160×90 缩略图）+ `DoubleTapped` 打开；每项 `ContextFlyout`（打开/复制路径/删除）；筛选排序 = `MenuItem ToggleType="Radio"`；打开文件/文件夹 = `Process.Start` + `xdg-open`；复制 = `Clipboard.SetTextAsync`（路径行文本）；删除 = `File.Delete`；缩略图 = `Bitmap.DecodeToWidth(stream, 320)` | Avalonia 无 GridView/UniformGridLayout、无 WinRT StorageFile/Launcher/DataPackage；**拖拽导出（DragItemsStarting）未实现**（需 StorageProvider，登记为缺口）；多选复制得到的是路径文本而非文件对象 |
+| 9 | `BackgroundFileItem.cs` | `IsVideo` 由扩展名 + `FileIsSupportedVideo` 判定；缩略图由 `ImageEx` 的 `ImageThumbnail` 提供 | 保留 `IsVideo`/`FileSize`/`CreationTime`；新增懒加载 `Thumbnail`（`Avalonia.Media.Imaging.Bitmap.DecodeToWidth`，失败返回 null → 模板显示图标占位） | Avalonia 无 WIC 缩略图缓存；解码宽度 320 与上游缩略图尺寸接近 |
+
+**未移植（明确缺口）**：`BackgroundViewPage` 的拖拽/多选复制为文件对象（`DataObject` + `IStorageItem`），以及 `BackgroundViewWindow` 的 Acrylic 背景——前者可用 `StorageProvider` 后续补，后者 Avalonia 无系统级 Acrylic。
+
+---
+
+## 十、Features/Setting（2026-10-26，settings-migrate / task-3）
+
+上游 `src/Starward/Features/Setting/`（19 文件）与 `src/Starward/ViewModels/Starward/**` 无关：设置页逻辑在上游**就是 code-behind**。
+本轮把本仓库早先拆出的 10 个 `Setting*ViewModel` 全部搬回页面类（`DataContext=this`），路径/类名/成员名与上游一致：
+
+| 上游 | 本仓库 | 说明 |
+|---|---|---|
+| `SettingPage.xaml(.cs)` | `Features/Setting/SettingPage.axaml(.cs)` | 宿主页；9 个入口 + 分隔线；`NavigationView_ItemInvoked` → `SelectSection(nameof(XSetting))`；`--settings-section` / `LUNARWARD_SETTINGS_SECTION` 初始定位保留 |
+| `AboutSetting` | `Features/Setting/AboutSetting.axaml(.cs)` | 版本/系统信息/链接/更新检查 |
+| `GeneralSetting` | `Features/Setting/GeneralSetting.axaml(.cs)` | 关窗行为/自启动/语言/公告/录像背景/账号切换 |
+| `DownloadSetting` | `Features/Setting/DownloadSetting.axaml(.cs)` | 并发/超时/重试/组件索引源 |
+| `FileManageSetting` | `Features/Setting/FileManageSetting.axaml(.cs)` | 目录/缓存清理/数据库备份（含确认浮层） |
+| `ScreenshotSetting` | `Features/Setting/ScreenshotSetting.axaml(.cs)` | 截图目录/数量/打开/复制 |
+| `HotkeySetting` | `Features/Setting/HotkeySetting.axaml(.cs)` | 见下 #1 |
+| `GamepadControlSetting` | `Features/Setting/GamepadControlSetting.axaml(.cs)` | 手柄策略页（原 `Settings/GamepadSetting` 已合并删除，见 #2） |
+| `AdvancedSetting` | `Features/Setting/AdvancedSetting.axaml(.cs)` | 环境变量/URL 协议注册/日志级别 |
+| `ToolboxSetting` | `Features/Setting/ToolboxSetting.axaml(.cs)` | 工具箱入口 |
+| `HotkeyInput.xaml(.cs)` | `Features/Setting/HotkeyInput.axaml(.cs)` | 见下 #1 |
+| `HotkeyManager.cs` | `Features/Setting/HotkeyManager.cs` | 见下 #1 |
+| `LanguageChangedMessage.cs` | `Features/Setting/LanguageChangedMessage.cs` | `WeakReferenceMessenger` 消息（空类型），与上游同名同命名空间 |
+| `ToolboxItem.cs` | `Features/Setting/ToolboxItem.cs` | 图库条目模型（`Icon`/`Image`/`Name`/`Description`/`Tag`/资源键 + `UpdateLanguage`） |
+
+**多出的 4 个文件（为什么不是偏移）**：
+- `SettingPageBase.cs`：上游 `PageBase` 自带 `SetProperty`/`PropertyChanged`，本仓库 `Frameworks/PageBase` 移植成 Avalonia 后只保留 `DirectProperty`（`CurrentGameId`/`CurrentGameBiz`），**没有** INPC 成员。设置页是纯 INPC 页面，故加一层 `SettingPageBase : StarwardPage, INotifyPropertyChanged`（`new PropertyChanged` + `SetProperty` + `Services/Strings/Log` + `Status`），等价上游 `PageBase` 在这批页面上用到的能力，不引入新概念。
+- `SettingShellActions.cs`：上游直接调 Win32/注册表/WinUI API 的三处设置动作（URL 协议注册探测、打开目录、桌面项定位）在本仓库抽成静态门面，供 Advanced/Hotkey 页复用同一份 Linux 实现，避免每页各写一遍。
+- `SettingLanguageOption.cs`：语言下拉项（`Code`/`Display`），上游内联在 `GeneralSetting` 的 `x:Bind` 数据模板里；Avalonia 模板需要具名类型 + `x:DataType`。
+- `HotkeyInput` 配套的 `HotkeyManager.cs`（见 #1）和 `LanguageChangedMessage.cs` 与上游一一对应，不是额外文件。
+
+| # | 差异 | 上游 | 本仓库 | 原因 |
+|---|---|---|---|---|
+| 1 | `HotkeySetting` / `HotkeyInput` / `HotkeyManager` | Win32 `RegisterHotKey`（`ShowMainWindow` id 44444 `MOD_ALT+VK_S`、`ScreenshotCapture` id 44445 `MOD_ALT+VK_D`）全局注册；`HotkeyInput` 的 `WindowHandle`/PInvoke 键盘钩子；`HotkeyManager` 依赖 `Vanara.PInvoke` | `HotkeyInput` 保留完整控件结构与状态机（`HoykeyInputState`：Default/Editing/Warning/Success；`HotkeyEditing`/`HotkeyEditFinished`/`HotkeyDeleted` 事件；`GetHotkeyText`/`IsHotkeyAvaliable`/`GetHotkeyInfo` 静态 API 同名），但只做**应用内按键录制 + 落盘**（`AppConfig` 的 `show_main_window_hotkey` / `screenshot_capture_hotkey`）；`HotkeyManager.RegisterHotkey` 在 Linux 返回失败并让页面显示「全局热键不可用」提示（对应上游注册失败时的 Warning 态） | Linux 无 `RegisterHotKey`（X11 XGrabKey 需连接 X、Wayland 无全局热键协议）；保留「录制 + 持久化 + 状态提示」，只是不注册到系统。键位表删掉 `OemBracketLeft/Right`（Avalonia 无此枚举值，用 `OemOpenBrackets/OemCloseBrackets`） |
+| 2 | `GamepadControlSetting` | 上游只有 `GamepadControlSetting`（手柄策略/按键映射空壳页） | 同路径同文件名；原 `Views/Starward/Settings/GamepadSetting.*` + `ViewModels/.../GamepadSettingViewModel.cs` 删除；`SettingSectionTags.Parse` 同时接受 `gamepad`/`gamepadcontrol`/`controllerenhancement`，旧深链不失效 | 上游无 `GamepadSetting` 文件，两个页面合并为一个，避免「本仓库多一个上游没有的页面」这类偏移 |
+| 3 | 语言切换刷新 | `LanguageChangedMessage` + `WeakReferenceMessenger.Register` → `this.Bindings.Update()`（`x:Bind` 需手动刷新） | 保留消息类型（`GeneralSetting` 应用语言后广播，供以后移植的 `x:Bind` 页面用）；设置页自身用 `{Binding Strings[...]}` 运行期索引器，`AppStrings` 的 `Item[]`/`""` 通知已自动刷新，无需 `Bindings.Update()` | Avalonia 无 `Bindings.Update()`；运行期绑定天然重求值 |
+| 4 | 语言/资源 | `x:Uid` / `Lang.*` 强类型 resx | `AppStrings.Instance["..."]` 索引器 + `Lang.*` 静态键并存；键名与上游 resx 一致（`SettingsPage_*`、`SettingPage_*`、`HotkeySetting_*` 等），新增键写入 `src/LunarWard.Language/Lang.resx` 并同步 `en-US` | Avalonia 无 `x:Uid` 资源注入 |
+| 5 | 确认浮层 | `ContentDialog` | `SettingPageBase` 暴露 `Confirmation`（`IsConfirmOpen`/`Title`/`Body`/`ConfirmText`/`CancelText` + 命令），宿主在 `SettingPage` 叠加层画卡片 | Avalonia 无 ContentDialog；浮层行为与上游 `ContentDialog` 的「确认/取消 + TCS」一致 |
+| 6 | 备份数据库 | `Microsoft.Windows.Storage.Pickers` | `TopLevel.StorageProvider.SaveFilePickerAsync` + `LunarWardDatabase.BackupTo`（`VACUUM INTO`） | 平台 API 替换 |
+
+**删除清单（本轮已 git rm/移动）**：`src/LunarWard/Views/Starward/Settings/` 整目录（10 个 `Setting*View.axaml(.cs)` + `SettingSectionView.cs`）、`src/LunarWard/ViewModels/Starward/Settings/` 整目录（10 个 `Setting*ViewModel.cs`）、`ViewModels/Starward/SettingPageViewModel.cs`。
+**未对齐（明确缺口）**：无（19 个上游文件全部有同名落点）。

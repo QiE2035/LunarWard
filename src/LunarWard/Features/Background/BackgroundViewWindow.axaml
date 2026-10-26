@@ -1,0 +1,22 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:LunarWard.Features.Background"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="640"
+        x:Class="LunarWard.Features.Background.BackgroundViewWindow"
+        Title="LunarWard - Background Viewer"
+        Width="1000" Height="640"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        ExtendClientAreaTitleBarHeightHint="32">
+    <Grid x:Name="RootGrid" RowDefinitions="32,*">
+
+        <!--  拖拽区（对应上游 WindowEx 的标题栏拖拽区）  -->
+        <Border Grid.Row="0" Background="Transparent" Name="TitleBarDragArea" />
+
+        <local:BackgroundViewPage Grid.Row="1" />
+
+    </Grid>
+</Window>
