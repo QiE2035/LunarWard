@@ -28,13 +28,15 @@ using LunarWard.Features.HoYoPlay;
 using LunarWard.Features.Setting;
 using LunarWard.Features.ViewHost;
 using LunarWard.Language;
+using LunarWard.Platform;
+using LunarWard.Services;
 
 namespace LunarWard.Features.GameSelector;
 
 /// <summary>
 /// <b>移植自</b> <c>Starward/src/Starward/Features/GameSelector/GameSelector.xaml(.cs)</c>。
 /// 平台替换：XamlRoot/RasterizationScale→TopLevel.Scaling；XamlRoot.SetWindowDragRectangles→空实现（X11 无拖拽区）；
-/// 注册表 <c>HYP</c> 键→<see cref="AppConfig.GetGameInstallPath(GameBiz)"/>；
+/// 注册表 <c>HYP</c> 键→<see cref="WineRegistry.ReadStringAsync"/>（读当前 prefix，见 <c>AutoSearchInstalledGamesAsync</c>）；
 /// <c>GetFileInformationByHandleEx</c> 的 FileIdInfo→<c>stat</c> 的 <c>st_dev/st_ino</c> 判硬链接；
 /// <c>FlyoutBase.GetAttachedFlyout(...).ShowAt(options)</c>→<c>FlyoutBase.ShowAttachedFlyout</c> + 自持引用关闭；
 /// <c>VisualTreeHelper.GetOpenPopupsForXamlRoot</c>→<see cref="FlyoutBase.Hide"/>。
@@ -784,12 +786,19 @@ public sealed partial class GameSelector : UserControl, INotifyPropertyChanged
 
 
     /// <summary>
-    /// 从已保存的安装路径自动搜索已安装的游戏。
-    /// 平台替换：上游读 <c>HKEY_CURRENT_USER\Software\miHoYo\HYP\1_1\*</c> 的 <c>GameInstallPath</c>，
-    /// 本仓库的安装路径统一由 <see cref="AppConfig"/> 记录（Wine 注册表读取见 docs/09 §7.1）。
+    /// 从已保存的安装路径与 HYP 注册表自动搜索已安装的游戏。
     /// </summary>
+    /// <remarks>
+    /// 平台替换（docs/09 §12.1、docs/14）：
+    /// <list type="bullet">
+    ///   <item>上游 <c>Registry.GetValue(@"HKEY_CURRENT_USER\Software\miHoYo\HYP\1_1\{biz}", "GameInstallPath")</c>
+    ///   → <see cref="WineRegistry.ReadStringAsync"/> 读取当前 prefix 的 HYP 键（prefix 复用
+    ///   <see cref="GamePrefixContext.CurrentPrefix"/>，不另写一套）。</item>
+    ///   <item>上游同步方法 → <c>async Task</c>（wine 子进程只能异步，阻塞会冻 UI）。</item>
+    /// </list>
+    /// </remarks>
     [RelayCommand]
-    public void AutoSearchInstalledGames()
+    public async Task AutoSearchInstalledGamesAsync()
     {
         try
         {
@@ -809,6 +818,28 @@ public sealed partial class GameSelector : UserControl, INotifyPropertyChanged
                     {
                         sb.Append(gameBiz);
                         sb.Append(',');
+                        continue;
+                    }
+                }
+
+                string key = "";
+                if (gameBiz.Server is "cn")
+                {
+                    key = $@"HKEY_CURRENT_USER\Software\miHoYo\HYP\1_1\{gameBiz}";
+                }
+                else if (gameBiz.Server is "global")
+                {
+                    key = $@"HKEY_CURRENT_USER\Software\Cognosphere\HYP\1_0\{gameBiz}";
+                }
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    path = await ReadHypInstallPathAsync(key);
+                    if (Directory.Exists(path))
+                    {
+                        AppConfig.SetGameInstallPath(gameBiz, path);
+                        sb.Append(gameBiz);
+                        sb.Append(',');
+                        continue;
                     }
                 }
             }
@@ -823,6 +854,48 @@ public sealed partial class GameSelector : UserControl, INotifyPropertyChanged
         {
             Debug.WriteLine(ex);
         }
+    }
+
+
+
+
+    /// <summary>
+    /// 读 HYP 键里的 <c>GameInstallPath</c>（REG_SZ）。prefix 与 wine 二进制都复用
+    /// <see cref="GamePrefixContext"/>；未选档案或注册表写的是 Windows 路径时返回 <c>null</c>。
+    /// </summary>
+    private static async Task<string?> ReadHypInstallPathAsync(string key)
+    {
+        string? prefix = GamePrefixContext.CurrentPrefix;
+        if (string.IsNullOrWhiteSpace(prefix))
+        {
+            return null;
+        }
+
+        WineRegistry registry = new(UnixProcessLauncher.Default, AppServices.Current.Log);
+        string? value = await registry.ReadStringAsync(
+            GamePrefixContext.CurrentWineBinary ?? "wine",
+            prefix,
+            key,
+            "GameInstallPath").ConfigureAwait(true);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        // HYP 可能保存 Windows 风格路径（C:\...），Linux 下换算成 prefix 内的真实路径。
+        if (value.Length > 2 && value[1] == ':' && (value[2] == '\\' || value[2] == '/'))
+        {
+            string drive = char.ToLowerInvariant(value[0]).ToString();
+            string rest = value[2..].Replace('\\', '/').TrimStart('/');
+            string candidate = Path.Join(prefix, "dosdevices", drive + ":", rest);
+            if (Directory.Exists(candidate))
+            {
+                return candidate;
+            }
+            return null;
+        }
+
+        return value;
     }
 
 

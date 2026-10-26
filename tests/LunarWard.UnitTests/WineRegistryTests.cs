@@ -163,4 +163,42 @@ public class WineRegistryRealWineTests
         Assert.True(await registry.WriteDwordAsync(wine, prefix, key, "LunarWardTestFlag", 1920));
         Assert.Equal(1920, await registry.ReadDwordAsync(wine, prefix, key, "LunarWardTestFlag"));
     }
+
+    [Fact]
+    public void ParseString_ReadsRegSzValue()
+    {
+        const string output = """
+            HKEY_CURRENT_USER\Software\miHoYo\HYP\1_1\hk4e_cn
+                "GameInstallPath"    REG_SZ    C:\Program Files\Genshin Impact\Genshin Impact Game
+            """;
+
+        Assert.Equal(
+            "C:\Program Files\Genshin Impact\Genshin Impact Game",
+            WineRegistry.ParseString(output, "GameInstallPath"));
+    }
+
+
+    [Fact]
+    public void ParseString_IsCaseInsensitiveAndIgnoresOtherTypes()
+    {
+        const string output = """
+                "gameinstallpath"    REG_SZ    /mnt/games/hk4e
+                Regular    REG_DWORD    0x1
+            """;
+
+        Assert.Equal("/mnt/games/hk4e", WineRegistry.ParseString(output, "GameInstallPath"));
+        Assert.Null(WineRegistry.ParseString(output, "Regular"));
+        Assert.Null(WineRegistry.ParseString(output, "Missing"));
+    }
+
+
+    [Fact]
+    public void ParseString_ReturnsNullForEmptyValue()
+    {
+        // 本地化文案（"值未设置"/"value not set"）一律当空值处理，不抛、不返回文案。
+        Assert.Null(WineRegistry.ParseString("""    "GameInstallPath"    REG_SZ    (值未设置)""", "GameInstallPath"));
+        Assert.Null(WineRegistry.ParseString("""    "GameInstallPath"    REG_SZ""", "GameInstallPath"));
+        Assert.Null(WineRegistry.ParseString("", "GameInstallPath"));
+    }
+
 }

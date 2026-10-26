@@ -11,9 +11,11 @@ using Avalonia.Threading;
 using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Features.Background;
+using LunarWard.Features.CloudGame;
 using LunarWard.Features.GameInstall;
 using LunarWard.RPC.GameInstall;
 using LunarWard.Features.HoYoPlay;
+using LunarWard.Features.Overlay;
 using LunarWard.Features.ViewHost;
 using LunarWard.Frameworks;
 using LunarWard.Helpers;
@@ -900,9 +902,11 @@ public sealed partial class GameLauncherPage : PageBase
 
     private void RootGrid_DragOver(object sender, DragEventArgs e)
     {
-        if (e.DataView.Contains(StandardDataFormats.StorageItems))
+        // 平台替换：WinUI 的 DataView.Contains(StandardDataFormats.StorageItems)
+        // → Avalonia 的 DataFormats.Files（见 docs/09 §十二）。
+        if (e.Data.Contains(DataFormats.Files))
         {
-            e.AcceptedOperation = DataPackageOperation.Copy;
+            e.DragEffects = DragDropEffects.Copy;
             Border_BackgroundDragIn.Opacity = 1;
         }
     }
@@ -913,10 +917,11 @@ public sealed partial class GameLauncherPage : PageBase
     private async void RootGrid_Drop(object sender, DragEventArgs e)
     {
         Border_BackgroundDragIn.Opacity = 0;
-        var defer = e.GetDeferral();
         try
         {
-            if ((await e.DataView.GetStorageItemsAsync()).FirstOrDefault() is StorageFile file)
+            // 平台替换：WinUI 的 DataView.GetStorageItemsAsync() + GetDeferral() + StorageFile
+            // → Avalonia 的 Data.GetFiles()（IStorageItem）+ IStorageFile，无 deferral（见 docs/09 §十二）。
+            if (e.Data.GetFiles()?.FirstOrDefault() is IStorageFile file)
             {
                 string? name = await BackgroundService.ChangeCustomBackgroundFileAsync(file);
                 if (string.IsNullOrWhiteSpace(name))
@@ -928,17 +933,11 @@ public sealed partial class GameLauncherPage : PageBase
                 WeakReferenceMessenger.Default.Send(new BackgroundChangedMessage());
             }
         }
-        catch (COMException ex)
+        catch (Exception ex)
         {
             InAppToast.MainWindow?.Error(Lang.GameLauncherSettingDialog_CannotDecodeFile);
             _logger.LogError(ex, "Change custom background failed");
         }
-        catch (Exception ex)
-        {
-            InAppToast.MainWindow?.Error(Lang.GameLauncherSettingDialog_AnUnknownErrorOccurredPleaseCheckTheLogs);
-            _logger.LogError(ex, "Change custom background failed");
-        }
-        defer.Complete();
     }
 
 
@@ -1132,9 +1131,15 @@ public sealed partial class GameLauncherPage : PageBase
             }
             if (File.Exists(path))
             {
-                var file = await StorageFile.GetFileFromPathAsync(path);
-                ClipboardHelper.SetStorageItems(DataPackageOperation.Copy, file);
-                InAppToast.MainWindow?.Information(Lang.Common_CopiedToClipboard);
+                // 平台替换：WinUI ClipboardHelper.SetStorageItems(DataPackageOperation.Copy, StorageFile)
+                // → Avalonia Clipboard.SetFilesAsync(IStorageFile)（见 docs/09 §十二）。
+                TopLevel? topLevel = TopLevel.GetTopLevel(this);
+                IStorageFile? file = await topLevel?.StorageProvider.TryGetFileFromPathAsync(path)!;
+                if (file is not null && topLevel?.Clipboard is { } clipboard)
+                {
+                    await clipboard.SetFilesAsync([file]);
+                    InAppToast.MainWindow?.Information(Lang.Common_CopiedToClipboard);
+                }
             }
         }
         catch (Exception ex)
@@ -1171,10 +1176,16 @@ public sealed partial class GameLauncherPage : PageBase
                 if (!string.IsNullOrWhiteSpace(savePath))
                 {
                     File.Copy(path, savePath, true);
-                    var file = await StorageFile.GetFileFromPathAsync(savePath);
-                    var options = new FolderLauncherOptions();
-                    options.ItemsToSelect.Add(file);
-                    await Launcher.LaunchFolderAsync(await file.GetParentAsync(), options);
+                    // 平台替换：WinUI Launcher.LaunchFolderAsync(FolderLauncherOptions{ItemsToSelect})
+                    // 用于在资源管理器里选中文件；Linux 无「选中」语义，打开所在目录（见 docs/09 §十二）。
+                    if (TopLevel.GetTopLevel(this)?.Launcher is { } launcher)
+                    {
+                        string? folder = Path.GetDirectoryName(savePath);
+                        if (folder is not null)
+                        {
+                            await launcher.LaunchDirectoryInfoAsync(new DirectoryInfo(folder));
+                        }
+                    }
                 }
             }
         }

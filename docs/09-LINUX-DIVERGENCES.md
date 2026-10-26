@@ -730,3 +730,16 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 | 数据层 | `DatabaseService.CreateConnection()` + Dapper + `DatabaseSqls` | 完全一致（复用 `Features/Database/DatabaseService` 的 `PlayTimeItem`/`PlayTimeStats` 表与索引，`GameBizHandler` 处理 `hk4e_cn` 等字符串） | — | — |
 | `PlayTimeButton` 挂载点 | 上游嵌在 `GameLauncherPage`/`MainWindow` | 只交付控件；挂载点在 `Features/GameLauncher` 等页面落地后由 Lead 接线（旧 `Views/Starward/PlayTimeStatsDialog` 与本簇并存） | 跨作用域 | Lead 接线后删除旧 `Views/Starward/PlayTimeStatsDialog` 与 `Controls/PlayTime*Chart` |
 | DI | `AppConfig.GetService<PlayTimeStatsService>()`/`GetService<PlayTimeRecordService>()` | 同上；注册行由 Lead 加进 `AppConfig.ServiceProvider.cs`：`sc.AddSingleton<PlayTimeStatsService>();`、`sc.AddSingleton<PlayTimeRecordService>();`（构造签名 `PlayTimeRecordService(ILogger<PlayTimeRecordService>, HoYoPlayService, PlayTimeStatsService)`、`PlayTimeStatsService()` 无参） | 该文件归 Lead | 未注册时 `GetService` 会抛异常（与上游一致，不静默） |
+
+## 二十、启动器簇行为级审计补丁（2026-10-26，launcher-port / task-15）
+
+对应审计报告：`docs/14-LAUNCHER-AUDIT.md`。本节只记录本轮**新产生**的平台替换/补齐点（此前 §十二 的条目仍然有效）。
+
+| 位置 | 上游行为 | 本仓库行为 | 原因 | 待办 |
+|---|---|---|---|---|
+| `Features/GameLauncher/GameLauncherService.BuildStartInfo` | `ProcessStartInfo{ FileName=exe, Arguments=arg, UseShellExecute=true, Verb=runas, WorkingDirectory=dir }`，由 Windows 负责解析命令行与提权 | `FileName = GamePrefixContext.CurrentWineBinary ?? "wine"`，`Arguments = "\"<exe>\" <arg>"`（**单字符串，不按空格拆**），注入 `WINEPREFIX`/`WINEARCH=win64`/`WINEDLLOVERRIDES=winemenubuilder.exe=d;mscoree,mshtml=`；ZZZ 且 `GetEnableDX12` 时追加 `DXVK_ENABLE_NVAPI=1`、`VKD3D_CONFIG=dxr`（复用 `Games.GameAdapter.BuildEnv`） | Linux 无 `runas`/`CreateProcess`；`.exe`/`.bat` 必须经 wine；按空格拆分会破坏带空格的启动参数 | 若接入 `LaunchPlanFactory` 的 profile 级计划（DXVK HUD/FSR/Wayland），把基线环境换成 `LaunchPlanFactory` 的 Baseline 层 |
+| `Features/GameLauncher/GameLauncherService.BuildStartInfo` 可见性 | 上游无此方法（逻辑内联） | `public static`（文档注明「可测缝」） | 单测需要断言 wine 路径/命令行/环境，不能启动真实进程 | — |
+| `Features/GameSelector.AutoSearchInstalledGames` | 同步方法，直接读 `HKCU\Software\miHoYo\HYP\1_1\{biz}` / `Cognosphere\HYP\1_0\{biz}` 的 `GameInstallPath`（REG_SZ） | `async Task AutoSearchInstalledGamesAsync()`；HYP 读取走新增的 `Services/WineRegistry.ReadStringAsync`（prefix 复用 `GamePrefixContext.CurrentPrefix`，wine 二进制复用 `CurrentWineBinary`），`C:\…` 盘符路径换算到 `prefix/dosdevices/<drive>:` | 注册表在 wine prefix 里；`wine reg` 是子进程，同步会冻 UI | — |
+| `Services/WineRegistry` | 上游无对应（Windows `Registry.GetValue`） | 新增 `ReadStringAsync`（REG_SZ）+ 纯函数 `ParseString`（值名可带引号、数据可含空格、本地化「值未设置」→ `null`）；未改 DWORD/BINARY 路径与既有签名 | HYP `GameInstallPath` 是 REG_SZ，原有 API 只有 DWORD/BINARY | — |
+| `Features/GameLauncher/GameLauncherPage` 拖放换背景 | `e.DataView.Contains(StandardDataFormats.StorageItems)` + `GetDeferral()` + `DataView.GetStorageItemsAsync()` + `StorageFile` | `e.Data.Contains(DataFormats.Files)` + `e.Data.GetFiles()` + `IStorageFile`（Avalonia 无 deferral） | Avalonia 拖放 API 不同 | — |
+| `Features/GameLauncher/GameLauncherPage` 复制/保存背景 | `ClipboardHelper.SetStorageItems(DataPackageOperation.Copy, StorageFile)`；`Launcher.LaunchFolderAsync(FolderLauncherOptions{ ItemsToSelect })` | `TopLevel.Clipboard.SetFilesAsync([IStorageFile])`；保存后 `TopLevel.Launcher.LaunchDirectoryInfoAsync(所在目录)`（Linux 无「在文件管理器中选中」语义） | WinUI 专有 API | 如需「选中」语义，等 Avalonia 提供 `reveal` API |

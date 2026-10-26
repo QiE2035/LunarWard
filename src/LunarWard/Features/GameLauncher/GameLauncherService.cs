@@ -391,7 +391,7 @@ internal partial class GameLauncherService
                 await GameSettingService.SetGenshinEnableHDRAsync(gameId.GameBiz, AppConfig.EnableGenshinHDR);
             }
             _logger.LogInformation("Start game ({biz})\r\npath: {exe}\r\narg: {arg}", gameId, exe, arg);
-            var info = BuildStartInfo(exe, arg, thirdPartyTool);
+            var info = BuildStartInfo(gameId, exe, arg);
             Process? process = Process.Start(info);
             return process;
         }
@@ -406,48 +406,74 @@ internal partial class GameLauncherService
 
 
     /// <summary>
-    /// 平台替换：Windows <c>UseShellExecute + Verb=runas</c>；Linux 用 wine 起 <c>.exe</c>，
-    /// 原生可执行（<c>.sh</c> 等）直接起。<c>AppConfig.StartGameWithCMD</c>（cmd /c start）无等价物，
+    /// 平台替换：Windows <c>UseShellExecute + Verb=runas</c>；Linux 用 wine 起 <c>.exe</c>/<c>.bat</c>，
+    /// 原生可执行（<c>.sh</c> 等）直接起。<c>AppConfig.StartGameWithCMD</c>（<c>cmd /c start</c>）无等价物，
     /// 这里忽略。
     /// </summary>
-    private static ProcessStartInfo BuildStartInfo(string exe, string? arg, bool thirdPartyTool)
+    /// <remarks>
+    /// 环境注入与 <see cref="LunarWard.Launch.LaunchPlanFactory"/> 的 Baseline 层保持一致
+    /// （<c>WINEPREFIX</c>/<c>WINEARCH</c>/<c>WINEDLLOVERRIDES</c>），并补上游在 Windows 上由系统承担、
+    /// 在 Linux 上必须由 DXVK/VKD3D 承担的 DX12 变量（仅 ZZZ，见 <see cref="LunarWard.Games.GameAdapter.BuildEnv"/>）。
+    /// </remarks>
+    /// <remarks>
+    /// 声明为 <c>public</c> 是本移植的可测缝：单测直接断言 wine 路径、命令行字符串与环境注入，
+    /// 不启动真实进程（见 docs/14）。
+    /// </remarks>
+    public static ProcessStartInfo BuildStartInfo(GameId gameId, string exe, string? arg)
     {
         string workDir = Path.GetDirectoryName(exe) ?? Environment.CurrentDirectory;
-        if (!thirdPartyTool && Path.GetExtension(exe).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+        string extension = Path.GetExtension(exe);
+
+        if (extension is ".exe" or ".bat")
         {
+            // 上游把整条命令行交给 CreateProcess（Windows 自己解析引号）；wine 同样接受单条命令行，
+            // 因此这里保持「单字符串」语义，不能按空格拆成 ArgumentList（会破坏带空格的参数）。
             var info = new ProcessStartInfo
             {
-                FileName = "wine",
+                FileName = GamePrefixContext.CurrentWineBinary ?? "wine",
+                Arguments = arg is null ? $"\"{exe}\"" : $"\"{exe}\" {arg}",
                 UseShellExecute = false,
                 WorkingDirectory = workDir,
             };
-            info.ArgumentList.Add(exe);
-            if (!string.IsNullOrWhiteSpace(arg))
-            {
-                foreach (string item in arg.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                {
-                    info.ArgumentList.Add(item);
-                }
-            }
+
             if (GamePrefixContext.CurrentPrefix is { } prefix)
             {
                 info.Environment["WINEPREFIX"] = prefix;
             }
-            return info;
-        }
-        else
-        {
-            var info = new ProcessStartInfo
-            {
-                FileName = exe,
-                Arguments = arg ?? "",
-                UseShellExecute = false,
-                WorkingDirectory = workDir,
-            };
-            return info;
-        }
-    }
+            info.Environment["WINEARCH"] = "win64";
+            info.Environment["WINEDLLOVERRIDES"] = "winemenubuilder.exe=d;mscoree,mshtml=";
 
+            // 平台替换：上游在 Windows 上用原生 DX12；Linux 走 DXVK/VKD3D，需要显式开启 nvapi 与 DXR。
+            try
+            {
+                var adapter = LunarWard.Games.GameAdapter.BuildEnv(
+                    gameKind: gameId.GameBiz.Game,
+                    wineWayland: false,
+                    timeoutFix: false,
+                    borderless: false,
+                    dx12: AppConfig.GetEnableDX12(gameId.GameBiz),
+                    fsr: false);
+                foreach ((string key, string value) in adapter.Env)
+                {
+                    info.Environment[key] = value;
+                }
+            }
+            catch (Exception)
+            {
+                // 适配层失败不能挡住启动本身。
+            }
+
+            return info;
+        }
+
+        return new ProcessStartInfo
+        {
+            FileName = exe,
+            Arguments = arg ?? "",
+            UseShellExecute = false,
+            WorkingDirectory = workDir,
+        };
+    }
 
 
     /// <summary>

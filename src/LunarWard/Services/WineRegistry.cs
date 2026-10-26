@@ -67,6 +67,19 @@ public sealed class WineRegistry
     }
 
 
+    /// <summary>读 <c>REG_SZ</c>。值不存在/读失败/解析失败返回 <c>null</c>。</summary>
+    public async Task<string?> ReadStringAsync(
+        string wineBinary,
+        string prefix,
+        string keyPath,
+        string valueName,
+        CancellationToken ct = default)
+    {
+        var output = await QueryAsync(wineBinary, prefix, keyPath, valueName, ct).ConfigureAwait(false);
+        return output is null ? null : ParseString(output, valueName);
+    }
+
+
     /// <summary>写 <c>REG_DWORD</c>。返回是否成功。</summary>
     public Task<bool> WriteDwordAsync(
         string wineBinary,
@@ -342,6 +355,62 @@ public sealed class WineRegistry
             {
                 return null;
             }
+        }
+
+        return null;
+    }
+
+
+    /// <summary>
+    /// 从 <c>reg query</c> 输出里取 <c>REG_SZ</c> 的字符串数据。
+    /// </summary>
+    /// <remarks>
+    /// wine 的 reg.exe 输出形如：<c>    "GameInstallPath"    REG_SZ    C:\Games\Genshin Impact</c>
+    /// （值名可能带引号、数据可能含空格）。空值在本地化环境里可能显示为
+    /// <c>(值未设置)</c>/<c>(value not set)</c> 之类文案，此时返回 <c>null</c>。
+    /// 解析失败一律返回 <c>null</c>，不抛异常。
+    /// </remarks>
+    public static string? ParseString(string output, string valueName)
+    {
+        if (string.IsNullOrEmpty(output) || string.IsNullOrEmpty(valueName))
+        {
+            return null;
+        }
+
+        foreach (var line in output.Split('\n'))
+        {
+            var tokens = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length < 3)
+            {
+                continue;
+            }
+
+            // 值名：reg.exe 的 REG_SZ 输出会加引号，DWORD/BINARY 不加，这里两种都接受。
+            var name = tokens[0].Trim('"');
+            if (!name.Equals(valueName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!tokens[1].Equals("REG_SZ", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            // 数据从第三个 token 开始，可能含空格，按原始行切回；空数据行是本地化文案。
+            var index = line.IndexOf("REG_SZ", StringComparison.OrdinalIgnoreCase);
+            if (index < 0)
+            {
+                return null;
+            }
+
+            var data = line[(index + "REG_SZ".Length)..].Trim();
+            if (data.Length == 0 || data.StartsWith('('))
+            {
+                return null;
+            }
+
+            return data;
         }
 
         return null;
