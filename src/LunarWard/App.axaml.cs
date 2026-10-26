@@ -70,6 +70,42 @@ public partial class App : Application
     }
 
 
+    /// <summary>
+    /// 上游 <c>App.OnLaunched</c> 的等价启动流程：环境检查（WelcomeWindow / NoPermissionWindow）→
+    /// 建 <see cref="LunarWard.Features.ViewHost.MainWindow"/> → 单实例回收到它。
+    /// </summary>
+    private async void StartPortShell(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        try
+        {
+            LunarWard.Frameworks.StartupUi.NoPermissionHandler = async folder =>
+            {
+                var window = new LunarWard.Features.ViewHost.NoPermissionWindow(folder);
+                await window.WaitAsync();
+            };
+            LunarWard.Frameworks.StartupUi.WelcomeHandler = async () =>
+            {
+                var window = new LunarWard.Features.ViewHost.WelcomeWindow();
+                return await window.WaitAsync();
+            };
+
+            await AppConfig.CheckEnviromentAsync();
+
+            var window = new LunarWard.Features.ViewHost.MainWindow();
+            desktop.MainWindow = window;
+            window.Show();
+
+            Services.SingleInstance.Listen(EnsureMainWindow);
+        }
+        catch (Exception ex)
+        {
+            _log?.Error("启动失败", ex);
+            Console.Error.WriteLine(ex);
+            desktop.Shutdown(1);
+        }
+    }
+
+
     /// <summary>托盘菜单「退出」：先标记真正退出，再关窗，避免被「每次询问 / 隐藏到托盘」拦住。</summary>
     private void ExitFromTray(IClassicDesktopStyleApplicationLifetime desktop)
     {
@@ -172,6 +208,15 @@ public partial class App : Application
         if (CaptureMode.Language is { Length: > 0 } language)
         {
             Localization.AppStrings.Instance.Language = Localization.AppStrings.Normalize(language);
+        }
+
+        // 正常启动走新外壳（上游 Features/ViewHost/MainWindow + MainView）；
+        // --screenshot/--tray-test/--page 等自检路径暂时仍走旧壳，等自检迁移完成后删除。
+        if (!CaptureMode.Enabled && Environment.GetEnvironmentVariable("LUNARWARD_LEGACY_SHELL") is not "1")
+        {
+            StartPortShell(desktop);
+            base.OnFrameworkInitializationCompleted();
+            return;
         }
 
         _shell = new ShellViewModel(AppServices.Current, _log);
