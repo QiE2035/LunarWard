@@ -34,20 +34,6 @@ internal static class Program
             return;
         }
 
-        // 平台替换：上游 App.xaml.cs 在参数为 rpc 时转交独立 RPC 进程入口（NamedPipe → Unix socket 后仍走同一可执行文件）。
-        if (args.Length >= 1 && args[0].ToLowerInvariant() is "rpc")
-        {
-            RPC.RpcRunner.Run(args);
-            return;
-        }
-
-        // 命令行子命令（上游 App.xaml.cs 的 HandleStartupAsync）：startgame 等不打开窗口。
-        if (Services.StartupCommands.IsCommand(args))
-        {
-            Environment.ExitCode = Services.StartupCommands.RunAsync(args).GetAwaiter().GetResult();
-            return;
-        }
-
         // 游戏库扫描：打印找到的已安装游戏（含 Steam 库），不启动窗口。
         if (args.Contains("--scan-games"))
         {
@@ -59,17 +45,6 @@ internal static class Program
             }
 
             Console.WriteLine($"SCAN_TOTAL {games.Count}");
-            return;
-        }
-
-        // 单实例：第二次启动只把已运行的窗口叫回来（托盘隐藏后尤其需要）。
-        // 截图自检与 CLI 子命令不走这条，避免 CI 里并发截图互相抢占。
-        bool isolated = args.Contains("--screenshot")
-                        || args.Contains("--tray-test")
-                        || Services.StartupCommands.IsCommand(args);
-        if (!isolated && Services.SingleInstance.TryActivateExisting())
-        {
-            Console.WriteLine("ACTIVATED_EXISTING");
             return;
         }
 

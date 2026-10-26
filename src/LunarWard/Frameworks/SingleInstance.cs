@@ -1,7 +1,7 @@
 using System.Net.Sockets;
 using Avalonia.Threading;
 
-namespace LunarWard.Services;
+namespace LunarWard.Frameworks;
 
 /// <summary>
 /// 单实例守护：第二次启动不再开新窗口，而是把消息发给已在运行的实例。

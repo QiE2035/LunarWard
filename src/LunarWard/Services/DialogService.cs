@@ -4,8 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using DialogHostAvalonia;
-using LunarWard.Views.Starward;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 
 namespace LunarWard.Services;
 
