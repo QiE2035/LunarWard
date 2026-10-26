@@ -705,7 +705,7 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 
 ## 十九、Features/PlayTime（2026-10-26，misc-port / task-12）
 
-对应上游 `Features/PlayTime/`（10 文件）+ `Features/PlayTime/Charts/`（5 文件），逐文件移植：类名、成员名、SQL、状态机、统计口径、图表公开 API（`BarChart.Items`/`PlotHeight`/`MaxBarWidth`、`CalendarHeatmap.Days`/`CellSize`/`CellGap`/`ScaleMax`/`ShowMonthSplit`/`LevelBrush`、`HoverCard.Bind/Show/Hide`、`BarChartItem`/`HeatmapDayItem`/`StatCardItem`）与上游一致。
+对应上游 `Features/PlayTime/`（9 文件，含 `PlayTimeButton`/`PlayTimeStatsDialog` 各一对 xaml + xaml.cs）+ `Features/PlayTime/Charts/`（5 文件），共 14 个上游文件一一直译，逐文件移植：类名、成员名、SQL、状态机、统计口径、图表公开 API（`BarChart.Items`/`PlotHeight`/`MaxBarWidth`、`CalendarHeatmap.Days`/`CellSize`/`CellGap`/`ScaleMax`/`ShowMonthSplit`/`LevelBrush`、`HoverCard.Bind/Show/Hide`、`BarChartItem`/`HeatmapDayItem`/`StatCardItem`）与上游一致。
 
 > 编号说明：任务原本分配「十六」，但该号已被 `Features/GameRecord` 占用（详见 §十六），为避免改动他人小节，本节落在「十九」。
 
