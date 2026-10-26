@@ -159,7 +159,7 @@ public sealed partial class BBSWebBridge : UserControl
             await InitializeWebViewAsync();
 
             var coreWebView2 = webview2.CoreWebView2;
-            if (coreWebView2.Source is "about:blank" || force)
+            if (coreWebView2.Source?.ToString() is null or "about:blank" || force)
             {
                 var manager = coreWebView2.CookieManager;
                 var cookies = await manager.GetCookiesAsync(CurrentGameBiz.IsGlobalServer() ? "https://act.hoyolab.com" : "https://webstatic.mihoyo.com");
@@ -231,7 +231,7 @@ public sealed partial class BBSWebBridge : UserControl
     {
         try
         {
-            await webview2.ExecuteScriptAsync(miHoYoJSInterface);
+            await webview2.CoreWebView2!.ExecuteScriptAsync(miHoYoJSInterface);
         }
         catch { }
     }
@@ -241,7 +241,7 @@ public sealed partial class BBSWebBridge : UserControl
     {
         try
         {
-            await webview2.ExecuteScriptAsync(HideScrollBarScript);
+            await webview2.CoreWebView2!.ExecuteScriptAsync(HideScrollBarScript);
         }
         catch { }
     }
@@ -293,7 +293,7 @@ public sealed partial class BBSWebBridge : UserControl
             javascript:mhyWebBridge("{callback}"{(result == null ? "" : "," + result.ToString())})
             """;
 
-        await webview2.ExecuteScriptAsync(js);
+        await webview2.CoreWebView2!.ExecuteScriptAsync(js);
     }
 
 
@@ -368,8 +368,7 @@ public sealed partial class BBSWebBridge : UserControl
             if (!string.IsNullOrWhiteSpace(base64))
             {
                 screenshotBytes = Convert.FromBase64String(base64);
-                var bitmap = new Bitmap();
-                await bitmap.SetSourceAsync(new MemoryStream(screenshotBytes).AsRandomAccessStream());
+                var bitmap = new Bitmap(new MemoryStream(screenshotBytes));
                 Image_Screenshot.Source = bitmap;
                 Grid_Screenshot.IsVisible = true;
             }
@@ -388,8 +387,7 @@ public sealed partial class BBSWebBridge : UserControl
         {
             var source = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             screenshotBytes = await _httpClient.GetByteArrayAsync(url, source.Token);
-            var bitmap = new Bitmap();
-            await bitmap.SetSourceAsync(new MemoryStream(screenshotBytes).AsRandomAccessStream());
+            var bitmap = new Bitmap(new MemoryStream(screenshotBytes));
             Image_Screenshot.Source = bitmap;
             Grid_Screenshot.IsVisible = true;
         }
@@ -409,15 +407,23 @@ public sealed partial class BBSWebBridge : UserControl
             if (screenshotBytes is not null)
             {
                 string name = $"{DateTimeOffset.Now.ToUnixTimeMilliseconds()}.png";
-                string? file = await FileDialogHelper.OpenSaveFileDialogAsync(this.XamlRoot, name, ("Png File", ".png"));
+                string? file = await FileDialogHelper.OpenSaveFileDialogAsync(this, name, ("Png File", ".png"));
                 if (!string.IsNullOrWhiteSpace(file))
                 {
                     await File.WriteAllBytesAsync(file, screenshotBytes);
                     CloseScreenshotGrid();
-                    var storage = await StorageFile.GetFileFromPathAsync(file);
-                    var options = new FolderLauncherOptions();
-                    options.ItemsToSelect.Add(storage);
-                    await Launcher.LaunchFolderAsync(await storage.GetParentAsync(), options);
+                    // Linux: 上游用 StorageFile + FolderLauncherOptions + Launcher.LaunchFolderAsync
+                    // 在资源管理器里定位文件；这里是 xdg-open 打开所在目录（上游行为：保存后打开文件夹）。
+                    var folder = Path.GetDirectoryName(file);
+                    if (!string.IsNullOrWhiteSpace(folder))
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "xdg-open",
+                            Arguments = $"\"{folder}\"",
+                            UseShellExecute = false,
+                        });
+                    }
                 }
             }
         }
@@ -437,8 +443,7 @@ public sealed partial class BBSWebBridge : UserControl
             {
                 string file = Path.GetTempFileName();
                 await File.WriteAllBytesAsync(file, screenshotBytes);
-                var storage = await StorageFile.GetFileFromPathAsync(file);
-                ClipboardHelper.SetBitmap(storage);
+                ClipboardHelper.SetBitmap(file);
                 CloseScreenshotGrid();
             }
         }

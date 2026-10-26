@@ -133,12 +133,12 @@ public sealed partial class ApocalypticShadowPage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh apocalyptic shadow data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh apocalyptic shadow data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -147,7 +147,7 @@ public sealed partial class ApocalypticShadowPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is ApocalypticShadowInfo info)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is ApocalypticShadowInfo info)
             {
                 CurrentApocalypticShadow = _gameRecordService.GetApocalypticShadowInfo(gameRole, info.ScheduleId);
                 Image_Emoji.IsVisible = (CurrentApocalypticShadow?.HasData ?? false) ? false : true;

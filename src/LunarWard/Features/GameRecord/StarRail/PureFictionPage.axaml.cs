@@ -132,12 +132,12 @@ public sealed partial class PureFictionPage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh pure fiction data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh pure fiction data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -146,7 +146,7 @@ public sealed partial class PureFictionPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is PureFictionInfo info)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is PureFictionInfo info)
             {
                 CurrentPureFiction = _gameRecordService.GetPureFictionInfo(gameRole, info.ScheduleId);
                 Image_Emoji.IsVisible = (CurrentPureFiction?.HasData ?? false) ? false : true;

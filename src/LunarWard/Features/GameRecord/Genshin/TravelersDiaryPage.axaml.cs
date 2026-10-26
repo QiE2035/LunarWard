@@ -25,6 +25,10 @@ public sealed partial class TravelersDiaryPage : PageBase
 {
 
 
+    // Linux: 上游 x:Name 挂在 MenuFlyout 上由 XAML 编译器生成字段；
+    // Avalonia 的 Flyout 不在页面命名域里，改为从所属按钮的 Flyout 属性取，语义相同。
+    private MenuFlyout MenuFlyout_GetDetails => (MenuFlyout)Button_GetDetails.Flyout!;
+
     private readonly ILogger<TravelersDiaryPage> _logger = AppConfig.GetLogger<TravelersDiaryPage>();
 
 
@@ -184,29 +188,29 @@ public sealed partial class TravelersDiaryPage : PageBase
             MenuFlyout_GetDetails.Items.Clear();
             foreach (int month in Enumerable.Reverse(CurrentSummary.OptionalMonth))
             {
-                MenuFlyout_GetDetails.Items.Add(new MenuFlyoutItem
+                MenuFlyout_GetDetails.Items.Add(new MenuItem
                 {
-                    Text = new DateTime(2023, month, 1).ToString("MMM"),
+                    Header = new DateTime(2023, month, 1).ToString("MMM"),
                     Command = GetDataDetailsCommand,
                     CommandParameter = month,
                 });
             }
-            CurrentSeries = CurrentSummary.MonthData.PrimogemsGroupBy.Select(x => new ChartLegend(x.ActionName, x.Percent, actionColorMap.GetValueOrDefault(x.ActionId))).ToList();
+            CurrentSeries = CurrentSummary.MonthData.PrimogemsGroupBy.Select(x => new ChartLegend(x.ActionName, x.Percent, new SolidColorBrush(actionColorMap.GetValueOrDefault(x.ActionId)))).ToList();
         }
         catch (miHoYoApiException ex)
         {
             _logger.LogError(ex, "Get realtime traveler's diary data details ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Get realtime traveler's diary data details ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Get realtime traveler's diary data details ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -243,17 +247,17 @@ public sealed partial class TravelersDiaryPage : PageBase
         catch (miHoYoApiException ex)
         {
             _logger.LogError(ex, "Get traveler's diary data details ({gameBiz}, {uid}, {month}).", gameRole?.GameBiz, gameRole?.Uid, month);
-            InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Get traveler's diary data details ({gameBiz}, {uid}, {month}).", gameRole?.GameBiz, gameRole?.Uid, month);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Get traveler's diary data details ({gameBiz}, {uid}, {month}).", gameRole?.GameBiz, gameRole?.Uid, month);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -262,10 +266,10 @@ public sealed partial class TravelersDiaryPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is TravelersDiaryMonthData data)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is TravelersDiaryMonthData data)
             {
                 SelectMonthData = data;
-                SelectSeries = SelectMonthData.PrimogemsGroupBy.Select(x => new ChartLegend(x.ActionName, x.Percent, actionColorMap.GetValueOrDefault(x.ActionId))).ToList();
+                SelectSeries = SelectMonthData.PrimogemsGroupBy.Select(x => new ChartLegend(x.ActionName, x.Percent, new SolidColorBrush(actionColorMap.GetValueOrDefault(x.ActionId)))).ToList();
                 RefreshDailyDataPlot(data);
             }
         }

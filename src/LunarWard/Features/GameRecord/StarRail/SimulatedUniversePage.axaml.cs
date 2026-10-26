@@ -158,19 +158,19 @@ public sealed partial class SimulatedUniversePage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Get simulated universe data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Get simulated universe data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
 
     private void ListView_SimulatedUniverse_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (e.AddedItems.FirstOrDefault() is SimulatedUniverseRecordBasic data)
+        if (e.AddedItems.Cast<object?>().FirstOrDefault() is SimulatedUniverseRecordBasic data)
         {
             GetSimulatedUniverseRecord(data);
         }

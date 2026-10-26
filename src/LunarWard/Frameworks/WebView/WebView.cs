@@ -246,6 +246,34 @@ public sealed class WebView : NativeControlHost
     /// <summary>等价 CoreWebView2.NavigateToString。</summary>
     public void NavigateToString(string html) => _nativeCore?.NavigateToString(html);
 
+    // Linux: 上游窗口里直接写 <c>WebView2 控件.XXX</c> 的地方（例如 BBSWebBridge 的
+    // <c>webview2.ExecuteScriptAsync(...)</c>）在 WebView2 上其实都经过 CoreWebView2；
+    // 这里把同样的调用在控件层再暴露一次，移植时少改一处、语义不变。
+    /// <summary>等价 CoreWebView2.ExecuteScriptAsync（未初始化时返回 JSON 的 null）。</summary>
+    public Task<string> ExecuteScriptAsync(string javaScript)
+        => CoreWebView2?.ExecuteScriptAsync(javaScript) ?? Task.FromResult("null");
+
+    /// <summary>等价 CoreWebView2.Reload。</summary>
+    public void Reload() => _nativeCore?.Reload();
+
+    /// <summary>等价 CoreWebView2.Stop。</summary>
+    public void Stop() => _nativeCore?.Stop();
+
+    /// <summary>等价 CoreWebView2.GoBack。</summary>
+    public void GoBack() => _nativeCore?.GoBack();
+
+    /// <summary>等价 CoreWebView2.GoForward。</summary>
+    public void GoForward() => _nativeCore?.GoForward();
+
+    /// <summary>等价 CoreWebView2.CanGoBack。</summary>
+    public bool CanGoBack => _nativeCore?.CanGoBack() ?? false;
+
+    /// <summary>等价 CoreWebView2.CanGoForward。</summary>
+    public bool CanGoForward => _nativeCore?.CanGoForward() ?? false;
+
+    /// <summary>等价 CoreWebView2.DocumentTitle（未初始化时为空串）。</summary>
+    public string DocumentTitle => (CoreWebView2?.DocumentTitle ?? string.Empty);
+
     internal void ApplyUserAgent(string? userAgent) => _nativeCore?.SetUserAgent(userAgent);
 
     internal void ApplyDarkMode(bool dark) => _nativeCore?.SetDarkMode(dark);

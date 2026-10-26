@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using LunarWard.Core.GameRecord;
@@ -25,7 +26,7 @@ public sealed partial class BattleChronicleWindow : WindowEx
         ExtendClientAreaToDecorationsHint = true;
         Title = Lang.HoyolabToolboxPage_BattleChronicle;
         // Linux: 上游 RootGrid.RequestedTheme = Dark/Light；Avalonia 用 ThemeVariant。
-        RootGrid.RequestedThemeVariant = ShouldAppsUseDarkMode() ? ThemeVariant.Dark : ThemeVariant.Light;
+        RequestedThemeVariant = ShouldAppsUseDarkMode() ? ThemeVariant.Dark : ThemeVariant.Light;
         AdaptTitleBarButtonColorToActuallTheme();
         SetIcon();
         CenterInScreen();

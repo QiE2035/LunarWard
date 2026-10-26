@@ -65,7 +65,7 @@
                     <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
-            <Button Height="36"
+            <Button x:Name="Button_GetDetails" Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
                     IsEnabled="{Binding GetDataDetailsCommand.IsRunning, Converter={DynamicResource BoolReversedConverter}}"

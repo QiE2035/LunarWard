@@ -95,19 +95,19 @@ public sealed partial class LoginPage : PageBase
     {
         try
         {
-            FontIcon_RefreshOrCancel.Glyph = CancelIcon;
+            FontIcon_RefreshOrCancel.Text = CancelIcon;
         }
         catch { }
     }
 
-    private async void CoreWebView2_NavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+    private async void CoreWebView2_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs args)
     {
         try
         {
-            FontIcon_RefreshOrCancel.Glyph = RefreshIcon;
+            FontIcon_RefreshOrCancel.Text = RefreshIcon;
             if (args.IsSuccess)
             {
-                await sender.ExecuteScriptAsync("""
+                await (sender as CoreWebView2)!.ExecuteScriptAsync("""
                     if (window.location.host == 'www.miyoushe.com') {
                         var openLoginDialogIntervalId = setInterval(openLoginDialog, 100);
                         function openLoginDialog() {
@@ -136,11 +136,11 @@ public sealed partial class LoginPage : PageBase
         catch { }
     }
 
-    private void CoreWebView2_SourceChanged(CoreWebView2 sender, CoreWebView2SourceChangedEventArgs args)
+    private void CoreWebView2_SourceChanged(object? sender, CoreWebView2SourceChangedEventArgs args)
     {
         try
         {
-            TextBox_Uri.Text = sender.Source;
+            TextBox_Uri.Text = (sender as CoreWebView2)?.Source?.ToString() ?? string.Empty;
         }
         catch { }
     }
@@ -165,12 +165,12 @@ public sealed partial class LoginPage : PageBase
         catch { }
     }
 
-    private void CoreWebView2_HistoryChanged(object? sender, CoreWebView2DocumentTitleChangedEventArgs args)
+    private void CoreWebView2_HistoryChanged(object? sender, CoreWebView2HistoryChangedEventArgs args)
     {
         try
         {
-            Button_GoBack.IsEnabled = sender.CanGoBack;
-            Button_GoForward.IsEnabled = sender.CanGoForward;
+            Button_GoBack.IsEnabled = (sender as CoreWebView2)?.CanGoBack == true;
+            Button_GoForward.IsEnabled = (sender as CoreWebView2)?.CanGoForward == true;
         }
         catch { }
     }
@@ -206,7 +206,7 @@ public sealed partial class LoginPage : PageBase
     {
         try
         {
-            if (FontIcon_RefreshOrCancel.Glyph is RefreshIcon)
+            if (FontIcon_RefreshOrCancel.Text is RefreshIcon)
             {
                 webview.CoreWebView2?.Reload();
             }

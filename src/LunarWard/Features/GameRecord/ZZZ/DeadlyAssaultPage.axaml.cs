@@ -109,12 +109,12 @@ public sealed partial class DeadlyAssaultPage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh shiyu defense data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh shiyu defense data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -123,7 +123,7 @@ public sealed partial class DeadlyAssaultPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is DeadlyAssaultInfo info)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is DeadlyAssaultInfo info)
             {
                 CurrentDeadlyAssault = _gameRecordService.GetDeadlyAssaultInfo(gameRole, info.ZoneId);
                 Image_Emoji.IsVisible = (CurrentDeadlyAssault?.HasData ?? false) ? false : true;
@@ -157,7 +157,7 @@ public sealed partial class DeadlyAssaultPage : PageBase
             <= 3000 => "ms-appx:///Assets/Image/rank-bg-4.1b293bb1.png",
             _ => "ms-appx:///Assets/Image/rank-bg-5.cf630a83.png",
         };
-        return new Bitmap(new Uri(img));
+        return GameRecordAssets.FromMsAppx(img);
     }
 
 

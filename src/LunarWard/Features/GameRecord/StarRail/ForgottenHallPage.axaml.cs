@@ -132,12 +132,12 @@ public sealed partial class ForgottenHallPage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh forgotten hall data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh forgotten hall data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -146,7 +146,7 @@ public sealed partial class ForgottenHallPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is ForgottenHallInfo info)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is ForgottenHallInfo info)
             {
                 CurrentForgottenHall = _gameRecordService.GetForgottenHallInfo(gameRole, info.ScheduleId);
                 Image_Emoji.IsVisible = (CurrentForgottenHall?.HasData ?? false) ? false : true;

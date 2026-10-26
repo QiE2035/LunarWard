@@ -17,7 +17,7 @@ internal partial class ZZZRarityToIconConverter : IValueConverter
             "B" => "ms-appx:///Assets/Image/B_Level_S.png",
             _ => "ms-appx:///Assets/Image/Transparent.png",
         };
-        return new Bitmap(new Uri(img));
+        return GameRecordAssets.FromMsAppx(img);
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

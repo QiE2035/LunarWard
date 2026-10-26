@@ -122,12 +122,12 @@ public sealed partial class StygianOnslaughtPage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh stygian onslaught data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh stygian onslaught data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -136,7 +136,7 @@ public sealed partial class StygianOnslaughtPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is StygianOnslaughtInfo info)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is StygianOnslaughtInfo info)
             {
                 CurrentInfo = _gameRecordService.GetStygianOnslaughtInfo(gameRole, info.ScheduleId);
                 CurrentSelectedBattle = CurrentInfo?.SinglePlayer;

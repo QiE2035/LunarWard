@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using LunarWard.Core;
 using LunarWard.Core.GameRecord;
@@ -310,24 +311,24 @@ public sealed partial class GameRecordPage : PageBase
         catch (miHoYoApiException ex)
         {
             _logger.LogError(ex, "Refresh game role info ({gameBiz}, {uid}).", CurrentRole?.GameBiz, CurrentRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh game role info ({gameBiz}, {uid}).", CurrentRole?.GameBiz, CurrentRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh game role info ({gameBiz}, {uid}).", CurrentRole?.GameBiz, CurrentRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
 
     private void ListView_GameRoles_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (e.AddedItems.FirstOrDefault() is GameRecordRole role)
+        if (e.AddedItems.Cast<object?>().FirstOrDefault() is GameRecordRole role)
         {
             CurrentRole = role;
             _gameRecordService.SetLastSelectGameRecordRole(CurrentGameBiz, role);
@@ -343,7 +344,7 @@ public sealed partial class GameRecordPage : PageBase
     {
         try
         {
-            if (sender is FrameworkElement { Tag: GameRecordRole role })
+            if (sender is Control { Tag: GameRecordRole role })
             {
 
                 ClipboardHelper.SetText(role.Cookie);
@@ -358,7 +359,7 @@ public sealed partial class GameRecordPage : PageBase
         GameRecordRole? gameRole = null;
         try
         {
-            if (sender is FrameworkElement { Tag: GameRecordRole role })
+            if (sender is Control { Tag: GameRecordRole role })
             {
                 gameRole = role;
                 _gameRecordService.DeleteGameRole(role);
@@ -379,19 +380,20 @@ public sealed partial class GameRecordPage : PageBase
         {
             var textbox = new TextBox
             {
-                IsSpellCheckEnabled = false,
             };
-            var dialog = new ContentDialog
+            // Linux: 上游 new ContentDialog { ... }.ShowAsync() 返回 ContentDialogResult；
+            // Avalonia 侧统一用 StarwardContentDialog + DialogService，结果从按钮事件拿。
+            bool confirmed = false;
+            var dialog = new StarwardContentDialog
             {
                 Title = Lang.HoyolabToolboxPage_InputCookie,
                 Content = textbox,
                 PrimaryButtonText = Lang.Common_Confirm,
                 SecondaryButtonText = Lang.Common_Cancel,
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = this.XamlRoot,
             };
-            var result = await dialog.ShowAsync();
-            if (result is ContentDialogResult.Primary)
+            dialog.PrimaryButtonClicked += (_, _) => confirmed = true;
+            await DialogService.ShowAsync(dialog, this);
+            if (confirmed)
             {
                 var cookie = textbox.Text;
                 if (string.IsNullOrWhiteSpace(cookie))
@@ -401,24 +403,24 @@ public sealed partial class GameRecordPage : PageBase
                 }
                 var user = await _gameRecordService.AddRecordUserAsync(cookie);
                 var roles = await _gameRecordService.AddGameRolesAsync(cookie);
-                InAppToast.MainWindow?.Success(null, string.Format(Lang.LoginPage_AlreadyAddedGameRoles, roles.Count, string.Join("\r\n", roles.Select(x => $"{x.Nickname}  {x.Uid}"))), 5000);
+                LunarWard.Helpers.InAppToast.MainWindow?.Success(null, string.Format(Lang.LoginPage_AlreadyAddedGameRoles, roles.Count, string.Join("\r\n", roles.Select(x => $"{x.Nickname}  {x.Uid}"))), 5000);
                 LoadGameRoles(roles.FirstOrDefault(x => x.GameBiz == CurrentGameBiz.ToString()));
             }
         }
         catch (miHoYoApiException ex)
         {
             _logger.LogError(ex, "Input cookie");
-            InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Input cookie");
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Input cookie");
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -567,7 +569,7 @@ public sealed partial class GameRecordPage : PageBase
             await _gameRecordService.UpdateDeviceFpAsync(forceUpdate);
             if (forceUpdate)
             {
-                InAppToast.MainWindow?.Success(Lang.HoyolabToolboxPage_TheDeviceFingerprintIsAlreadyUpdated);
+                LunarWard.Helpers.InAppToast.MainWindow?.Success(Lang.HoyolabToolboxPage_TheDeviceFingerprintIsAlreadyUpdated);
             }
         }
         catch (Exception ex)
@@ -575,7 +577,7 @@ public sealed partial class GameRecordPage : PageBase
             _logger.LogError(ex, "Update device info");
             if (forceUpdate)
             {
-                InAppToast.MainWindow?.Error(ex);
+                LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
             }
         }
     }
@@ -588,14 +590,14 @@ public sealed partial class GameRecordPage : PageBase
     {
         if (ex.ReturnCode is 1034 or 5003 or 10035 or 10041 or 10053)
         {
-            InAppToast.MainWindow?.ShowWithButton(InfoBarSeverity.Warning, Lang.Common_AccountError, ex.Message, Lang.HoyolabToolboxPage_VerifyAccount, () =>
+            LunarWard.Helpers.InAppToast.MainWindow?.ShowWithButton(InfoBarSeverity.Warning, Lang.Common_AccountError, ex.Message, Lang.HoyolabToolboxPage_VerifyAccount, () =>
             {
                 WeakReferenceMessenger.Default.Send(new GameRecordVerifyAccountMessage());
             });
         }
         else
         {
-            InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
         }
     }
 

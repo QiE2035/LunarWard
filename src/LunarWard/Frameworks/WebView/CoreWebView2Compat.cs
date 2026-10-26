@@ -443,6 +443,9 @@ public sealed class CoreWebView2
         set => _view.Source = value;
     }
 
+    /// <summary>等价 CoreWebView2.DocumentTitle（WebKitGTK 的 webkit_web_view_get_title）。</summary>
+    public string DocumentTitle => _view.NativeCore?.DocumentTitle ?? string.Empty;
+
     public bool CanGoBack => _view.NativeCore?.CanGoBack() ?? false;
 
     public bool CanGoForward => _view.NativeCore?.CanGoForward() ?? false;

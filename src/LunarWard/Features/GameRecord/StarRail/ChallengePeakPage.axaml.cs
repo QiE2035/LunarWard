@@ -109,12 +109,12 @@ public sealed partial class ChallengePeakPage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh apocalyptic shadow data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh apocalyptic shadow data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -123,7 +123,7 @@ public sealed partial class ChallengePeakPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is ChallengePeakData data)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is ChallengePeakData data)
             {
                 CurrentChallengePeakData = _gameRecordService.GetStarRailChallengePeakData(gameRole, data.GroupId);
                 if (CurrentChallengePeakData is not null)

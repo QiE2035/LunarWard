@@ -114,12 +114,12 @@ public sealed partial class ShiyuDefensePage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh shiyu defense data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh shiyu defense data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -128,7 +128,7 @@ public sealed partial class ShiyuDefensePage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is ShiyuDefenseInfo info)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is ShiyuDefenseInfo info)
             {
                 CurrentShiyuDefense = null;
                 CurrentShiyuDefenseV2 = null;
@@ -197,7 +197,7 @@ public sealed partial class ShiyuDefensePage : PageBase
             <= 3000 => "ms-appx:///Assets/Image/rank-bg-4.1b293bb1.png",
             _ => "ms-appx:///Assets/Image/rank-bg-5.cf630a83.png",
         };
-        return new Bitmap(new Uri(img));
+        return GameRecordAssets.FromMsAppx(img);
     }
 
 

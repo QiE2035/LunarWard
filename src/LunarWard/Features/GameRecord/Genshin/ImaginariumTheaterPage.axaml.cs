@@ -112,12 +112,12 @@ public sealed partial class ImaginariumTheaterPage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh theater data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh theater data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -126,7 +126,7 @@ public sealed partial class ImaginariumTheaterPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is ImaginariumTheaterInfo info)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is ImaginariumTheaterInfo info)
             {
                 CurrentTheater = _gameRecordService.GetImaginariumTheaterInfo(gameRole, info.ScheduleId);
                 HasData = CurrentTheater?.HasData ?? false;

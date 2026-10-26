@@ -25,6 +25,10 @@ namespace LunarWard.Features.GameRecord.ZZZ;
 public sealed partial class InterKnotMonthlyReportPage : PageBase
 {
 
+    // Linux: 上游 x:Name 挂在 MenuFlyout 上由 XAML 编译器生成字段；
+    // Avalonia 的 Flyout 不在页面命名域里，改为从所属按钮的 Flyout 属性取，语义相同。
+    private MenuFlyout MenuFlyout_GetDetails => (MenuFlyout)Button_GetDetails.Flyout!;
+
     private readonly ILogger<InterKnotMonthlyReportPage> _logger = AppConfig.GetLogger<InterKnotMonthlyReportPage>();
 
 
@@ -187,39 +191,39 @@ public sealed partial class InterKnotMonthlyReportPage : PageBase
             {
                 if (DateTime.TryParseExact(monthStr, "yyyyMM", null, System.Globalization.DateTimeStyles.None, out DateTime time))
                 {
-                    MenuFlyout_GetDetails.Items.Add(new MenuFlyoutItem
+                    MenuFlyout_GetDetails.Items.Add(new MenuItem
                     {
-                        Text = time.ToString("MMM"),
+                        Header = time.ToString("MMM"),
                         Command = GetDataDetailsCommand,
                         CommandParameter = monthStr,
                     });
                 }
                 else
                 {
-                    MenuFlyout_GetDetails.Items.Add(new MenuFlyoutItem
+                    MenuFlyout_GetDetails.Items.Add(new MenuItem
                     {
-                        Text = monthStr,
+                        Header = monthStr,
                         Command = GetDataDetailsCommand,
                         CommandParameter = monthStr,
                     });
                 }
             }
-            CurrentSeries = CurrentSummary.MonthData.IncomeComponents.Select(x => new ChartLegend(ActionName(x.Action), x.Percent, actionColorMap.GetValueOrDefault(x.Action))).ToList();
+            CurrentSeries = CurrentSummary.MonthData.IncomeComponents.Select(x => new ChartLegend(ActionName(x.Action), x.Percent, new SolidColorBrush(actionColorMap.GetValueOrDefault(x.Action)))).ToList();
         }
         catch (miHoYoApiException ex)
         {
             _logger.LogError(ex, "Get realtime inter knot report data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Get realtime inter knot report data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Get realtime inter knot report data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -258,17 +262,17 @@ public sealed partial class InterKnotMonthlyReportPage : PageBase
         catch (miHoYoApiException ex)
         {
             _logger.LogError(ex, "Get inter knot report data details ({gameBiz}, {uid}, {month}).", gameRole?.GameBiz, gameRole?.Uid, month);
-            InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_AccountError, ex.Message);
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Get inter knot report data details ({gameBiz}, {uid}, {month}).", gameRole?.GameBiz, gameRole?.Uid, month);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Get inter knot report data details ({gameBiz}, {uid}, {month}).", gameRole?.GameBiz, gameRole?.Uid, month);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -277,10 +281,10 @@ public sealed partial class InterKnotMonthlyReportPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is InterKnotReportSummary data)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is InterKnotReportSummary data)
             {
                 SelectMonthData = _gameRecordService.GetInterKnotReportSummary(data)!;
-                SelectSeries = SelectMonthData.MonthData.IncomeComponents.Select(x => new ChartLegend(ActionName(x.Action), x.Percent, actionColorMap.GetValueOrDefault(x.Action))).ToList();
+                SelectSeries = SelectMonthData.MonthData.IncomeComponents.Select(x => new ChartLegend(ActionName(x.Action), x.Percent, new SolidColorBrush(actionColorMap.GetValueOrDefault(x.Action)))).ToList();
                 RefreshDailyDataPlot(data);
             }
         }

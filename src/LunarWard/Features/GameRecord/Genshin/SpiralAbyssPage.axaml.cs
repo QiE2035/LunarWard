@@ -149,12 +149,12 @@ public sealed partial class SpiralAbyssPage : PageBase
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Refresh abyss data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
+            LunarWard.Helpers.InAppToast.MainWindow?.Warning(Lang.Common_NetworkError, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh abyss data ({gameBiz}, {uid}).", gameRole?.GameBiz, gameRole?.Uid);
-            InAppToast.MainWindow?.Error(ex);
+            LunarWard.Helpers.InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -163,7 +163,7 @@ public sealed partial class SpiralAbyssPage : PageBase
     {
         try
         {
-            if (e.AddedItems.FirstOrDefault() is SpiralAbyssInfo info)
+            if (e.AddedItems.Cast<object?>().FirstOrDefault() is SpiralAbyssInfo info)
             {
                 CurrentAbyss = _gameRecordService.GetSpiralAbyssInfo(gameRole, info.ScheduleId);
                 HasData = CurrentAbyss?.TotalBattleCount > 0;
@@ -179,13 +179,13 @@ public sealed partial class SpiralAbyssPage : PageBase
 
     private void UserControl_AbyssLevel_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (e.NewSize.Width > 720)
+        // Linux: 上游用 VisualStateManager.GoToState("WideState"/"NarrowState") 切深渊楼层布局；
+        // Avalonia 没有 VisualStateManager，这里直接按可用宽度改样式类（样式里定义同一组尺寸）。
+        bool wide = e.NewSize.Width > 720;
+        if (sender is Control control)
         {
-            VisualStateManager.GoToState((Control)sender, "WideState", false);
-        }
-        else
-        {
-            VisualStateManager.GoToState((Control)sender, "NarrowState", false);
+            control.Classes.Set("wide", wide);
+            control.Classes.Set("narrow", !wide);
         }
     }
 
