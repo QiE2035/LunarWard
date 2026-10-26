@@ -109,6 +109,12 @@
 dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj --filter "FullyQualifiedName~Features.Gacha"
 ```
 
+实测（2026-10-26，共享 master 树全量构建转绿后）：
+
+```
+已通过! - 失败: 0，通过: 121，已跳过: 0，总计: 121，持续时间: 104 ms - LunarWard.UnitTests.dll (net10.0)
+```
+
 ## 五、未覆盖风险与待办
 
 | 编号 | 事项 | 影响 | 处置 |
