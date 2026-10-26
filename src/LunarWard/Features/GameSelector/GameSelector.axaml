@@ -341,7 +341,7 @@
 
             <!--  游戏图标  -->
             <ItemsControl ItemsSource="{Binding GameBizIcons}"
-                      ScrollViewer.VerticalScrollBarVisibility="Hidden">
+                      ScrollViewer.VerticalScrollBarVisibility="Disabled">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" Spacing="8" />

@@ -290,7 +290,7 @@
                                   Margin="0,0,40,100"
                                   HorizontalAlignment="Right"
                                   VerticalAlignment="Bottom"
-                                  x:Load="{Binding EnableGameAccountSwitcher}"
+                                  IsVisible="{Binding EnableGameAccountSwitcher}"
                                   CurrentGameBiz="{Binding CurrentGameBiz}" />
 
         <!--  崩坏三区服选择  -->
