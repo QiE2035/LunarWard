@@ -32,7 +32,7 @@ PROJECTS = [
     ("src/Starward.Core/Starward.Core.csproj", "src/LunarWard.Core/LunarWard.Core.csproj", ""),
     ("src/Starward.Language/Starward.Language.csproj", "src/LunarWard.Language/LunarWard.Language.csproj", ""),
     ("src/Starward.Setup.Core/Starward.Setup.Core.csproj", "src/LunarWard.Setup.Core/LunarWard.Setup.Core.csproj", ""),
-    ("src/Starward.RPC/Starward.RPC.csproj", None, "本轮不建（docs/10 §8.1：NamedPipe ACL + NativeLib 平台局限）"),
+    ("src/Starward.RPC/Starward.RPC.csproj", "src/LunarWard.RPC/LunarWard.RPC.csproj", ""),
     ("src/Starward.Setup/Starward.Setup.csproj", None, "以 src/LunarWard.Installer 等价（docs/10 §8.2）"),
     ("src/Starward.Launcher/Starward.Launcher.vcxproj", None, "以 Program.cs + .desktop 承担（docs/10 §8.3）"),
 ]
@@ -46,15 +46,25 @@ WINDOWS_ONLY_PREFIXES = (
     "Starward.Win2D", "Vanara.", "WindowsAppSDK", "Aprillz.MewUI", "WindowsShortcutFactory",
 )
 
-# 只被「本轮不建」的工程用到的包：登记原因，不算失败
-DEFERRED_PACKAGES = {
-    "Grpc.AspNetCore": "仅 Starward.RPC（docs/10 §8.1）",
-    "Serilog.AspNetCore": "仅 Starward.RPC（docs/10 §8.1）",
-    "Microsoft.Extensions.Http.Polly": "仅 Starward.RPC（docs/10 §8.1）",
+# 只被「本轮不建」的工程/Windows 专有面用到的包：登记原因，不算失败
+DEFERRED_PACKAGES: dict[str, str] = {}
+
+
+# 上游文件 → 本地等价实现（不是缺文件，而是平台替换/合并实现；原因必须能在 docs/09 找到）
+EQUIVALENTS = {
+    ("src/Starward", "Controls/ColorRectChart.xaml"):
+        "Controls/ColorRectChart.cs（自定义绘制，docs/09 §8.1 第 2 条）",
+    ("src/Starward", "Controls/ColorRectChart.xaml.cs"):
+        "Controls/ColorRectChart.cs（自定义绘制，docs/09 §8.1 第 2 条）",
+    ("src/Starward", "Helpers/FileDialogNative.cs"):
+        "不移植：Win32 COM 细节，由 Avalonia StorageProvider 覆盖（docs/09 六）",
+    ("src/Starward", "Features/ViewHost/SystemTrayWindow.xaml"):
+        "托盘菜单改 Avalonia NativeMenu，由 Features/ViewHost/SystemTrayWindow.cs 承载（docs/09 五）",
 }
 
 SOURCE_TREES = [
     ("src/Starward", "src/LunarWard"),
+    ("src/Starward.RPC", "src/LunarWard.RPC"),
     ("src/Starward.Core", "src/LunarWard.Core"),
     ("src/Starward.Language", "src/LunarWard.Language"),
     ("src/Starward.Setup.Core", "src/LunarWard.Setup.Core"),
@@ -169,14 +179,16 @@ def check_files():
         up_abs = os.path.join(UPSTREAM, up_tree)
         if not os.path.isdir(up_abs):
             continue
-        present, missing = 0, []
+        present, missing, equiv = 0, [], []
         for rel in sorted(iter_sources(up_abs)):
             target = os.path.join(REPO, our_tree, map_name(rel))
             if os.path.exists(target):
                 present += 1
+            elif (up_tree, rel) in EQUIVALENTS:
+                equiv.append(rel)
             else:
                 missing.append(rel)
-        rows.append((up_tree, our_tree, present, missing))
+        rows.append((up_tree, our_tree, present, missing, equiv))
     return rows
 
 
@@ -221,9 +233,10 @@ def main() -> int:
     files = check_files()
     leaks = check_leaks()
 
-    total_up = sum(len(m) + present for _, _, present, m in files)
-    total_present = sum(present for _, _, present, _ in files)
-    missing_files = [(tree, rel) for tree, _, _, m in files for rel in m]
+    total_up = sum(row[2] + len(row[3]) + len(row[4]) for row in files)
+    total_present = sum(row[2] for row in files)
+    total_equiv = sum(len(row[4]) for row in files)
+    missing_files = [(row[0], rel) for row in files for rel in row[3]]
 
     ok = (
         all(row[3] for row in projects)
@@ -246,6 +259,7 @@ def main() -> int:
             "files": {
                 "upstream": total_up,
                 "present": total_present,
+                "equivalent": total_equiv,
                 "missing": [f"{t}/{r}" for t, r in missing_files],
             },
             "leaks": leaks,
@@ -272,13 +286,16 @@ def main() -> int:
         print(f"- 本地额外包（平台/工具链）：{', '.join(extra_pkgs)}")
 
     print("\n## 3. 文件映射\n")
-    for up_tree, our_tree, present, missing in files:
-        print(f"- `{up_tree}` → `{our_tree}`：{present}/{present + len(missing)}")
+    for up_tree, our_tree, present, missing, equiv in files:
+        print(f"- `{up_tree}` → `{our_tree}`：{present}/{present + len(missing) + len(equiv)}"
+              f"（等价实现 {len(equiv)}）")
         for rel in missing[:400]:
             print(f"    - 缺 `{rel}`")
         if len(missing) > 400:
             print(f"    - …还有 {len(missing) - 400} 个")
-    print(f"\n合计：{total_present}/{total_up}")
+        for rel in equiv:
+            print(f"    - 等价 `{rel}` → {EQUIVALENTS[(up_tree, rel)]}")
+    print(f"\n合计：{total_present}/{total_up}（等价实现 {total_equiv}）")
 
     print("\n## 4. 命名空间泄漏\n")
     if leaks:
