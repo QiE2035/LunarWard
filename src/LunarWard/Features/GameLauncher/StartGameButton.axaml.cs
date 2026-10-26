@@ -7,7 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using LunarWard.Installer;
+using LunarWard.RPC.GameInstall;
 using LunarWard.Language;
 
 namespace LunarWard.Features.GameLauncher;

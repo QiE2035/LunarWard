@@ -5,7 +5,10 @@
              xmlns:local="using:LunarWard.Features.GameLauncher"
              xmlns:sc="using:LunarWard.Controls"
              xmlns:sf="using:LunarWard.Frameworks"
+             xmlns:sfc="using:LunarWard.Features.CloudGame"
              xmlns:sfg="using:LunarWard.Features.GameInstall"
+             xmlns:sfgd="using:LunarWard.Features.GameRecord.DailyNote"
+             xmlns:sfp="using:LunarWard.Features.PlayTime"
              xmlns:sfga="using:LunarWard.Features.GameAccount"
              x:Class="LunarWard.Features.GameLauncher.GameLauncherPage"
              x:CompileBindings="False">
@@ -529,12 +532,9 @@
                                    IsVisible="{Binding IsPredownloadButtonEnabled}" />
 
             <!--  游戏时间  -->
-            <!-- TODO(跨任务)：上游 Grid.Column="1" 尚未移植，落地后恢复本元素 -->
-<!--
-<sfp:PlayTimeButton x:Name="Button_PlayTime"
+            <sfp:PlayTimeButton x:Name="Button_PlayTime"
                                 Grid.Column="1"
                                 CurrentGameBiz="{Binding CurrentGameBiz}" />
--->
 
             <!--  启动游戏  -->
             <local:StartGameButton x:Name="Button_StartGame"
@@ -660,21 +660,15 @@
                     VerticalAlignment="Top"
                     Spacing="4">
             <!--  云游戏  -->
-            <!-- TODO(跨任务)：上游 Width="40" 尚未移植，落地后恢复本元素 -->
-<!--
-<sfc:CloudGameButton x:Name="Button_CloudGame"
+            <sfc:CloudGameButton x:Name="Button_CloudGame"
                                  Width="40"
                                  Height="40"
                                  CurrentGameId="{Binding CurrentGameId}"
                                  IsVisible="False" />
--->
             <!--  每日便笺  -->
-            <!-- TODO(跨任务)：上游 Height="40" 尚未移植，落地后恢复本元素 -->
-<!--
-<sfgd:DailyNoteButton Width="40"
+            <sfgd:DailyNoteButton Width="40"
                                   Height="40"
                                   CurrentGameId="{Binding CurrentGameId}" />
--->
             <!--  通行证授权登录  -->
             <local:GameAuthLoginButton Width="40"
                                        Height="40"

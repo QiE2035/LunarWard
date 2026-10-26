@@ -19,6 +19,8 @@ using LunarWard.Features.Overlay;
 using LunarWard.Features.ViewHost;
 using LunarWard.Frameworks;
 using LunarWard.Helpers;
+using LunarWard.Services;
+using BackgroundService = LunarWard.Features.Background.BackgroundService;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -412,7 +414,7 @@ public sealed partial class GameLauncherPage : PageBase
     {
         if (_dxConfig is not null)
         {
-            await new DX12IntroDialog { GameDXConfig = _dxConfig, TopLevel.GetTopLevel(this) = this.TopLevel.GetTopLevel(this) }.ShowAsync();
+            await DialogService.ShowAsync(new DX12IntroDialog { GameDXConfig = _dxConfig }, this);
         }
     }
 
@@ -426,7 +428,7 @@ public sealed partial class GameLauncherPage : PageBase
     {
         try
         {
-            string? folder = await FileDialogHelper.PickFolderAsync(this.TopLevel.GetTopLevel(this));
+            string? folder = await FileDialogHelper.PickFolderAsync(TopLevel.GetTopLevel(this));
             if (!string.IsNullOrWhiteSpace(folder))
             {
                 if (DriveHelper.GetDriveType(folder) is DriveType.Network && !new Uri(folder).IsUnc)
@@ -582,13 +584,13 @@ public sealed partial class GameLauncherPage : PageBase
             {
                 if (GameProcess.HasExited)
                 {
-                    DispatcherQueue.TryEnqueue(() => RunningGameTime = null);
-                    DispatcherQueue.TryEnqueue(CheckGameVersion);
+                    Dispatcher.UIThread.Post(() => RunningGameTime = null);
+                    Dispatcher.UIThread.Post(CheckGameVersion);
                     GameProcess = null;
                 }
                 else
                 {
-                    DispatcherQueue?.TryEnqueue(() => RunningGameTime = TimeSpanToString(DateTime.Now - GameProcess.StartTime));
+                    Dispatcher.UIThread.Post(() => RunningGameTime = TimeSpanToString(DateTime.Now - GameProcess.StartTime));
                 }
             }
         }
@@ -646,7 +648,7 @@ public sealed partial class GameLauncherPage : PageBase
         {
             if (_gameInstallTask is null)
             {
-                await new InstallGameDialog { CurrentGameId = CurrentGameId, TopLevel.GetTopLevel(this) = this.TopLevel.GetTopLevel(this), }.ShowAsync();
+                await DialogService.ShowAsync(new InstallGameDialog { CurrentGameId = CurrentGameId }, this);
             }
             else
             {
@@ -706,7 +708,7 @@ public sealed partial class GameLauncherPage : PageBase
         {
             if (_gameInstallTask is null)
             {
-                await new PreDownloadDialog { CurrentGameId = this.CurrentGameId, TopLevel.GetTopLevel(this) = this.TopLevel.GetTopLevel(this) }.ShowAsync();
+                await DialogService.ShowAsync(new PreDownloadDialog { CurrentGameId = this.CurrentGameId }, this);
             }
             else if (_gameInstallTask.Operation is GameInstallOperation.Predownload)
             {
@@ -855,7 +857,7 @@ public sealed partial class GameLauncherPage : PageBase
 
 
 
-    private void UpdateGameInstallTaskProgress(DispatcherTimer sender, object args)
+    private void UpdateGameInstallTaskProgress(object? sender, EventArgs args)
     {
         if (_gameInstallTask is null)
         {
@@ -904,7 +906,7 @@ public sealed partial class GameLauncherPage : PageBase
     {
         // 平台替换：WinUI 的 DataView.Contains(StandardDataFormats.StorageItems)
         // → Avalonia 的 DataFormats.Files（见 docs/09 §十二）。
-        if (e.Data.Contains(DataFormats.Files))
+        if (e.DataTransfer.Contains(DataFormat.File))
         {
             e.DragEffects = DragDropEffects.Copy;
             Border_BackgroundDragIn.Opacity = 1;
@@ -921,7 +923,7 @@ public sealed partial class GameLauncherPage : PageBase
         {
             // 平台替换：WinUI 的 DataView.GetStorageItemsAsync() + GetDeferral() + StorageFile
             // → Avalonia 的 Data.GetFiles()（IStorageItem）+ IStorageFile，无 deferral（见 docs/09 §十二）。
-            if (e.Data.GetFiles()?.FirstOrDefault() is IStorageFile file)
+            if (e.DataTransfer.TryGetFiles()?.FirstOrDefault() is IStorageFile file)
             {
                 string? name = await BackgroundService.ChangeCustomBackgroundFileAsync(file);
                 if (string.IsNullOrWhiteSpace(name))
@@ -961,7 +963,7 @@ public sealed partial class GameLauncherPage : PageBase
     [RelayCommand]
     private async Task OpenGameLauncherSettingDialogAsync()
     {
-        await new GameLauncherSettingDialog { CurrentGameId = this.CurrentGameId, TopLevel.GetTopLevel(this) = this.TopLevel.GetTopLevel(this) }.ShowAsync();
+        await DialogService.ShowAsync(new GameLauncherSettingDialog { CurrentGameId = this.CurrentGameId }, this);
     }
 
 
@@ -1017,7 +1019,7 @@ public sealed partial class GameLauncherPage : PageBase
             BackgroundImages = await _backgroundService.GetGameBackgroundsAsync(CurrentGameId);
             if (BackgroundImages.Count > 1)
             {
-                Border_SwitchBackgroundImage.IsVisible = Visibility.Visible;
+                Border_SwitchBackgroundImage.IsVisible = true;
                 GameBackground? currentBackground = await _backgroundService.GetSuggestedGameBackgroundAsync(CurrentGameId);
                 if (currentBackground != null && BackgroundImages.FirstOrDefault(x => x.Id == currentBackground.Id) is GameBackground current)
                 {
@@ -1033,7 +1035,7 @@ public sealed partial class GameLauncherPage : PageBase
             }
             else
             {
-                Border_SwitchBackgroundImage.IsVisible = Visibility.Collapsed;
+                Border_SwitchBackgroundImage.IsVisible = false;
             }
         }
         catch (Exception ex)
@@ -1077,9 +1079,9 @@ public sealed partial class GameLauncherPage : PageBase
 
     int _switchBackgroundTotalDelta = 0;
 
-    private void Border_SwitchBackgroundImage_PointerWheelChanged(object sender, PointerEventArgs e)
+    private void Border_SwitchBackgroundImage_PointerWheelChanged(object sender, PointerWheelEventArgs e)
     {
-        int delta = e.GetCurrentPoint(this).Properties.MouseWheelDelta;
+        int delta = (int)e.Delta.Y;
         _switchBackgroundTotalDelta += delta;
         if (_switchBackgroundTotalDelta <= -120)
         {
@@ -1137,7 +1139,9 @@ public sealed partial class GameLauncherPage : PageBase
                 IStorageFile? file = await topLevel?.StorageProvider.TryGetFileFromPathAsync(path)!;
                 if (file is not null && topLevel?.Clipboard is { } clipboard)
                 {
-                    await clipboard.SetFilesAsync([file]);
+                    DataTransfer dataTransfer = new();
+                    dataTransfer.Add(DataTransferItem.CreateFile(file));
+                    await clipboard.SetDataAsync(dataTransfer);
                     InAppToast.MainWindow?.Information(Lang.Common_CopiedToClipboard);
                 }
             }
@@ -1172,7 +1176,7 @@ public sealed partial class GameLauncherPage : PageBase
             }
             if (File.Exists(path))
             {
-                var savePath = await FileDialogHelper.OpenSaveFileDialogAsync(this.TopLevel.GetTopLevel(this), Path.GetFileName(path));
+                var savePath = await FileDialogHelper.OpenSaveFileDialogAsync(TopLevel.GetTopLevel(this), Path.GetFileName(path));
                 if (!string.IsNullOrWhiteSpace(savePath))
                 {
                     File.Copy(path, savePath, true);

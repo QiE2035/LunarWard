@@ -173,7 +173,7 @@ public class WineRegistryRealWineTests
             """;
 
         Assert.Equal(
-            "C:\Program Files\Genshin Impact\Genshin Impact Game",
+            """C:\Program Files\Genshin Impact\Genshin Impact Game""",
             WineRegistry.ParseString(output, "GameInstallPath"));
     }
 

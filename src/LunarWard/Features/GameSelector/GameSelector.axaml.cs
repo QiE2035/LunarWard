@@ -761,7 +761,7 @@ public sealed partial class GameSelector : UserControl, INotifyPropertyChanged
                         }
                         else
                         {
-                            dic[(ulong)file.FullName.GetHashCode(), (ulong)file.Length] = file.Length;
+                            dic[((ulong)file.FullName.GetHashCode(), (ulong)file.Length)] = file.Length;
                         }
                     }
                     return (size, dic.Values.Sum());

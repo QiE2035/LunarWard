@@ -128,7 +128,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
     [RelayCommand]
     private void Close()
     {
-        this.Hide();
+        this.Close();
     }
 
 
@@ -317,7 +317,10 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
         {
             if (Directory.Exists(InstallPath))
             {
-                await Launcher.LaunchUriAsync(new Uri(InstallPath));
+                if (TopLevel.GetTopLevel(this) is { } topLevel)
+                {
+                    await topLevel.Launcher.LaunchDirectoryInfoAsync(new DirectoryInfo(InstallPath));
+                }
             }
         }
         catch { }
@@ -353,7 +356,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
         try
         {
             string? previousInstallPath = InstallPath;
-            string? folder = await FileDialogHelper.PickFolderAsync(this.TopLevel.GetTopLevel(this));
+            string? folder = await FileDialogHelper.PickFolderAsync(TopLevel.GetTopLevel(this));
             if (!string.IsNullOrWhiteSpace(folder))
             {
                 if (DriveHelper.GetDriveType(folder) is DriveType.Network && !new Uri(folder).IsUnc)
@@ -696,9 +699,9 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
 
     private void InitializeStartArgument()
     {
-        _StartGameArgument = AppConfig.GetStartArgument(CurrentGameBiz);
-        _EnableThirdPartyTool = AppConfig.GetEnableThirdPartyTool(CurrentGameBiz);
-        _ThirdPartyToolPath = GameLauncherService.GetThirdPartyToolPath(CurrentGameId);
+        StartGameArgument = AppConfig.GetStartArgument(CurrentGameBiz);
+        EnableThirdPartyTool = AppConfig.GetEnableThirdPartyTool(CurrentGameBiz);
+        ThirdPartyToolPath = GameLauncherService.GetThirdPartyToolPath(CurrentGameId);
         OnPropertyChanged(nameof(StartGameArgument));
         OnPropertyChanged(nameof(EnableThirdPartyTool));
         OnPropertyChanged(nameof(ThirdPartyToolPath));
@@ -715,7 +718,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
     {
         try
         {
-            var file = await FileDialogHelper.PickSingleFileAsync(this.TopLevel.GetTopLevel(this));
+            var file = await FileDialogHelper.PickSingleFileAsync(TopLevel.GetTopLevel(this));
             if (File.Exists(file))
             {
                 ThirdPartyToolPath = file;
@@ -739,11 +742,11 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
         {
             if (File.Exists(ThirdPartyToolPath))
             {
-                var folder = Path.GetDirectoryName(ThirdPartyToolPath);
-                var file = await StorageFile.GetFileFromPathAsync(ThirdPartyToolPath);
-                var option = new FolderLauncherOptions();
-                option.ItemsToSelect.Add(file);
-                await Launcher.LaunchFolderPathAsync(folder, option);
+                string? folder = Path.GetDirectoryName(ThirdPartyToolPath);
+                if (!string.IsNullOrEmpty(folder) && TopLevel.GetTopLevel(this) is { } topLevel)
+                {
+                    await topLevel.Launcher.LaunchDirectoryInfoAsync(new DirectoryInfo(folder));
+                }
             }
         }
         catch (Exception ex)
@@ -813,7 +816,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
 
     private void InitializeCustomBg()
     {
-        _EnableCustomBg = AppConfig.GetEnableCustomBg(CurrentGameBiz);
+        EnableCustomBg = AppConfig.GetEnableCustomBg(CurrentGameBiz);
         CustomBg = AppConfig.GetCustomBg(CurrentGameBiz);
         OnPropertyChanged(nameof(EnableCustomBg));
     }
@@ -830,7 +833,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
         try
         {
             ChangeBgError = null;
-            string? name = await _backgroundService.ChangeCustomBackgroundFileAsync(this.TopLevel.GetTopLevel(this));
+            string? name = await _backgroundService.ChangeCustomBackgroundFileAsync(TopLevel.GetTopLevel(this)!);
             if (string.IsNullOrWhiteSpace(name))
             {
                 return;
@@ -839,7 +842,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
             AppConfig.SetCustomBg(CurrentGameBiz, name);
             WeakReferenceMessenger.Default.Send(new BackgroundChangedMessage());
         }
-        catch (COMException ex)
+        catch (IOException ex)
         {
             ChangeBgError = Lang.GameLauncherSettingDialog_CannotDecodeFile;
             _logger.LogError(ex, "Change custom background failed");
@@ -863,9 +866,9 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
         try
         {
             string path = Path.Join(AppConfig.CacheFolder, "bg", CustomBg);
-            if (File.Exists(path))
+            if (File.Exists(path) && TopLevel.GetTopLevel(this) is { } topLevel)
             {
-                await Launcher.LaunchUriAsync(new Uri(path));
+                await topLevel.Launcher.LaunchFileInfoAsync(new FileInfo(path));
             }
         }
         catch { }
@@ -946,7 +949,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
     /// <param name="e"></param>
     private void Grid_BackgroundDragIn_DragOver(object sender, DragEventArgs e)
     {
-        e.AcceptedOperation = DataPackageOperation.Copy;
+        e.DragEffects = DragDropEffects.Copy;
     }
 
 
@@ -959,10 +962,9 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
     private async void Grid_BackgroundDragIn_Drop(object sender, DragEventArgs e)
     {
         ChangeBgError = null;
-        var defer = e.GetDeferral();
         try
         {
-            if ((await e.DataView.GetStorageItemsAsync()).FirstOrDefault() is StorageFile file)
+            if (e.DataTransfer.TryGetFiles()?.FirstOrDefault() is IStorageFile file)
             {
                 string? name = await BackgroundService.ChangeCustomBackgroundFileAsync(file);
                 if (string.IsNullOrWhiteSpace(name))
@@ -981,7 +983,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
                 }
             }
         }
-        catch (COMException ex)
+        catch (IOException ex)
         {
             ChangeBgError = Lang.GameLauncherSettingDialog_CannotDecodeFile;
             _logger.LogError(ex, "Change custom background failed");
@@ -991,7 +993,6 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
             ChangeBgError = Lang.GameLauncherSettingDialog_AnUnknownErrorOccurredPleaseCheckTheLogs;
             _logger.LogError(ex, "Change custom background failed");
         }
-        defer.Complete();
     }
 
 
@@ -1184,20 +1185,20 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
         try
         {
             button.IsEnabled = false;
-            if (button.Content is FontIcon icon)
+            if (button.Content is TextBlock icon)
             {
                 // Accpet
-                icon.Glyph = "\uF78C";
+                icon.Text = "\uF78C";
                 await Task.Delay(1000);
             }
         }
         finally
         {
             button.IsEnabled = true;
-            if (button.Content is FontIcon icon)
+            if (button.Content is TextBlock icon)
             {
                 // Link
-                icon.Glyph = "\uE71B";
+                icon.Text = "\uE71B";
             }
         }
     }
