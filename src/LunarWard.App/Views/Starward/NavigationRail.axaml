@@ -33,14 +33,23 @@
       <Setter Property="Background" Value="{StaticResource StarSelectionBrush}" />
     </Style>
 
+    <!--
+      选中指示条：全栏只有一条，跟着选中的菜单项移动（margin 过渡 = 位置过渡）。
+      位置由 code-behind 按选中按钮的实际布局算出来，所以不受菜单顺序/间距变化影响。
+    -->
     <Style Selector="Border.rail-indicator">
       <Setter Property="Width" Value="3" />
       <Setter Property="Height" Value="16" />
-      <Setter Property="HorizontalAlignment" Value="Left" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="Margin" Value="2,0,0,0" />
       <Setter Property="CornerRadius" Value="2" />
       <Setter Property="Background" Value="{StaticResource StarAccentBrush}" />
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <ThicknessTransition Property="Margin" Duration="0:0:0.18" Easing="CubicEaseOut" />
+          <DoubleTransition Property="Opacity" Duration="0:0:0.12" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
     </Style>
   </UserControl.Styles>
 
@@ -53,89 +62,73 @@
     <Border Grid.Row="0" Height="52" />
 
     <!-- 菜单项：顺序与 Starward MainView 一致 -->
-    <StackPanel Grid.Row="1" Margin="0,8,0,0" Spacing="2">
+    <StackPanel x:Name="RailItems" Grid.Row="1" Margin="0,8,0,0" Spacing="2">
 
       <Button Classes="rail" Tag="launcher" Classes.is-selected="{Binding IsLauncherSelected}"
               ToolTip.Tip="{Binding Strings[Shell.Launcher]}"
               Command="{Binding SelectPageCommand}"
               CommandParameter="{x:Static starward:ShellPage.Launcher}">
-        <Panel>
-          <Border Classes="rail-indicator" IsVisible="{Binding IsLauncherSelected}" />
-          <TextBlock Classes="icon" Text="&#xE80F;" />
-        </Panel>
+        <TextBlock Classes="icon" Text="&#xE80F;" />
       </Button>
 
       <Button Classes="rail" Tag="game-setting" Classes.is-selected="{Binding IsGameSettingSelected}"
               ToolTip.Tip="{Binding Strings[Shell.GameSetting]}"
               Command="{Binding SelectPageCommand}"
               CommandParameter="{x:Static starward:ShellPage.GameSetting}">
-        <Panel>
-          <Border Classes="rail-indicator" IsVisible="{Binding IsGameSettingSelected}" />
-          <TextBlock Classes="icon" Text="&#xE7FC;" />
-        </Panel>
+        <TextBlock Classes="icon" Text="&#xE7FC;" />
       </Button>
 
       <Button Classes="rail" Tag="screenshot" Classes.is-selected="{Binding IsScreenshotSelected}"
               ToolTip.Tip="{Binding Strings[Shell.Screenshot]}"
               Command="{Binding SelectPageCommand}"
               CommandParameter="{x:Static starward:ShellPage.Screenshot}">
-        <Panel>
-          <Border Classes="rail-indicator" IsVisible="{Binding IsScreenshotSelected}" />
-          <TextBlock Classes="icon" Text="&#xE91B;" />
-        </Panel>
+        <TextBlock Classes="icon" Text="&#xE91B;" />
       </Button>
 
       <Button Classes="rail" Tag="gacha" Classes.is-selected="{Binding IsGachaSelected}"
               ToolTip.Tip="{Binding Strings[Shell.Gacha]}"
               Command="{Binding SelectPageCommand}"
               CommandParameter="{x:Static starward:ShellPage.Gacha}">
-        <Panel>
-          <Border Classes="rail-indicator" IsVisible="{Binding IsGachaSelected}" />
-          <TextBlock Classes="icon" Text="&#xE9D2;" />
-        </Panel>
+        <TextBlock Classes="icon" Text="&#xE9D2;" />
       </Button>
 
       <Button Classes="rail" Tag="selfquery" Classes.is-selected="{Binding IsSelfQuerySelected}"
               ToolTip.Tip="{Binding Strings[Shell.SelfQuery]}"
               Command="{Binding SelectPageCommand}"
               CommandParameter="{x:Static starward:ShellPage.SelfQuery}">
-        <Panel>
-          <Border Classes="rail-indicator" IsVisible="{Binding IsSelfQuerySelected}" />
-          <TextBlock Classes="icon" Text="&#xE8C7;" />
-        </Panel>
+        <TextBlock Classes="icon" Text="&#xE8C7;" />
       </Button>
 
       <Button Classes="rail" Tag="genshin-beyond-gacha" Classes.is-selected="{Binding IsGenshinBeyondGachaSelected}"
               ToolTip.Tip="{Binding Strings[Shell.GenshinBeyondGacha]}"
               Command="{Binding SelectPageCommand}"
               CommandParameter="{x:Static starward:ShellPage.GenshinBeyondGacha}">
-        <Panel>
-          <Border Classes="rail-indicator" IsVisible="{Binding IsGenshinBeyondGachaSelected}" />
-          <TextBlock Classes="icon" Text="&#xE776;" />
-        </Panel>
+        <TextBlock Classes="icon" Text="&#xE776;" />
       </Button>
 
       <Button Classes="rail" Tag="toolbox" Classes.is-selected="{Binding IsToolboxSelected}"
               ToolTip.Tip="{Binding Strings[Shell.Toolbox]}"
               Command="{Binding SelectPageCommand}"
               CommandParameter="{x:Static starward:ShellPage.Toolbox}">
-        <Panel>
-          <Border Classes="rail-indicator" IsVisible="{Binding IsToolboxSelected}" />
-          <TextBlock Classes="icon" Text="&#xF133;" />
-        </Panel>
+        <TextBlock Classes="icon" Text="&#xF133;" />
       </Button>
 
     </StackPanel>
 
-    <Button Grid.Row="2" Classes="rail" Margin="8,2,8,10" Tag="settings"
+    <Button x:Name="SettingsButton" Grid.Row="2" Classes="rail" Margin="8,2,8,10" Tag="settings"
             Classes.is-selected="{Binding IsSettingsSelected}"
             ToolTip.Tip="{Binding Strings[Shell.Settings]}"
             Command="{Binding SelectPageCommand}"
             CommandParameter="{x:Static starward:ShellPage.Settings}">
-      <Panel>
-        <Border Classes="rail-indicator" IsVisible="{Binding IsSettingsSelected}" />
-        <TextBlock Classes="icon" Text="&#xE713;" />
-      </Panel>
+      <TextBlock Classes="icon" Text="&#xE713;" />
     </Button>
+
+    <!-- 共享选中指示条（画在所有菜单项上层，命中测试关闭） -->
+    <Border x:Name="RailIndicator"
+            Classes="rail-indicator"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top" />
   </Grid>
 </UserControl>

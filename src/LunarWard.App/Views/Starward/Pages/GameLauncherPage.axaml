@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:LunarWard.App.ViewModels.Starward"
              x:Class="LunarWard.App.Views.Starward.Pages.GameLauncherPage"
@@ -13,7 +13,32 @@
       便笺等    右上角纵向栈，Margin 4
   -->
 
+    <!--
+      底部切换条：显隐不直接绑 IsVisible（Avalonia 在隐藏时不跑过渡），
+      改成「常驻 + Opacity/位移过渡」：ShowBackgroundBar 驱动 .visible 类，
+      收起时淡出并下移 8px，同时关掉命中，避免透明按钮仍能被点到。
+    -->
+    <UserControl.Styles>
+      <Style Selector="Border.bg-bar">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="RenderTransform" Value="translate(0px, 8px)" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Transitions">
+          <Transitions>
+            <DoubleTransition Property="Opacity" Duration="0:0:0.16" Easing="CubicEaseOut" />
+            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+          </Transitions>
+        </Setter>
+      </Style>
+      <Style Selector="Border.bg-bar.visible">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="RenderTransform" Value="translate(0px, 0px)" />
+        <Setter Property="IsHitTestVisible" Value="True" />
+      </Style>
+    </UserControl.Styles>
+
   <Grid x:Name="RootGrid" Background="Transparent">
+
 
     <!-- ── 底部背景切换条（悬停 60px 区域出现） ─────────────────── -->
     <Panel x:Name="BackgroundBarHost"
@@ -25,7 +50,9 @@
            PointerWheelChanged="OnBackgroundBarPointerWheelChanged">
       <!-- 上游 Border_SwitchBackgroundImage 没有底色，只有悬停时 Opacity 0→1；
            这里保留透明底色，避免 60px 渐变在「开始游戏」按钮上切出半明半暗的硬边。 -->
-      <Border IsVisible="{Binding ShowBackgroundBar}"
+      <Border x:Name="BackgroundBarContent"
+              Classes="bg-bar"
+              Classes.visible="{Binding ShowBackgroundBar}"
               VerticalAlignment="Stretch"
               PointerEntered="OnBackgroundBarPointerEntered"
               PointerExited="OnBackgroundBarPointerExited">

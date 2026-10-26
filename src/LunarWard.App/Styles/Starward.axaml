@@ -161,6 +161,20 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
 
+  <!--
+    悬停/按下的颜色过渡（150ms）：Fluent 的 Button 模板把 Background 画在 ContentPresenter 上，
+    所以过渡要挂在模板部件上。这里只加 Transitions，不改任何颜色取值，
+    所有按钮（包括 :pointerover / :pressed / :disabled 与强调按钮）都自然获得同一时长。
+  -->
+  <Style Selector="Button /template/ ContentPresenter">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.15" Easing="CubicEaseOut" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.15" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+
   <Style Selector="Button:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
     <Setter Property="TextElement.Foreground" Value="{StaticResource StarTextPrimary}" />

@@ -33,6 +33,35 @@ public partial class MainWindow : Window
 
 
     /// <summary>
+    /// 对话框遮罩显隐（由 <see cref="DialogService"/> 在打开/关闭时调用）。
+    /// 打开：先开命中再让 XAML 里的 180ms Opacity 过渡淡入；
+    /// 关闭：立刻断命中再淡出，淡出残影期间不会拦住页面点击。
+    /// </summary>
+    internal static void SetDialogScrimVisible(bool visible)
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            && desktop.Windows.OfType<MainWindow>().FirstOrDefault() is { } window)
+        {
+            window.SetDialogScrimVisibleCore(visible);
+        }
+    }
+
+
+    private void SetDialogScrimVisibleCore(bool visible)
+    {
+        DialogScrim.IsHitTestVisible = visible;
+        DialogScrim.Opacity = visible ? 1 : 0;
+    }
+
+
+    /// <summary>遮罩吃掉点击：既不会点到下面页面，也不触发窗口拖拽。</summary>
+    private void OnDialogScrimPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+
+    /// <summary>
     /// 主窗口内的 ContentDialog 宿主。Starward 的对话框（游戏设置、预下载、安装、卸载）
     /// 都是窗口内的浮层而不是独立窗口，所有对话框统一通过它显示。
     /// </summary>

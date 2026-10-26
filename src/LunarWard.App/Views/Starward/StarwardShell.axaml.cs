@@ -1,10 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using LunarWard.App.Services;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media.Transformation;
 using Avalonia.Threading;
 using LunarWard.App.ViewModels;
 using LunarWard.App.ViewModels.Starward;
@@ -17,6 +19,9 @@ namespace LunarWard.App.Views.Starward;
 /// </summary>
 public partial class StarwardShell : UserControl
 {
+    private static readonly TransformOperations PageEnterTransform = TransformOperations.Parse("translate(0px, 12px)");
+    private static readonly TransformOperations PageRestTransform = TransformOperations.Parse("translate(0px, 0px)");
+
     private readonly Dictionary<ShellPage, StarwardPage> _pages = [];
     private VideoBackgroundPlayer? _videoPlayer;
     private readonly SemaphoreSlim _videoSwitchGate = new(1, 1);
@@ -155,6 +160,7 @@ public partial class StarwardShell : UserControl
         _current?.OnNavigatedFrom();
         _current = view;
         PageHost.Content = view;
+        PlayPageEnter();
         view.OnNavigatedTo();
 
         if (view is Pages.ToolboxPage toolboxPage && context.Shell.PendingToolboxTab >= 0)
@@ -185,11 +191,51 @@ public partial class StarwardShell : UserControl
     }
 
 
+    /// <summary>
+    /// 页面进场：换页时先把 <see cref="PageHost"/> 拨到「透明 + 下移 12」，下一帧再放开过渡收回原位，
+    /// 得到 180ms 的淡入 + 轻微上移（上游 WinUI Frame 的默认转场观感）。
+    /// </summary>
+    private void PlayPageEnter()
+    {
+        // 写起始值时必须先摘掉 Transitions，否则会从上一页的 1/原位反向播一段淡出。
+        var transitions = PageHost.Transitions;
+        PageHost.Transitions = null;
+        PageHost.Opacity = 0;
+        PageHost.RenderTransform = PageEnterTransform;
+        PageHost.Transitions = transitions;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            PageHost.Opacity = 1;
+            PageHost.RenderTransform = PageRestTransform;
+        }, DispatcherPriority.Loaded);
+    }
+
+
     private void OnGameSelectorVisibilityChanged(object? sender, EventArgs e)
     {
-        if (ViewModel is { } vm)
+        if (ViewModel is not { } vm)
         {
-            GameSelectorOverlayCard.IsVisible = vm.IsGameSelectorOpen;
+            return;
+        }
+
+        if (vm.IsGameSelectorOpen)
+        {
+            // 先开命中再淡入：淡入期间点击能正常落到遮罩/卡片上
+            GameSelectorOverlayCard.IsHitTestVisible = true;
+            if (!GameSelectorContent.Classes.Contains("open"))
+            {
+                GameSelectorContent.Classes.Add("open");
+            }
+
+            GameSelectorOverlayCard.Opacity = 1;
+        }
+        else
+        {
+            // 先断命中再淡出：遮罩残影期间不能拦住页面点击
+            GameSelectorOverlayCard.IsHitTestVisible = false;
+            GameSelectorContent.Classes.Remove("open");
+            GameSelectorOverlayCard.Opacity = 0;
         }
     }
 
