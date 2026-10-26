@@ -90,16 +90,18 @@
 
 ## 四、单元测试清单（`tests/LunarWard.UnitTests/Features/Gacha/`）
 
-| 测试文件 | 覆盖点 |
+合计 **121 个用例**（57 个 `[Fact]` + 15 个 `[Theory]` 的 64 条 `[InlineData]`），8 个文件，全部只落在本簇新目录，不改他人测试。
+
+| 测试文件 | 用例数 | 覆盖点 |
 | --- | --- |
-| `GachaUrlPrefixTests.cs` | 三游戏 × 三类 URL 来源（webstatic 国服 / `gs.hoyoverse.com` 国际服 / 已带参数的 `public-operation`）→ 接口前缀换算；`#/log` 去除；`&gacha_type`/`&page`/`&size`/`&end_id`（ZZZ 为 `&real_gacha_type`）剥离；`lang` 经 `LanguageUtil.FilterLanguage` 归一（ja→ja-jp、zh-tw 保留、en→en-us）；非法 URL 抛 `ArgumentException` 且消息取 `CoreLang.Gacha_CannotParseThe*RecordURL` |
-| `GachaLogQueryTests.cs` | `GachaLogQuery.ToString()` 字段顺序与命名：原神/星铁 `gacha_type=`，绝区零 `real_gacha_type=`；`BeyondGachaLogQuery`；`size=20` 固定 |
-| `GachaPaginationTests.cs` | `GetGachaLogByTypeAsync` 推进规则：满 20 且 `Last.Id > end_id` 才 `page++`/`end_id=Last.Id`；短页、空页、`Last.Id <= end_id` 三种停止条件 |
-| `GachaNoUpTests.cs` | `GachaNoUp.Dictionary` 键拼法（`{GameBiz}{gacha_type}`）与三游戏区间表存在性；`ComputeIsUp` 区间内=false / 区间外=true / 未知物品=true / 未知卡池或游戏=null；原神 400 归一到 301 |
-| `GachaAlignmentTests.cs` | `GachaTypeStats` 的 `Avarage_5_*` 拼写与格式（上游刻意拼作 `Avarage`）；`GachaBanner.Value`/`ToLocalization()`；`GachaLogItemEx` 的 `Progress` 三套分母（90 / 原神武器 80 / 星铁光锥 80 / ZZZ 音擎·邦布 80）、`IdText`、`IsUp`（`new bool` 与基类 `int` 各自独立）、`IsPointerIn` 的 `PropertyChanged`；`GachaLogUrl` 构造器时间戳；`GachaUidArchiveDisplay.ArchiveName` 三游戏 + `Timezone` 联动 `LastItemTimeOffest`；`UIGF4ImportException` 的 Game/Uid/Message；三个 Rarity 背景/图标转换器（1..5 与 `Transparent.png` 兜底）；`GachaPityProgressBackgroundBrushConverter`（74/63/65 三档变色、90/80 保底 offset、`Opacity=0.4`、相对端点、非 item 返回 null）；`SelfQueryStatsNumberConverter` 的 `+N`/`-N`/`-` 与 `ConvertBack` 抛错 |
-| `GachaModelParityTests.cs` | 两份 `GachaNoUp`（`Features` 移植版 vs `Core` 遗留版）卡池键集合、每个物品的 `NoUpTimes` 区间逐项一致；`ComputeIsUp` 只在 Core 遗留版；ZZZ 图鉴 `ItemList`/`ItemListAvatar`/`ItemListBuddy`/`IconInfo`/`IconInfoItem` 的 `JsonPropertyName` 映射 |
-| `GachaLinuxDivergenceTests.cs` | 把下文 G-1..G-8 逐条落成结构断言（G-2/G-3 明确标注「单测不可断言」并只锁定替代实现存在） |
-| `GachaExportSchemaTests.cs` | UIGF v3 `info` 字段名、顺序与取值（`uid`/`gacha_type`/`item_id` 写成字符串，`time` 为 `yyyy-MM-dd HH:mm:ss`，`export_app` 默认 Starward，`uigf_version=v3.0`，`srgf_version=v1.0`）；SRGF 列表项；UIGF v4.2 顶层 `info`/`hk4e`/`hkrpg`/`nap`/`hk4e_ugc` 与归档 `uid`/`timezone`/`lang`（`lang` 为 null 时整个省略） |
+| `GachaUrlPrefixTests.cs` | 17 | 三游戏 × 三类 URL 来源（webstatic 国服 / `gs.hoyoverse.com` 国际服 / 已带参数的 `public-operation`）→ 接口前缀换算；`#/log` 去除；`&gacha_type`/`&page`/`&size`/`&end_id`（ZZZ 为 `&real_gacha_type`）剥离；`lang` 经 `LanguageUtil.FilterLanguage` 归一（ja→ja-jp、zh-tw 保留、en→en-us）；非法 URL 抛 `ArgumentException` 且消息取 `CoreLang.Gacha_CannotParseThe*RecordURL` |
+| `GachaLogQueryTests.cs` | 8 | `GachaLogQuery.ToString()` 字段顺序与命名：原神/星铁 `gacha_type=`，绝区零 `real_gacha_type=`；`BeyondGachaLogQuery`；`size=20` 固定 |
+| `GachaPaginationTests.cs` | 4 | `GetGachaLogByTypeAsync` 推进规则：满 20 且 `Last.Id > end_id` 才 `page++`/`end_id=Last.Id`；短页、空页、`Last.Id <= end_id` 三种停止条件 |
+| `GachaNoUpTests.cs` | 13 | `GachaNoUp.Dictionary` 键拼法（`{GameBiz}{gacha_type}`）与三游戏区间表存在性；`ComputeIsUp` 区间内=false / 区间外=true / 未知物品=true / 未知卡池或游戏=null；原神 400 归一到 301 |
+| `GachaAlignmentTests.cs` | 43 | `GachaTypeStats` 的 `Avarage_5_*` 拼写与格式（上游刻意拼作 `Avarage`）；`GachaBanner.Value`/`ToLocalization()`；`GachaLogItemEx` 的 `Progress` 三套分母（90 / 原神武器 80 / 星铁光锥 80 / ZZZ 音擎·邦布 80）、`IdText`、`IsUp`（`new bool` 与基类 `int` 各自独立）、`IsPointerIn` 的 `PropertyChanged`；`GachaLogUrl` 构造器时间戳；`GachaUidArchiveDisplay.ArchiveName` 三游戏 + `Timezone` 联动 `LastItemTimeOffest`；`UIGF4ImportException` 的 Game/Uid/Message；三个 Rarity 背景/图标转换器（1..5 与 `Transparent.png` 兜底）；`GachaPityProgressBackgroundBrushConverter`（74/63/65 三档变色、90/80 保底 offset、`Opacity=0.4`、相对端点、非 item 返回 null）；`SelfQueryStatsNumberConverter` 的 `+N`/`-N`/`-` 与 `ConvertBack` 抛错 |
+| `GachaModelParityTests.cs` | 22 | 两份 `GachaNoUp`（`Features` 移植版 vs `Core` 遗留版）卡池键集合、每个物品的 `NoUpTimes` 区间逐项一致；`ComputeIsUp` 只在 Core 遗留版；ZZZ 图鉴 `ItemList`/`ItemListAvatar`/`ItemListBuddy`/`IconInfo`/`IconInfoItem` 的 `JsonPropertyName` 映射 |
+| `GachaLinuxDivergenceTests.cs` | 9 | 把下文 G-1..G-8 逐条落成结构断言（G-2/G-3 明确标注「单测不可断言」并只锁定替代实现存在） |
+| `GachaExportSchemaTests.cs` | 6 | UIGF v3 `info` 字段名、顺序与取值（`uid`/`gacha_type`/`item_id` 写成字符串，`time` 为 `yyyy-MM-dd HH:mm:ss`，`export_app` 默认 Starward，`uigf_version=v3.0`，`srgf_version=v1.0`）；SRGF 列表项；UIGF v4.2 顶层 `info`/`hk4e`/`hkrpg`/`nap`/`hk4e_ugc` 与归档 `uid`/`timezone`/`lang`（`lang` 为 null 时整个省略） |
 
 运行：
 
