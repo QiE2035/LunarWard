@@ -45,7 +45,7 @@ public sealed partial class CloudGameGachaWindow : WindowEx
         {
             RootGrid.RequestedThemeVariant = ThemeVariant.Light;
         }
-        AdaptTitleBarButtonColorToAcutallTheme();
+        AdaptTitleBarButtonColorToActuallTheme();
     }
 
 

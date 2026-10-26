@@ -1,0 +1,76 @@
+<fw:WindowEx x:Class="LunarWard.Features.Gacha.ZZZGachaToolbox.ZZZGachaInfoWindow"
+            xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:fw="using:LunarWard.Frameworks"
+            xmlns:lang="using:LunarWard.Language"
+            xmlns:wv="using:LunarWard.Frameworks.WebView"
+            Title="ZZZGachaItemInfoWindow"
+            Width="1000"
+            Height="600">
+
+    <Grid Name="RootGrid"
+          Padding="0,40,0,0"
+          RowDefinitions="Auto,Auto,*"
+          RowSpacing="8">
+        <StackPanel Margin="8,0,8,0"
+                    Orientation="Horizontal"
+                    Spacing="8">
+            <Button Name="Button_Miyoushe"
+                    Command="{Binding NavigateToMiyousheCommand}"
+                    Content="{x:Static lang:Lang.ZZZGachaInfoWindow_Miyoushe}" />
+            <Button Name="Button_Hoyolab"
+                    Command="{Binding NavigateToHoYoLABCommand}"
+                    Content="HoYoLAB" />
+            <Button Name="Button_GetAllLanguages"
+                    Command="{Binding GetAllLanguagesInfoCommand}"
+                    Content="{x:Static lang:Lang.ZZZGachaInfoWindow_FetchDataForAllLanguages}"
+                    IsEnabled="False" />
+            <Button Name="Button_SaveToDatabase"
+                    Command="{Binding SaveToDatabaseCommand}"
+                    Content="{x:Static lang:Lang.ZZZGachaInfoWindow_SaveToDatabase}"
+                    IsEnabled="False" />
+            <Button Name="Button_ExportFiles"
+                    Command="{Binding ExportToFolderCommand}"
+                    Content="{x:Static lang:Lang.ZZZGachaInfoWindow_ExportToFolder}"
+                    IsEnabled="False" />
+        </StackPanel>
+
+        <ListBox Name="ListView_Languages"
+                 Grid.Row="1"
+                 Margin="8,0,8,0"
+                 ItemsSource="{Binding GachaInfoResult}"
+                 SelectionChanged="ListView_Languages_SelectionChanged"
+                 SelectionMode="Multiple">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Width="148">
+                        <TextBlock Margin="12,0,12,0"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding}" />
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="2"
+                    Margin="40"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="4">
+            <TextBlock Text="{x:Static lang:Lang.ZZZGachaInfoWindow_ZZZGachaInfoWindowGuide}" TextWrapping="Wrap" />
+            <HyperlinkButton Content="https://github.com/Scighost/Starward/tree/metadata/v1/zzz"
+                             NavigateUri="https://github.com/Scighost/Starward/tree/metadata/v1/zzz" />
+        </StackPanel>
+
+        <wv:WebView Name="webview2"
+                    Grid.Row="2"
+                    IsVisible="False" />
+
+    </Grid>
+
+</fw:WindowEx>
