@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:LunarWard.ViewModels.Starward"
-             x:Class="LunarWard.Views.Starward.Settings.SettingGeneralView"
-             x:DataType="vm:SettingGeneralViewModel">
+             xmlns:local="using:LunarWard.Features.Setting"
+             x:Class="LunarWard.Features.Setting.GeneralSetting"
+             x:DataType="local:GeneralSetting">
 
   <!--
     1:1 复刻 Starward Features/Setting/GeneralSetting.xaml（87 行）：
@@ -45,7 +45,7 @@
                 ItemsSource="{Binding LanguageOptions}"
                 SelectedItem="{Binding SelectedLanguageOption, Mode=TwoWay}">
         <ComboBox.ItemTemplate>
-          <DataTemplate x:DataType="vm:SettingLanguageOption">
+          <DataTemplate x:DataType="local:SettingLanguageOption">
             <TextBlock Text="{Binding Display}" />
           </DataTemplate>
         </ComboBox.ItemTemplate>

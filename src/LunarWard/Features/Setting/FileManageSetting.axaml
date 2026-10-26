@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:LunarWard.ViewModels.Starward"
-             x:Class="LunarWard.Views.Starward.Settings.SettingFileManageView"
-             x:DataType="vm:SettingFileManageViewModel">
+             xmlns:local="using:LunarWard.Features.Setting"
+             x:Class="LunarWard.Features.Setting.FileManageSetting"
+             x:DataType="local:FileManageSetting">
 
   <!--
     1:1 复刻 Starward Features/Setting/FileManageSetting.xaml（206 行）：
@@ -240,22 +240,22 @@
 
       <ItemsControl ItemsSource="{Binding DirectoryRows}" Margin="0,12,0,0">
         <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:SettingPathRowViewModel">
+          <DataTemplate x:DataType="local:SettingPathRowViewModel">
             <StackPanel Margin="0,0,0,8">
               <TextBlock Text="{Binding Label}" />
               <Grid Margin="0,4,0,0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
                 <Button Grid.Column="0"
                         Height="32"
                         Width="72"
-                        Command="{Binding $parent[UserControl].((vm:SettingFileManageViewModel)DataContext).OpenPathCommand}"
+                        Command="{Binding $parent[UserControl].((local:FileManageSetting)DataContext).OpenPathCommand}"
                         CommandParameter="{Binding Path}"
-                        Content="{Binding $parent[UserControl].((vm:SettingFileManageViewModel)DataContext).Strings[Settings.Common.Open]}" />
+                        Content="{Binding $parent[UserControl].((local:FileManageSetting)DataContext).Strings[Settings.Common.Open]}" />
                 <Button Grid.Column="1"
                         Height="32"
                         Width="88"
-                        Command="{Binding $parent[UserControl].((vm:SettingFileManageViewModel)DataContext).CopyPathCommand}"
+                        Command="{Binding $parent[UserControl].((local:FileManageSetting)DataContext).CopyPathCommand}"
                         CommandParameter="{Binding Path}"
-                        Content="{Binding $parent[UserControl].((vm:SettingFileManageViewModel)DataContext).Strings[Settings.Common.CopyPath]}" />
+                        Content="{Binding $parent[UserControl].((local:FileManageSetting)DataContext).Strings[Settings.Common.CopyPath]}" />
                 <TextBlock Grid.Column="2"
                            VerticalAlignment="Center"
                            Margin="4,0,0,0"

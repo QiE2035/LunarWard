@@ -10,6 +10,7 @@ using Avalonia.Media.Transformation;
 using Avalonia.Threading;
 using LunarWard.ViewModels;
 using LunarWard.ViewModels.Starward;
+using LunarWard.Features.Setting;
 
 namespace LunarWard.Views.Starward;
 
@@ -345,7 +346,7 @@ public partial class StarwardShell : UserControl
         ShellPage.SelfQuery => new Pages.SelfQueryPage(context),
 
         ShellPage.GenshinBeyondGacha => new Pages.GenshinBeyondGachaPage(context),
-        ShellPage.Settings => new Pages.SettingPage(context),
+        ShellPage.Settings => new SettingPage(context),
         _ => throw new ArgumentOutOfRangeException(nameof(page)),
     };
 

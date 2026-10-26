@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:LunarWard.ViewModels.Starward"
-             x:Class="LunarWard.Views.Starward.Settings.SettingAdvancedView"
-             x:DataType="vm:SettingAdvancedViewModel">
+             xmlns:local="using:LunarWard.Features.Setting"
+             x:Class="LunarWard.Features.Setting.AdvancedSetting"
+             x:DataType="local:AdvancedSetting">
 
   <!--
     1:1 复刻 Starward Features/Setting/AdvancedSetting.xaml（125 行）：
@@ -175,7 +175,7 @@
           <ScrollViewer Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding EnvRows}" Margin="12,4">
               <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:SettingEnvRowViewModel">
+                <DataTemplate x:DataType="local:SettingEnvRowViewModel">
                   <Grid ColumnDefinitions="220,*,100" Margin="0,2">
                     <TextBlock Grid.Column="0"
                                FontFamily="{StaticResource StarMonoFontFamily}"

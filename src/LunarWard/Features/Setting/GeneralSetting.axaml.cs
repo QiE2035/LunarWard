@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using LunarWard.Services;
 using LunarWard.Views.Starward;
 
-namespace LunarWard.ViewModels.Starward;
+namespace LunarWard.Features.Setting;
 
 /// <summary>通用页（复刻 Starward <c>GeneralSetting.xaml</c>）。</summary>
 /// <remarks>
@@ -10,7 +10,7 @@ namespace LunarWard.ViewModels.Starward;
 /// 主题是只读说明（LunarWard 只有暗色）。关闭到托盘由 Avalonia <c>TrayIcon</c> 实现，
 /// 对应上游的 <c>SystemTrayWindow</c>。
 /// </remarks>
-public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
+public sealed partial class GeneralSetting : SettingPageBase
 {
     private bool _initializing = true;
 
@@ -104,9 +104,10 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     }
 
 
-    public SettingGeneralViewModel(PageContext context, bool showDivider = false)
-        : base(context, SettingSectionKind.General, "Settings.General", "\uE81E", showDivider)
+    public GeneralSetting(PageContext context)
+        : base(context)
     {
+        InitializeComponent();
         LanguageOptions =
         [
             new SettingLanguageOption("zh-CN", "简体中文 (zh-CN)"),
@@ -118,6 +119,7 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
         VideoBackground = Services.Config.Launcher.VideoBackground;
         EnableGameAccountSwitcher = Services.Config.Launcher.EnableGameAccountSwitcher;
         _initializing = false;
+        DataContext = this;
     }
 
 
@@ -125,14 +127,25 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     public IReadOnlyList<SettingLanguageOption> LanguageOptions { get; }
 
 
-    [ObservableProperty]
     private SettingLanguageOption _selectedLanguageOption;
+
+    public SettingLanguageOption SelectedLanguageOption
+    {
+        get => _selectedLanguageOption;
+        set
+        {
+            if (SetProperty(ref _selectedLanguageOption, value))
+            {
+                OnSelectedLanguageOptionChanged(value);
+            }
+        }
+    }
 
 
     public string SelectedLanguage => SelectedLanguageOption?.Code ?? Strings.Language;
 
 
-    partial void OnSelectedLanguageOptionChanged(SettingLanguageOption value)
+    private void OnSelectedLanguageOptionChanged(SettingLanguageOption value)
     {
         if (value is null)
         {
@@ -168,11 +181,22 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     public bool IsEnglish => SelectedLanguage == "en-US";
 
 
-    [ObservableProperty]
     private bool _announcements;
 
+    public bool Announcements
+    {
+        get => _announcements;
+        set
+        {
+            if (SetProperty(ref _announcements, value))
+            {
+                OnAnnouncementsChanged(value);
+            }
+        }
+    }
 
-    partial void OnAnnouncementsChanged(bool value)
+
+    private void OnAnnouncementsChanged(bool value)
     {
         if (_initializing)
         {
@@ -186,15 +210,37 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     }
 
 
-    [ObservableProperty]
     private bool _videoBackground;
 
+    public bool VideoBackground
+    {
+        get => _videoBackground;
+        set
+        {
+            if (SetProperty(ref _videoBackground, value))
+            {
+                OnVideoBackgroundChanged(value);
+            }
+        }
+    }
 
-    [ObservableProperty]
+
     private bool _enableGameAccountSwitcher;
 
+    public bool EnableGameAccountSwitcher
+    {
+        get => _enableGameAccountSwitcher;
+        set
+        {
+            if (SetProperty(ref _enableGameAccountSwitcher, value))
+            {
+                OnEnableGameAccountSwitcherChanged(value);
+            }
+        }
+    }
 
-    partial void OnEnableGameAccountSwitcherChanged(bool value)
+
+    private void OnEnableGameAccountSwitcherChanged(bool value)
     {
         if (_initializing)
         {
@@ -206,7 +252,7 @@ public sealed partial class SettingGeneralViewModel : SettingSectionViewModel
     }
 
 
-    partial void OnVideoBackgroundChanged(bool value)
+    private void OnVideoBackgroundChanged(bool value)
     {
         if (_initializing)
         {

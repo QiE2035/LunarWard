@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using LunarWard.Views.Starward;
 using LunarWard.Launch;
 
-namespace LunarWard.ViewModels.Starward;
+namespace LunarWard.Features.Setting;
 
 /// <summary>高级页里的一行环境变量默认值。</summary>
 public sealed record SettingEnvRowViewModel(string Key, string Value, string Source);
@@ -24,33 +24,50 @@ public sealed record SettingEnvRowViewModel(string Key, string Value, string Sou
 /// URL 协议状态如实探测 <c>.desktop</c>，不做"假装已注册"的开关。
 /// </para>
 /// </remarks>
-public sealed partial class SettingAdvancedViewModel : SettingSectionViewModel
+public sealed partial class AdvancedSetting : SettingPageBase
 {
-    public SettingAdvancedViewModel(PageContext context, bool showDivider = false)
-        : base(context, SettingSectionKind.Advanced, "Settings.Advanced", "\uEA86", showDivider)
+    public AdvancedSetting(PageContext context)
+        : base(context)
     {
+        InitializeComponent();
         UrlProtocolStatus = ProbeUrlProtocol();
         EnvRows = new ObservableCollection<SettingEnvRowViewModel>();
         LoadEnvDefaults();
+        DataContext = this;
     }
 
 
     // ── URL 协议 ──────────────────────────────────────────────────────
 
-    [ObservableProperty]
     private bool _isUrlRegistered;
 
+    public bool IsUrlRegistered
+    {
+        get => _isUrlRegistered;
+        set => SetProperty(ref _isUrlRegistered, value);
+    }
 
-    [ObservableProperty]
+
     private string _urlProtocolStatus = "";
+
+    public string UrlProtocolStatus
+    {
+        get => _urlProtocolStatus;
+        set => SetProperty(ref _urlProtocolStatus, value);
+    }
 
 
     /// <summary>协议说明（<c>lunarward://</c> 的 MimeType 来自 <see cref="UrlProtocol"/>）。</summary>
     public string MimeType => UrlProtocol.MimeType;
 
 
-    [ObservableProperty]
     private string? _testResult;
+
+    public string? TestResult
+    {
+        get => _testResult;
+        set => SetProperty(ref _testResult, value);
+    }
 
 
     [RelayCommand]
@@ -109,12 +126,22 @@ public sealed partial class SettingAdvancedViewModel : SettingSectionViewModel
     public ObservableCollection<SettingEnvRowViewModel> EnvRows { get; }
 
 
-    [ObservableProperty]
     private bool _hasEnv;
 
+    public bool HasEnv
+    {
+        get => _hasEnv;
+        set => SetProperty(ref _hasEnv, value);
+    }
 
-    [ObservableProperty]
+
     private string? _envStatus;
+
+    public string? EnvStatus
+    {
+        get => _envStatus;
+        set => SetProperty(ref _envStatus, value);
+    }
 
 
     /// <summary>

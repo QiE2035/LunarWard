@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Views.Starward;
 
-namespace LunarWard.ViewModels.Starward;
+namespace LunarWard.Features.Setting;
 
 /// <summary>
 /// 下载页（复刻 Starward <c>DownloadSetting.xaml</c>）。
@@ -20,16 +20,18 @@ namespace LunarWard.ViewModels.Starward;
 /// 与旧设置窗口的「更新索引」是同一个入口。
 /// </para>
 /// </remarks>
-public sealed partial class SettingDownloadViewModel : SettingSectionViewModel
+public sealed partial class DownloadSetting : SettingPageBase
 {
-    public SettingDownloadViewModel(PageContext context, bool showDivider = false)
-        : base(context, SettingSectionKind.Download, "Settings.Download", "\uE896", showDivider)
+    public DownloadSetting(PageContext context)
+        : base(context)
     {
+        InitializeComponent();
         ConcurrencyValue = string.Format(
             CultureInfo.CurrentCulture,
             Strings["Settings.Download.ConcurrencyValue"]);
 
         RefreshIndexState();
+        DataContext = this;
     }
 
 
@@ -46,13 +48,28 @@ public sealed partial class SettingDownloadViewModel : SettingSectionViewModel
 
     // ── 本地索引状态 ──────────────────────────────────────────────────
 
-    [ObservableProperty]
     private string _indexState = "";
 
+    public string IndexState
+    {
+        get => _indexState;
+        set => SetProperty(ref _indexState, value);
+    }
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasComponentCount))]
+
     private string _componentCount = "";
+
+    public string ComponentCount
+    {
+        get => _componentCount;
+        set
+        {
+            if (SetProperty(ref _componentCount, value))
+            {
+                OnPropertyChanged(nameof(HasComponentCount));
+            }
+        }
+    }
 
     public bool HasComponentCount => !string.IsNullOrEmpty(ComponentCount);
 
@@ -103,8 +120,19 @@ public sealed partial class SettingDownloadViewModel : SettingSectionViewModel
     }
 
 
-    [ObservableProperty]
     private bool _isUpdating;
+
+    public bool IsUpdating
+    {
+        get => _isUpdating;
+        set
+        {
+            if (SetProperty(ref _isUpdating, value))
+            {
+                OnIsUpdatingChanged(value);
+            }
+        }
+    }
 
 
     [RelayCommand(CanExecute = nameof(CanUpdateIndex))]
@@ -137,5 +165,5 @@ public sealed partial class SettingDownloadViewModel : SettingSectionViewModel
     private bool CanUpdateIndex() => !IsUpdating;
 
 
-    partial void OnIsUpdatingChanged(bool value) => UpdateIndexCommand.NotifyCanExecuteChanged();
+    private void OnIsUpdatingChanged(bool value) => UpdateIndexCommand.NotifyCanExecuteChanged();
 }

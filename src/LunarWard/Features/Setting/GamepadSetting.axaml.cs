@@ -1,6 +1,6 @@
 using LunarWard.Views.Starward;
 
-namespace LunarWard.ViewModels.Starward;
+namespace LunarWard.Features.Setting;
 
 /// <summary>
 /// 手柄增强页（对应 Starward <c>GamepadControlSetting.xaml</c>）。
@@ -10,10 +10,12 @@ namespace LunarWard.ViewModels.Starward;
 /// 稳定的方案（Steam Input 是另一个层次的东西），因此这个菜单项<b>保留</b>以对齐排版，
 /// 但页面只写清楚现状，<b>不伪造任何开关</b>。
 /// </remarks>
-public sealed class SettingGamepadViewModel : SettingSectionViewModel
+public sealed partial class GamepadSetting : SettingPageBase
 {
-    public SettingGamepadViewModel(PageContext context, bool showDivider = false)
-        : base(context, SettingSectionKind.Gamepad, "Settings.ControllerEnhancement", "\uE7C4", showDivider)
+    public GamepadSetting(PageContext context)
+        : base(context)
     {
+        InitializeComponent();
+        DataContext = this;
     }
 }

@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using LunarWard.Views.Starward;
 using LunarWard.Platform;
 
-namespace LunarWard.ViewModels.Starward;
+namespace LunarWard.Features.Setting;
 
 /// <summary>关于页（1:1 复刻 Starward <c>AboutSetting.xaml</c>）。</summary>
 /// <remarks>
@@ -23,11 +23,12 @@ namespace LunarWard.ViewModels.Starward;
 /// 复刻声明 / 许可 / 致谢排在全部 Starward 条目之后。
 /// </para>
 /// </remarks>
-public sealed partial class SettingAboutViewModel : SettingSectionViewModel
+public sealed partial class AboutSetting : SettingPageBase
 {
-    public SettingAboutViewModel(PageContext context, bool showDivider = false)
-        : base(context, SettingSectionKind.About, "Settings.About", "\uE946", showDivider)
+    public AboutSetting(PageContext context)
+        : base(context)
     {
+        InitializeComponent();
         Version = AppVersion.Display;
 
         // LunarWard 追加：Starward 的关于页只有应用版本，没有系统环境；
@@ -50,6 +51,7 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
             new SettingLinkViewModel(Strings["Settings.About.Upstream"], "https://github.com/Scighost/Starward"),
             new SettingLinkViewModel(Strings["Settings.About.Docs"], "https://github.com/QiE2035/LunarWard/blob/main/docs/07-UI-REPLICA.md"),
         ];
+        DataContext = this;
     }
 
 
@@ -66,18 +68,33 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
 
 
     /// <summary>检查更新进行中（对应上游 <c>ProgressRing</c> 的位置）。</summary>
-    [ObservableProperty]
     private bool _isCheckingUpdate;
+
+    public bool IsCheckingUpdate
+    {
+        get => _isCheckingUpdate;
+        set => SetProperty(ref _isCheckingUpdate, value);
+    }
 
 
     /// <summary>检查结果文案（已是最新 / 有新版本 / 失败原因）。</summary>
-    [ObservableProperty]
     private string? _updateMessage;
+
+    public string? UpdateMessage
+    {
+        get => _updateMessage;
+        set => SetProperty(ref _updateMessage, value);
+    }
 
 
     /// <summary>有新版时为 <c>true</c>，显示「打开下载页」。</summary>
-    [ObservableProperty]
     private bool _hasUpdate;
+
+    public bool HasUpdate
+    {
+        get => _hasUpdate;
+        set => SetProperty(ref _hasUpdate, value);
+    }
 
 
     private string? _updateUrl;
@@ -101,7 +118,7 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
         try
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-            var current = typeof(SettingAboutViewModel).Assembly.GetName().Version ?? new Version(1, 0, 0);
+            var current = typeof(AboutSetting).Assembly.GetName().Version ?? new Version(1, 0, 0);
             var result = await ReleaseChecker.CheckAsync(http, current).ConfigureAwait(true);
             switch (result.Status)
             {
@@ -147,10 +164,9 @@ public sealed partial class SettingAboutViewModel : SettingSectionViewModel
     }
 
 
-    public override void Dispose()
+    protected override void DisposeViewModel(PageContext context)
     {
         Links.Clear();
-        base.Dispose();
     }
 
 

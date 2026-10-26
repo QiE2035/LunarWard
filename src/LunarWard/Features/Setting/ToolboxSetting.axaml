@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:LunarWard.ViewModels.Starward"
-             x:Class="LunarWard.Views.Starward.Settings.SettingToolboxView"
-             x:DataType="vm:SettingToolboxViewModel">
+             xmlns:local="using:LunarWard.Features.Setting"
+             x:Class="LunarWard.Features.Setting.ToolboxSetting"
+             x:DataType="local:ToolboxSetting">
 
   <!--
     1:1 复刻 Starward Features/Setting/ToolboxSetting.xaml（62 行）：
@@ -28,7 +28,7 @@
         </ItemsPanelTemplate>
       </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>
-        <DataTemplate x:DataType="vm:SettingToolboxItemViewModel">
+        <DataTemplate x:DataType="local:ToolboxItem">
           <!-- ToolboxSetting.xaml:18-22 -->
           <Button Width="180"
                   Height="220"
@@ -36,7 +36,7 @@
                   Padding="12"
                   HorizontalContentAlignment="Stretch"
                   VerticalContentAlignment="Stretch"
-                  Command="{Binding $parent[UserControl].((vm:SettingToolboxViewModel)DataContext).InvokeCommand}"
+                  Command="{Binding $parent[UserControl].((local:ToolboxSetting)DataContext).InvokeCommand}"
                   CommandParameter="{Binding}">
             <!-- ToolboxSetting.xaml:23-54 -->
             <Grid RowDefinitions="100,Auto,*" RowSpacing="8">

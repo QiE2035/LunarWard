@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:LunarWard.ViewModels.Starward"
-             x:Class="LunarWard.Views.Starward.Settings.SettingAboutView"
-             x:DataType="vm:SettingAboutViewModel">
+             xmlns:local="using:LunarWard.Features.Setting"
+             x:Class="LunarWard.Features.Setting.AboutSetting"
+             x:DataType="local:AboutSetting">
 
   <!--
     1:1 复刻 Starward Features/Setting/AboutSetting.xaml（135 行）：
@@ -135,7 +135,7 @@
 
       <ItemsControl ItemsSource="{Binding Links}">
         <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:SettingLinkViewModel">
+          <DataTemplate x:DataType="local:SettingLinkViewModel">
             <!-- 每条 0,8、左对齐、粗体强调色（对应 Hyperlink + Bold Run） -->
             <Button Classes="link"
                     Margin="0,8,0,0"
@@ -146,7 +146,7 @@
                     IsEnabled="{Binding IsEnabled}"
                     ToolTip.Tip="{Binding Note}"
                     Content="{Binding Label}"
-                    Command="{Binding $parent[UserControl].((vm:SettingAboutViewModel)DataContext).OpenLinkCommand}"
+                    Command="{Binding $parent[UserControl].((local:AboutSetting)DataContext).OpenLinkCommand}"
                     CommandParameter="{Binding}" />
           </DataTemplate>
         </ItemsControl.ItemTemplate>

@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Views.Starward;
 
-namespace LunarWard.ViewModels.Starward;
+namespace LunarWard.Features.Setting;
 
 /// <summary>
 /// 快捷键页（复刻 Starward <c>HotkeySetting.xaml</c>）。
@@ -12,13 +12,15 @@ namespace LunarWard.ViewModels.Starward;
 /// Linux 没有跨桌面等价 API，LunarWard <b>不注册热键</b>，也不能伪造一个输入框——
 /// 这里展示桌面入口文件位置，并说明用合成器快捷键绑定的做法。
 /// </remarks>
-public sealed partial class SettingHotkeyViewModel : SettingSectionViewModel
+public sealed partial class HotkeySetting : SettingPageBase
 {
-    public SettingHotkeyViewModel(PageContext context, bool showDivider = false)
-        : base(context, SettingSectionKind.Hotkey, "Settings.KeyboardShortcuts", "\uEDA7", showDivider)
+    public HotkeySetting(PageContext context)
+        : base(context)
     {
+        InitializeComponent();
         DesktopEntryPath = SettingShellActions.FindDesktopEntry();
         DesktopEntryCandidates = string.Join('\n', SettingShellActions.DesktopEntryCandidates());
+        DataContext = this;
     }
 
 

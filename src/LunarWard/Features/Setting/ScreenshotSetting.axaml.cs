@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using LunarWard.Views.Starward;
 using LunarWard.Launch;
 
-namespace LunarWard.ViewModels.Starward;
+namespace LunarWard.Features.Setting;
 
 /// <summary>
 /// 截图设置页（复刻 Starward <c>ScreenshotSetting.xaml</c>）。
@@ -17,7 +17,7 @@ namespace LunarWard.ViewModels.Starward;
 /// </para>
 /// <para>格式/排序等"本该可配"的项保留成只读行，是为了排版与 Starward 对齐。</para>
 /// </remarks>
-public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
+public sealed partial class ScreenshotSetting : SettingPageBase
 {
     private readonly ScreenshotService _service = new();
 
@@ -26,9 +26,10 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
     private readonly string _gameKind;
 
 
-    public SettingScreenshotViewModel(PageContext context, bool showDivider = false)
-        : base(context, SettingSectionKind.Screenshot, "Settings.Screenshot", "\uE91B", showDivider)
+    public ScreenshotSetting(PageContext context)
+        : base(context)
     {
+        InitializeComponent();
         _gameDirectory = ProfileConfig.ExpandPath(context.Profile.Profile.Path);
         _gameKind = context.Profile.Profile.Game;
         // 没配游戏目录时不能调 GetDirectory：它会拼出相对路径 "ScreenShot"，看起来像工作目录
@@ -38,6 +39,7 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
             ? ScreenshotService.GetDirectory(_gameDirectory, _gameKind)
             : Strings["Settings.Screenshot.NoGameDirShort"];
         Reload();
+        DataContext = this;
     }
 
 
@@ -46,8 +48,13 @@ public sealed partial class SettingScreenshotViewModel : SettingSectionViewModel
 
     public string DirectoryPath { get; }
 
-    [ObservableProperty]
     private string _countText = "";
+
+    public string CountText
+    {
+        get => _countText;
+        set => SetProperty(ref _countText, value);
+    }
 
 
     /// <summary>重新统计截图数量与占用（进入页面时调用）。</summary>

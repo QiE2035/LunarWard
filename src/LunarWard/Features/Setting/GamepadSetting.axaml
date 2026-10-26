@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:LunarWard.ViewModels.Starward"
-             x:Class="LunarWard.Views.Starward.Settings.SettingGamepadView"
-             x:DataType="vm:SettingGamepadViewModel">
+             xmlns:local="using:LunarWard.Features.Setting"
+             x:Class="LunarWard.Features.Setting.GamepadSetting"
+             x:DataType="local:GamepadSetting">
 
   <!--
     1:1 复刻 Starward Features/Setting/GamepadControlSetting.xaml（207 行）的标题与节奏。

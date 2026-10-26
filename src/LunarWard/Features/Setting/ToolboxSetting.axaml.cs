@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LunarWard.Views.Starward;
 using LunarWard.Launch;
 
-namespace LunarWard.ViewModels.Starward;
+namespace LunarWard.Features.Setting;
 
 /// <summary>
 /// 工具箱页（复刻 Starward <c>ToolboxSetting.xaml</c> 的 180×220 卡片网格）。
@@ -13,42 +13,44 @@ namespace LunarWard.ViewModels.Starward;
 /// 放的是本项目的工具箱入口（游戏设置 / 诊断 / 环境 shell / 截图），跳转统一走
 /// <see cref="ShellViewModel.Navigate"/>，不另开一套导航。
 /// </remarks>
-public sealed partial class SettingToolboxViewModel : SettingSectionViewModel
+public sealed partial class ToolboxSetting : SettingPageBase
 {
-    public SettingToolboxViewModel(PageContext context, bool showDivider = false)
-        : base(context, SettingSectionKind.Toolbox, "Settings.Toolbox", "\uEC7A", showDivider)
+    public ToolboxSetting(PageContext context)
+        : base(context)
     {
+        InitializeComponent();
         Items =
         [
-            new SettingToolboxItemViewModel(
+            new ToolboxItem(
                 "\uE7FC",
                 Strings["Settings.Toolbox.GameSetting"],
                 Strings["Settings.Toolbox.GameSettingDesc"],
                 () => Shell.Navigate(ShellPage.GameSetting)),
-            new SettingToolboxItemViewModel(
+            new ToolboxItem(
                 "\uE9D9",
                 Strings["Settings.Toolbox.Diagnose"],
                 Strings["Settings.Toolbox.DiagnoseDesc"],
                 OpenDiagnostics),
-            new SettingToolboxItemViewModel(
+            new ToolboxItem(
                 "\uE756",
                 Strings["Settings.Toolbox.Shell"],
                 Strings["Settings.Toolbox.ShellDesc"],
                 OpenEnvironmentShell),
-            new SettingToolboxItemViewModel(
+            new ToolboxItem(
                 "\uE91B",
                 Strings["Settings.Toolbox.Screenshot"],
                 Strings["Settings.Toolbox.ScreenshotDesc"],
                 () => Shell.Navigate(ShellPage.Screenshot)),
         ];
+        DataContext = this;
     }
 
 
-    public IReadOnlyList<SettingToolboxItemViewModel> Items { get; }
+    public IReadOnlyList<ToolboxItem> Items { get; }
 
 
     [RelayCommand]
-    private void Invoke(SettingToolboxItemViewModel? item) => item?.Invoke();
+    private void Invoke(ToolboxItem? item) => item?.Invoke();
 
 
     private void OpenDiagnostics()
@@ -87,29 +89,4 @@ public sealed partial class SettingToolboxViewModel : SettingSectionViewModel
             Status = $"{Strings["Settings.Toolbox.NeedProfile"]}（{ex.Message}）";
         }
     }
-}
-
-
-/// <summary>工具箱卡片（Starward <c>ToolboxItem</c>）：图标 + 名称 + 说明 + 动作。</summary>
-public sealed class SettingToolboxItemViewModel
-{
-    private readonly Action _action;
-
-
-    public SettingToolboxItemViewModel(string icon, string name, string description, Action action)
-    {
-        Icon = icon;
-        Name = name;
-        Description = description;
-        _action = action;
-    }
-
-
-    public string Icon { get; }
-
-    public string Name { get; }
-
-    public string Description { get; }
-
-    public void Invoke() => _action();
 }

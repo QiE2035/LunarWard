@@ -8,6 +8,7 @@ using Avalonia.VisualTree;
 using DialogHostAvalonia;
 using LunarWard.Services;
 using LunarWard.ViewModels.Starward;
+using LunarWard.Features.Setting;
 
 namespace LunarWard.Views.Starward;
 
@@ -366,7 +367,7 @@ public partial class MainWindow : Window
     {
         for (var attempt = 0; attempt < 15; attempt++)
         {
-            var page = Shell?.GetVisualDescendants().OfType<Pages.SettingPage>().FirstOrDefault();
+            var page = Shell?.GetVisualDescendants().OfType<SettingPage>().FirstOrDefault();
             if (page is not null)
             {
                 page.SelectSection(tag);

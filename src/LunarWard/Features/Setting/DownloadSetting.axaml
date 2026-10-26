@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:LunarWard.ViewModels.Starward"
-             x:Class="LunarWard.Views.Starward.Settings.SettingDownloadView"
-             x:DataType="vm:SettingDownloadViewModel">
+             xmlns:local="using:LunarWard.Features.Setting"
+             x:Class="LunarWard.Features.Setting.DownloadSetting"
+             x:DataType="local:DownloadSetting">
 
   <!--
     1:1 复刻 Starward Features/Setting/DownloadSetting.xaml（104 行）：

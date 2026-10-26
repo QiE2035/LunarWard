@@ -1,3 +1,4 @@
+using LunarWard.Features.Setting;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using Avalonia.Media.Imaging;

@@ -1,0 +1,286 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LunarWard.Features.Setting.SettingPage"
+             x:DataType="local:SettingPage"
+             xmlns:local="using:LunarWard.Features.Setting">
+
+  <!--
+    复刻 Starward Features/Setting/SettingPage.xaml：
+      NavigationView(PaneDisplayMode=Left, OpenPaneLength=260, IsSettingsVisible=False,
+                     IsBackButtonVisible=Collapsed)
+      · PaneHeader   Margin 16,12,0,8 · 20px Bold 「应用设置」
+      · MenuItems    9 项，每项 40 高、图标 16、文字 14；选中态 = 左侧 3×16 强调条 + 14% 白底
+      · Frame        Margin 24,24,0,0
+
+    Avalonia 没有 NavigationView，用 Grid(260,*) + ListBox 复刻。条目在 XAML 里逐条写死
+    （对应上游 MenuItems 的静态声明），每个 ListBoxItem 的 Tag 就是 Starward 的页面类型名，
+    选中后由 code-behind 的 OnSectionSelectionChanged 换右侧内容——与上游
+    NavigationView_ItemInvoked 的 switch(args.InvokedItemContainer.Tag) 是同一落点。
+    左侧不铺底色：外壳已有 Border_OverlayMask（StarAcrylicBrush），再铺一层会变成实心黑。
+  -->
+    <UserControl.Styles>
+      <!--
+        条目高度只能是"至少 40"：工具箱那一项在 40px 面板上方还有一条分隔线
+        （Starward 的 NavigationViewItemSeparator），写死 Height=40 会把多出来的部分裁掉。
+      -->
+      <Style Selector="ListBox#SectionList ListBoxItem">
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="0" />
+      </Style>
+
+      <!--
+        条目自身的选中/悬停底色也要压掉：Fluent 主题的 :selected /template/ ContentPresenter
+        优先级高于上面的无状态样式，会把 40px 面板外的区域（分隔线那一条）一起染亮。
+        底色统一由条内的 Border.nav-bg 画。
+      -->
+      <Style Selector="ListBox#SectionList ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+
+      <!--
+        子页最外层是 ScrollViewer；Fluent 的滚动条是浮在内容上的（约 4px），
+        右边留 8 给它，避免长行文字压在滚动条下面。
+      -->
+      <Style Selector="ContentControl#SectionHost ScrollViewer">
+        <Setter Property="Margin" Value="0,0,8,0" />
+      </Style>
+
+      <!-- 悬停/选中底色画在条目内部（内缩 4，圆角 4） -->
+      <Style Selector="ListBox#SectionList ListBoxItem Border.nav-bg">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:pointerover Border.nav-bg">
+        <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:selected Border.nav-bg">
+        <Setter Property="Background" Value="{StaticResource StarSelectionBrush}" />
+      </Style>
+
+      <!-- 选中态左侧强调条 -->
+      <Style Selector="ListBox#SectionList ListBoxItem Border.nav-indicator">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+
+      <Style Selector="ListBox#SectionList ListBoxItem:selected Border.nav-indicator">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+
+      <!-- Starward 的 PaneHeader：Margin 16,12,0,8 · 20px Bold -->
+      <Style Selector="TextBlock.pane-header">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Margin" Value="16,12,0,8" />
+      </Style>
+    </UserControl.Styles>
+
+  <Grid ColumnDefinitions="260,*">
+
+
+    <!-- ── 左：260px 二级导航 ───────────────────────────────────── -->
+    <Grid Grid.Column="0" RowDefinitions="Auto,*">
+
+      <TextBlock Grid.Row="0"
+                 Classes="pane-header"
+                 Text="{Binding Strings[Settings.AppSettings]}" />
+
+      <ListBox Grid.Row="1"
+               x:Name="SectionList"
+               Background="Transparent"
+               Padding="0,0,0,12"
+               SelectionMode="Single"
+               SelectionChanged="OnSectionSelectionChanged">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel />
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+
+        <ListBoxItem Tag="AboutSetting">
+          <Panel Height="40">
+            <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
+            <Border Classes="nav-indicator" Width="3" Height="16"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2"
+                    Background="{StaticResource StarAccentBrush}" />
+            <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE946;" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.About]}" />
+            </Grid>
+          </Panel>
+        </ListBoxItem>
+
+        <ListBoxItem Tag="GeneralSetting">
+          <Panel Height="40">
+            <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
+            <Border Classes="nav-indicator" Width="3" Height="16"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2"
+                    Background="{StaticResource StarAccentBrush}" />
+            <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE81E;" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.General]}" />
+            </Grid>
+          </Panel>
+        </ListBoxItem>
+
+        <ListBoxItem Tag="DownloadSetting">
+          <Panel Height="40">
+            <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
+            <Border Classes="nav-indicator" Width="3" Height="16"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2"
+                    Background="{StaticResource StarAccentBrush}" />
+            <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE896;" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.Download]}" />
+            </Grid>
+          </Panel>
+        </ListBoxItem>
+
+        <ListBoxItem Tag="FileManageSetting">
+          <Panel Height="40">
+            <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
+            <Border Classes="nav-indicator" Width="3" Height="16"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2"
+                    Background="{StaticResource StarAccentBrush}" />
+            <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE8F1;" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.FileManagement]}" />
+            </Grid>
+          </Panel>
+        </ListBoxItem>
+
+        <ListBoxItem Tag="ScreenshotSetting">
+          <Panel Height="40">
+            <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
+            <Border Classes="nav-indicator" Width="3" Height="16"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2"
+                    Background="{StaticResource StarAccentBrush}" />
+            <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE91B;" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.Screenshot]}" />
+            </Grid>
+          </Panel>
+        </ListBoxItem>
+
+        <ListBoxItem Tag="HotkeySetting">
+          <Panel Height="40">
+            <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
+            <Border Classes="nav-indicator" Width="3" Height="16"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2"
+                    Background="{StaticResource StarAccentBrush}" />
+            <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xEDA7;" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.KeyboardShortcuts]}" />
+            </Grid>
+          </Panel>
+        </ListBoxItem>
+
+        <ListBoxItem Tag="GamepadSetting">
+          <Panel Height="40">
+            <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
+            <Border Classes="nav-indicator" Width="3" Height="16"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2"
+                    Background="{StaticResource StarAccentBrush}" />
+            <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE7C4;" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.ControllerEnhancement]}" />
+            </Grid>
+          </Panel>
+        </ListBoxItem>
+
+        <ListBoxItem Tag="AdvancedSetting">
+          <Panel Height="40">
+            <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
+            <Border Classes="nav-indicator" Width="3" Height="16"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2"
+                    Background="{StaticResource StarAccentBrush}" />
+            <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xEA86;" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.Advanced]}" />
+            </Grid>
+          </Panel>
+        </ListBoxItem>
+
+        <!-- Starward 在「高级」与「工具箱」之间有一条 NavigationViewItemSeparator -->
+        <ListBoxItem Tag="ToolboxSetting">
+          <StackPanel>
+            <Border Height="1"
+                    Margin="12,8,12,8"
+                    Background="{StaticResource StarDividerBrush}" />
+            <Panel Height="40">
+              <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
+              <Border Classes="nav-indicator" Width="3" Height="16"
+                      HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2"
+                      Background="{StaticResource StarAccentBrush}" />
+              <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
+                <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xEC7A;" />
+                <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
+                           TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.Toolbox]}" />
+              </Grid>
+            </Panel>
+          </StackPanel>
+        </ListBoxItem>
+      </ListBox>
+    </Grid>
+
+    <!--
+      ── 右：子页宿主 ──
+      Starward 的 Frame_Setting 是 Margin=24,24,0,0，但它的 Frame 本身带着导航栏的
+      安全边距；我们这里没有那一层，底部为 0 会让子页最后一行文字压在窗口底边上，
+      所以四边都留 24。
+    -->
+    <ContentControl Grid.Column="1"
+                    x:Name="SectionHost"
+                    Margin="24,24,24,24" />
+
+    <!-- ── 页内二次确认（等价 ContentDialog，覆盖整个设置页）────────── -->
+    <Grid Grid.Column="0" Grid.ColumnSpan="2"
+          IsVisible="{Binding IsConfirmOpen}"
+          Background="{StaticResource StarScrimBrush}">
+      <Border Classes="card"
+              Width="380"
+              Padding="20"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Background="{StaticResource StarAcrylicBrush}">
+        <StackPanel Spacing="12">
+          <TextBlock FontSize="20" Text="{Binding ConfirmTitle}" />
+          <TextBlock Classes="description" Text="{Binding ConfirmBody}" />
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Content="{Binding CancelText}"
+                    Command="{Binding CancelCommand}" />
+            <Button Classes="accent"
+                    Content="{Binding ConfirmText}"
+                    Command="{Binding ConfirmCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

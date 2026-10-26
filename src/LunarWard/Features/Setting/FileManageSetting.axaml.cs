@@ -1,11 +1,13 @@
 using System.Globalization;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Views.Starward;
 using LunarWard.Launch.Database;
 
-namespace LunarWard.ViewModels.Starward;
+namespace LunarWard.Features.Setting;
 
 /// <summary>
 /// 文件管理页（1:1 复刻 Starward <c>FileManageSetting.xaml</c>）。
@@ -27,7 +29,7 @@ namespace LunarWard.ViewModels.Starward;
 /// 与 config.json（Linux 上改目录要改 <c>XDG_*</c> 环境变量，不是界面）。
 /// </para>
 /// </remarks>
-public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
+public sealed partial class FileManageSetting : SettingPageBase
 {
     /// <summary>「清理启动器背景文件」的持久化键（配置 <c>launcher</c> 段的未知字段区）。</summary>
     /// <remarks>
@@ -39,12 +41,11 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
     private readonly Func<string, string, Task<bool>> _confirm;
 
 
-    public SettingFileManageViewModel(
-        PageContext context,
-        Func<string, string, Task<bool>> confirm,
-        bool showDivider = false)
-        : base(context, SettingSectionKind.FileManage, "Settings.FileManagement", "\uE8F1", showDivider)
+    public FileManageSetting(PageContext context,
+        Func<string, string, Task<bool>> confirm)
+        : base(context)
     {
+        InitializeComponent();
         _confirm = confirm;
 
         ConfigHome = Services.Paths.ConfigHome;
@@ -65,6 +66,8 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
             new SettingPathRowViewModel(Strings["Settings.Files.LogDir"], LogDirectory),
             new SettingPathRowViewModel(Strings["Settings.Files.ConfigFile"], ConfigFile),
         ];
+        DataContext = this;
+        BackupRequested += OnBackupRequested;
     }
 
 
@@ -85,34 +88,80 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
 
     // ── 缓存分类（Starward FileManageSetting.xaml:152-173 的五类）──────────────
 
-    [ObservableProperty]
     private string _logCacheSize = "";
 
-    [ObservableProperty]
+    public string LogCacheSize
+    {
+        get => _logCacheSize;
+        set => SetProperty(ref _logCacheSize, value);
+    }
+
     private string _imageCacheSize = "";
 
-    [ObservableProperty]
+    public string ImageCacheSize
+    {
+        get => _imageCacheSize;
+        set => SetProperty(ref _imageCacheSize, value);
+    }
+
     private string _browserCacheSize = "";
 
-    [ObservableProperty]
+    public string BrowserCacheSize
+    {
+        get => _browserCacheSize;
+        set => SetProperty(ref _browserCacheSize, value);
+    }
+
     private string _gameCacheSize = "";
 
-    [ObservableProperty]
+    public string GameCacheSize
+    {
+        get => _gameCacheSize;
+        set => SetProperty(ref _gameCacheSize, value);
+    }
+
     private string _launcherBackgroundSize = "";
 
-    [ObservableProperty]
+    public string LauncherBackgroundSize
+    {
+        get => _launcherBackgroundSize;
+        set => SetProperty(ref _launcherBackgroundSize, value);
+    }
+
     private string _cacheSize = "";
 
-    [ObservableProperty]
+    public string CacheSize
+    {
+        get => _cacheSize;
+        set => SetProperty(ref _cacheSize, value);
+    }
+
     private bool _isClearing;
+
+    public bool IsClearing
+    {
+        get => _isClearing;
+        set => SetProperty(ref _isClearing, value);
+    }
 
 
     /// <summary>清理缓存时是否连启动器背景缓存一起删（Starward 的 CheckBox）。</summary>
-    [ObservableProperty]
     private bool _clearLauncherBackground;
 
+    public bool ClearLauncherBackground
+    {
+        get => _clearLauncherBackground;
+        set
+        {
+            if (SetProperty(ref _clearLauncherBackground, value))
+            {
+                OnClearLauncherBackgroundChanged(value);
+            }
+        }
+    }
 
-    partial void OnClearLauncherBackgroundChanged(bool value) => SaveClearLauncherBackground(value);
+
+    private void OnClearLauncherBackgroundChanged(bool value) => SaveClearLauncherBackground(value);
 
 
     // ── 备份数据库（Starward FileManageSetting.xaml:72-108）──────────────────
@@ -121,8 +170,13 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
     public event EventHandler? BackupRequested;
 
 
-    [ObservableProperty]
     private bool _isBackingUp;
+
+    public bool IsBackingUp
+    {
+        get => _isBackingUp;
+        set => SetProperty(ref _isBackingUp, value);
+    }
 
 
     [RelayCommand]
@@ -397,6 +451,33 @@ public sealed partial class SettingFileManageViewModel : SettingSectionViewModel
             Status = ex.Message;
         }
     }
+
+    /// <summary>
+    /// 「备份数据库」：弹保存对话框，再把整库快照写到用户选的路径
+    /// （模拟上游 <c>FileManageSetting</c> 的 FileSavePicker + File.Copy）。
+    /// </summary>
+    private async void OnBackupRequested(object? sender, EventArgs e)
+    {
+        var top = TopLevel.GetTopLevel(this);
+        if (top?.StorageProvider is not { CanSave: true } storage)
+        {
+            return;
+        }
+
+        var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = Strings["Settings.Files.BackupDatabase"],
+            SuggestedFileName = $"LunarWard_{DateTime.Now:yyyyMMdd_HHmmss}.db",
+            DefaultExtension = "db",
+            FileTypeChoices = [new FilePickerFileType("SQLite") { Patterns = ["*.db"] }],
+        });
+
+        if (file?.TryGetLocalPath() is { } path)
+        {
+            await BackupToAsync(path);
+        }
+    }
+
 }
 
 
