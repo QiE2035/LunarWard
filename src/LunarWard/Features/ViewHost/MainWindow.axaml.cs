@@ -36,6 +36,9 @@ namespace LunarWard.Features.ViewHost;
 public sealed partial class MainWindow : WindowEx
 {
 
+    /// <summary>自检入口：把主视图暴露给 <c>--screenshot</c> 路由（见 <see cref="App.StartPortShell"/>）。</summary>
+    internal LunarWard.Features.ViewHost.MainView MainViewHost => MainContentHost;
+
     public static MainWindow? Current { get; private set; }
 
 

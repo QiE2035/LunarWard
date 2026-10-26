@@ -207,6 +207,13 @@ public sealed partial class MainView : UserControl, INotifyPropertyChanged
     }
 
 
+    /// <summary>
+    /// 自检（<c>--screenshot --page …</c>）用：把 <see cref="NavigateTo"/> 暴露给宿主窗口。
+    /// 上游没有这条路径（截图靠 UI 自动化驱动），这里只做等价的最小入口，不参与业务流程。
+    /// </summary>
+    internal void NavigateToForCapture(Type page) => NavigateTo(page);
+
+
     private void NavigateTo(Type? page, object? param = null, NavigationTransitionInfo? infoOverride = null)
     {
         page ??= typeof(GameLauncherPage);

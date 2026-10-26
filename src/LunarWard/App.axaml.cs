@@ -96,6 +96,18 @@ public partial class App : Application
             window.Show();
 
             Services.SingleInstance.Listen(EnsureMainWindow);
+
+            // 自检路由：上游靠 UI 自动化驱动，这里用 --page 直接导航到目标页再截图。
+            // 页名与 Program.cs 的 --page 取值一致（docs/10 §7 第 5 步）。
+            if (Services.CaptureMode.Enabled)
+            {
+                if (ResolveCapturePage(Services.CaptureMode.Page) is { } pageType)
+                {
+                    window.MainViewHost.NavigateToForCapture(pageType);
+                }
+
+                Services.CaptureMode.Capture(window);
+            }
         }
         catch (Exception ex)
         {
@@ -105,6 +117,25 @@ public partial class App : Application
         }
     }
 
+
+
+    /// <summary>把 <c>--page</c> 的字符串映射到页面类型（自检专用）。</summary>
+    private static Type? ResolveCapturePage(string? page)
+    {
+        return page switch
+        {
+            "launcher" or null => typeof(Features.GameLauncher.GameLauncherPage),
+            "game-setting" => typeof(Features.GameSetting.GameSettingPage),
+            "screenshot" => typeof(Features.Screenshot.ScreenshotPage),
+            "gacha" => typeof(Features.Gacha.GachaLogPage),
+            "genshin-beyond" => typeof(Features.Gacha.GenshinBeyondGachaPage),
+            "record" => typeof(Features.GameRecord.GameRecordPage),
+            "self-query" => typeof(Features.SelfQuery.SelfQueryPage),
+            "settings" => typeof(Features.Setting.SettingPage),
+            "blank" => typeof(Features.ViewHost.BlankPage),
+            _ => null,
+        };
+    }
 
     /// <summary>托盘菜单「退出」：先标记真正退出，再关窗，避免被「每次询问 / 隐藏到托盘」拦住。</summary>
     private void ExitFromTray(IClassicDesktopStyleApplicationLifetime desktop)
