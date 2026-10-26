@@ -11,10 +11,11 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using LunarWard.Core;
+using LunarWard.Core.HoYoPlay;
 using LunarWard.Features.GameLauncher;
 using LunarWard.Features.GameSelector;
-using LunarWard.Frameworks;
 using LunarWard.Language;
+using LunarWard.Views.Starward;
 using LunarWard.Services;
 using Microsoft.Extensions.Logging;
 
@@ -24,8 +25,16 @@ namespace LunarWard.Features.GameSetting;
 /// 游戏设置页。<b>移植自</b> <c>Starward/src/Starward/Features/GameSetting/GameSettingPage.xaml(.cs)</c>。
 /// 平台替换：WinRT <c>DisplayInformation</c>（HDR 探测）/ <c>DisplayArea</c>（屏幕分辨率）
 /// → Avalonia <c>Screens</c>，HDR 探测在 Linux 下无对应 API，暂不置警示（见 docs/09）。
+/// <para>
+/// 宿主适配：上游继承 <c>Starward.Frameworks.PageBase</c>（WinUI Page，构造后由 Frame 调
+/// <c>OnNavigatedTo(GameId)</c>）。本仓库宿主 <c>StarwardShell</c> 只接受
+/// <c>StarwardPage</c>（ctor <c>PageContext</c> + 无参 <c>OnNavigatedTo</c>），故改为
+/// <c>StarwardPage</c> 子类；<see cref="CurrentGameId"/> / <see cref="CurrentGameBiz"/>
+/// 由 <see cref="PageContext.Profile"/> 经 <see cref="LauncherService.BuildGameInfo"/> 推导，
+/// 语义与上游 PageBase 一致（见 docs/09-LINUX-DIVERGENCES.md §十一）。
+/// </para>
 /// </summary>
-public sealed partial class GameSettingPage : PageBase, INotifyPropertyChanged
+public sealed partial class GameSettingPage : StarwardPage, INotifyPropertyChanged
 {
 
     private readonly ILogger<GameSettingPage> _logger = AppConfig.GetLogger<GameSettingPage>();
@@ -52,17 +61,45 @@ public sealed partial class GameSettingPage : PageBase, INotifyPropertyChanged
 
 
 
-    public GameSettingPage()
+    public GameSettingPage(PageContext context) : base(context)
     {
         this.InitializeComponent();
+        DataContext = this;
     }
 
 
 
 
-    public override void OnNavigatedTo(object? parameter)
+    private GameId _currentGameId = null!;
+
+    private GameBiz _currentGameBiz;
+
+    private bool _initialized;
+
+
+    /// <summary>等价上游 <c>PageBase.CurrentGameId</c>：当前 profile 的游戏 ID。</summary>
+    private GameId CurrentGameId => _currentGameId;
+
+
+    /// <summary>等价上游 <c>PageBase.CurrentGameBiz</c>：当前 profile 的游戏区服。</summary>
+    private GameBiz CurrentGameBiz
     {
-        base.OnNavigatedTo(parameter);
+        get => _currentGameBiz;
+        set => _currentGameBiz = value;
+    }
+
+
+
+
+    public override void OnNavigatedTo()
+    {
+        if (_currentGameId is null)
+        {
+            var launchInfo = LauncherService.BuildGameInfo(Context.Profile.Profile);
+            _currentGameBiz = new GameBiz(launchInfo.GameBiz);
+            _currentGameId = new GameId { Id = Context.Profile.Id, GameBiz = _currentGameBiz };
+        }
+
         Image_Emoji.Source = CurrentGameBiz.ToGame().Value switch
         {
             GameBiz.bh3 => LoadImage(AppConfig.EmojiAI),
@@ -82,6 +119,25 @@ public sealed partial class GameSettingPage : PageBase, INotifyPropertyChanged
                 _ => GameBiz.bh3_global,
             };
         }
+
+        if (!_initialized)
+        {
+            _initialized = true;
+            _ = InitializeAsync();
+        }
+    }
+
+
+    private async Task InitializeAsync()
+    {
+        InitializeResolutionItem();
+        await InitializeGameSettingAsync();
+    }
+
+
+    public override void OnNavigatedFrom()
+    {
+        base.OnNavigatedFrom();
     }
 
 
@@ -96,15 +152,6 @@ public sealed partial class GameSettingPage : PageBase, INotifyPropertyChanged
             return null;
         }
     }
-
-
-    protected override async void OnLoaded()
-    {
-        InitializeResolutionItem();
-        await InitializeGameSettingAsync();
-    }
-
-
 
 
     public bool IsBaseSettingEnable { get; set => SetProperty(ref field, value); }

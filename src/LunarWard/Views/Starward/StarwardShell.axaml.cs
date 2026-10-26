@@ -339,7 +339,8 @@ public partial class StarwardShell : UserControl
     private static StarwardPage CreatePage(ShellPage page, PageContext context) => page switch
     {
         ShellPage.Launcher => new Pages.GameLauncherPage(context),
-        ShellPage.GameSetting => new Pages.GameSettingPage(context),
+        // GameSetting 已按上游迁到 Features/GameSetting（code-behind，StarwardPage 宿主适配）
+        ShellPage.GameSetting => new Features.GameSetting.GameSettingPage(context),
         ShellPage.Screenshot => new Pages.ScreenshotPage(context),
         ShellPage.Gacha => new Pages.GachaPage(context),
         ShellPage.Toolbox => new Pages.ToolboxPage(context),

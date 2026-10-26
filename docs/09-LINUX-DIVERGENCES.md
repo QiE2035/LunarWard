@@ -472,3 +472,68 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | `GachaLogPage` 的 `OnNavigatedTo` 参数 | 上游按 `CurrentGameBiz` | 同上游；`PageBase.OnNavigatedTo` 接受 `GameId` 或 `GameBiz` | — | — |
 | `GachaLogPage.xaml` 的 `FontIcon` 字形（复制成功 √ / 复制图标） | `FontIcon Glyph="&#xE8FB;"` | `TextBlock Classes="icon" Text="&#xE8FB;"`（`Styles/Starward.axaml:133`，`StarIconFontFamily`） | Avalonia 无 `FontIcon` | — |
 | `GachaLogPage.xaml` 的 `InfoBar` 面板 | `InfoBar` | 见本表 `GachaLogPage` 进度行（`GachaProgressToast`） | — | — |
+
+## 十六、Features/GameRecord 移植（2026-10-26，webview-webkit / task-5）
+
+上游 `src/Starward/Features/GameRecord/` 共 47 个文件（15724 行），逐个搬到 `src/LunarWard/Features/GameRecord/`（含 `DailyNote/`、`Genshin/`、`StarRail/`、`ZZZ/`），文件名/类型名/成员名/事件名保持不变。`GameRecordService.cs`（1433 行）**未改一行逻辑**：它的 `AppConfig.GetLogger<T>()` / `AppConfig.GetService<T>()` / `DatabaseService.CreateConnection()` / Dapper 裸 SQL / `Lang.*` 在本仓库全部已就绪（DI 注册见 `AppConfig.ServiceProvider.cs`）。
+
+| 位置 | 上游行为 | 本仓库行为 | 原因 | 待办 |
+| --- | --- | --- | --- | --- |
+| `AvatarRankHelper.RankToVisibility(int)` | 返回 `Microsoft.UI.Xaml.Visibility`（`rank > 0 ? Visible : Collapsed`） | 返回 `bool`（`rank > 0`），调用方写 `IsVisible` | Avalonia 用 `IsVisible` 布尔值，没有 `Visibility` 枚举 | — |
+| 各 `*Converter.cs`（`ColorToSolidColorBrushConverter`、`SpiralAbyssBattleAvatarsSelectConverter`、`TheaterStarIconVisibilityConverter`、4 个 `SimulatedUniverse*Converter`、`ZZZRarityToIconConverter`） | `IValueConverter.Convert(object value, Type targetType, object parameter, string language)` | `object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)`（`ConvertBack` 同签名） | Avalonia 转换器签名不同（无 `language`，末参是 `CultureInfo`） | — |
+| 所有页面的 `OnNavigatedTo(NavigationEventArgs e)` | `protected override void OnNavigatedTo(NavigationEventArgs e)`，参数在 `e.Parameter` | `public override void OnNavigatedTo(object? e)`，参数直接是 `e`（`PageBase` 是 `public virtual`） | Avalonia 没有 `Frame`/`NavigationEventArgs`，`PageBase` 自己定义了同名钩子 | 外壳传到导航参数上时保持 `Activator.CreateInstance` + `page.OnNavigatedTo(role)` |
+| `[ObservableProperty]` / `[INotifyPropertyChanged]`（31 处） | MVVM Toolkit 生成属性与 `OnXChanged` 分部方法 | 手写属性 + `PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(X)))`；`OnXChanged` 改成 `private void` 由 setter 调用 | 基类 `PageBase`/`AvaloniaObject` 已实现 `INotifyPropertyChanged`：`[INotifyPropertyChanged]` 报 MVVMTK0001，`[ObservableProperty]` 不再生成 `On<Prop>Changed` 声明（手写实现报 CS0759） | 后续新页面直接照此写法，不要再挂这两个特性 |
+| `BitmapImage` + `SetSourceAsync(stream.AsRandomAccessStream())` | WinUI 图片，源为 `ms-appx:///...` 或网络流 | `new Avalonia.Media.Imaging.Bitmap(stream)`；`ms-appx:///Assets/...` 走 `GameRecordAssets.FromMsAppx()`（`AppContext.BaseDirectory` + 相对路径） | Avalonia 无 `BitmapImage`；`Starward.Assets` 内容包把图片铺到输出目录 | `Controls/CachedImage` 落地后优先换回（带缩略图缓存） |
+| XAML 里的 `Source="ms-appx:///Assets/Image/x.png"` | WinUI 包 URI | `Source="avares://LunarWard/Assets/Image/x.png"`（`Assets/**` 已声明为 `AvaloniaResource`） | Avalonia 资源 URI 方案名是 `avares` | — |
+| `KeyRoutedEventArgs` / `Windows.System.VirtualKey.Enter` | WinUI 键盘事件 | `Avalonia.Input.KeyEventArgs` / `Key.Enter` | 类型名不同 | — |
+| `TextBlock.IsTextTrimmedChanged`（3 处） | 文本截断时机事件 | 事件处理删除 | Avalonia 无该事件 | 无（上游也没什么逻辑） |
+| `ColorRectChart.ChartLegend`（3 处页面 6 处用法） | 嵌套类型 | 顶层 `LunarWard.Controls.ChartLegend`（`record struct`） | 本仓库移植时提为顶层类型 | — |
+| `NavigationView` + `NavigationViewItem` + `ItemInvoked`（`GameRecordPage`） | NuGet/系统导航控件，左侧 Pane，`ItemInvoked` 里按 `Tag` 选页；两个特殊项（战斗记录、更新设备指纹）用 `Tapped` 事件以免焦点回收 | `SplitView`（`DisplayMode=Inline`、`IsPaneOpen`、`PanePlacement=Left`）+ Pane 内 `Grid RowDefinitions="Auto,*,Auto"`（头像区 / `ListBox x:Name="ListBox_Toolbox"` / 底部按钮）+ `SelectionChanged` 里按 `(item.Tag as string) switch` 选页；两个特殊项改成 `Button` + `Click` | Avalonia 没有 `NavigationView`；`SplitView` 是等价的双栏骨架 | 导航切页时若需要「选中态」，在 `ListBox` 上补 `SelectedItem` 同步 |
+| `Frame`（`Frame x:Name="frame"` / `frame.Navigate(page, parameter)` / `frame.SourcePageType`） | WinUI 导航栈 | `ContentControl x:Name="Frame_Content"` + `NavigateToPage(Type, object?)`（`Activator.CreateInstance` → 设置 `Content` → `PageBase.OnNavigatedTo`）；当前页类型记在 `_currentPageType` | Avalonia 无 `Frame`，导航栈由 code-behind 自管 | 需要返回栈时再补 `Stack<Type>` |
+| 协议对话框（`GameRecordPage` 的 5 秒倒计时） | `ContentDialog.ShowAsync()` + `PrimaryButtonText` 倒计时 + `ContentDialogResult` | `new StarwardContentDialog{...}` + `DialogService.ShowAsync(dialog, this)`；结果由 `dialog.PrimaryButtonClicked` 置 `accepted`；倒计时循环里用 `DialogService.IsDialogOpen` 判断是否已被用户关闭 | Avalonia 无 `ContentDialog`；本仓库 `DialogService` 是等价物 | — |
+| 战斗记录窗口的生命周期判断 | `_battleChronicleWindow?.AppWindow is null` 视为已关闭 | `Closed` 事件里把字段置空，`Show()`/`Activate()` 二选一 | Avalonia 无 `AppWindow` | — |
+| `BattleChronicleWindow` 的标题栏/主题/居中 | `AppWindow.TitleBar.ExtendsContentIntoTitleBar`、`RootGrid.RequestedTheme`、`DisplayArea` + `AppWindow.MoveAndResize` | `ExtendClientAreaToDecorationsHint = true`、`RootGrid.RequestedThemeVariant = ThemeVariant.Dark/Light`、`Screens.ScreenFromWindow(this).WorkingArea` 算 95% 高 16:9 再 `WindowEx.CenterInScreen(w,h)` | 属性名/API 不同 | — |
+| `WebView2`（`LoginPage`、`BBSWebBridge`） | `Microsoft.Web.WebView2` 控件 | `LunarWard.Frameworks.WebView.WebView`（WebKitGTK 4.1，见 §五） | Linux 无 WebView2 | 见下表「WebView 已知缺口」 |
+| `FontIcon Glyph="&#xE72C;"` | WinUI 图标控件 | `<TextBlock Classes="icon" Text="&#xE72C;"/>`（`StarIconFontFamily`） | Avalonia 无 `FontIcon` | — |
+| `ProgressRing` | 环形进度 | `ProgressBar IsIndeterminate="True"` | Avalonia 无 `ProgressRing` | 可自绘圆环 |
+| `ItemsRepeater` + `ItemsRepeater.Layout` + `StackLayout` | 虚拟化列表 | `ItemsControl`（默认 `StackPanel`），`Layout` 块删除 | Avalonia 用 `ItemsControl`/`ItemsRepeater`（社区包未引） | 大列表需要虚拟化时换 `ItemsRepeater` 社区包 |
+| `x:Load` / `x:Phase` | 延迟实例化 | 元素常驻 + `IsVisible` | Avalonia 无 `x:Load` | — |
+| `Grid` 上的 `Padding`/`CornerRadius`/`Background`/`BorderThickness` | WinUI `Grid` 支持这些属性 | 属性删除；需要背景/圆角时外包 `Border` | Avalonia `Grid` 没有这些属性 | 视觉细节待 UI 对齐时补 `Border` |
+| `{ThemeResource X}` / `{StaticResource X}`（WinUI 资源键） | WinUI 主题资源 | `{DynamicResource X}`（同文件内定义的 `x:Key` 保留 `StaticResource`） | Avalonia 里 `DynamicResource` 找不到键只留空值，不会抛异常 | 想还原配色时把键映射到 `Styles/Starward.axaml` 的 `Star*` 资源 |
+| 命名空间泄漏（验收脚本） | `using Microsoft.UI.Windowing;` / `Windows.Graphics;` / `Microsoft.UI;` | 删除，改 Avalonia 等价物 | 迁移规则要求不残留 WinUI 命名空间 | — |
+
+### WebView 已知缺口（移植窗口时补）
+
+| 缺口 | 上游用法 | 本仓库现状 | 影响的窗口 |
+| --- | --- | --- | --- |
+| 导航拦截 | `NavigationStarting` 里设 `args.Cancel = true` 拦站外跳转 | `CoreWebView2NavigationStartingEventArgs.Cancel` 只能记录，不生效（门面只告警） | `LoginPage`（`miyoushe`/`hoyolab` 里点外链会真的跳走） |
+| 资源嗅探只认 JSON | `WebResourceResponseReceived` 读任意响应体 | 只有 URI 含 `.json` 的资源会被抓取并提供 `GetContentAsync()` | `ZZZGachaInfoWindow` |
+| 请求头 | `args.Request.Headers.GetHeader("Cookie")` / `x-rpc-lang` | 资源响应回调不带请求头，只能用 `CookieManager.GetCookiesAsync(origin)` 重组 Cookie | `ZZZGachaInfoWindow` |
+| DevTools 协议 | `CallDevToolsProtocolMethodAsync("Page.captureScreenshot", ...)` | 只实现 `Page.captureScreenshot`（走 `webkit_web_view_get_snapshot`），其它方法抛 `PlatformNotSupportedException` | `BBSWebBridge`（截图分享功能已可用） |
+| 深浅色 | `Profile.PreferredColorScheme = Dark/Light` | WebKitGTK 无同款 API，改设 GTK `gtk-application-prefer-dark-theme`；页面自身 `prefers-color-scheme` 跟随系统 | `UpdateWindow`、`ZZZGachaInfoWindow` |
+| 虚拟主机映射 | `SetVirtualHostNameToFolderMapping` | 用自定义 scheme `appassets://<host>/<path>` + 主框架 `https://<host>/…` 重写；子资源里的绝对 https URL 不改写 | `LoginPage`（若后续要托管本地页面） |
+| 新窗口 | `NewWindowRequested` 里 `Handled = true` 后外部打开 | 门面只抛事件（WebKit 侧用 `create` 信号挡掉弹窗），外部打开由调用方做 | `UpdateWindow` |
+
+### 待办
+
+- 旧架构 `src/LunarWard/Views/Starward/Pages/Record/*` + `ViewModels/Starward/*` 暂留（导航仍指向旧页），由 lead 在外壳收口时删除。
+- `GameRecordService` 里若有需要 `AppConfig` 新配置项的路径，随 `AppConfig` 落地回填。
+
+---
+
+## 十一、Features/GameSetting（2026-10-26，settings-migrate / task-11）
+
+上游 `src/Starward/Features/GameSetting/`（7 文件）在本仓库已同名落点，本轮把「页面未接线 + 旧 VM 三件套仍在服役」的偏移收口：
+
+| 项 | 上游 | 本仓库 | 原因 |
+|---|---|---|---|
+| 页面基类 | `GameSettingPage : PageBase`（WinUI `Page`，Frame 负责 `OnNavigatedTo(GameId)`） | `GameSettingPage : StarwardPage`（ctor `PageContext`，无参 `OnNavigatedTo()`） | 宿主 `StarwardShell.CreatePage` 返回 `StarwardPage`；本仓库 `Frameworks/PageBase` 是 WinUI PageBase 的 Avalonia 等价物但**不是**宿主页基类。页面内部用私有 `CurrentGameId`/`CurrentGameBiz` 字段复刻上游 PageBase 语义（从 `Context.Profile.Profile` 经 `LauncherService.BuildGameInfo` 推导，`bh3_global` → 区域映射保留） |
+| 初始化时机 | `PageBase.Loaded` → `InitializeGameSettingAsync` | 首次 `OnNavigatedTo()` 后 `InitializeAsync()`（`_initialized` 守卫，页缓存不重复初始化） | Avalonia 无 Frame 生命周期；宿主每次切页都会调 `OnNavigatedTo`，需与「只加载一次」对齐 |
+| 绑定根 | `x:Bind`（编译期绑定页面自身） | `DataContext = this` + `{Binding}`（XAML 不改绑定名） | Avalonia 编译绑定需要 `x:DataType`；上游这个页面是 `x:Bind` 直连 code-behind |
+| 屏幕分辨率 | `DisplayArea` | `TopLevel.Screens.Primary`（宽度/高度过滤 17 个常见分辨率） | 无 WinRT |
+| HDR | `DisplayInformation` + `AdvancedColorInfoChanged` | HDR 一律「不支持」（`HDRNotSupported`，不显示警示条） | Linux 无 WinRT 高级颜色 API（同 §七 #25） |
+| 语音/画质写入 | `GameSettingService` 直接改注册表 | 同名 `GameSettingService`，注册表走 `WineRegistry`（Wine 子进程） | 见 §七 表格 #10 |
+
+**同批删除（消灭本地发明）**：`Views/Starward/Pages/GameSettingPage.axaml(.cs)`（48 KB，`x:DataType=vm:GameSettingPageViewModel`）、`ViewModels/Starward/GameSettingPageViewModel.cs`（1672 行）、`GameSettingProgramViewModel.cs`（585 行）、`GameSettingOptions.cs`。宿主 `StarwardShell.CreatePage` 的 `ShellPage.GameSetting` 分支改为 `Features.GameSetting.GameSettingPage`。
+`Services/GameSettingRegistry.cs` 保留（单测 `WineRegistryTests` 覆盖其注册表键映射，与页面无关）。
+**未移植（明确缺口）**：无（上游 7 个文件全部有同名落点）。

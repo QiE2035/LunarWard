@@ -1,9 +1,8 @@
-<sf:PageBase x:Class="LunarWard.Features.GameSetting.GameSettingPage"
+<UserControl x:Class="LunarWard.Features.GameSetting.GameSettingPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:lang="using:LunarWard.Language"
-             xmlns:local="using:LunarWard.Features.GameSetting"
-             xmlns:sf="using:LunarWard.Frameworks">
+             xmlns:local="using:LunarWard.Features.GameSetting">
   <!-- 移植自 Starward/src/Starward/Features/GameSetting/GameSettingPage.xaml。
        替换：Visibility→IsVisible、ThemeResource→DynamicResource、NumberBox→NumericUpDown、
        InfoBar→Border 内文字（Avalonia 无 InfoBar）、x:Bind→Binding。 -->
@@ -158,4 +157,4 @@
       </StackPanel>
     </Grid>
   </Grid>
-</sf:PageBase>
+</UserControl>
