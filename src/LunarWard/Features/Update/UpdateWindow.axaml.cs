@@ -39,8 +39,8 @@ namespace LunarWard.Features.Update;
 /// <item><c>DispatcherQueueTimer</c> → <see cref="DispatcherTimer"/>。</item>
 /// <item><c>Windows.System.Launcher</c> → <see cref="Frameworks.ShellHelper.OpenUri"/>（xdg-open 语义）。</item>
 /// <item>WebView2 初始化失败的 <c>COMException</c> → <see cref="InvalidOperationException"/>（WebKitGTK 缺失时抛出）。</item>
-/// <item><c>Finish()</c> 里的 <c>RpcService.KeepRunningOnExited(false, noLongerChange: true)</c>：本仓库 Features/RPC 尚未移植，
-/// 留 <c>TODO(port)</c>，不改变其余流程。</item>
+/// <item><c>Finish()</c> 里的 <c>RpcService.KeepRunningOnExited(false, noLongerChange: true)</c>：与上游一致调用本仓库
+/// <c>Features/RPC/RpcService</c>（Unix socket 版），语义相同。</item>
 /// <item><c>Win32Exception(1223)</c>（UAC 取消）在 Linux 不存在对应错误码，删除该 catch 分支。</item>
 /// </list>
 /// </remarks>
