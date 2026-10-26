@@ -2,7 +2,9 @@
 
 > 由 `python3 scripts/port-backlog.py --write` 生成，勿手改表格；人工结论写在每节标题下的「备注」里。
 
-上游文件 **314** 个，本地已有同名落点 **301** 个，**缺 13** 个；本地独有文件 **338** 个（需并入 Features 或删除）。
+上游文件 **314** 个，本地已有同名落点 **308** 个，**缺 6** 个；本地独有文件 **279** 个（需并入 Features 或删除）。
+
+> 注：上表「缺」包含以**等价实现**承载的上游文件（WinUI/Win32 专有物，见`scripts/check-alignment.py` 的 `EQUIVALENTS`）；等价项在 `check-alignment.py` 里单独计数、不计为失败。文件级对齐以 `check-alignment.py` 的 `missing: []` 为准。
 
 判定标准：上游相对路径在本地存在（`.xaml` ↔ `.axaml`）。「有文件」只说明路径对齐，内容是否已按上游实现，需要逐节核对。
 
@@ -14,7 +16,7 @@
 | Features/Gacha | 40 | 40 | 0 |
 | Features/GameLauncher | 26 | 26 | 0 |
 | Features/Setting | 25 | 25 | 0 |
-| Features/Screenshot | 23 | 19 | 4 |
+| Features/Screenshot | 23 | 23 | 0 |
 | Features/ViewHost | 20 | 18 | 2 |
 | Helpers | 16 | 14 | 2 |
 | Features/PlayTime | 14 | 14 | 0 |
@@ -24,10 +26,10 @@
 | Features/Codec | 8 | 8 | 0 |
 | Features/Update | 8 | 8 | 0 |
 | Features/GameSetting | 7 | 7 | 0 |
-| Features/GameSelector | 6 | 5 | 1 |
+| Features/GameSelector | 6 | 6 | 0 |
 | Controls | 5 | 3 | 2 |
 | Features/GameAccount | 5 | 5 | 0 |
-| Features/Overlay | 4 | 2 | 2 |
+| Features/Overlay | 4 | 4 | 0 |
 | Features/SelfQuery | 4 | 4 | 0 |
 | Features/CloudGame | 3 | 3 | 0 |
 | Features/GamepadControl | 3 | 3 | 0 |
@@ -61,33 +63,9 @@
 
 路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/Screenshot（19/23）
+## Features/Screenshot（23/23）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/Screenshot/ImageBatchConvertWindow.xaml` | ❌ 缺 |
-| `Features/Screenshot/ImageBatchConvertWindow.xaml.cs` | ❌ 缺 |
-| `Features/Screenshot/ImageViewWindow.xaml` | `Features/Screenshot/ImageViewWindow.axaml` |
-| `Features/Screenshot/ImageViewWindow.xaml.cs` | `Features/Screenshot/ImageViewWindow.axaml.cs` |
-| `Features/Screenshot/ImageViewWindow2.xaml` | `Features/Screenshot/ImageViewWindow2.axaml` |
-| `Features/Screenshot/ImageViewWindow2.xaml.cs` | `Features/Screenshot/ImageViewWindow2.axaml.cs` |
-| `Features/Screenshot/ScreenCaptureContext.cs` | `Features/Screenshot/ScreenCaptureContext.cs` |
-| `Features/Screenshot/ScreenCaptureHelper.cs` | `Features/Screenshot/ScreenCaptureHelper.cs` |
-| `Features/Screenshot/ScreenCaptureInfoWindow.xaml` | ❌ 缺 |
-| `Features/Screenshot/ScreenCaptureInfoWindow.xaml.cs` | ❌ 缺 |
-| `Features/Screenshot/ScreenCaptureItem.cs` | `Features/Screenshot/ScreenCaptureItem.cs` |
-| `Features/Screenshot/ScreenCaptureService.cs` | `Features/Screenshot/ScreenCaptureService.cs` |
-| `Features/Screenshot/ScreenshotFolder.cs` | `Features/Screenshot/ScreenshotFolder.cs` |
-| `Features/Screenshot/ScreenshotFolderManageDialog.xaml` | `Features/Screenshot/ScreenshotFolderManageDialog.axaml` |
-| `Features/Screenshot/ScreenshotFolderManageDialog.xaml.cs` | `Features/Screenshot/ScreenshotFolderManageDialog.axaml.cs` |
-| `Features/Screenshot/ScreenshotHelper.cs` | `Features/Screenshot/ScreenshotHelper.cs` |
-| `Features/Screenshot/ScreenshotItem.cs` | `Features/Screenshot/ScreenshotItem.cs` |
-| `Features/Screenshot/ScreenshotPage.xaml` | `Features/Screenshot/ScreenshotPage.axaml` |
-| `Features/Screenshot/ScreenshotPage.xaml.cs` | `Features/Screenshot/ScreenshotPage.axaml.cs` |
-| `Features/Screenshot/ScreenshotPage2.xaml` | `Features/Screenshot/ScreenshotPage2.axaml` |
-| `Features/Screenshot/ScreenshotPage2.xaml.cs` | `Features/Screenshot/ScreenshotPage2.axaml.cs` |
-| `Features/Screenshot/ScrollViewerExtensions.cs` | `Features/Screenshot/ScrollViewerExtensions.cs` |
-| `Features/Screenshot/ZoomFactorPercentConverter.cs` | `Features/Screenshot/ZoomFactorPercentConverter.cs` |
+路径已全部对齐（内容仍需逐文件核对）。
 
 ## Features/ViewHost（18/20）
 
@@ -163,16 +141,9 @@
 
 路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/GameSelector（5/6）
+## Features/GameSelector（6/6）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/GameSelector/GameBizDisplay.cs` | `Features/GameSelector/GameBizDisplay.cs` |
-| `Features/GameSelector/GameBizIcon.cs` | `Features/GameSelector/GameBizIcon.cs` |
-| `Features/GameSelector/GameSelector.xaml` | `Features/GameSelector/GameSelector.axaml` |
-| `Features/GameSelector/GameSelector.xaml.cs` | `Features/GameSelector/GameSelector.axaml.cs` |
-| `Features/GameSelector/MainWindowDragRectAdaptToGameIconMessage.cs` | `Features/GameSelector/MainWindowDragRectAdaptToGameIconMessage.cs` |
-| `Features/GameSelector/NoAnimationImageExStyle.xaml` | ❌ 缺 |
+路径已全部对齐（内容仍需逐文件核对）。
 
 ## Controls（3/5）
 
@@ -188,14 +159,9 @@
 
 路径已全部对齐（内容仍需逐文件核对）。
 
-## Features/Overlay（2/4）
+## Features/Overlay（4/4）
 
-| 上游文件 | 本地落点 |
-|---|---|
-| `Features/Overlay/OverlayWindow.xaml` | ❌ 缺 |
-| `Features/Overlay/OverlayWindow.xaml.cs` | ❌ 缺 |
-| `Features/Overlay/RunningGame.cs` | `Features/Overlay/RunningGame.cs` |
-| `Features/Overlay/RunningGameService.cs` | `Features/Overlay/RunningGameService.cs` |
+路径已全部对齐（内容仍需逐文件核对）。
 
 ## Features/SelfQuery（4/4）
 
@@ -267,16 +233,12 @@
 
 - `App.axaml`
 - `App.axaml.cs`
-- `AppServices.cs`
+- `AppConfig.Setting.LinuxExtensions.cs`
 - `Controls/ColorRectChart.cs`
 - `Controls/ColorfulTextBlock.axaml`
 - `Controls/ColorfulTextBlock.axaml.cs`
-- `Controls/GachaStatsCard.axaml`
-- `Controls/GachaStatsCard.axaml.cs`
 - `Controls/PlayTimeBarChart.cs`
 - `Controls/PlayTimeCalendarHeatmap.cs`
-- `Controls/ZZZGachaStatsCard.axaml`
-- `Controls/ZZZGachaStatsCard.axaml.cs`
 - `Features/Background/AppBackground.axaml`
 - `Features/Background/AppBackground.axaml.cs`
 - `Features/Background/AppBackgroundImageExStyle.axaml`
@@ -288,6 +250,7 @@
 - `Features/CloudGame/CloudGameButton.axaml.cs`
 - `Features/Codec/ColorPrimaries.cs`
 - `Features/Codec/PngCodec.cs`
+- `Features/Database/DatabaseFilePermissions.cs`
 - `Features/Gacha/CloudGameGachaWindow.axaml`
 - `Features/Gacha/CloudGameGachaWindow.axaml.cs`
 - `Features/Gacha/DeleteGachaLogDialog.axaml`
@@ -309,10 +272,39 @@
 - `Features/GameAccount/GameAccountSwitcher.axaml.cs`
 - `Features/GameInstall/InstallGameDialog.axaml`
 - `Features/GameInstall/InstallGameDialog.axaml.cs`
+- `Features/GameInstall/Installer/ArchiveExtractor.cs`
+- `Features/GameInstall/Installer/DiffMap.cs`
+- `Features/GameInstall/Installer/DiffPatcher.cs`
+- `Features/GameInstall/Installer/DriveHelper.cs`
+- `Features/GameInstall/Installer/FileCombinedStream.cs`
+- `Features/GameInstall/Installer/FileSliceStream.cs`
+- `Features/GameInstall/Installer/GameInstallContext.cs`
+- `Features/GameInstall/Installer/GameInstallController.cs`
+- `Features/GameInstall/Installer/GameInstallDownloadMode.cs`
+- `Features/GameInstall/Installer/GameInstallFile.cs`
+- `Features/GameInstall/Installer/GameInstallHelper.cs`
+- `Features/GameInstall/Installer/GameInstallOperation.cs`
+- `Features/GameInstall/Installer/GameInstallService.cs`
+- `Features/GameInstall/Installer/GameInstallState.cs`
+- `Features/GameInstall/Installer/GamePackageService.cs`
+- `Features/GameInstall/Installer/HardLink.cs`
+- `Features/GameInstall/Installer/InstallMessages.cs`
+- `Features/GameInstall/Installer/InstallerHttpClientFactory.cs`
+- `Features/GameInstall/Installer/InstallerLogger.cs`
+- `Features/GameInstall/Installer/ParentProcessWatcher.cs`
+- `Features/GameInstall/Installer/PkgVersionItem.cs`
+- `Features/GameInstall/Installer/PredownloadFile.cs`
+- `Features/GameInstall/Installer/ProtoReader.cs`
+- `Features/GameInstall/Installer/SophonManifest.cs`
+- `Features/GameInstall/Installer/TokenBucketRateLimiter.cs`
 - `Features/GameInstall/PreDownloadButton.axaml`
 - `Features/GameInstall/PreDownloadButton.axaml.cs`
 - `Features/GameInstall/PreDownloadDialog.axaml`
 - `Features/GameInstall/PreDownloadDialog.axaml.cs`
+- `Features/GameLauncher/AssemblyInfo.cs`
+- `Features/GameLauncher/BilibiliPluginDownloader.cs`
+- `Features/GameLauncher/ChannelModel.cs`
+- `Features/GameLauncher/ChannelValidator.cs`
 - `Features/GameLauncher/CompactCheckBoxStyle.axaml`
 - `Features/GameLauncher/DX12IntroDialog.axaml`
 - `Features/GameLauncher/DX12IntroDialog.axaml.cs`
@@ -320,6 +312,8 @@
 - `Features/GameLauncher/GameAuthLoginButton.axaml.cs`
 - `Features/GameLauncher/GameBannerAndPost.axaml`
 - `Features/GameLauncher/GameBannerAndPost.axaml.cs`
+- `Features/GameLauncher/GameCatalog.cs`
+- `Features/GameLauncher/GameConfigIniFile.cs`
 - `Features/GameLauncher/GameLauncherPage.axaml`
 - `Features/GameLauncher/GameLauncherPage.axaml.cs`
 - `Features/GameLauncher/GameLauncherSettingDialog.axaml`
@@ -336,6 +330,7 @@
 - `Features/GameRecord/DailyNote/DailyNoteButton.axaml`
 - `Features/GameRecord/DailyNote/DailyNoteButton.axaml.cs`
 - `Features/GameRecord/GameRecordAssets.cs`
+- `Features/GameRecord/GameRecordConverters.cs`
 - `Features/GameRecord/GameRecordPage.axaml`
 - `Features/GameRecord/GameRecordPage.axaml.cs`
 - `Features/GameRecord/Genshin/ImaginariumTheaterPage.axaml`
@@ -369,6 +364,7 @@
 - `Features/GameRecord/ZZZ/ShiyuDefensePage.axaml.cs`
 - `Features/GameSelector/GameSelector.axaml`
 - `Features/GameSelector/GameSelector.axaml.cs`
+- `Features/GameSelector/NoAnimationImageExStyle.axaml`
 - `Features/GameSetting/GameSettingPage.axaml`
 - `Features/GameSetting/GameSettingPage.axaml.cs`
 - `Features/GameSetting/GenshinHDRLuminanceSettingDialog.axaml`
@@ -378,14 +374,20 @@
 - `Features/GamepadControl/SimulateInputTipsWindow.axaml`
 - `Features/GamepadControl/SimulateInputTipsWindow.axaml.cs`
 - `Features/GamepadControl/X11Input.cs`
+- `Features/Overlay/OverlayWindow.axaml`
+- `Features/Overlay/OverlayWindow.axaml.cs`
 - `Features/PlayTime/PlayTimeButton.axaml`
 - `Features/PlayTime/PlayTimeButton.axaml.cs`
 - `Features/PlayTime/PlayTimeStatsDialog.axaml`
 - `Features/PlayTime/PlayTimeStatsDialog.axaml.cs`
+- `Features/Screenshot/ImageBatchConvertWindow.axaml`
+- `Features/Screenshot/ImageBatchConvertWindow.axaml.cs`
 - `Features/Screenshot/ImageViewWindow.axaml`
 - `Features/Screenshot/ImageViewWindow.axaml.cs`
 - `Features/Screenshot/ImageViewWindow2.axaml`
 - `Features/Screenshot/ImageViewWindow2.axaml.cs`
+- `Features/Screenshot/ScreenCaptureInfoWindow.axaml`
+- `Features/Screenshot/ScreenCaptureInfoWindow.axaml.cs`
 - `Features/Screenshot/ScreenshotFolderManageDialog.axaml`
 - `Features/Screenshot/ScreenshotFolderManageDialog.axaml.cs`
 - `Features/Screenshot/ScreenshotPage.axaml`
@@ -413,9 +415,9 @@
 - `Features/Setting/ScreenshotSetting.axaml`
 - `Features/Setting/ScreenshotSetting.axaml.cs`
 - `Features/Setting/SettingLanguageOption.cs`
+- `Features/Setting/SettingLocalization.cs`
 - `Features/Setting/SettingPage.axaml`
 - `Features/Setting/SettingPage.axaml.cs`
-- `Features/Setting/SettingPageBase.cs`
 - `Features/Setting/SettingShellActions.cs`
 - `Features/Setting/ToolboxSetting.axaml`
 - `Features/Setting/ToolboxSetting.axaml.cs`
@@ -436,9 +438,14 @@
 - `Features/ViewHost/SystemTrayWindow.cs`
 - `Features/ViewHost/WelcomeWindow.axaml`
 - `Features/ViewHost/WelcomeWindow.axaml.cs`
+- `Frameworks/Dialogs/StarwardContentDialog.axaml`
+- `Frameworks/Dialogs/StarwardContentDialog.axaml.cs`
 - `Frameworks/FontIcon.cs`
 - `Frameworks/Frame.cs`
 - `Frameworks/NavigationView.cs`
+- `Frameworks/Pivot.cs`
+- `Frameworks/ShellHelper.cs`
+- `Frameworks/SingleInstance.cs`
 - `Frameworks/StartupUi.cs`
 - `Frameworks/WebView/CoreWebView2Compat.cs`
 - `Frameworks/WebView/GtkRuntime.cs`
@@ -452,8 +459,28 @@
 - `Frameworks/WebView/WebView.cs`
 - `Frameworks/WebView/WebViewAvailability.cs`
 - `Helpers/ToastItem.cs`
+- `Launch/DailyNoteService.cs`
+- `Launch/ExternalProgram.cs`
+- `Launch/GameLogPump.cs`
+- `Launch/LaunchEngine.cs`
+- `Launch/LaunchError.cs`
+- `Launch/LaunchPlan.cs`
+- `Launch/LaunchPlanFactory.cs`
+- `Launch/LaunchReport.cs`
+- `Launch/LauncherConfig.cs`
+- `Launch/ProfileConfig.cs`
+- `Launch/ScreenshotService.cs`
+- `Launch/ToolboxSettings.cs`
+- `Launch/UrlProtocol.cs`
 - `Localization/AppStrings.cs`
-- `Services/AnnouncementService.cs`
+- `Platform/AutostartEntry.cs`
+- `Platform/FileSystem.cs`
+- `Platform/LinuxProcessTree.cs`
+- `Platform/LinuxSystemInfo.cs`
+- `Platform/ProcessController.cs`
+- `Platform/ProcessLauncher.cs`
+- `Platform/Unix/Libc.cs`
+- `Platform/XdgPaths.cs`
 - `Services/AppVersion.cs`
 - `Services/BackgroundCatalog.cs`
 - `Services/BackgroundService.cs`
@@ -461,146 +488,26 @@
 - `Services/CloseWindowDecision.cs`
 - `Services/DialogReentrancyGate.cs`
 - `Services/DialogService.cs`
-- `Services/GachaIconCache.cs`
 - `Services/GameAssets.cs`
 - `Services/GameScanner.cs`
 - `Services/GameSettingRegistry.cs`
 - `Services/GameUninstaller.cs`
-- `Services/InAppToast.cs`
-- `Services/InstallerLogAdapter.cs`
-- `Services/LauncherService.cs`
 - `Services/ReleaseChecker.cs`
-- `Services/SingleInstance.cs`
-- `Services/StartupCommands.cs`
 - `Services/StarwardAssets.cs`
-- `Services/ToolboxDemo.cs`
-- `Services/TrayService.cs`
 - `Services/VideoBackgroundPlayer.cs`
 - `Services/WineRegistry.cs`
 - `Styles/Starward.axaml`
 - `SupportedPlatform.cs`
-- `ViewModels/AccountViewModel.cs`
-- `ViewModels/DailyNoteViewModel.cs`
-- `ViewModels/DiagnosticViewModel.cs`
-- `ViewModels/EnvironmentShellViewModel.cs`
-- `ViewModels/ProfileItemViewModel.cs`
-- `ViewModels/ScreenshotViewModel.cs`
-- `ViewModels/SettingsViewModel.cs`
-- `ViewModels/Starward/ApocalypticShadowPageViewModel.cs`
-- `ViewModels/Starward/ChallengePeakPageViewModel.cs`
-- `ViewModels/Starward/DailyNoteButtonViewModel.cs`
-- `ViewModels/Starward/DeadlyAssaultPageViewModel.cs`
-- `ViewModels/Starward/DeleteGachaLogDialogViewModel.cs`
-- `ViewModels/Starward/ForgottenHallPageViewModel.cs`
-- `ViewModels/Starward/GachaPageViewModel.cs`
-- `ViewModels/Starward/GachaPoolCardViewModel.cs`
-- `ViewModels/Starward/GachaStatsViewModels.cs`
-- `ViewModels/Starward/GameAuthLoginViewModel.cs`
-- `ViewModels/Starward/GameChoiceViewModel.cs`
-- `ViewModels/Starward/GameLauncherPageViewModel.cs`
-- `ViewModels/Starward/GenshinBeyondGachaPageViewModel.cs`
-- `ViewModels/Starward/ImageViewWindow2State.cs`
-- `ViewModels/Starward/ImageViewWindow2ViewModel.cs`
-- `ViewModels/Starward/ImaginariumTheaterPageViewModel.cs`
-- `ViewModels/Starward/InterKnotMonthlyReportPageViewModel.cs`
-- `ViewModels/Starward/PredownloadButtonState.cs`
-- `ViewModels/Starward/PureFictionPageViewModel.cs`
-- `ViewModels/Starward/ScreenshotFolderItem.cs`
-- `ViewModels/Starward/ScreenshotFolderManageDialogViewModel.cs`
-- `ViewModels/Starward/ScreenshotMonthIndex.cs`
-- `ViewModels/Starward/ScreenshotPageViewModel.cs`
-- `ViewModels/Starward/SelfQueryPageViewModel.cs`
-- `ViewModels/Starward/ShellViewModel.cs`
-- `ViewModels/Starward/ShiyuDefensePageViewModel.cs`
-- `ViewModels/Starward/SimulatedUniversePageViewModel.cs`
-- `ViewModels/Starward/SpiralAbyssPageViewModel.cs`
-- `ViewModels/Starward/StarwardPageViewModel.cs`
-- `ViewModels/Starward/StygianOnslaughtPageViewModel.cs`
-- `ViewModels/Starward/ToolboxPageViewModel.cs`
-- `ViewModels/Starward/TrailblazeCalendarPageViewModel.cs`
-- `ViewModels/Starward/TravelersDiaryPageViewModel.cs`
-- `ViewModels/Starward/Uigf4GachaWindowViewModel.cs`
-- `Views/AccountWindow.axaml`
-- `Views/AccountWindow.axaml.cs`
-- `Views/DailyNoteWindow.axaml`
-- `Views/DailyNoteWindow.axaml.cs`
-- `Views/DiagnosticWindow.axaml`
-- `Views/DiagnosticWindow.axaml.cs`
-- `Views/SettingsWindow.axaml`
-- `Views/SettingsWindow.axaml.cs`
-- `Views/Starward/BackgroundGalleryItem.cs`
-- `Views/Starward/BackgroundViewDialog.axaml`
-- `Views/Starward/BackgroundViewDialog.axaml.cs`
-- `Views/Starward/Controls/ColorRectChart.cs`
-- `Views/Starward/Controls/StarwardContentDialog.axaml`
-- `Views/Starward/Controls/StarwardContentDialog.axaml.cs`
-- `Views/Starward/DX12IntroDialog.axaml`
-- `Views/Starward/DX12IntroDialog.axaml.cs`
-- `Views/Starward/DeleteGachaLogDialog.axaml`
-- `Views/Starward/DeleteGachaLogDialog.axaml.cs`
-- `Views/Starward/GameLauncherSettingDialog.axaml`
-- `Views/Starward/GameLauncherSettingDialog.axaml.cs`
-- `Views/Starward/ImageViewWindow2.axaml`
-- `Views/Starward/ImageViewWindow2.axaml.cs`
-- `Views/Starward/InstallGameDialog.axaml`
-- `Views/Starward/InstallGameDialog.axaml.cs`
-- `Views/Starward/Legacy/ShellWindow.axaml`
-- `Views/Starward/Legacy/ShellWindow.axaml.cs`
-- `Views/Starward/MainWindow.axaml`
-- `Views/Starward/MainWindow.axaml.cs`
-- `Views/Starward/MainWindowCloseDialog.axaml`
-- `Views/Starward/MainWindowCloseDialog.axaml.cs`
-- `Views/Starward/NavigationRail.axaml`
-- `Views/Starward/NavigationRail.axaml.cs`
-- `Views/Starward/PageContracts.cs`
-- `Views/Starward/Pages/GachaPage.axaml`
-- `Views/Starward/Pages/GachaPage.axaml.cs`
-- `Views/Starward/Pages/GameLauncherPage.axaml`
-- `Views/Starward/Pages/GameLauncherPage.axaml.cs`
-- `Views/Starward/Pages/GenshinBeyondGachaPage.axaml`
-- `Views/Starward/Pages/GenshinBeyondGachaPage.axaml.cs`
-- `Views/Starward/Pages/Record/ApocalypticShadowPage.axaml`
-- `Views/Starward/Pages/Record/ApocalypticShadowPage.axaml.cs`
-- `Views/Starward/Pages/Record/ChallengePeakPage.axaml`
-- `Views/Starward/Pages/Record/ChallengePeakPage.axaml.cs`
-- `Views/Starward/Pages/Record/DeadlyAssaultPage.axaml`
-- `Views/Starward/Pages/Record/DeadlyAssaultPage.axaml.cs`
-- `Views/Starward/Pages/Record/ForgottenHallPage.axaml`
-- `Views/Starward/Pages/Record/ForgottenHallPage.axaml.cs`
-- `Views/Starward/Pages/Record/ImaginariumTheaterPage.axaml`
-- `Views/Starward/Pages/Record/ImaginariumTheaterPage.axaml.cs`
-- `Views/Starward/Pages/Record/InterKnotMonthlyReportPage.axaml`
-- `Views/Starward/Pages/Record/InterKnotMonthlyReportPage.axaml.cs`
-- `Views/Starward/Pages/Record/PureFictionPage.axaml`
-- `Views/Starward/Pages/Record/PureFictionPage.axaml.cs`
-- `Views/Starward/Pages/Record/ShiyuDefensePage.axaml`
-- `Views/Starward/Pages/Record/ShiyuDefensePage.axaml.cs`
-- `Views/Starward/Pages/Record/SimulatedUniversePage.axaml`
-- `Views/Starward/Pages/Record/SimulatedUniversePage.axaml.cs`
-- `Views/Starward/Pages/Record/SpiralAbyssPage.axaml`
-- `Views/Starward/Pages/Record/SpiralAbyssPage.axaml.cs`
-- `Views/Starward/Pages/Record/StygianOnslaughtPage.axaml`
-- `Views/Starward/Pages/Record/StygianOnslaughtPage.axaml.cs`
-- `Views/Starward/Pages/Record/TrailblazeCalendarPage.axaml`
-- `Views/Starward/Pages/Record/TrailblazeCalendarPage.axaml.cs`
-- `Views/Starward/Pages/Record/TravelersDiaryPage.axaml`
-- `Views/Starward/Pages/Record/TravelersDiaryPage.axaml.cs`
-- `Views/Starward/Pages/ScreenshotPage.axaml`
-- `Views/Starward/Pages/ScreenshotPage.axaml.cs`
-- `Views/Starward/Pages/SelfQueryPage.axaml`
-- `Views/Starward/Pages/SelfQueryPage.axaml.cs`
-- `Views/Starward/Pages/ToolboxPage.axaml`
-- `Views/Starward/Pages/ToolboxPage.axaml.cs`
-- `Views/Starward/PlayTimeStatsDialog.axaml`
-- `Views/Starward/PlayTimeStatsDialog.axaml.cs`
-- `Views/Starward/PreDownloadDialog.axaml`
-- `Views/Starward/PreDownloadDialog.axaml.cs`
-- `Views/Starward/ScreenshotFolderManageDialog.axaml`
-- `Views/Starward/ScreenshotFolderManageDialog.axaml.cs`
-- `Views/Starward/StarwardPage.cs`
-- `Views/Starward/StarwardShell.axaml`
-- `Views/Starward/StarwardShell.axaml.cs`
-- `Views/Starward/UiTypography.cs`
-- `Views/Starward/Uigf4GachaWindow.axaml`
-- `Views/Starward/Uigf4GachaWindow.axaml.cs`
+- `Wine/ComponentInstaller.cs`
+- `Wine/ComponentRepository.cs`
+- `Wine/DxvkManager.cs`
+- `Wine/GameAdapter.cs`
+- `Wine/KeywordReplacer.cs`
+- `Wine/PrefixManager.cs`
+- `Wine/RunnerResolver.cs`
+- `Wine/RuntimeModel.cs`
+- `Wine/RuntimeResolver.cs`
+- `Wine/RuntimeSettings.cs`
+- `Wine/WineAccountService.cs`
+- `Wine/WineRegistryInstallPathProvider.cs`
 

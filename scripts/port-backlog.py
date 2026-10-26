@@ -52,6 +52,10 @@ lines.append('')
 lines.append(f'上游文件 **{len(up)}** 个，本地已有同名落点 **{len(up) - missing}** 个，'
              f'**缺 {missing}** 个；本地独有文件 **{len(local_only)}** 个（需并入 Features 或删除）。')
 lines.append('')
+lines.append('> 注：上表「缺」包含以**等价实现**承载的上游文件（WinUI/Win32 专有物，见'
+             '`scripts/check-alignment.py` 的 `EQUIVALENTS`）；等价项在 `check-alignment.py` 里单独计数、'
+             '不计为失败。文件级对齐以 `check-alignment.py` 的 `missing: []` 为准。')
+lines.append('')
 lines.append('判定标准：上游相对路径在本地存在（`.xaml` ↔ `.axaml`）。「有文件」只说明'
              '路径对齐，内容是否已按上游实现，需要逐节核对。')
 lines.append('')

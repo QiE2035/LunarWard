@@ -40,6 +40,8 @@ internal static class DatabaseService
     {
         var con = new SqliteConnection(_connectionString);
         con.Open();
+        // 平台扩展：Linux 无 Windows 目录 ACL，打开后收紧数据库与 WAL 侧车文件权限（见 DatabaseFilePermissions）。
+        DatabaseFilePermissions.Harden(con.DataSource);
         return con;
     }
 
@@ -102,6 +104,7 @@ internal static class DatabaseService
         {
             con.Execute(sql);
         }
+        DatabaseFilePermissions.Harden(con.DataSource);
     }
 
 
