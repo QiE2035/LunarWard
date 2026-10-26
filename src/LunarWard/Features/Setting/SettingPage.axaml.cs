@@ -147,7 +147,7 @@ public partial class SettingPage : SettingPageBase
         SettingSectionKind.FileManage => new FileManageSetting(Context, ConfirmAsync),
         SettingSectionKind.Screenshot => new ScreenshotSetting(Context),
         SettingSectionKind.Hotkey => new HotkeySetting(Context),
-        SettingSectionKind.Gamepad => new GamepadSetting(Context),
+        SettingSectionKind.Gamepad => new GamepadControlSetting(Context),
         SettingSectionKind.Advanced => new AdvancedSetting(Context),
         SettingSectionKind.Toolbox => new ToolboxSetting(Context),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),

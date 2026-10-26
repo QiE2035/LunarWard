@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Views.Starward;
 using LunarWard.Launch;
+using UrlProtocol = LunarWard.Launch.UrlProtocol;
 
 namespace LunarWard.Features.Setting;
 

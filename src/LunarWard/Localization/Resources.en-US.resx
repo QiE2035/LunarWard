@@ -3228,4 +3228,16 @@
   <data name="Launcher.BackgroundCurrent" xml:space="preserve">
     <value>Current</value>
   </data>
+  <data name="Settings.Hotkey.Editing" xml:space="preserve">
+    <value>Press the shortcut keys…</value>
+  </data>
+  <data name="Settings.Hotkey.Delete" xml:space="preserve">
+    <value>Delete shortcut</value>
+  </data>
+  <data name="Settings.Hotkey.CancelEdit" xml:space="preserve">
+    <value>Cancel edit</value>
+  </data>
+  <data name="Settings.Hotkey.SavedNotGlobal" xml:space="preserve">
+    <value>Saved. Linux has no global hotkey support; bind it in your desktop environment's shortcut settings.</value>
+  </data>
 </root>

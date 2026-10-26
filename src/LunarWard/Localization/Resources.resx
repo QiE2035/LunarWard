@@ -3228,4 +3228,16 @@
   <data name="Launcher.BackgroundCurrent" xml:space="preserve">
     <value>当前</value>
   </data>
+  <data name="Settings.Hotkey.Editing" xml:space="preserve">
+    <value>按下快捷键…</value>
+  </data>
+  <data name="Settings.Hotkey.Delete" xml:space="preserve">
+    <value>删除快捷键</value>
+  </data>
+  <data name="Settings.Hotkey.CancelEdit" xml:space="preserve">
+    <value>取消编辑</value>
+  </data>
+  <data name="Settings.Hotkey.SavedNotGlobal" xml:space="preserve">
+    <value>已保存。Linux 暂不支持全局热键触发，请在你的桌面环境快捷键设置里绑定。</value>
+  </data>
 </root>

@@ -10,9 +10,9 @@ namespace LunarWard.Features.Setting;
 /// 稳定的方案（Steam Input 是另一个层次的东西），因此这个菜单项<b>保留</b>以对齐排版，
 /// 但页面只写清楚现状，<b>不伪造任何开关</b>。
 /// </remarks>
-public sealed partial class GamepadSetting : SettingPageBase
+public sealed partial class GamepadControlSetting : SettingPageBase
 {
-    public GamepadSetting(PageContext context)
+    public GamepadControlSetting(PageContext context)
         : base(context)
     {
         InitializeComponent();

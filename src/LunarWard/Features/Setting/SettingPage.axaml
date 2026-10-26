@@ -199,7 +199,7 @@
           </Panel>
         </ListBoxItem>
 
-        <ListBoxItem Tag="GamepadSetting">
+        <ListBoxItem Tag="GamepadControlSetting">
           <Panel Height="40">
             <Border Classes="nav-bg" Margin="4,0" CornerRadius="4" />
             <Border Classes="nav-indicator" Width="3" Height="16"

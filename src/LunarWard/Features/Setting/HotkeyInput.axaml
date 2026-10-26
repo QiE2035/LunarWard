@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LunarWard.Features.Setting.HotkeyInput">
+
+  <!--
+    1:1 复刻 Starward Features/Setting/HotkeyInput.xaml（117 行）：
+      20-74    可编辑区域（跨两列、透明背景、1px 边框、圆角 4，
+               KeyDown / KeyUp / LostFocus），内含整块透明按钮 + 4 个居中文案：
+                 编辑中（12,6,32,6，主色）
+                 点击设置快捷键（次要色）
+                 当前快捷键（次要色）
+                 警告文案（Caution 色）
+      76-82    删除按钮（EA39，次要色）
+      84-92    成功按钮（E930，Success 色，IsEnabled=False）
+      94-102   取消编辑按钮（E845，次要色）
+    行号均指 Starward/src/Starward/Features/Setting/HotkeyInput.xaml。
+
+    Avalonia 差异：上游把边框属性直接写在 Grid 上（WinUI 3 的 Panel 支持 Border*），
+    Avalonia 的 Grid 不支持，因此外层换成同尺寸/同配色的 Border，子元素布局不变。
+    文案与 tooltip 在 HotkeyInput.axaml.cs 里赋值：本控件不固定 DataContext，避免编译绑定要求 x:DataType。
+
+    Linux 差异（控件内部实现，见 HotkeyInput.axaml.cs）：
+      Win32 RegisterHotKey / GetKeyState 换成 Avalonia 的 KeyDown/KeyUp 捕获；
+      键位文本沿用 Starward 的「Ctrl + Alt + D」风格；State 的四个状态与显隐规则逐条照搬。
+  -->
+  <Grid ColumnSpacing="8">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+
+    <!-- HotkeyInput.xaml:20-74 可编辑区域 -->
+    <Border x:Name="Grid_EditHotkey"
+            Grid.ColumnSpan="2"
+            Background="Transparent"
+            BorderBrush="{StaticResource StarTextTertiary}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Focusable="True"
+            LostFocus="Grid_EditHotkey_LostFocus">
+      <Panel>
+        <Button x:Name="Button_EditHotkey"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="Transparent"
+                BorderThickness="0"
+                Click="Button_EditHotkey_Click" />
+
+        <TextBlock x:Name="TextBlock_EditingText"
+                   Margin="12,6,32,6"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{StaticResource StarTextPrimary}"
+                   IsHitTestVisible="False"
+                   IsVisible="False" />
+
+        <TextBlock x:Name="TextBlock_ClickToSetHotkey"
+                   Margin="12,6,12,6"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   IsHitTestVisible="False" />
+
+        <TextBlock x:Name="TextBlock_HotkeyText"
+                   Margin="12,6,32,6"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   IsHitTestVisible="False"
+                   IsVisible="False" />
+
+        <TextBlock x:Name="TextBlock_HotkeyText_Warning"
+                   Margin="12,6,32,6"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{StaticResource StarCautionBrush}"
+                   IsHitTestVisible="False"
+                   IsVisible="False" />
+      </Panel>
+    </Border>
+
+    <!-- HotkeyInput.xaml:76-82 删除 -->
+    <Button x:Name="Button_DeleteHotkey"
+            Grid.Column="1"
+            Margin="0,0,4,0"
+            Padding="4"
+            VerticalAlignment="Center"
+            Click="Button_DeleteHotkey_Click"
+            IsVisible="False">
+      <TextBlock Classes="icon"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="&#xEA39;" />
+    </Button>
+
+    <!-- HotkeyInput.xaml:84-92 成功 -->
+    <Button x:Name="Button_Success"
+            Grid.Column="1"
+            Margin="0,0,4,0"
+            Padding="4"
+            VerticalAlignment="Center"
+            IsEnabled="False"
+            IsVisible="False">
+      <TextBlock Classes="icon"
+                 FontSize="16"
+                 Foreground="{StaticResource StarSuccessBrush}"
+                 Text="&#xE930;" />
+    </Button>
+
+    <!-- HotkeyInput.xaml:94-102 取消编辑 -->
+    <Button x:Name="Button_CancelEdit"
+            Grid.Column="1"
+            Margin="0,0,4,0"
+            Padding="4"
+            VerticalAlignment="Center"
+            Click="Button_CancelEdit_Click"
+            IsVisible="False">
+      <TextBlock Classes="icon"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="&#xE845;" />
+    </Button>
+  </Grid>
+</UserControl>

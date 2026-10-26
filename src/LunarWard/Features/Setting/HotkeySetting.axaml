@@ -13,10 +13,10 @@
       42-55   0,8 同样的行：「游戏截图」+ HotkeyInput
     行号均指 Starward/src/Starward/Features/Setting/HotkeySetting.xaml。
 
-    HotkeyInput（Starward Features/Setting/HotkeyInput.xaml 117 行）的等价物：
-      边框 1 / 圆角 4 / 文字「点击设置快捷键」（12,6 内边距、居中、次要色）。
-      Linux 没有 RegisterHotKey 的等价 API，框保留位置、禁用；原因写在 tooltip 和
-      下方 LunarWard 追加的说明里。
+    HotkeyInput（Starward Features/Setting/HotkeyInput.xaml 117 行）见同目录 HotkeyInput.axaml：
+      边框 1 / 圆角 4 /「点击设置快捷键」/ 编辑中 / 当前快捷键 / 警告 四态，键位文本格式同上游。
+      Linux 没有 RegisterHotKey 的等价 API：组合键可以录制并保存，但不会全局触发；
+      说明写在下方 LunarWard 追加的段落里。
 
     LunarWard 追加（排在 Starward 两行之后）：
       Linux 全局热键说明 + .desktop 启动项位置 + 桌面入口内容预览。
@@ -41,20 +41,13 @@
                    VerticalAlignment="Center"
                    Text="{Binding Strings[Settings.Hotkey.OpenMainWindow]}" />
 
-        <!-- HotkeySetting.xaml:32-38 HotkeyInput（禁用占位，视觉同 HotkeyInput.xaml） -->
-        <Border MinWidth="200"
-                Height="34"
-                Background="Transparent"
-                BorderBrush="{StaticResource StarTextTertiary}"
-                BorderThickness="1"
-                CornerRadius="4"
-                ToolTip.Tip="{Binding Strings[Settings.Hotkey.HotkeyUnavailable]}">
-          <TextBlock HorizontalAlignment="Center"
-                     VerticalAlignment="Center"
-                     Margin="12,6"
-                     Foreground="{StaticResource StarTextSecondary}"
-                     Text="{Binding Strings[Settings.Hotkey.ClickToSet]}" />
-        </Border>
+        <!-- HotkeySetting.xaml:32-38 HotkeyInput（控件实现见 HotkeyInput.axaml） -->
+        <local:HotkeyInput x:Name="HotkeyInput_ShowMainWindow"
+                          MinWidth="200"
+                          HotkeyId="44444"
+                          HotkeyDeleted="HotkeyInput_HotkeyDeleted"
+                          HotkeyEditFinished="HotkeyInput_HotkeyEditFinished"
+                          HotkeyEditing="HotkeyInput_HotkeyEditing" />
       </StackPanel>
 
       <!-- HotkeySetting.xaml:42-55 「游戏截图」 -->
@@ -63,20 +56,13 @@
                    VerticalAlignment="Center"
                    Text="{Binding Strings[Settings.Hotkey.GameScreenshot]}" />
 
-        <!-- HotkeySetting.xaml:48-54 HotkeyInput（禁用占位） -->
-        <Border MinWidth="200"
-                Height="34"
-                Background="Transparent"
-                BorderBrush="{StaticResource StarTextTertiary}"
-                BorderThickness="1"
-                CornerRadius="4"
-                ToolTip.Tip="{Binding Strings[Settings.Hotkey.HotkeyUnavailable]}">
-          <TextBlock HorizontalAlignment="Center"
-                     VerticalAlignment="Center"
-                     Margin="12,6"
-                     Foreground="{StaticResource StarTextSecondary}"
-                     Text="{Binding Strings[Settings.Hotkey.ClickToSet]}" />
-        </Border>
+        <!-- HotkeySetting.xaml:48-54 HotkeyInput -->
+        <local:HotkeyInput x:Name="HotkeyInput_ScreenshotCapture"
+                          MinWidth="200"
+                          HotkeyId="44445"
+                          HotkeyDeleted="HotkeyInput_HotkeyDeleted"
+                          HotkeyEditFinished="HotkeyInput_HotkeyEditFinished"
+                          HotkeyEditing="HotkeyInput_HotkeyEditing" />
       </StackPanel>
 
       <!-- ── LunarWard 追加：Linux 全局热键说明（Starward 没有这块）──────────── -->

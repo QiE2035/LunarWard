@@ -20,7 +20,7 @@ public class SettingPageStructureTests
         ("FileManageSetting", typeof(FileManageSetting)),
         ("ScreenshotSetting", typeof(ScreenshotSetting)),
         ("HotkeySetting", typeof(HotkeySetting)),
-        ("GamepadControlSetting", typeof(GamepadSetting)),
+        ("GamepadControlSetting", typeof(GamepadControlSetting)),
         ("AdvancedSetting", typeof(AdvancedSetting)),
         ("ToolboxSetting", typeof(ToolboxSetting)),
     ];
@@ -32,7 +32,7 @@ public class SettingPageStructureTests
         foreach (var (tag, type) in Pages)
         {
             Assert.Equal("LunarWard.Features.Setting", type.Namespace);
-            Assert.Equal(tag.Replace("Control", ""), type.Name);
+            Assert.Equal(tag, type.Name);
             Assert.True(typeof(SettingPageBase).IsAssignableFrom(type), $"{type.Name} 应继承 SettingPageBase");
             Assert.True(typeof(LunarWard.Views.Starward.StarwardPage).IsAssignableFrom(type));
             Assert.True(type.IsSealed, $"{type.Name} 与上游页面一样是 sealed");
