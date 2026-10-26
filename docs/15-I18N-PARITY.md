@@ -130,6 +130,14 @@
 
 `Main.Key`, `Main.Source`, `Main.Value`, `Screenshot.Directory`, `Screenshot.DirectoryMissing`, `Settings.About.CheckFailed`, `Settings.About.Checking`, `Settings.About.Docs`, `Settings.About.DonateUnavailable`, `Settings.About.Homepage`, `Settings.About.License`, `Settings.About.LinksUnavailableNote`, `Settings.About.OpenRelease`, `Settings.About.PrivacyUnavailable`, `Settings.About.UpToDate`, `Settings.About.UpdateAvailable`, `Settings.Advanced.EnvDefaults`, `Settings.Advanced.EnvDefaultsDesc`, `Settings.Advanced.EnvUnavailable`, `Settings.Advanced.LogLevel`, `Settings.Advanced.LogLevelDesc`, `Settings.Advanced.LogLevelValue`, `Settings.Advanced.TestResult`, `Settings.Advanced.UrlNotRegistered`, `Settings.Advanced.UrlRegistered`, `Settings.Common.Copied`, `Settings.Common.OpenFailed`, `Settings.Download.HardLinkUnavailable`, `Settings.Download.InstallPathUnavailable`, `Settings.Download.ReadOnly`, `Settings.Download.SpeedLimitUnavailable`, `Settings.Files.BackupDatabaseHint`, `Settings.Files.BackupDone`, `Settings.Files.BackupFailed`, `Settings.Files.BackupUnavailable`, `Settings.Files.CacheHome`, `Settings.Files.CacheSize`, `Settings.Files.ClearCacheBody`, `Settings.Files.ClearCacheDone`, `Settings.Files.Clearing`, `Settings.Files.ConfigFile`, `Settings.Files.ConfigHome`, `Settings.Files.DeleteAllUnavailable`, `Settings.Files.LogDir`, `Settings.Files.OpenConfigDir`, `Settings.Files.SectionPaths`, `Settings.General.AskEveryTime`, `Settings.General.HelpTranslateUnavailable`, `Settings.General.LanguageChanged`, `Settings.General.LaunchBehavior`, `Settings.General.LaunchBehaviorValue`, `Settings.General.PendingEffect`, `Settings.Screenshot.CaptureButtonsUnavailable`, `Settings.Screenshot.Count`, `Settings.Screenshot.Empty`, `Settings.Screenshot.FeatureDesc`, `Settings.Screenshot.GameDecides`, `Settings.Screenshot.NoChangeFolder`, `Settings.Screenshot.NoGameDirShort`, `Settings.Screenshot.NoGameDirectory`, `Settings.Toolbox.Diagnose`, `Settings.Toolbox.DiagnoseDesc`, `Settings.Toolbox.NeedProfile`, `Settings.Toolbox.NoReport`, `Settings.Toolbox.ScreenshotDesc`, `Settings.Toolbox.Shell`
 
+## 2bis. 本轮进度快照（2026-10-26，task-16）
+
+- 已迁移 96 个键（`/tmp/i18n_final.json` 记录映射）：XAML 101 处 `{Binding Strings[K]}` → `{x:Static lang:Lang.<Prop>}`，代码 20 处 `Strings["K"]` → `Lang.<Prop>`，涉及 `Features/Setting` 全部 10 个页面与其 code-behind。
+- 语言切换：新增 `SettingLocalization.Refresh()`（遍历顶层窗口，对设置页 code-behind 调 `RefreshLanguage` 重建已加载子页），`LanguageChangedMessage` 不安装（运行期绑定已自更新）。
+- 仍剩 91 处引用，集中在：①纯 XAML 静态文案（About/Advanced/FileManage/Download 段落与按钮文案）；②`AboutSetting` 的链接标签、`AdvancedSetting` 的 `Status` 消息、`ToolboxItem` 的 `UpdateLanguage`。
+- 未迁移原因：这些键在上游 `Lang.resx` 无对应项或占位符不一致（已在 §6 登记），需要先补上游资源键再替换；**在补齐前不要删除 `AppStrings`**，否则这 14 处代码引用会编译失败。
+- 收尾建议：补 `Lang` 键 → 按 §5 操作手册逐目录推进；`SettingLocalization.cs` 是目前唯一仍然依赖 `AppStrings.Normalize` 的旧接口，`Lang.Culture` 接管后直接删除。
+
 ## 3. 语言切换的刷新机制
 
 上游 `SettingPage.xaml.cs` 在收到 `LanguageChangedMessage` 时调用 `this.Bindings.Update()` 重算 `x:Bind`。Avalonia 的 `{x:Static}` 不会自更新，因此本仓库的等价做法是：
@@ -144,7 +152,7 @@
 
 | 目录 | 剩余 AppStrings 引用 | 已用 Lang | 状态 |
 | --- | --- | --- | --- |
-| `Features/Setting` | 148 | 228 | 🟡 试点中 |
+| `Features/Setting` | 91 | 228 | 🟡 试点中（2026-10-26：225→96 已迁移，剩 91 = 代码 14 + XAML 77） |
 | `Features/Screenshot` | 3 | 2 | ⏳ 未迁移 |
 | `Features/Gacha` | 0 | 310 | ✅ 已迁移 |
 | `Features/GameRecord` | 0 | 301 | ✅ 已迁移 |
