@@ -1,0 +1,64 @@
+<sf:WindowEx xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.ViewHost"
+             xmlns:sf="using:LunarWard.Frameworks"
+             x:Class="LunarWard.Features.ViewHost.NoPermissionWindow"
+             Width="460"
+             Height="280"
+             CanResize="False"
+             CanMaximize="False"
+             CanMinimize="False"
+             Title="LunarWard"
+             x:DataType="local:NoPermissionWindow">
+  <!-- 移植自 Starward/src/Starward/Features/ViewHost/NoPermissionWindow.xaml
+       平台替换：MicaBackdrop → 窗口默认背景；WinUI Hyperlink → 无下划线 Button（链接样式）；按钮文案不变。 -->
+  <Grid RowDefinitions="32,*,Auto" ColumnDefinitions="*,*">
+
+    <TextBlock Grid.ColumnSpan="2"
+               Margin="12,0,0,0"
+               VerticalAlignment="Center"
+               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+               Text="LunarWard" />
+
+    <StackPanel Grid.Row="1"
+                Grid.ColumnSpan="2"
+                Margin="12,24"
+                VerticalAlignment="Center"
+                Spacing="8">
+      <TextBlock FontSize="16"
+                 Text="{x:Static lang:Lang.NoPermissionWindow_NoPermissionToFolderRestartOrClose}"
+                 TextWrapping="Wrap" />
+      <Button Padding="0"
+              HorizontalAlignment="Left"
+              Background="Transparent"
+              BorderThickness="0"
+              Click="FolderButton_Click"
+              Cursor="Hand"
+              ToolTip.Tip="{Binding Folder}">
+        <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                   Text="{Binding Folder}"
+                   TextDecorations="Underline"
+                   TextWrapping="Wrap" />
+      </Button>
+    </StackPanel>
+
+    <Button Grid.Row="2"
+            Grid.Column="0"
+            Margin="12,8,6,8"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Click="RestartAsAdminButton_Click"
+            Classes="accent"
+            Content="{x:Static lang:Lang.NoPermissionWindow_RestartAsAdministrator}" />
+
+    <Button Grid.Row="2"
+            Grid.Column="1"
+            Margin="8,6,12,8"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Click="CloseButton_Click"
+            Content="{x:Static lang:Lang.DownloadGamePage_Close}" />
+
+  </Grid>
+</sf:WindowEx>
