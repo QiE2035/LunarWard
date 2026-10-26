@@ -188,12 +188,12 @@ src/LunarWard/
 | 2 | `src/LunarWard/Views/Starward/Pages/{GameLauncher,Gacha,Screenshot,…}` + `Views/Starward/Dialogs/*` | ~40 | 对应 `Features/*` |
 | 3 | `src/LunarWard/ViewModels/**`（含 `StarwardPage`/`PageContext` 体系） | 49 | 逻辑已并入上游 `.axaml.cs` |
 | 4 | `src/LunarWard/Services/**`（26 个） | 26 | 上游 `Features/*Service` + `AppConfig` |
-| 5 | `src/LunarWard/Views/Starward/MainWindow.axaml(.cs)` 外壳 | 2 | `Features/ViewHost/MainWindow+MainView` |
+| 5 | `src/LunarWard/Views/Starward/MainWindow.axaml(.cs)` 外壳 | 2 | `Features/ViewHost/MainWindow+MainView`（**已切换**：`App.StartPortShell` 正常启动走新壳，见提交 6021e52；`--screenshot/--page/--tray-test` 自检仍走旧壳，待自检迁移后删旧壳） |
 | 6 | `src/LunarWard.Launch/**`（69 个，含旧 Database/启动逻辑） | 69 | 并入 `LunarWard`（Features/GameLauncher、DatabaseService） |
 | 7 | `src/LunarWard.Games`、`src/LunarWard.Platform` | 2 工程 | 并入 `LunarWard/Frameworks` 或删除 |
 | 8 | `src/LunarWard/Localization/AppStrings.cs`、`Styles/Starward.axaml` 等本地独有层 | ~10 | `LunarWard.Language` + `Features/*` 样式 |
 
-删除前置条件：`scripts/check-alignment.py`（待写）报告「本地独有文件数 = 已登记白名单」。
+删除前置条件：`scripts/check-alignment.py` 报告「本地独有文件数 = 已登记白名单」（脚本已落地，见 §6）。
 
 ## 8. 开放决策（需 Lead 拍板，暂记）
 
