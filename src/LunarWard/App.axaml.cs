@@ -50,6 +50,24 @@ public partial class App : Application
     }
 
 
+    private LunarWard.Features.ViewHost.SystemTrayWindow? _systemTrayWindow;
+
+
+    /// <summary>
+    /// 上游 <c>App.Current.EnsureSystemTray()</c> 的等价：确保原生托盘菜单（Avalonia TrayIcon）已创建。
+    /// 旧 <see cref="Services.TrayService"/> 在 endgame 删除，这里先并存、互不干扰。
+    /// </summary>
+    public static void EnsureSystemTray()
+    {
+        if (Current is not App app)
+        {
+            return;
+        }
+        app._systemTrayWindow ??= new LunarWard.Features.ViewHost.SystemTrayWindow(
+            (app.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow);
+    }
+
+
     /// <summary>托盘菜单「退出」：先标记真正退出，再关窗，避免被「每次询问 / 隐藏到托盘」拦住。</summary>
     private void ExitFromTray(IClassicDesktopStyleApplicationLifetime desktop)
     {

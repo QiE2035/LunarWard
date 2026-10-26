@@ -1,0 +1,29 @@
+<local:MainWindow xmlns="https://github.com/avaloniaui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:helpers="using:LunarWard.Helpers"
+                  xmlns:local="using:LunarWard.Features.ViewHost"
+                  x:Class="LunarWard.Features.ViewHost.MainWindow"
+                  Title="LunarWard">
+
+  <!--
+    上游 Features/ViewHost/MainWindow.xaml 的 1:1 移植：
+    MainView + 底部通知区（InAppToast 挂在该 StackPanel 上）。
+    Avalonia 差异：InAppToast 不是 Behavior 而是 StackPanel 自身（见 Helpers/InAppToast.cs），
+    因此这里直接放一个 <helpers:InAppToast/> 到通知区。docs/09 §五。
+  -->
+
+  <Grid Background="{DynamicResource StarAcrylicBrush}">
+
+    <local:MainView x:Name="MainContentHost"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch" />
+
+    <StackPanel MaxWidth="600"
+                Margin="24,72,24,72"
+                VerticalAlignment="Bottom">
+      <helpers:InAppToast Tag="MainWindow" />
+    </StackPanel>
+
+  </Grid>
+
+</local:MainWindow>
