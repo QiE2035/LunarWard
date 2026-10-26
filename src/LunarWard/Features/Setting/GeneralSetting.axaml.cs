@@ -1,8 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using LunarWard.Language;
-using LunarWard.Services;
 using LunarWard.Frameworks;
+using LunarWard.Features.ViewHost;
+using LunarWard.Services; // CloseWindowAction（关闭行为的三态，独立于 AppServices）
+using System.Globalization;
 
 namespace LunarWard.Features.Setting;
 
@@ -31,8 +33,6 @@ public sealed partial class GeneralSetting : PageBase
         return true;
     }
 
-    private static AppServices Services => AppServices.Current;
-
     private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
 
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
@@ -52,7 +52,6 @@ public sealed partial class GeneralSetting : PageBase
 
     private string? _status;
 
-    private static Services.LogService Log => AppServices.Current.Log;
     private bool _initializing = true;
 
 
@@ -66,7 +65,7 @@ public sealed partial class GeneralSetting : PageBase
         {
             if (value)
             {
-                SetCloseWindowOption(CloseWindowDecision.HideOption);
+                SetCloseWindowOption(CloseWindowAction.Hide);
             }
         }
     }
@@ -80,7 +79,7 @@ public sealed partial class GeneralSetting : PageBase
         {
             if (value)
             {
-                SetCloseWindowOption(CloseWindowDecision.ExitOption);
+                SetCloseWindowOption(CloseWindowAction.Exit);
             }
         }
     }
@@ -97,26 +96,38 @@ public sealed partial class GeneralSetting : PageBase
         {
             if (value)
             {
-                SetCloseWindowOption(CloseWindowDecision.AskOption);
+                SetCloseWindowOption(CloseWindowAction.Ask);
             }
         }
     }
 
 
     private CloseWindowAction CurrentCloseWindowAction
-        => CloseWindowDecision.Parse(Services.Config.Launcher.CloseWindowOption);
+        => AppConfig.CloseWindowOption switch
+        {
+            MainWindowCloseOption.Hide => CloseWindowAction.Hide,
+            MainWindowCloseOption.Exit => CloseWindowAction.Exit,
+            // 0 / 未设置 = 每次询问（上游默认值）
+            _ => CloseWindowAction.Ask,
+        };
 
 
     /// <summary>写回关闭选项并通知三个单选按钮刷新（选中的那个把 IsChecked 置 true）。</summary>
-    private void SetCloseWindowOption(string option)
+    private void SetCloseWindowOption(CloseWindowAction action)
     {
-        if (string.Equals(Services.Config.Launcher.CloseWindowOption, option, StringComparison.OrdinalIgnoreCase))
+        var option = action switch
+        {
+            CloseWindowAction.Hide => MainWindowCloseOption.Hide,
+            CloseWindowAction.Exit => MainWindowCloseOption.Exit,
+            _ => (MainWindowCloseOption)0,
+        };
+
+        if (AppConfig.CloseWindowOption == option)
         {
             return;
         }
 
-        Services.Config.Launcher.CloseWindowOption = option;
-        Services.Config.Save(Services.Paths.ConfigFile);
+        AppConfig.CloseWindowOption = option;
         OnPropertyChanged(nameof(IsCloseToTray));
         OnPropertyChanged(nameof(IsCloseToExit));
         OnPropertyChanged(nameof(IsAskEveryTime));
@@ -129,7 +140,7 @@ public sealed partial class GeneralSetting : PageBase
     /// </summary>
     public bool IsAutostartEnabled
     {
-        get => LunarWard.Platform.AutostartEntry.IsEnabled(Services.Paths.ConfigHome);
+        get => LunarWard.Platform.AutostartEntry.IsEnabled(LunarWard.Platform.XdgPaths.Default.ConfigHome);
         set
         {
             if (value == IsAutostartEnabled)
@@ -138,7 +149,7 @@ public sealed partial class GeneralSetting : PageBase
             }
 
             LunarWard.Platform.AutostartEntry.SetEnabled(
-                value, LunarWard.Platform.AutostartEntry.CurrentExecutable(), Services.Paths.ConfigHome);
+                value, LunarWard.Platform.AutostartEntry.CurrentExecutable(), LunarWard.Platform.XdgPaths.Default.ConfigHome);
             OnPropertyChanged();
             Status = string.Format(Strings[value ? "Settings.General.AutostartOn" : "Settings.General.AutostartOff"]);
         }
@@ -154,11 +165,12 @@ public sealed partial class GeneralSetting : PageBase
             new SettingLanguageOption("zh-CN", "简体中文 (zh-CN)"),
             new SettingLanguageOption("en-US", "English (en-US)"),
         ];
-        _selectedLanguageOption = LanguageOptions.First(o =>
-            string.Equals(o.Code, Localization.AppStrings.Normalize(Services.Config.Launcher.Language), StringComparison.Ordinal));
-        Announcements = true;
-        VideoBackground = Services.Config.Launcher.VideoBackground;
-        EnableGameAccountSwitcher = Services.Config.Launcher.EnableGameAccountSwitcher;
+        _selectedLanguageOption = LanguageOptions.FirstOrDefault(o =>
+            string.Equals(o.Code, Localization.AppStrings.Normalize(AppConfig.Language), StringComparison.Ordinal))
+            ?? LanguageOptions[0];
+        Announcements = AppConfig.ShowAnnouncements;
+        VideoBackground = AppConfig.VideoBackground;
+        EnableGameAccountSwitcher = AppConfig.EnableGameAccountSwitcher;
         _initializing = false;
         DataContext = this;
     }
@@ -198,25 +210,25 @@ public sealed partial class GeneralSetting : PageBase
     }
 
 
-    /// <summary>切换语言：立即生效并落盘（Starward 也是即时切换 + SaveConfiguration）。</summary>
+    /// <summary>切换语言：立即生效（上游同样即时切换；配置写 <c>Setting</c> 表，无需显式 SaveConfiguration）。</summary>
     public void ApplyLanguage(string code)
     {
         var normalized = Localization.AppStrings.Normalize(code);
-        var current = Localization.AppStrings.Normalize(Services.Config.Launcher.Language);
+        var current = Localization.AppStrings.Normalize(AppConfig.Language);
         Strings.Language = normalized;
-        Services.Config.Launcher.Language = normalized;
+        AppConfig.SetLanguage(normalized);
 
         // ComboBox 首次绑定会把 SelectedItem 推回来一次；与当前配置相同就不当作"用户切换"，
-        // 既不写盘也不弹状态（否则每次打开设置页都会白写一次 config.json）。
+        // 既不弹状态也不广播消息（否则每次打开设置页都会白走一次）。
         if (_initializing || string.Equals(normalized, current, StringComparison.Ordinal))
         {
             return;
         }
 
-        SaveConfig();
-
         // 设置页已迁到上游 Lang 资源，静态绑定不会自己刷新：换文化 + 广播消息，宿主页据此重建子页。
-        Lang.Culture = System.Globalization.CultureInfo.GetCultureInfo(normalized);
+        Lang.Culture = CultureInfo.GetCultureInfo(normalized);
+        // 上游同样在切换后 SaveConfiguration()：语言写在 config.ini 的 Language= 一行。
+        AppConfig.SaveConfiguration();
         WeakReferenceMessenger.Default.Send(new LanguageChangedMessage());
 
         Status = string.Format(Strings["Settings.General.LanguageChanged"], normalized);
@@ -249,10 +261,7 @@ public sealed partial class GeneralSetting : PageBase
             return;
         }
 
-        Services.Config.Launcher.ExtensionData ??= [];
-        Services.Config.Launcher.ExtensionData["show_announcements"] =
-            System.Text.Json.JsonSerializer.SerializeToElement(value);
-        SaveConfig();
+        AppConfig.ShowAnnouncements = value;
     }
 
 
@@ -293,8 +302,7 @@ public sealed partial class GeneralSetting : PageBase
             return;
         }
 
-        Services.Config.Launcher.EnableGameAccountSwitcher = value;
-        SaveConfig();
+        AppConfig.EnableGameAccountSwitcher = value;
     }
 
 
@@ -305,20 +313,8 @@ public sealed partial class GeneralSetting : PageBase
             return;
         }
 
-        Services.Config.Launcher.VideoBackground = value;
-        SaveConfig();
+        AppConfig.VideoBackground = value;
     }
 
 
-    private void SaveConfig()
-    {
-        try
-        {
-            Services.Config.Save(Services.Paths.ConfigFile);
-        }
-        catch (Exception ex)
-        {
-            Status = ex.Message;
-        }
-    }
 }

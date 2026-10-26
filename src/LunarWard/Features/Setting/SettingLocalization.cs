@@ -18,7 +18,9 @@ internal static class SettingLocalization
     {
         try
         {
-            string code = AppStrings.Normalize(AppServices.Current.Config.Launcher.Language);
+            // 上游语义：语言来自 AppConfig.Language（启动时 LoadConfiguration → SetLanguage）。
+            // 页面可能先于启动流程被构造（截图自检/设计器/测试），这里补齐一次文化与资源文化。
+            string code = AppStrings.Normalize(AppConfig.Language ?? CultureInfo.CurrentUICulture.Name);
             CultureInfo culture = CultureInfo.GetCultureInfo(code);
             if (!string.Equals(AppConfig.Language, code, StringComparison.OrdinalIgnoreCase))
             {

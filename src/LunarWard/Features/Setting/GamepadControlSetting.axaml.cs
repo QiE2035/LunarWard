@@ -29,11 +29,8 @@ public sealed partial class GamepadControlSetting : PageBase
         return true;
     }
 
-    private static AppServices Services => AppServices.Current;
-
     private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
 
-    private static Services.LogService Log => AppServices.Current.Log;
     public GamepadControlSetting()
     {
         SettingLocalization.EnsureConfigured();

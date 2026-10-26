@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Avalonia.Input;
 
 namespace LunarWard.Features.Setting;
@@ -17,7 +16,7 @@ namespace LunarWard.Features.Setting;
 /// 因此 <see cref="RegisterHotkey"/> 只持久化配置并返回 <see cref="HotkeyRegisterResult.NotSupported"/>，
 /// 由页面把输入框置为 Warning 状态；组合键的「录制 + 保存」本身是可用的，触发留给合成器快捷键。
 /// 配置沿用上游格式（<c>"修饰键位+虚拟键码"</c> 的十进制串，<c>"0"</c> 表示已删除），
-/// 存放在 <c>LauncherConfig.ExtensionData</c>（上游是 <c>AppConfig</c>）。
+/// 存放在 <c>AppConfig.ShowMainWindowHotkey / ScreenshotCaptureHotkey</c>（与上游同字段）。
 /// </para>
 /// </remarks>
 internal static class HotkeyManager
@@ -168,38 +167,27 @@ internal static class HotkeyManager
 
 
 
+    /// <summary>读取配置（上游用 <c>AppConfig.ShowMainWindowHotkey / ScreenshotCaptureHotkey</c>）。</summary>
     private static string? ReadConfig(string name)
-    {
-        try
+        => name switch
         {
-            var extensionData = AppServices.Current?.Config?.Launcher.ExtensionData;
-            if (extensionData is not null && extensionData.TryGetValue(name, out var element))
-            {
-                return element.GetString();
-            }
-        }
-        catch (NullReferenceException)
-        {
-            // AppServices 尚未初始化（单元测试）；没有配置可用。
-        }
-        return null;
-    }
+            "show_main_window_hotkey" => AppConfig.ShowMainWindowHotkey,
+            "screenshot_capture_hotkey" => AppConfig.ScreenshotCaptureHotkey,
+            _ => null,
+        };
 
 
+    /// <summary>写回配置（<see cref="AppConfig"/> 的 <c>Setting</c> 表，立即持久化）。</summary>
     private static void WriteConfig(string name, string value)
     {
-        try
+        switch (name)
         {
-            var launcher = AppServices.Current?.Config?.Launcher;
-            if (launcher is null)
-            {
-                return;
-            }
-            launcher.ExtensionData ??= [];
-            launcher.ExtensionData[name] = JsonSerializer.SerializeToElement(value);
-        }
-        catch (NullReferenceException)
-        {
+            case "show_main_window_hotkey":
+                AppConfig.ShowMainWindowHotkey = value;
+                break;
+            case "screenshot_capture_hotkey":
+                AppConfig.ScreenshotCaptureHotkey = value;
+                break;
         }
     }
 

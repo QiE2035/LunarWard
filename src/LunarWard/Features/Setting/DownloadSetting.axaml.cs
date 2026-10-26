@@ -23,6 +23,9 @@ namespace LunarWard.Features.Setting;
 public sealed partial class DownloadSetting : PageBase
 {
 
+    /// <summary>组件索引/安装器（Wine 组件是本仓库扩展，上游无对应服务）。</summary>
+    private static readonly LunarWard.Wine.ComponentInstaller Installer = new(LunarWard.Platform.XdgPaths.Default);
+
     public new event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
@@ -39,7 +42,6 @@ public sealed partial class DownloadSetting : PageBase
         return true;
     }
 
-    private static AppServices Services => AppServices.Current;
 
     private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
 
@@ -60,7 +62,6 @@ public sealed partial class DownloadSetting : PageBase
 
     private string? _status;
 
-    private static Services.LogService Log => AppServices.Current.Log;
     public DownloadSetting()
     {
         SettingLocalization.EnsureConfigured();
@@ -120,8 +121,8 @@ public sealed partial class DownloadSetting : PageBase
     {
         try
         {
-            var index = Services.ComponentInstaller.Repository.ReadIndex();
-            var indexPath = Path.Join(Services.Paths.ComponentsDirectory, "components.json");
+            var index = Installer.Repository.ReadIndex();
+            var indexPath = Path.Join(LunarWard.Platform.XdgPaths.Default.ComponentsDirectory, "components.json");
             if (!File.Exists(indexPath))
             {
                 IndexState = Strings["Settings.Download.NeverUpdated"];
@@ -137,8 +138,8 @@ public sealed partial class DownloadSetting : PageBase
                 Strings["Settings.Download.IndexState"],
                 stamp.ToString("yyyy-MM-dd HH:mm", CultureInfo.CurrentCulture));
 
-            var wineCount = index.Wine.Sum(g => Services.ComponentInstaller.Repository.ReadGroup("wine", g.Name).Count);
-            var dxvkCount = index.Dxvk.Sum(g => Services.ComponentInstaller.Repository.ReadGroup("dxvk", g.Name).Count);
+            var wineCount = index.Wine.Sum(g => Installer.Repository.ReadGroup("wine", g.Name).Count);
+            var dxvkCount = index.Dxvk.Sum(g => Installer.Repository.ReadGroup("dxvk", g.Name).Count);
             ComponentCount = string.Format(
                 CultureInfo.CurrentCulture,
                 Strings["Settings.Download.ComponentCount"],
@@ -182,7 +183,7 @@ public sealed partial class DownloadSetting : PageBase
         try
         {
             var progress = new Progress<string>(line => Status = $"{Strings["Settings.Download.Updating"]}  {line}");
-            var result = await Services.ComponentInstaller.UpdateIndexAsync(progress).ConfigureAwait(true);
+            var result = await Installer.UpdateIndexAsync(progress).ConfigureAwait(true);
             RefreshIndexState();
             Status = result.Success
                 ? string.Format(CultureInfo.CurrentCulture, Strings["Settings.Download.IndexUpdated"], result.UpdatedFiles)

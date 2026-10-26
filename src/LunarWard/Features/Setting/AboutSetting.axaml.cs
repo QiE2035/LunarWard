@@ -1,6 +1,6 @@
 using LunarWard.Language;
-using System.Reflection;
 using LunarWard.Services;
+using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Frameworks;
@@ -43,8 +43,6 @@ public sealed partial class AboutSetting : PageBase
         return true;
     }
 
-    private static AppServices Services => AppServices.Current;
-
     private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
 
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
@@ -64,7 +62,6 @@ public sealed partial class AboutSetting : PageBase
 
     private string? _status;
 
-    private static Services.LogService Log => AppServices.Current.Log;
     public AboutSetting()
     {
         SettingLocalization.EnsureConfigured();
@@ -183,24 +180,24 @@ public sealed partial class AboutSetting : PageBase
 
 
     [RelayCommand]
-    private async Task OpenUpdateAsync()
+    private void OpenUpdateAsync()
     {
         if (_updateUrl is { Length: > 0 } url)
         {
-            await Services.OpenUriAsync(url).ConfigureAwait(true);
+            ShellHelper.OpenUri(url);
         }
     }
 
 
     [RelayCommand]
-    private async Task OpenLinkAsync(SettingLinkViewModel? link)
+    private void OpenLinkAsync(SettingLinkViewModel? link)
     {
         if (link?.Url is null)
         {
             return;
         }
 
-        await Services.OpenUriAsync(link.Url).ConfigureAwait(true);
+        ShellHelper.OpenUri(link.Url);
     }
 
 

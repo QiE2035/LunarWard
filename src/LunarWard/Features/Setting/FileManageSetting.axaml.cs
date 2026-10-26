@@ -1,12 +1,12 @@
 using LunarWard.Language;
 using System.Globalization;
-using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Frameworks;
 using LunarWard.Launch.Database;
+using Microsoft.Extensions.Logging;
 
 namespace LunarWard.Features.Setting;
 
@@ -49,8 +49,6 @@ public sealed partial class FileManageSetting : PageBase
         return true;
     }
 
-    private static AppServices Services => AppServices.Current;
-
     private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
 
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
@@ -70,14 +68,8 @@ public sealed partial class FileManageSetting : PageBase
 
     private string? _status;
 
-    private static Services.LogService Log => AppServices.Current.Log;
-    /// <summary>「清理启动器背景文件」的持久化键（配置 <c>launcher</c> 段的未知字段区）。</summary>
-    /// <remarks>
-    /// Starward 把它存在 <c>AppConfig.ClearLauncherBackground</c>；LunarWard 的
-    /// <c>LauncherSettings</c> 没有这个字段（不改上游配置类），用 <c>ExtensionData</c> 承接。
-    /// </remarks>
-    private const string ClearLauncherBackgroundKey = "clear_launcher_background";
-
+    private static readonly ILogger<FileManageSetting> Log =
+        AppConfig.GetLogger<FileManageSetting>();
     private readonly Func<string, string, Task<bool>> _confirm;
 
 
@@ -87,11 +79,13 @@ public sealed partial class FileManageSetting : PageBase
         InitializeComponent();
         _confirm = confirm;
 
-        ConfigHome = Services.Paths.ConfigHome;
-        DataHome = Services.Paths.DataHome;
-        CacheHome = Services.Paths.CacheHome;
-        LogDirectory = Services.Paths.LogDirectory;
-        ConfigFile = Services.Paths.ConfigFile;
+        ConfigHome = LunarWard.Platform.XdgPaths.Default.ConfigHome;
+        DataHome = LunarWard.Platform.XdgPaths.Default.DataHome;
+        CacheHome = LunarWard.Platform.XdgPaths.Default.CacheHome;
+        // 上游的日志目录 = AppConfig.LogFile 所在目录（Serilog 正在写的那个）；
+        // 取不到时退回 XDG 缓存下的 logs。
+        LogDirectory = Path.GetDirectoryName(AppConfig.LogFile) ?? LunarWard.Platform.XdgPaths.Default.LogDirectory;
+        ConfigFile = LunarWard.Platform.XdgPaths.Default.ConfigFile;
 
         _clearLauncherBackground = ReadClearLauncherBackground();
         RefreshCacheSize();
@@ -317,7 +311,7 @@ public sealed partial class FileManageSetting : PageBase
         {
             var before = SettingShellActions.DirectorySize(CacheHome);
             var logDirectory = Path.GetFullPath(LogDirectory);
-            var backgroundDirectory = Path.GetFullPath(Services.Paths.BackgroundDirectory);
+            var backgroundDirectory = Path.GetFullPath(LunarWard.Platform.XdgPaths.Default.BackgroundDirectory);
 
             // 目录结构（logs / background / bilibili…）要保留，只清内容：
             // 当天日志还被 Serilog 打开着，删掉会让本次会话之后的日志消失。
@@ -346,7 +340,7 @@ public sealed partial class FileManageSetting : PageBase
             }
 
             // 目录可能被整棵删掉：重建（背景/日志/缓存目录要还在）
-            (Services.Paths as Platform.XdgPaths)?.EnsureDirectories();
+            LunarWard.Platform.XdgPaths.Default.EnsureDirectories();
 
             var after = SettingShellActions.DirectorySize(CacheHome);
             Status = string.Format(
@@ -355,7 +349,7 @@ public sealed partial class FileManageSetting : PageBase
                 SettingShellActions.Bytes(Math.Max(0, before - after)));
 
             RefreshCacheSize();
-            Log.Info($"设置页清理缓存：{before} → {after} 字节");
+            Log.LogInformation($"设置页清理缓存：{before} → {after} 字节");
         }
         catch (Exception ex)
         {
@@ -376,7 +370,7 @@ public sealed partial class FileManageSetting : PageBase
         // 这里把图片算成素材缓存，游戏资源项如实显示 0（LunarWard 没有游戏资源缓存）。
         var assets = SettingShellActions.DirectorySize(Path.Join(cacheHome, "starward"));
         var browser = SettingShellActions.DirectorySize(Path.Join(cacheHome, "bilibili"));
-        var background = SettingShellActions.DirectorySize(Services.Paths.BackgroundDirectory);
+        var background = SettingShellActions.DirectorySize(LunarWard.Platform.XdgPaths.Default.BackgroundDirectory);
         var total = SettingShellActions.DirectorySize(cacheHome);
 
         LogCacheSize = SettingShellActions.Bytes(log);
@@ -454,25 +448,19 @@ public sealed partial class FileManageSetting : PageBase
     }
 
 
-    // ── 「清理启动器背景文件」的读写（ExtensionData）────────────────────────
+    // ── 「清理启动器背景文件」的读写（AppConfig 扩展字段，上游无）──────────────
 
     private bool ReadClearLauncherBackground()
     {
         try
         {
-            if (Services.Config.Launcher.ExtensionData?.TryGetValue(ClearLauncherBackgroundKey, out var element) == true
-                && element.ValueKind is JsonValueKind.True or JsonValueKind.False)
-            {
-                return element.GetBoolean();
-            }
+            return AppConfig.ClearLauncherBackground;
         }
         catch (Exception)
         {
-            // 配置损坏：用默认值
+            // 配置损坏：用默认值（与上游页面默认勾选一致）
+            return true;
         }
-
-        // Starward 默认勾选（AppConfig.ClearLauncherBackground 默认 true）
-        return true;
     }
 
 
@@ -480,10 +468,7 @@ public sealed partial class FileManageSetting : PageBase
     {
         try
         {
-            Services.Config.Launcher.ExtensionData ??= [];
-            Services.Config.Launcher.ExtensionData[ClearLauncherBackgroundKey] =
-                JsonSerializer.SerializeToElement(value);
-            Services.Config.Save(Services.Paths.ConfigFile);
+            AppConfig.ClearLauncherBackground = value;
         }
         catch (Exception ex)
         {

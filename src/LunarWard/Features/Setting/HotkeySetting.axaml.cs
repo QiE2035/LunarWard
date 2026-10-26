@@ -31,8 +31,6 @@ public sealed partial class HotkeySetting : PageBase
         return true;
     }
 
-    private static AppServices Services => AppServices.Current;
-
     private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
 
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
@@ -52,7 +50,6 @@ public sealed partial class HotkeySetting : PageBase
 
     private string? _status;
 
-    private static Services.LogService Log => AppServices.Current.Log;
     public HotkeySetting()
     {
         SettingLocalization.EnsureConfigured();

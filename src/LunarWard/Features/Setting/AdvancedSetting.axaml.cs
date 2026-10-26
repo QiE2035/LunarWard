@@ -40,8 +40,6 @@ public sealed partial class AdvancedSetting : PageBase
 
     private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
 
-    private static AppServices Services => AppServices.Current;
-
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
     public string? Status
     {
@@ -139,7 +137,7 @@ public sealed partial class AdvancedSetting : PageBase
 
     public string LogLevelValue => Strings["Settings.Advanced.LogLevelValue"];
 
-    public string LogDirectory => Services.Paths.LogDirectory;
+    public string LogDirectory => Path.GetDirectoryName(AppConfig.LogFile) ?? LunarWard.Platform.XdgPaths.Default.LogDirectory;
 
 
     [RelayCommand]
