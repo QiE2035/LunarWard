@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <RootNamespace>LunarWard.Installer.UnitTests</RootNamespace>
@@ -9,6 +9,6 @@
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\LunarWard.Installer\LunarWard.Installer.csproj" />
+    <ProjectReference Include="..\..\src\LunarWard\LunarWard.csproj" />
   </ItemGroup>
 </Project>

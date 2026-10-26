@@ -40,6 +40,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="MiniExcel" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="ZstdSharp.Port" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="System.IO.Hashing" />
     <PackageReference Include="ZiggyCreatures.FusionCache" />
@@ -48,10 +50,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- 折叠 LunarWard.Installer 后，安装器核心的 internal 解析函数（Sophon 清单/解压/差量）
+         仍需被 LunarWard.UnitTests 直接测试。 -->
+    <InternalsVisibleTo Include="LunarWard.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LunarWard.Core\LunarWard.Core.csproj" />
     <ProjectReference Include="..\LunarWard.Language\LunarWard.Language.csproj" />
-    <ProjectReference Include="..\LunarWard.Platform\LunarWard.Platform.csproj" />
-    <ProjectReference Include="..\LunarWard.Installer\LunarWard.Installer.csproj" />
     <ProjectReference Include="..\LunarWard.RPC\LunarWard.RPC.csproj" />
     <ProjectReference Include="..\LunarWard.Setup.Core\LunarWard.Setup.Core.csproj" />
   </ItemGroup>
