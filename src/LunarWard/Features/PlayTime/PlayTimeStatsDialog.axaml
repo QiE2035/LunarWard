@@ -132,17 +132,17 @@
                                       Padding="8,4"
                                       Tag="0"
                                       IsChecked="True"
-                                      Checked="BarRange_Checked"
+                                      IsCheckedChanged="BarRange_Checked"
                                       Content="{x:Static lang:Lang.PlayTimeStatsDialog_Last15Days}" />
                         <ToggleButton MinWidth="60"
                                       Padding="8,4"
                                       Tag="1"
-                                      Checked="BarRange_Checked"
+                                      IsCheckedChanged="BarRange_Checked"
                                       Content="{x:Static lang:Lang.PlayTimeStatsDialog_Last12Weeks}" />
                         <ToggleButton MinWidth="60"
                                       Padding="8,4"
                                       Tag="2"
-                                      Checked="BarRange_Checked"
+                                      IsCheckedChanged="BarRange_Checked"
                                       Content="{x:Static lang:Lang.PlayTimeStatsDialog_Last12Months}" />
                     </StackPanel>
                 </StackPanel>

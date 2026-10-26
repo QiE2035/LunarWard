@@ -14,15 +14,8 @@
     <Border Name="Border_Playtime"
             Height="44"
             Background="{DynamicResource StarOverlayAcrylicBrush}"
-            CornerRadius="22">
-        <Border.BoxShadow>
-            <BoxShadows>
-                <BoxShadow OffsetX="0"
-                           OffsetY="4"
-                           Blur="16"
-                           Color="#40000000" />
-            </BoxShadows>
-        </Border.BoxShadow>
+            CornerRadius="22"
+            BoxShadow="0 4 16 0 #40000000">
         <Button HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 BorderThickness="0"

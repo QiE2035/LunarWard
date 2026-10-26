@@ -435,7 +435,9 @@ public sealed partial class PlayTimeStatsDialog : StarwardContentDialog, INotify
     /// </summary>
     private void BarRange_Checked(object? sender, RoutedEventArgs e)
     {
-        if (sender is not ToggleButton checkedButton)
+        // Avalonia 的 ToggleButton 只有 IsCheckedChanged；取消其它按钮的选中会再次进入本方法，
+        // 因此先挡掉“被取消”的那一次（IsChecked 不是 true 直接返回）。
+        if (sender is not ToggleButton { IsChecked: true } checkedButton)
         {
             return;
         }
