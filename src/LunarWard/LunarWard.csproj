@@ -6,6 +6,8 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- 上游 Starward.csproj 开启 /unsafe：Helpers/AccentColorHelper 用指针取像素。 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationIcon>Assets/lunarward.ico</ApplicationIcon>
     <!--
       AVLN3001：XAML 资源「找不到公共无参构造函数」，因为页面 ctor 接收 PageContext
