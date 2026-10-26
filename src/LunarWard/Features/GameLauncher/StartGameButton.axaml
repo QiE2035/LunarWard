@@ -1,0 +1,277 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.GameLauncher"
+             x:Class="LunarWard.Features.GameLauncher.StartGameButton"
+             x:DataType="local:StartGameButton">
+  <!-- 移植自 Starward/src/Starward/Features/GameLauncher/StartGameButton.xaml。
+       替换点：AnimatedIcon→TextBlock.icon、ProgressRing→ProgressBar(IsIndeterminate)、
+       ThemeShadow/Translation→BoxShadow、模板内 VisualState 动画改由 Avalonia 主题承担。 -->
+  <Grid Name="Grid_Root"
+        Height="44"
+        MinWidth="180"
+        Background="{DynamicResource StarAcrylicBrush}"
+        CornerRadius="22"
+        PointerEntered="Control_PointerEntered"
+        PointerExited="Control_PointerExited">
+    <Grid.BoxShadow>
+      <BoxShadows>0 0 16 0 #40000000</BoxShadows>
+    </Grid.BoxShadow>
+
+    <!--  Accent Color 背景  -->
+    <Border Name="Rect_AccentBackground"
+            Background="{DynamicResource StarAccentBrush}"
+            CornerRadius="22"
+            IsHitTestVisible="False"
+            IsVisible="{Binding IsAccentColorBackgroundVisible}" />
+
+    <!--  主要按键  -->
+    <Button Name="Button_GameAction"
+            Padding="0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            Background="Transparent"
+            BorderThickness="0"
+            Command="{Binding GameCommand}"
+            CornerRadius="22"
+            Foreground="{Binding ActionButtonForeground}"
+            PointerEntered="Control_PointerEntered"
+            PointerExited="Control_PointerExited">
+      <Grid>
+        <!--  非安装状态  -->
+        <Grid IsVisible="{Binding !GameStateIsInstalling}">
+          <!--  转圈圈（Avalonia 无 ProgressRing，用进度条代替）  -->
+          <ProgressBar Width="20"
+                       Height="20"
+                       Margin="14,0,0,0"
+                       HorizontalAlignment="Left"
+                       IsEnabled="True"
+                       IsHitTestVisible="False"
+                       IsIndeterminate="True"
+                       IsVisible="{Binding IsGameActionCommandRunning}" />
+          <!--  按键文本：开始游戏 / 游戏正在运行 / 安装游戏 / 更新游戏 / 更新插件 / 继续下载  -->
+          <TextBlock Name="TextBlock_StartGame"
+                     Margin="41,5,53,6"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Text="{Binding StartGameButtonText}" />
+        </Grid>
+
+        <!--  安装中信息  -->
+        <Grid Margin="0,0,48,0"
+              ColumnDefinitions="Auto,*"
+              ColumnSpacing="10"
+              IsHitTestVisible="False"
+              IsVisible="{Binding GameStateIsInstalling}">
+          <!--  进度圈  -->
+          <Grid Margin="10,0,0,0" HorizontalAlignment="Left">
+            <ProgressBar Width="28"
+                         Height="28"
+                         IsIndeterminate="{Binding InstallStateIsPending}"
+                         Value="{Binding ProgressRingValue}" />
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{Binding ProgressRingValue}" />
+          </Grid>
+
+          <!--  下载中 & 剩余时间  -->
+          <Grid Name="Button_GameAction_DownloadingRemainTime"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                ColumnDefinitions="Auto,*"
+                ColumnSpacing="4"
+                Opacity="{Binding Button_GameAction_DownloadingRemainTime_Opacity}"
+                RowDefinitions="*,*">
+            <!--  下载中  -->
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Classes="icon"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="&#xE896;" />
+            <TextBlock Grid.Row="0"
+                       Grid.Column="1"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{Binding InstallStateText}" />
+            <!--  剩余时间  -->
+            <TextBlock Grid.Row="1"
+                       Grid.Column="0"
+                       Classes="icon"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="&#xE917;" />
+            <TextBlock Grid.Row="1"
+                       Grid.Column="1"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{Binding RemainTimeText}" />
+          </Grid>
+
+          <!--  已暂停 / 出错了 / 队列中  -->
+          <TextBlock Name="TextBlock_GameAction_InstallState"
+                     Grid.Column="1"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Opacity="{Binding TextBlock_GameAction_InstallState_Opacity}"
+                     Text="{Binding TextBlock_GameAction_InstallState_Text}" />
+
+          <!--  暂停 / 继续  -->
+          <TextBlock Name="TextBlock_GameAction_PointerOver"
+                     Grid.Column="1"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Opacity="{Binding TextBlock_GameAction_PointerOver_Opacity}"
+                     Text="{Binding TextBlock_GameAction_PointerOver_Text}" />
+        </Grid>
+      </Grid>
+    </Button>
+
+    <!--  游戏设置  -->
+    <Button Name="Button_Setting"
+            Width="44"
+            Height="44"
+            Padding="12"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch"
+            Background="Transparent"
+            BorderThickness="0"
+            Command="{Binding SettingCommand}"
+            CornerRadius="22"
+            Foreground="{Binding SettingButtonForeground}"
+            PointerEntered="Control_PointerEntered"
+            PointerExited="Control_PointerExited">
+      <TextBlock Classes="icon" FontSize="16" Text="&#xE713;" />
+    </Button>
+
+    <!--  游戏信息 / 下载进度  -->
+    <Popup Name="Popup_GameInfoOrDownloadProgress" Placement="Top">
+      <Grid MinWidth="200"
+            MaxWidth="260"
+            Padding="20,12,20,12"
+            Background="{DynamicResource StarCardBackgroundBrush}"
+            CornerRadius="8">
+        <!--  游戏信息  -->
+        <TextBlock Foreground="{DynamicResource StarTextSecondary}"
+                   IsVisible="{Binding !GameStateIsInstalling}"
+                   Text="{Binding RunningGameInfo}" />
+
+        <StackPanel IsVisible="{Binding GameStateIsInstalling}">
+          <!--  下载状态  -->
+          <StackPanel Orientation="Horizontal">
+            <TextBlock FontSize="14"
+                       FontWeight="Bold"
+                       Text="{Binding InstallStateText}" />
+            <!--  下载进度百分比  -->
+            <TextBlock Margin="8,0,0,0"
+                       VerticalAlignment="Bottom"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{Binding ProgressPercentText}" />
+            <!--  剩余时间  -->
+            <TextBlock Margin="8,0,0,0"
+                       VerticalAlignment="Bottom"
+                       Classes="icon"
+                       FontSize="14"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       IsVisible="{Binding RemainTimeText, Converter={StaticResource ObjectToVisibility}}"
+                       Text="&#xE917;" />
+            <TextBlock Margin="4,0,0,0"
+                       VerticalAlignment="Bottom"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       IsVisible="{Binding RemainTimeText, Converter={StaticResource ObjectToVisibility}}"
+                       Text="{Binding RemainTimeText}" />
+          </StackPanel>
+
+          <Border Margin="0,8,0,0" Height="1" Background="{DynamicResource StarDividerBrush}" />
+
+          <!--  下载进度  -->
+          <StackPanel Margin="0,8,0,0"
+                      IsVisible="{Binding DownloadBytesText, Converter={StaticResource ObjectToVisibility}}"
+                      Orientation="Horizontal"
+                      Spacing="4">
+            <TextBlock Classes="icon"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="&#xE896;" />
+            <TextBlock FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.SettingPage_Download}" />
+          </StackPanel>
+          <Grid Width="200"
+                Margin="0,2,0,0"
+                IsVisible="{Binding DownloadBytesText, Converter={StaticResource ObjectToVisibility}}">
+            <TextBlock FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{Binding DownloadBytesText}" />
+            <TextBlock HorizontalAlignment="Right"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       IsVisible="{Binding DownloadSpeedText, Converter={StaticResource ObjectToVisibility}}"
+                       Text="{Binding DownloadSpeedText}" />
+          </Grid>
+
+          <!--  安装进度  -->
+          <StackPanel Margin="0,8,0,0"
+                      IsVisible="{Binding InstallBytesText, Converter={StaticResource ObjectToVisibility}}"
+                      Orientation="Horizontal"
+                      Spacing="4">
+            <TextBlock Classes="icon"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="&#xF012;" />
+            <TextBlock FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.StartGameButton_Install}" />
+          </StackPanel>
+          <Grid Width="200"
+                Margin="0,2,0,0"
+                IsVisible="{Binding InstallBytesText, Converter={StaticResource ObjectToVisibility}}">
+            <TextBlock FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{Binding InstallBytesText}" />
+            <TextBlock HorizontalAlignment="Right"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       IsVisible="{Binding InstallSpeedText, Converter={StaticResource ObjectToVisibility}}"
+                       Text="{Binding InstallSpeedText}" />
+          </Grid>
+
+          <!--  校验进度  -->
+          <Grid Width="200"
+                Margin="0,10,0,0"
+                IsVisible="{Binding VerifySpeedText, Converter={StaticResource ObjectToVisibility}}">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <TextBlock Classes="icon"
+                         FontSize="12"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="&#xE945;" />
+              <TextBlock FontSize="12"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="{x:Static lang:Lang.StartGameButton_Verify}" />
+            </StackPanel>
+            <TextBlock HorizontalAlignment="Right"
+                       FontSize="12"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{Binding VerifySpeedText}" />
+          </Grid>
+
+          <!--  错误信息  -->
+          <TextBlock Margin="0,8,0,0"
+                     FontSize="12"
+                     Foreground="{DynamicResource StarTextSecondary}"
+                     IsVisible="{Binding ErrorMessage, Converter={StaticResource ObjectToVisibility}}"
+                     MaxLines="3"
+                     Text="{Binding ErrorMessage}"
+                     TextTrimming="CharacterEllipsis"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Grid>
+    </Popup>
+  </Grid>
+</UserControl>
