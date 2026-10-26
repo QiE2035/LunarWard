@@ -951,3 +951,16 @@ P6 收尾把启动骨架重写成上游 `src/Starward/App.xaml.cs` 的结构（�
 - 覆盖层依赖 `xdotool`（与抓屏后端同一依赖，缺失时投影到主屏工作区/不激活游戏窗口）。
 - Wayland 下无法枚举/激活外部游戏窗口，`OpenOverlayWindow` 会因句柄解析失败返回 `false`（与上游「未启用」的观察结果一致）。
 - 上游 `RunningGameService` 的前台窗口钩子仍未移植（`WinEventHook` 只是字段承载），因此「最近活跃游戏」= 最后 `AddRuninngGame` 的游戏。
+
+### X11/Wayland 抓屏自检结果（2026-10-26，本机 KDE Wayland + XWayland）
+
+`ScreenCaptureService.Capture()` 在本机**未能出图**，但失败点全部在抓屏工具依赖，不在代码路径：
+
+- 本机 `DISPLAY=:0`（XWayland）、`WAYLAND_DISPLAY=wayland-1`；`xdotool`/`import`(ImageMagick 7.1.2)/`convert`/`spectacle` 存在，**`grim` 与 `xwd` 缺失**。
+- `ScreenCaptureHelper.SupportsFullScreenFallback` 只认 `grim`：Wayland 下 `FindWindowByPid` 返回 0 且无 grim → `Capture()` 在「定位不到游戏窗口」处 `LogWarning` 返回（不崩溃、不弹错）。
+- ImageMagick 7.1.2 的 `import` 在本机对任何参数组合都报 `import: missing an image filename '<file>'`（`import -window root out.png` / `png:-` / `magick import` 均同），即 `import` 后端在本机不可用；`xwd` 回退也因缺工具不可用。
+- 本机唯一可用抓屏工具是 `spectacle`：`spectacle -b -n -f -o /tmp/sp.png` 产出 1920×1080 PNG（证明 Linux 侧抓屏能力本身可用）。
+- Guide 截图链路已接通：`Features/GamepadControl/GamepadController.cs` 的 `GuideClick`/`OnShareDown` 就是 `Dispatcher.UIThread.Post(() => ScreenCaptureService.Capture())`（与上游一致），失败点只在后端。
+- 失败降级符合预期：`CaptureInternal` 的 `catch` 走 `LogError` + `InAppToast.MainWindow?.Error("截图失败，请查看日志。")`，进程不崩溃。
+
+后续增量（本次未改）：给 `ScreenCaptureHelper` 扩工具回退链（`grim` → `spectacle -b -n -f -o` → `gnome-screenshot -f` → `import`），并放宽 `SupportsFullScreenFallback` 与 `FindWindowByPid`（XWayland 下应先试 `xdotool`，不要仅凭 `WAYLAND_DISPLAY` 短路）。
