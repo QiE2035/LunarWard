@@ -64,7 +64,7 @@
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0px, 0px)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
@@ -146,7 +146,7 @@
                 <Grid
                      
                      
-                      RowSpacing="8" RenderTransform="translate(0,0)">
+                      RowSpacing="8" RenderTransform="translate(0px, 0px)">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -169,7 +169,7 @@
                                     Spacing="8">
                             <Image Width="40"
                                    Height="40"
-                                   Source="ms-appx:///Assets/Image/S_Level.png" />
+                                   Source="avares://LunarWard/Assets/Image/S_Level.png" />
                             <TextBlock VerticalAlignment="Center"
                                        Foreground="{DynamicResource StarTextSecondary}"
                                        Text="x" />
@@ -187,7 +187,7 @@
                                     Spacing="8">
                             <Image Width="40"
                                    Height="40"
-                                   Source="ms-appx:///Assets/Image/A_Level.png" />
+                                   Source="avares://LunarWard/Assets/Image/A_Level.png" />
                             <TextBlock VerticalAlignment="Center"
                                        Foreground="{DynamicResource StarTextSecondary}"
                                        Text="x" />
@@ -205,7 +205,7 @@
                                     Spacing="8">
                             <Image Width="40"
                                    Height="40"
-                                   Source="ms-appx:///Assets/Image/B_Level.png" />
+                                   Source="avares://LunarWard/Assets/Image/B_Level.png" />
                             <TextBlock VerticalAlignment="Center"
                                        Foreground="{DynamicResource StarTextSecondary}"
                                        Text="x" />
@@ -257,7 +257,7 @@
                                   HorizontalAlignment="Stretch"
                                  
                                  
-                                  RowSpacing="8" RenderTransform="translate(0,0)">
+                                  RowSpacing="8" RenderTransform="translate(0px, 0px)">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
@@ -342,7 +342,7 @@
                                     <Image Grid.Row="2"
                                                 Height="20"
                                                 HorizontalAlignment="Left"
-                                                Source="ms-appx:///Assets/Image/1.0064dde1.png" />
+                                                Source="avares://LunarWard/Assets/Image/1.0064dde1.png" />
 
                                     <!--  敌方阵容  -->
                                     <Button Padding="2"
@@ -395,19 +395,19 @@
                                                                                    Foreground="{DynamicResource StarTextSecondary}"
                                                                                    Text="{x:Static lang:Lang.ShiyuDefensePage_Weakness}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-ice-icon.5c85742d.png"
                                                                                IsVisible="{Binding IceWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-fire-icon.aeddecee.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-fire-icon.aeddecee.png"
                                                                                IsVisible="{Binding FireWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-electric-icon.ad4c441f.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-electric-icon.ad4c441f.png"
                                                                                IsVisible="{Binding ElecWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-ether-icon.9a1e42a1.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-ether-icon.9a1e42a1.png"
                                                                                IsVisible="{Binding EtherWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-physical-icon.a657c07a.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-physical-icon.a657c07a.png"
                                                                                IsVisible="{Binding PhysicsWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                     </StackPanel>
                                                                     <!--  抗性  -->
@@ -421,19 +421,19 @@
                                                                                    Foreground="{DynamicResource StarTextSecondary}"
                                                                                    Text="{x:Static lang:Lang.ShiyuDefensePage_Resistance}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-ice-icon.5c85742d.png"
                                                                                IsVisible="{Binding IceWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-fire-icon.aeddecee.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-fire-icon.aeddecee.png"
                                                                                IsVisible="{Binding FireWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-electric-icon.ad4c441f.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-electric-icon.ad4c441f.png"
                                                                                IsVisible="{Binding ElecWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-ether-icon.9a1e42a1.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-ether-icon.9a1e42a1.png"
                                                                                IsVisible="{Binding EtherWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-physical-icon.a657c07a.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-physical-icon.a657c07a.png"
                                                                                IsVisible="{Binding PhysicsWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                     </StackPanel>
                                                                 </Grid>
@@ -471,7 +471,7 @@
                                                                     HorizontalAlignment="Center"
                                                                     VerticalAlignment="Top"
                                                                     CornerRadius="8,8,0,0"
-                                                                    Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png" />
+                                                                    Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png" />
                                                     <!--  图片  -->
                                                     <sc:CachedImage Width="72"
                                                                     Height="72"
@@ -527,7 +527,7 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Top"
                                                         CornerRadius="8,8,0,0"
-                                                        Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png"
+                                                        Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png"
                                                         Stretch="UniformToFill" />
                                         <!--  邦布图  -->
                                         <Border Width="54"
@@ -588,7 +588,7 @@
                                     <Image Grid.Row="2"
                                                 Height="20"
                                                 HorizontalAlignment="Left"
-                                                Source="ms-appx:///Assets/Image/2.d6319270.png" />
+                                                Source="avares://LunarWard/Assets/Image/2.d6319270.png" />
 
                                     <!--  敌方阵容  -->
                                     <Button Padding="2"
@@ -641,19 +641,19 @@
                                                                                    Foreground="{DynamicResource StarTextSecondary}"
                                                                                    Text="{x:Static lang:Lang.ShiyuDefensePage_Weakness}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-ice-icon.5c85742d.png"
                                                                                IsVisible="{Binding IceWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-fire-icon.aeddecee.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-fire-icon.aeddecee.png"
                                                                                IsVisible="{Binding FireWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-electric-icon.ad4c441f.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-electric-icon.ad4c441f.png"
                                                                                IsVisible="{Binding ElecWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-ether-icon.9a1e42a1.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-ether-icon.9a1e42a1.png"
                                                                                IsVisible="{Binding EtherWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-physical-icon.a657c07a.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-physical-icon.a657c07a.png"
                                                                                IsVisible="{Binding PhysicsWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                     </StackPanel>
                                                                     <!--  抗性  -->
@@ -667,19 +667,19 @@
                                                                                    Foreground="{DynamicResource StarTextSecondary}"
                                                                                    Text="{x:Static lang:Lang.ShiyuDefensePage_Resistance}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-ice-icon.5c85742d.png"
                                                                                IsVisible="{Binding IceWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-fire-icon.aeddecee.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-fire-icon.aeddecee.png"
                                                                                IsVisible="{Binding FireWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-electric-icon.ad4c441f.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-electric-icon.ad4c441f.png"
                                                                                IsVisible="{Binding ElecWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-ether-icon.9a1e42a1.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-ether-icon.9a1e42a1.png"
                                                                                IsVisible="{Binding EtherWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
-                                                                               Source="ms-appx:///Assets/Image/attribute-physical-icon.a657c07a.png"
+                                                                               Source="avares://LunarWard/Assets/Image/attribute-physical-icon.a657c07a.png"
                                                                                IsVisible="{Binding PhysicsWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                     </StackPanel>
                                                                 </Grid>
@@ -717,7 +717,7 @@
                                                                     HorizontalAlignment="Center"
                                                                     VerticalAlignment="Top"
                                                                     CornerRadius="8,8,0,0"
-                                                                    Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png" />
+                                                                    Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png" />
                                                     <!--  图片  -->
                                                     <sc:CachedImage Width="72"
                                                                     Height="72"
@@ -773,7 +773,7 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Top"
                                                         CornerRadius="8,8,0,0"
-                                                        Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png"
+                                                        Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png"
                                                         Stretch="UniformToFill" />
                                         <!--  邦布图  -->
                                         <Border Width="54"
@@ -854,7 +854,7 @@
                       HorizontalAlignment="Center"
                      
                      
-                      RowSpacing="8" RenderTransform="translate(0,0)">
+                      RowSpacing="8" RenderTransform="translate(0px, 0px)">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -1015,7 +1015,7 @@
                                                                         HorizontalAlignment="Center"
                                                                         VerticalAlignment="Top"
                                                                         CornerRadius="8,8,0,0"
-                                                                        Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png" />
+                                                                        Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png" />
                                                         <!--  图片  -->
                                                         <sc:CachedImage Width="72"
                                                                         Height="72"
@@ -1071,7 +1071,7 @@
                                                             HorizontalAlignment="Center"
                                                             VerticalAlignment="Top"
                                                             CornerRadius="8,8,0,0"
-                                                            Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png"
+                                                            Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png"
                                                             Stretch="UniformToFill" />
                                             <!--  邦布图  -->
                                             <Border Width="54"
@@ -1127,7 +1127,7 @@
                       HorizontalAlignment="Center"
                      
                      
-                      RowSpacing="4" RenderTransform="translate(0,0)">
+                      RowSpacing="4" RenderTransform="translate(0px, 0px)">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -1237,7 +1237,7 @@
                                                                         HorizontalAlignment="Center"
                                                                         VerticalAlignment="Top"
                                                                         CornerRadius="8,8,0,0"
-                                                                        Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png" />
+                                                                        Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png" />
                                                         <!--  图片  -->
                                                         <sc:CachedImage Width="72"
                                                                         Height="72"
@@ -1293,7 +1293,7 @@
                                                             HorizontalAlignment="Center"
                                                             VerticalAlignment="Top"
                                                             CornerRadius="8,8,0,0"
-                                                            Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png"
+                                                            Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png"
                                                             Stretch="UniformToFill" />
                                             <!--  邦布图  -->
                                             <Border Width="54"

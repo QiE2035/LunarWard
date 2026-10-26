@@ -97,7 +97,7 @@
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0px, 0px)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
@@ -147,14 +147,14 @@
                         <StackPanel Grid.Row="1" Orientation="Horizontal">
                             <Image Width="20"
                                    Height="20"
-                                   Source="ms-appx:///Assets/Image/boss_star.ae0258cf.png" />
+                                   Source="avares://LunarWard/Assets/Image/boss_star.ae0258cf.png" />
                             <TextBlock Margin="0,0,0,2"
                                        Foreground="{DynamicResource StarTextSecondary}"
                                        Text="{Binding BossStars}" />
                             <Image Width="20"
                                    Height="20"
                                    Margin="4,0,0,0"
-                                   Source="ms-appx:///Assets/Image/normal_star.751a6e2d.png" />
+                                   Source="avares://LunarWard/Assets/Image/normal_star.751a6e2d.png" />
                             <TextBlock Margin="0,0,0,2"
                                        Foreground="{DynamicResource StarTextSecondary}"
                                        Text="{Binding MobStars}" />
@@ -180,7 +180,7 @@
                 </TextBlock>
 
                 <!--  统计  -->
-                <Grid Margin="0,-4,0,0" RenderTransform="translate(0,0)">
+                <Grid Margin="0,-4,0,0" RenderTransform="translate(0px, 0px)">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
@@ -198,7 +198,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <Image Width="20"
                                        Height="20"
-                                       Source="ms-appx:///Assets/Image/boss_star.ae0258cf.png" />
+                                       Source="avares://LunarWard/Assets/Image/boss_star.ae0258cf.png" />
                                 <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                                     <Run Text="x" />
                                     <Run Text="{Binding CurrentChallengePeakRecord.BossStars}" />
@@ -207,7 +207,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <Image Width="20"
                                        Height="20"
-                                       Source="ms-appx:///Assets/Image/normal_star.751a6e2d.png" />
+                                       Source="avares://LunarWard/Assets/Image/normal_star.751a6e2d.png" />
                                 <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                                     <Run Text="x" />
                                     <Run Text="{Binding CurrentChallengePeakRecord.MobStars}" />
@@ -236,7 +236,7 @@
                 <!--  王棋通关战绩  -->
                 <TextBlock Margin="0,8,0,0" Text="{x:Static lang:Lang.ChallengePeakPage_KingInCheckStageRecords}" />
 
-                <Grid Height="192" RenderTransform="translate(0,0)">
+                <Grid Height="192" RenderTransform="translate(0px, 0px)">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition />
@@ -363,7 +363,7 @@
                 <TextBlock Margin="0,8,0,0" Text="{x:Static lang:Lang.ChallengePeakPage_KnightStageRecords}" />
 
 
-                <Grid RenderTransform="translate(0,0)">
+                <Grid RenderTransform="translate(0px, 0px)">
 
                     <ItemsControl ItemsSource="{Binding CurrentChallengePeakRecord.Mobs}">
                         <ItemsControl.ItemTemplate>
@@ -471,7 +471,7 @@
                                         <Image Width="120"
                                                Margin="60,0,0,0"
                                                HorizontalAlignment="Left"
-                                               Source="ms-appx:///Assets/Image/20004.png"
+                                               Source="avares://LunarWard/Assets/Image/20004.png"
                                                IsVisible="{Binding MobRecord.IsFast, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                     </StackPanel>

@@ -66,7 +66,7 @@
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0px, 0px)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
@@ -163,7 +163,7 @@
                       HorizontalAlignment="Center"
                      
                      
-                      RowSpacing="8" RenderTransform="translate(0,0)"
+                      RowSpacing="8" RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding CurrentDeadlyAssault.HasHard, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -226,7 +226,7 @@
                                      
                                       ColumnSpacing="16"
                                      
-                                      RowSpacing="4" RenderTransform="translate(0,0)">
+                                      RowSpacing="4" RenderTransform="translate(0px, 0px)">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
@@ -328,7 +328,7 @@
                                                                         HorizontalAlignment="Center"
                                                                         VerticalAlignment="Top"
                                                                         CornerRadius="8,8,0,0"
-                                                                        Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png" />
+                                                                        Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png" />
                                                         <!--  图片  -->
                                                         <sc:CachedImage Width="72"
                                                                         Height="72"
@@ -384,7 +384,7 @@
                                                             HorizontalAlignment="Center"
                                                             VerticalAlignment="Top"
                                                             CornerRadius="8,8,0,0"
-                                                            Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png"
+                                                            Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png"
                                                             Stretch="UniformToFill" />
                                             <!--  邦布图  -->
                                             <Border Width="54"
@@ -461,7 +461,7 @@
                       HorizontalAlignment="Center"
                      
                      
-                      RowSpacing="8" RenderTransform="translate(0,0)">
+                      RowSpacing="8" RenderTransform="translate(0px, 0px)">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -526,7 +526,7 @@
                                      
                                       ColumnSpacing="16"
                                      
-                                      RowSpacing="4" RenderTransform="translate(0,0)">
+                                      RowSpacing="4" RenderTransform="translate(0px, 0px)">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
@@ -628,7 +628,7 @@
                                                                         HorizontalAlignment="Center"
                                                                         VerticalAlignment="Top"
                                                                         CornerRadius="8,8,0,0"
-                                                                        Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png" />
+                                                                        Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png" />
                                                         <!--  图片  -->
                                                         <sc:CachedImage Width="72"
                                                                         Height="72"
@@ -684,7 +684,7 @@
                                                             HorizontalAlignment="Center"
                                                             VerticalAlignment="Top"
                                                             CornerRadius="8,8,0,0"
-                                                            Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png"
+                                                            Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png"
                                                             Stretch="UniformToFill" />
                                             <!--  邦布图  -->
                                             <Border Width="54"

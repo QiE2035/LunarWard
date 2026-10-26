@@ -211,7 +211,17 @@ public sealed partial class MainView : UserControl, INotifyPropertyChanged
     /// 自检（<c>--screenshot --page …</c>）用：把 <see cref="NavigateTo"/> 暴露给宿主窗口。
     /// 上游没有这条路径（截图靠 UI 自动化驱动），这里只做等价的最小入口，不参与业务流程。
     /// </summary>
-    internal void NavigateToForCapture(Type page) => NavigateTo(page);
+    /// <summary>
+    /// 自检专用：跳过「当前游戏支持哪些页」的判定，直接导航到目标页。
+    /// </summary>
+    /// <remarks>
+    /// 上游靠 UI 自动化点导航项，这里必须绕过 <see cref="CurrentGameFeatureConfig"/> 的
+    /// SupportedPages 过滤，否则本机没装游戏时任何游戏页都会被回落成启动器页（docs/10 §7 第 5 步）。
+    /// </remarks>
+    internal void NavigateToForCapture(Type page)
+    {
+        MainView_Frame.Navigate(page);
+    }
 
 
     private void NavigateTo(Type? page, object? param = null, NavigationTransitionInfo? infoOverride = null)

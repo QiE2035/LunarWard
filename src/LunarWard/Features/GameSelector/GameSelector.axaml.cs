@@ -27,6 +27,7 @@ using LunarWard.Features.GameLauncher;
 using LunarWard.Features.HoYoPlay;
 using LunarWard.Features.Setting;
 using LunarWard.Features.ViewHost;
+using LunarWard.Helpers;
 using LunarWard.Language;
 using LunarWard.Platform;
 using LunarWard.Services;
@@ -272,8 +273,16 @@ public sealed partial class GameSelector : UserControl, INotifyPropertyChanged
         {
             return;
         }
-        // 上游：this.XamlRoot.SetWindowDragRectangles([new Rect(x, 0, 10000, 48)]);
-        WeakReferenceMessenger.Default.Send(new MainWindowDragRectAdaptToGameIconMessage(false));
+        try
+        {
+            double x = Border_CurrentGameIcon.Bounds.Width;
+            if (GameIconsAreaVisible)
+            {
+                x = Border_CurrentGameIcon.Bounds.Width + Grid_GameIconsArea.Bounds.Width;
+            }
+            this.FindTopLevel()?.SetWindowDragRectangles([new Rect(x, 0, 10000, 48)]);
+        }
+        catch { }
     }
 
 

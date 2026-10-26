@@ -25,18 +25,18 @@
         <Grid>
             <Image x:Name="Image_BH3"
                   
-                   Source="ms-appx:///Assets/Image/power_bg.e4424ff8.png" />
+                   Source="avares://LunarWard/Assets/Image/power_bg.e4424ff8.png" />
             <Image x:Name="Image_Genshin"
                   
-                   Source="ms-appx:///Assets/Image/UI_ItemIcon_210.png" />
+                   Source="avares://LunarWard/Assets/Image/UI_ItemIcon_210.png" />
             <Image x:Name="Image_StarRail"
                    Margin="4"
                   
-                   Source="ms-appx:///Assets/Image/11.png" />
+                   Source="avares://LunarWard/Assets/Image/11.png" />
             <Image x:Name="Image_ZZZ"
                    Margin="5"
                   
-                   Source="ms-appx:///Assets/Image/IconStamina.png" />
+                   Source="avares://LunarWard/Assets/Image/IconStamina.png" />
         </Grid>
 
 
@@ -108,7 +108,7 @@
                         <StackPanel>
                             <Image Width="60"
                                    Height="60"
-                                   Source="ms-appx:///Assets/Image/power_bg.e4424ff8.png" />
+                                   Source="avares://LunarWard/Assets/Image/power_bg.e4424ff8.png" />
                             <TextBlock HorizontalAlignment="Center"
                                        FontSize="16"
                                        FontWeight="SemiBold">
@@ -164,7 +164,7 @@
 
                         <!--  体力  -->
                         <StackPanel Grid.RowSpan="20">
-                            <Image Width="60" Source="ms-appx:///Assets/Image/UI_ItemIcon_210.png" />
+                            <Image Width="60" Source="avares://LunarWard/Assets/Image/UI_ItemIcon_210.png" />
                             <TextBlock HorizontalAlignment="Center"
                                        FontSize="16"
                                        FontWeight="SemiBold">
@@ -179,7 +179,7 @@
                                Width="20"
                                Height="20"
                                HorizontalAlignment="Left"
-                               Source="ms-appx:///Assets/Image/UI_NPCTopIcon_QuestEvent_64.png" />
+                               Source="avares://LunarWard/Assets/Image/UI_NPCTopIcon_QuestEvent_64.png" />
                         <TextBlock Grid.Column="1"
                                    Margin="24,0,0,0"
                                    VerticalAlignment="Center"
@@ -237,7 +237,7 @@
                                             <Image Width="16"
                                                    Height="16"
                                                    Opacity="0.6"
-                                                   Source="ms-appx:///Assets/Image/UI_NPCTopIcon_QuestEvent_64.png"
+                                                   Source="avares://LunarWard/Assets/Image/UI_NPCTopIcon_QuestEvent_64.png"
                                                    IsVisible="{Binding IsUnfinished}" />
                                             <fw:FontIcon Classes="icon" FontSize="12"
                                                       FontWeight="Bold"
@@ -279,13 +279,13 @@
                                                         Height="16"
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
-                                                        Source="ms-appx:///Assets/Image/UI_Icon_Gift.png"
+                                                        Source="avares://LunarWard/Assets/Image/UI_Icon_Gift.png"
                                                         IsVisible="{Binding IsUnfinished}" />
                                             <Image Width="16"
                                                         Height="16"
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
-                                                        Source="ms-appx:///Assets/Image/UI_Icon_Gift.png"
+                                                        Source="avares://LunarWard/Assets/Image/UI_Icon_Gift.png"
                                                         IsVisible="{Binding IsWaitTaken}" />
                                             <fw:FontIcon Classes="icon" HorizontalAlignment="Center"
                                                       VerticalAlignment="Center"
@@ -321,7 +321,7 @@
                                Width="20"
                                Height="20"
                                HorizontalAlignment="Left"
-                               Source="ms-appx:///Assets/Image/UI_ItemIcon_204.png" />
+                               Source="avares://LunarWard/Assets/Image/UI_ItemIcon_204.png" />
                         <TextBlock Grid.Row="2"
                                    Grid.Column="1"
                                    Margin="24,0,0,0"
@@ -343,7 +343,7 @@
                                Width="20"
                                Height="20"
                                HorizontalAlignment="Left"
-                               Source="ms-appx:///Assets/Image/UI_TouchIcon_Map.png" />
+                               Source="avares://LunarWard/Assets/Image/UI_TouchIcon_Map.png" />
                         <TextBlock Grid.Row="3"
                                    Grid.Column="1"
                                    Margin="24,0,0,0"
@@ -384,7 +384,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <Image Width="40"
                                    Height="40"
-                                   Source="ms-appx:///Assets/Image/11.png" />
+                                   Source="avares://LunarWard/Assets/Image/11.png" />
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock FontSize="15">
                                     <Run Text="{Binding StarRailDailyNote.CurrentStamina}" /><Run Text="/" /><Run Text="{Binding StarRailDailyNote.MaxStamina}" />
@@ -414,7 +414,7 @@
                                     Spacing="4">
                             <Image Width="40"
                                    Height="40"
-                                   Source="ms-appx:///Assets/Image/12.png" />
+                                   Source="avares://LunarWard/Assets/Image/12.png" />
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="{Binding StarRailDailyNote.CurrentReserveStamina}" />
                                 <TextBlock FontSize="12"
@@ -481,7 +481,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Image Width="40"
                                    Height="40"
-                                   Source="ms-appx:///Assets/Image/IconStamina.png" />
+                                   Source="avares://LunarWard/Assets/Image/IconStamina.png" />
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock FontSize="15">
                                     <Run Text="{Binding ZZZDailyNote.Energy.Progress.Current}" /><Run Text="/" /><Run Text="{Binding ZZZDailyNote.Energy.Progress.Max}" />

@@ -45,11 +45,24 @@ public static partial class AppConfig
 
 
 
+    /// <summary>
+    /// 读取 <see cref="AppVersion"/>（上游在 <c>CheckEnviroment</c> 开头做，等价于 WinUI 的包版本）。
+    /// </summary>
+    /// <remarks>
+    /// 自检路径（<c>--screenshot</c>）会跳过 <see cref="CheckEnviromentAsync"/> 直接落默认数据目录，
+    /// 但仍需要版本号构造 User-Agent，否则 <c>LunarWard.Debug/</c> 会被 <see cref="HttpHeaders"/> 判为非法。
+    /// </remarks>
+    internal static void InitializeVersion()
+    {
+        AppVersion = typeof(AppConfig).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "";
+    }
+
+
     public static async Task CheckEnviromentAsync()
     {
         try
         {
-            AppVersion = typeof(AppConfig).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "";
+            InitializeVersion();
             IsAppInRemovableStorage = DriveHelper.IsDeviceRemovableOrOnUSB(AppContext.BaseDirectory);
 
             string? parentFolder = new DirectoryInfo(AppContext.BaseDirectory).Parent?.FullName;

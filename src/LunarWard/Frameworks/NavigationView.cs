@@ -148,7 +148,7 @@ public class NavigationView : ContentControl
         }
         else if (change.Property == CompactPaneLengthProperty)
         {
-            Width = -1;
+            Width = double.NaN; // WinUI 的 -1（Auto）在 Avalonia 是 NaN
             RebuildPane();
         }
     }

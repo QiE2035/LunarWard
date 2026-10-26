@@ -433,7 +433,7 @@
                     <controls:CachedImage Width="80"
                                           Height="80"
                                           VerticalAlignment="Top"
-                                          Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png" />
+                                          Source="avares://LunarWard/Assets/Image/ZZZ_AvatarCard_Background.png" />
                     <controls:CachedImage Width="80"
                                           Height="80"
                                           HorizontalAlignment="Center"

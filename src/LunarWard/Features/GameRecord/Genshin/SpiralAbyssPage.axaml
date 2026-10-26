@@ -66,7 +66,7 @@
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0px, 0px)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
@@ -133,7 +133,7 @@
                     </TextBlock>
                 </Grid>
                 <!--  出战统计  -->
-                <Grid Margin="0,-4,0,0" RenderTransform="translate(0,0)">
+                <Grid Margin="0,-4,0,0" RenderTransform="translate(0px, 0px)">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition />
@@ -177,7 +177,7 @@
                            Foreground="{DynamicResource StarTextSecondary}"
                            Text="{x:Static lang:Lang.SpiralAbyssPage_Picked}"
                            IsVisible="{Binding HasData}" />
-                <Grid RenderTransform="translate(0,0)"
+                <Grid RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding HasData}">
                     <ItemsControl HorizontalAlignment="Center"
                                   VerticalAlignment="Center"
@@ -236,7 +236,7 @@
                            Foreground="{DynamicResource StarTextSecondary}"
                            Text="{x:Static lang:Lang.SpiralAbyssPage_CombatStats}"
                            IsVisible="{Binding HasData}" />
-                <Grid RenderTransform="translate(0,0)"
+                <Grid RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding HasData}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -346,7 +346,7 @@
                     
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="abyss:SpiralAbyssFloor">
-                            <Grid RenderTransform="translate(0,0)">
+                            <Grid RenderTransform="translate(0px, 0px)">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="28" />
                                     <RowDefinition />

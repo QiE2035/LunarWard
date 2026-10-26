@@ -65,7 +65,7 @@
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0px, 0px)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
@@ -149,7 +149,7 @@
                 </Grid>
 
                 <!--  演出回顾  -->
-                <Grid RenderTransform="translate(0,0)"
+                <Grid RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding HasData}">
                     <Grid.RowDefinitions>
                         <RowDefinition MinHeight="32" />
@@ -266,7 +266,7 @@
 
 
                 <!--  战斗统计  -->
-                <Grid Margin="0,8,0,0" RenderTransform="translate(0,0)"
+                <Grid Margin="0,8,0,0" RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding CurrentTheater.Detail.FightStatisic.TotalUseTime, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.FightStatisicVisibility'}">
                     <Grid.RowDefinitions>
                         <RowDefinition MinHeight="32" />
@@ -364,7 +364,7 @@
 
 
                 <!--  参演名单  -->
-                <Grid Margin="0,8,0,0" RenderTransform="translate(0,0)"
+                <Grid Margin="0,8,0,0" RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding CurrentTheater.Detail.RoundsData, Converter={StaticResource CollectionToVisibilityConverter}}">
                     <ItemsControl ItemsSource="{Binding CurrentTheater.Detail.RoundsData}">
                         
@@ -458,7 +458,7 @@
                                                 <StackPanel>
                                                     <Image Width="32"
                                                            Height="32"
-                                                           Source="ms-appx:///Assets/Image/UI_Icon_RoleCombat_Buff_Blessing_LevelUp.png" />
+                                                           Source="avares://LunarWard/Assets/Image/UI_Icon_RoleCombat_Buff_Blessing_LevelUp.png" />
                                                     <TextBlock HorizontalAlignment="Center"
                                                                FontSize="12"
                                                                Foreground="{DynamicResource StarTextSecondary}">

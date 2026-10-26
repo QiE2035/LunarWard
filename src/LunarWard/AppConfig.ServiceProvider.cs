@@ -126,6 +126,15 @@ public static partial class AppConfig
         builder.ConfigureHttpClient(client =>
         {
             client.DefaultRequestHeaders.Clear();
+            // 版本号缺失时不要拼出 ".../"（非法头值），跳过 UA 即可。
+            if (string.IsNullOrWhiteSpace(AppVersion))
+            {
+                InitializeVersion();
+            }
+            if (string.IsNullOrWhiteSpace(AppVersion))
+            {
+                return;
+            }
 #if DEBUG
             client.DefaultRequestHeaders.Add("User-Agent", $"LunarWard.Debug/{AppVersion}");
 #else

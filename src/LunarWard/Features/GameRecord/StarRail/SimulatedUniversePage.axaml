@@ -63,7 +63,7 @@
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0px, 0px)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
@@ -112,7 +112,7 @@
 
 
                 <!--  数据总览  -->
-                <Grid Margin="0,0,0,16" RenderTransform="translate(0,0)"
+                <Grid Margin="0,0,0,16" RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding BasicInfo, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -150,7 +150,7 @@
                 </Grid>
 
 
-                <Grid RenderTransform="translate(0,0)"
+                <Grid RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding CurrentRecord, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <!--  本期通关次数  -->
                     <TextBlock Margin="12,0,0,0"
@@ -182,7 +182,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="su:SimulatedUniverseRecordItem">
                             <Border Background="{DynamicResource StarOverlayAcrylicBrush}"
-                                    CornerRadius="8" RenderTransform="translate(0,0)">
+                                    CornerRadius="8" RenderTransform="translate(0px, 0px)">
                                 <Expander Padding="16,0,16,12"
                                           HorizontalAlignment="Stretch"
                                           Background="Transparent"

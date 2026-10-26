@@ -64,7 +64,7 @@
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0px, 0px)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
@@ -176,7 +176,7 @@
                             <Grid
                                  
                                  
-                                  RowSpacing="8" RenderTransform="translate(0,0)">
+                                  RowSpacing="8" RenderTransform="translate(0px, 0px)">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />

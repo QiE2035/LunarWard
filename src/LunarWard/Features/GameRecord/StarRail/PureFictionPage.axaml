@@ -64,7 +64,7 @@
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0px, 0px)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
@@ -149,7 +149,7 @@
                 </Grid>
 
                 <!--  出战统计  -->
-                <Grid Margin="0,-4,0,0" RenderTransform="translate(0,0)">
+                <Grid Margin="0,-4,0,0" RenderTransform="translate(0px, 0px)">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -219,7 +219,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="fic:PureFictionFloorDetail">
                             <StackPanel Width="388"
-                                        Background="{DynamicResource StarOverlayAcrylicBrush}" RenderTransform="translate(0,0)">
+                                        Background="{DynamicResource StarOverlayAcrylicBrush}" RenderTransform="translate(0px, 0px)">
 
                                 <!--  title & Node1 & Node2  -->
                                 <Grid Height="304">
@@ -443,7 +443,7 @@
                                                 VerticalAlignment="Center"
                                                 Spacing="8"
                                                 IsVisible="{Binding IsFast, Converter={StaticResource BoolToVisibilityConverter}}">
-                                        <Image Width="120" Source="ms-appx:///Assets/Image/20004.png" />
+                                        <Image Width="120" Source="avares://LunarWard/Assets/Image/20004.png" />
                                         <TextBlock HorizontalAlignment="Center"
                                                    Foreground="{DynamicResource StarTextSecondary}"
                                                    Text="{x:Static lang:Lang.ForgottenHallPage_QuickCleared}" />

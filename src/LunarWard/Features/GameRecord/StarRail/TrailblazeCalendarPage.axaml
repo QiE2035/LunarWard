@@ -119,7 +119,7 @@
                                Width="20"
                                Height="20"
                                HorizontalAlignment="Left"
-                               Source="ms-appx:///Assets/Image/900001.png" />
+                               Source="avares://LunarWard/Assets/Image/900001.png" />
                         <TextBlock Grid.Row="1"
                                    Margin="24,0,0,0"
                                    Foreground="{DynamicResource StarTextSecondary}"
@@ -140,7 +140,7 @@
                            Foreground="{DynamicResource StarTextSecondary}"
                            Text="{x:Static lang:Lang.TravelersDiaryPage_RealTimeData}"
                            IsVisible="{Binding CurrentSummary, Converter={StaticResource ObjectToVisibilityConverter}}" />
-                <Grid RenderTransform="translate(0,0)"
+                <Grid RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding CurrentSummary, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -163,7 +163,7 @@
                                 Grid.Column="1"
                                 Orientation="Horizontal"
                                 Spacing="8">
-                        <Image Width="24" Source="ms-appx:///Assets/Image/900001.png" />
+                        <Image Width="24" Source="avares://LunarWard/Assets/Image/900001.png" />
                         <TextBlock VerticalAlignment="Center" Text="{Binding CurrentSummary.DayData.CurrentHcoin}" />
                     </StackPanel>
                     <StackPanel Grid.Row="0"
@@ -171,10 +171,10 @@
                                 Orientation="Horizontal"
                                 Spacing="12">
                         <Grid>
-                            <Image Width="24" Source="ms-appx:///Assets/Image/101.png" />
+                            <Image Width="24" Source="avares://LunarWard/Assets/Image/101.png" />
                             <Image Width="24"
                                    RenderTransformOrigin="0.25,0.75"
-                                   Source="ms-appx:///Assets/Image/102.png" RenderTransform="translate(1,-2)"
+                                   Source="avares://LunarWard/Assets/Image/102.png" RenderTransform="translate(1px, -2px)"
                                    IsVisible="True">
                                 <Image.RenderTransform>
                                     <RotateTransform Angle="30" />
@@ -192,7 +192,7 @@
                                 Grid.Column="1"
                                 Orientation="Horizontal"
                                 Spacing="8">
-                        <Image Width="24" Source="ms-appx:///Assets/Image/900001.png" />
+                        <Image Width="24" Source="avares://LunarWard/Assets/Image/900001.png" />
                         <TextBlock VerticalAlignment="Center" Text="{Binding CurrentSummary.MonthData.CurrentHcoin}" />
                     </StackPanel>
                     <StackPanel Grid.Row="1"
@@ -200,10 +200,10 @@
                                 Orientation="Horizontal"
                                 Spacing="12">
                         <Grid>
-                            <Image Width="24" Source="ms-appx:///Assets/Image/101.png" />
+                            <Image Width="24" Source="avares://LunarWard/Assets/Image/101.png" />
                             <Image Width="24"
                                    RenderTransformOrigin="0.25,0.75"
-                                   Source="ms-appx:///Assets/Image/102.png" RenderTransform="translate(1,-2)"
+                                   Source="avares://LunarWard/Assets/Image/102.png" RenderTransform="translate(1px, -2px)"
                                    IsVisible="True">
                                 <Image.RenderTransform>
                                     <RotateTransform Angle="30" />
@@ -261,7 +261,7 @@
                     <Run Text="" />
                     <Run Text="{Binding SelectMonthData.Month}" />
                 </TextBlock>
-                <Grid RenderTransform="translate(0,0)"
+                <Grid RenderTransform="translate(0px, 0px)"
                       IsVisible="{Binding SelectMonthData, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -284,7 +284,7 @@
                                 Grid.Column="1"
                                 Orientation="Horizontal"
                                 Spacing="8">
-                        <Image Width="24" Source="ms-appx:///Assets/Image/900001.png" />
+                        <Image Width="24" Source="avares://LunarWard/Assets/Image/900001.png" />
                         <TextBlock VerticalAlignment="Center" Text="{Binding SelectMonthData.CurrentHcoin}" />
                     </StackPanel>
                     <StackPanel Grid.Row="1"
@@ -292,10 +292,10 @@
                                 Orientation="Horizontal"
                                 Spacing="12">
                         <Grid>
-                            <Image Width="24" Source="ms-appx:///Assets/Image/101.png" />
+                            <Image Width="24" Source="avares://LunarWard/Assets/Image/101.png" />
                             <Image Width="24"
                                    RenderTransformOrigin="0.25,0.75"
-                                   Source="ms-appx:///Assets/Image/102.png" RenderTransform="translate(1,-2)"
+                                   Source="avares://LunarWard/Assets/Image/102.png" RenderTransform="translate(1px, -2px)"
                                    IsVisible="True">
                                 <Image.RenderTransform>
                                     <RotateTransform Angle="30" />
@@ -355,7 +355,7 @@
                 </TextBlock>
                 <Border Padding="12,8,12,8"
                         Background="{DynamicResource StarOverlayAcrylicBrush}"
-                        CornerRadius="8" RenderTransform="translate(0,0)"
+                        CornerRadius="8" RenderTransform="translate(0px, 0px)"
                         IsVisible="{Binding SelectMonthData, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <ItemsControl ItemsSource="{Binding DayDataList}">
                         <ItemsControl.ItemTemplate>
@@ -377,7 +377,7 @@
                                     <Image Grid.Column="1"
                                            Width="24"
                                            Height="24"
-                                           Source="ms-appx:///Assets/Image/900001.png" />
+                                           Source="avares://LunarWard/Assets/Image/900001.png" />
                                     <TextBlock Grid.Column="2"
                                                VerticalAlignment="Center"
                                                Text="{Binding Jade}" />
@@ -391,10 +391,10 @@
                                     <Grid Grid.Column="4"
                                           Width="24"
                                           Height="24">
-                                        <Image Width="24" Source="ms-appx:///Assets/Image/101.png" />
+                                        <Image Width="24" Source="avares://LunarWard/Assets/Image/101.png" />
                                         <Image Width="24"
                                                RenderTransformOrigin="0.25,0.75"
-                                               Source="ms-appx:///Assets/Image/102.png" RenderTransform="translate(1,-2)"
+                                               Source="avares://LunarWard/Assets/Image/102.png" RenderTransform="translate(1px, -2px)"
                                                IsVisible="True">
                                             <Image.RenderTransform>
                                                 <RotateTransform Angle="30" />

@@ -89,7 +89,22 @@ public partial class App : Application
                 return await window.WaitAsync();
             };
 
-            await AppConfig.CheckEnviromentAsync();
+            // 自检不能卡在「选择数据目录」对话框上（无人值守），直接落到默认目录；
+            // 正常启动仍走完整环境检查（Welcome / NoPermission 窗口）。docs/10 §7 第 5 步。
+            if (Services.CaptureMode.Enabled && !Directory.Exists(AppConfig.UserDataFolder))
+            {
+                string defaultFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LunarWard");
+                Directory.CreateDirectory(defaultFolder);
+                AppConfig.InitializeVersion();
+                AppConfig.UserDataFolder = defaultFolder;
+                LunarWard.Features.Database.DatabaseService.SetDatabase(defaultFolder);
+                AppConfig.LoadConfiguration();
+            }
+            else
+            {
+                await AppConfig.CheckEnviromentAsync();
+            }
 
             var window = new LunarWard.Features.ViewHost.MainWindow();
             desktop.MainWindow = window;
@@ -107,6 +122,11 @@ public partial class App : Application
                 }
 
                 Services.CaptureMode.Capture(window);
+            }
+
+            if (Services.CaptureMode.StartHidden)
+            {
+                window.Hide();
             }
         }
         catch (Exception ex)
@@ -244,9 +264,11 @@ public partial class App : Application
             Localization.AppStrings.Instance.Language = Localization.AppStrings.Normalize(language);
         }
 
-        // 正常启动走新外壳（上游 Features/ViewHost/MainWindow + MainView）；
-        // --screenshot/--tray-test/--page 等自检路径暂时仍走旧壳，等自检迁移完成后删除。
-        if (!CaptureMode.Enabled && Environment.GetEnvironmentVariable("LUNARWARD_LEGACY_SHELL") is not "1")
+        // 正常启动与 --screenshot/--page 自检都走新外壳（上游 Features/ViewHost/MainWindow + MainView）。
+        // 旧壳只保留两条出口：显式 LUNARWARD_LEGACY_SHELL=1，以及仍是独立窗口的 --window settings|account|dailynote 自检。
+        bool useLegacyShell = Environment.GetEnvironmentVariable("LUNARWARD_LEGACY_SHELL") is "1"
+            || (CaptureMode.Enabled && CaptureMode.TargetWindow is not "main");
+        if (!useLegacyShell)
         {
             StartPortShell(desktop);
             base.OnFrameworkInitializationCompleted();
