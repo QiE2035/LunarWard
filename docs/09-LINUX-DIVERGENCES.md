@@ -52,6 +52,16 @@
 - **弹窗内容高度上限**：主窗口固定 676 高，原独立窗口里 1008×564 的
   `PlayTimeStatsDialog` 塞不进浮层，内容区改为在固定高度内滚动（列宽仍 1008）。
 
+- **「游戏设置 → 游戏包体」的版本号语义（2026-10-26，`fix/ui-r3-layout`，问题 7）**：
+  上游 Pivot 标题写的是 `LatestVersion = gamePackage.Main.Major.Version`
+  （`Features/GameLauncher/GameLauncherSettingDialog.xaml.cs:998`，即**包体清单**版本，
+  `GetGameResourcePackages` 返回的那份）；国服原神清单里的文件名是 `YuanShen_5.5.0.*`，
+  而游戏版本（`getGameBranches` 的 `branch.Main.Tag`）是 7.1.0，于是标题看起来
+  「版本过旧」。LunarWard 有意偏离：标签页标题固定用**游戏版本**，包体清单版本降为
+  页内副标题「游戏包体 5.5.0 · getGamePackages」，两者互不覆盖，缺字段才回退
+  （`—` / 「获取游戏安装包信息失败…」）。顺带修掉旧实现把自检假数据（6.2.0）塞进
+  生产异常路径的问题——`SeedPackagesForCapture()` 现在只在 `--screenshot` 下生效。
+
 ## 四、字体与背景（2026-10-25，`fix/ui-parity-pass`）
 
 | 上游 | LunarWard | 说明 / 理由 |
