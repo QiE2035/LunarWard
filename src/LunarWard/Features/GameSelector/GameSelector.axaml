@@ -1,0 +1,516 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.GameSelector"
+             x:Class="LunarWard.Features.GameSelector.GameSelector"
+             x:CompileBindings="False"
+             x:DataType="local:GameSelector">
+
+
+    <Grid>
+
+
+
+        <!--  左上角当前的游戏图标  -->
+        <Border Name="Border_CurrentGameIcon"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Background="Transparent"
+                PointerEntered="Border_CurrentGameIcon_PointerEntered"
+                PointerExited="Border_CurrentGameIcon_PointerExited">
+            <Button Name="Button_CurrentGameIcon"
+                    Width="40"
+                    Height="40"
+                    Margin="8,10,8,8"
+                    Padding="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Cursor="Hand"
+                    BorderThickness="0"
+                    Command="{Binding ShowFullBackgroundCommand}"
+                    CornerRadius="8"
+                    >
+                <Grid>
+                    <TextBlock HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              FontSize="20"
+                              Classes="icon" Text="&#xE8A9;"
+                               />
+                    <!--  游戏图标  -->
+                    <Image Width="40"
+                                    Height="40"
+                                    Source="{Binding CurrentGameBizIcon.GameIcon, }"
+                                    
+                                    IsVisible="{Binding IsPinned, Converter={StaticResource BoolReversed}}" />
+                    <!--  服务器图标  -->
+                    <Image Width="20"
+                                    Height="20"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"
+                                    Source="{Binding CurrentGameBizIcon.ServerIcon, }"
+                                    
+                                    IsVisible="{Binding IsPinned, Converter={StaticResource BoolReversed}}" />
+                </Grid>
+            </Button>
+        </Border>
+
+
+        <!--  提醒：点击此处选择或切换游戏  -->
+        <Popup x:Name="TeachTip_SelectGame" Placement="Bottom">
+            <Border Padding="12"
+                    Background="{DynamicResource StarOverlayAcrylicBrush}"
+                    CornerRadius="8">
+                <StackPanel Spacing="8">
+                    <TextBlock Foreground="{DynamicResource StarTextSecondary}"
+                               Text="{x:Static lang:Lang.GameSelector_ClickToSelectOrSwitchGame}" />
+                    <Button Name="Button_AutoSearch" Command="{Binding AutoSearchInstalledGamesCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Classes="icon" FontSize="16" Text="&#xE721;" />
+                            <TextBlock Text="{x:Static lang:Lang.GameBizSelector_AutoSearch}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Popup>
+
+
+
+        <!--  黑色半透明背景  -->
+        <Border x:Name="Border_FullBackground"
+                Padding="68,80,0,0"
+                Background="#80000000"
+                IsHitTestVisible="False"
+                Opacity="0"
+                Tapped="Border_FullBackground_Tapped"
+                IsVisible="False">
+
+            <ScrollViewer>
+                <StackPanel Margin="0,0,12,12" Spacing="40">
+
+                    <!--  游戏展示和选择  -->
+                    <ItemsControl ItemsSource="{Binding GameBizDisplays}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="16" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:GameBizDisplay">
+                                <Grid Name="Grid_GameBizDisplay"
+                                      Width="192"
+                                      Height="108"
+                                      Padding="0"
+                                      Cursor="Hand"
+                                      Background="#40000000"
+                                      CornerRadius="8"
+                                      PointerEntered="Grid_GameBizDisplay_PointerEntered"
+                                      Tapped="Grid_GameBizDisplay_Tapped">
+                                    <!--  背景图  -->
+                                    <Image HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    CornerRadius="8"
+                                                    Source="{Binding GameInfo.Display.Thumbnail.Url}"
+                                                    Stretch="UniformToFill"
+                                                     />
+                                    <!--  Logo  -->
+                                    <Image Name="Grid_GameBizDisplay_Logo"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Background="#60000000"
+                                                    Source="{Binding GameInfo.Display.Logo.Url}"
+                                                     />
+                                    <!--  鼠标移入时 Icon & 选择服务器  -->
+                                    <Grid Name="Grid_GameBizDisplay_IconAndName"
+                                          Background="#D0000000"
+                                          BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
+                                          BorderThickness="2"
+                                          CornerRadius="6"
+                                          Opacity="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Image Grid.Column="1"
+                                                        Width="48"
+                                                        Height="48"
+                                                        Margin="0,0,8,0"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center"
+                                                        CornerRadius="8"
+                                                        Source="{Binding GameInfo.Display.Icon.Url}"
+                                                         />
+                                        <TextBlock Grid.Column="2"
+                                                   Margin="8,0,0,0"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="14"
+                                                   
+                                                   Text="{x:Static lang:Lang.SelectGamePage_SelectGameServer}"
+                                                   TextWrapping="Wrap" />
+                                    </Grid>
+                                    <!--  动画  -->
+                                    <!--  动画触发  -->
+                                    <!--  服务器列表  -->
+                                    <FlyoutBase.AttachedFlyout>
+                                        <Flyout>
+                                            <ItemsControl ItemsSource="{Binding Servers}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="local:GameBizIcon">
+                                                        <Button x:Name="Button_GameServer"
+                                                                Padding="4"
+                                                                HorizontalAlignment="Stretch"
+                                                                HorizontalContentAlignment="Stretch"
+                                                                Click="Button_GameServer_Click"
+                                                                >
+                                                            <Grid ColumnSpacing="12">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                    <ColumnDefinition />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <!--  服务器图标  -->
+                                                                <Border Width="24"
+                                                                        Height="24"
+                                                                        CornerRadius="4">
+                                                                    <Image Source="{Binding ServerIcon}" />
+                                                                </Border>
+                                                                <!--  服务器名称  -->
+                                                                <TextBlock Grid.Column="1"
+                                                                           HorizontalAlignment="Left"
+                                                                           VerticalAlignment="Center"
+                                                                           Text="{Binding ServerName}" />
+                                                                <!--  固定  -->
+                                                                <Button Name="Button_PinGameBiz"
+                                                                        Grid.Column="2"
+                                                                        Width="28"
+                                                                        Height="28"
+                                                                        Padding="0"
+                                                                        HorizontalAlignment="Right"
+                                                                        Click="Button_PinGameBiz_Click"
+                                                                        >
+                                                                    <Grid>
+                                                                        <TextBlock FontSize="16"
+                                                                                  Classes="icon" Text="&#xE718;"
+                                                                                   />
+                                                                        <TextBlock FontSize="16"
+                                                                                  Classes="icon" Text="&#xE841;"
+                                                                                  
+                                                                                  IsVisible="{Binding IsPinned}" />
+                                                                    </Grid>
+                                                                </Button>
+                                                            </Grid>
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Flyout>
+                                    </FlyoutBase.AttachedFlyout>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+
+                    <!--  已安装游戏及大小  -->
+                    <Grid HorizontalAlignment="Left"
+                          VerticalAlignment="Top"
+                          Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                          CornerRadius="8">
+                        <Expander x:Name="Expander_InstalledGamesActualSize"
+                                  MinWidth="820"
+                                  HorizontalContentAlignment="Stretch"
+                                  Background="Transparent"
+                                  Tapped="Expander_InstalledGamesActualSize_Tapped">
+                            <Expander.Resources>
+                                <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="ControlFillColorTransparentBrush" />
+                                <Thickness x:Key="ExpanderHeaderBorderThickness">0,0,0,1</Thickness>
+                                <Thickness x:Key="ExpanderContentDownBorderThickness">0</Thickness>
+                            </Expander.Resources>
+                            <!--  全部已安装游戏大小统计  -->
+                            <Expander.Header>
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                        <Run Text="{x:Static lang:Lang.GameSelector_ActualSizeOfInstalledGames}" />
+                                        <Run Text="{Binding InstalledGamesActualSize}" />
+                                    </TextBlock>
+                                    <TextBlock Grid.Column="1"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               IsVisible="{Binding InstalledGamesSavedSize, Converter={StaticResource ObjectToVisibility}}">
+                                        <Run Text="{x:Static lang:Lang.GameSelector_StorageSpaceSavedByHardLinks}" />
+                                        <Run Text="{Binding InstalledGamesSavedSize}" />
+                                    </TextBlock>
+                                    <StackPanel Grid.Column="1"
+                                                Orientation="Horizontal"
+                                                Spacing="12"
+                                                IsVisible="{Binding InitializeInstalledGamesCommand.IsRunning}">
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Text="{x:Static lang:Lang.GameSelector_Calculating}" />
+                                        <ProgressRing Width="20"
+                                                      Height="20"
+                                                      HorizontalAlignment="Left"
+                                                      IsIndeterminate="True" />
+                                    </StackPanel>
+                                    <!--  刷新  -->
+                                    <StackPanel Grid.Column="2"
+                                                Orientation="Horizontal"
+                                                Spacing="8">
+                                        <Button x:Name="Button_UpdateGamesAcutalSize"
+                                                Width="32"
+                                                Height="32"
+                                                Padding="0"
+                                                Command="{Binding InitializeInstalledGamesCommand}"
+                                                
+                                                ToolTipService.ToolTip="{x:Static lang:Lang.Common_Refresh}">
+                                            <TextBlock FontSize="14"
+                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                      Classes="icon" Text="&#xE72C;" />
+                                        </Button>
+                                        <!--  自动查找  -->
+                                        <Button x:Name="Button_AutoSearch"
+                                                Grid.Column="2"
+                                                Width="32"
+                                                Height="32"
+                                                Padding="0"
+                                                Command="{Binding AutoSearchInstalledGamesCommand}"
+                                                
+                                                ToolTipService.ToolTip="{x:Static lang:Lang.GameBizSelector_AutoSearch}">
+                                            <TextBlock FontSize="14"
+                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                      Classes="icon" Text="&#xE721;" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Expander.Header>
+                            <ItemsControl Grid.Row="1" ItemsSource="{Binding InstalledGames}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="8" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="local:GameBizIcon">
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <!--  游戏图标  -->
+                                            <Image Width="36"
+                                                            Height="36"
+                                                            CornerRadius="8"
+                                                            Source="{Binding GameIcon, }" />
+                                            <!--  游戏名  -->
+                                            <TextBlock MinWidth="160"
+                                                       VerticalAlignment="Center"
+                                                       Text="{Binding GameName}" />
+                                            <!--  服务器图标  -->
+                                            <Image Width="24"
+                                                            Height="24"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            CornerRadius="4"
+                                                            Source="{Binding ServerIcon, }" />
+                                            <!--  服务器名  -->
+                                            <TextBlock MinWidth="100"
+                                                       VerticalAlignment="Center"
+                                                       Text="{Binding ServerName}" />
+                                            <TextBlock MinWidth="100"
+                                                       VerticalAlignment="Center"
+                                                       Text="{Binding TotalSizeText}" />
+                                            <TextBlock MinWidth="200"
+                                                       VerticalAlignment="Center"
+                                                       Text="{Binding InstallPath}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Expander>
+                    </Grid>
+
+
+                </StackPanel>
+            </ScrollViewer>
+
+
+        </Border>
+
+
+
+        <!--  横排待选游戏图标  -->
+        <Grid x:Name="Grid_GameIconsArea"
+              Height="60"
+              Margin="56,0,0,0"
+              Padding="6,0,12,0"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Top"
+              Background="Transparent"
+              PointerExited="Grid_GameIconsArea_PointerExited"
+              SizeChanged="Grid_GameIconsArea_SizeChanged"
+              Translation="0,-100,0">
+            <Grid.ChildrenTransitions>
+                <TransitionCollection>
+                    <RepositionThemeTransition />
+                </TransitionCollection>
+            </Grid.ChildrenTransitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!--  游戏图标  -->
+            <ListView AllowDrop="True"
+                      CanReorderItems="{Binding s:AppConfig.IsAdmin, Converter={StaticResource BoolReversedConverter}}"
+                      ItemsSource="{Binding GameBizIcons}"
+                      ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                      SelectionMode="Single">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <!--  ListViewItemStyle 防止出现选中效果，移除各种背景颜色  -->
+                <ListView.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+                        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+                        <Setter Property="Background" Value="{DynamicResource ListViewItemBackground}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ListViewItemForeground}" />
+                        <Setter Property="TabNavigation" Value="Local" />
+                        <Setter Property="IsHoldingEnabled" Value="True" />
+                        <!--  下方留出空间，防止阴影被截断  -->
+                        <Setter Property="Padding" Value="6,8,6,8" />
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                        <Setter Property="MinWidth" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
+                        <Setter Property="AllowDrop" Value="False" />
+                        <Setter Property="UseSystemFocusVisuals" Value="True" />
+                        <Setter Property="FocusVisualMargin" Value="0" />
+                        <Setter Property="FocusVisualPrimaryBrush" Value="{DynamicResource ListViewItemFocusVisualPrimaryBrush}" />
+                        <Setter Property="FocusVisualPrimaryThickness" Value="0" />
+                        <Setter Property="FocusVisualSecondaryBrush" Value="{DynamicResource ListViewItemFocusVisualSecondaryBrush}" />
+                        <Setter Property="FocusVisualSecondaryThickness" Value="0" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <ListViewItemPresenter HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                           CheckBoxBrush="{DynamicResource ListViewItemCheckBoxBrush}"
+                                                           CheckBrush="{DynamicResource ListViewItemCheckBrush}"
+                                                           CheckMode="{DynamicResource ListViewItemCheckMode}"
+                                                           ContentMargin="{TemplateBinding Padding}"
+                                                           ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                           Control.IsTemplateFocusTarget="True"
+                                                           DisabledOpacity="{DynamicResource ListViewItemDisabledThemeOpacity}"
+                                                           DragBackground="Transparent"
+                                                           DragForeground="{DynamicResource ListViewItemDragForeground}"
+                                                           DragOpacity="{DynamicResource ListViewItemDragThemeOpacity}"
+                                                           FocusBorderBrush="{DynamicResource ListViewItemFocusBorderBrush}"
+                                                           FocusSecondaryBorderBrush="{DynamicResource ListViewItemFocusSecondaryBorderBrush}"
+                                                           FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                                                           FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                                                           FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                                                           FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                                                           FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                                                           PlaceholderBackground="Transparent"
+                                                           PointerOverBackground="Transparent"
+                                                           PointerOverForeground="{DynamicResource ListViewItemForegroundPointerOver}"
+                                                           PressedBackground="Transparent"
+                                                           ReorderHintOffset="{DynamicResource ListViewItemReorderHintThemeOffset}"
+                                                           SelectedBackground="Transparent"
+                                                           SelectedForeground="{DynamicResource ListViewItemForegroundSelected}"
+                                                           SelectedPointerOverBackground="Transparent"
+                                                           SelectedPressedBackground="Transparent"
+                                                           SelectionCheckMarkVisualEnabled="{DynamicResource ListViewItemSelectionCheckMarkVisualEnabled}"
+                                                           SelectionIndicatorVisualEnabled="False" />
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:GameBizIcon">
+                        <Grid x:Name="Grid_GameIcon"
+                              Width="40"
+                              Height="40"
+                              Cursor="Hand"
+                              CornerRadius="8"
+                              DoubleTapped="Grid_GameIcon_DoubleTapped"
+                              IsDoubleTapEnabled="True"
+                              IsTapEnabled="True"
+                              PointerEntered="Grid_GameIcon_PointerEntered"
+                              PointerExited="Grid_GameIcon_PointerExited"
+                              Shadow="{DynamicResource ThemeShadow}"
+                              Tag="{Binding GameId}"
+                              Tapped="Grid_GameIcon_Tapped"
+                              Translation="0,0,16">
+                            <Image Width="40"
+                                            Height="40"
+                                            Source="{Binding GameIcon}" />
+                            <Image Width="20"
+                                   Height="20"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Bottom">
+                                <Image.Source>
+                                    <BitmapImage DecodePixelHeight="20"
+                                                 DecodePixelType="Logical"
+                                                 DecodePixelWidth="20"
+                                                 UriSource="{Binding ServerIcon}" />
+                                </Image.Source>
+                            </Image>
+                            <Border Background="#60000000" Opacity="{Binding MaskOpacity}">
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <!--  固定  -->
+            <Border Name="Border_Pin"
+                    Grid.Column="1"
+                    Width="40"
+                    Height="40"
+                    Margin="6,0,0,0"
+                    Cursor="Hand"
+                    Background="{DynamicResource CustomAcrylicBrush}"
+                    CornerRadius="8"
+                    IsHitTestVisible="False"
+                    Opacity="0"
+                    Shadow="{DynamicResource ThemeShadow}"
+                    Translation="0,0,16">
+                <Button Padding="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding PinCommand}"
+                        >
+                    <Grid>
+                        <TextBlock HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  FontSize="16"
+                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                  Classes="icon" Text="&#xE718;"
+                                   />
+                        <TextBlock FontSize="16"
+                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                  Classes="icon" Text="&#xE841;"
+                                  
+                                  IsVisible="{Binding IsPinned}" />
+                    </Grid>
+                </Button>
+            </Border>
+
+        </Grid>
+
+
+
+    </Grid>
+
+
+</UserControl>
