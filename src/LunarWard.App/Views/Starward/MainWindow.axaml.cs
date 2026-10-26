@@ -204,6 +204,47 @@ public partial class MainWindow : Window
             await Task.Delay(300);
         }
 
+        // 启动器「游戏设置」弹窗：对话框是窗口内 DialogHost 浮层（不是独立 Window），
+        // 必须走和齿轮按钮同一条 DialogService 路径打开，再截整窗才能截到。
+        // packages 页要等包体清单真的加载完（网络失败也算"加载完"），否则会截到空列表。
+        if (CaptureMode.LauncherSettingOverlay)
+        {
+            var section = CaptureMode.SettingsSection switch
+            {
+                "arguments" => 1,
+                "background" => 2,
+                "packages" => 3,
+                _ => 0,
+            };
+            var settingDialog = new GameLauncherSettingDialog(new PageContext
+            {
+                Services = shell.Services,
+                Shell = shell,
+                Profile = shell.Profile,
+                Log = shell.Log,
+            });
+            settingDialog.SelectSection(section);
+            if (section == 0 && CaptureMode.SettingsSection == "network")
+            {
+                settingDialog.ShowNetworkWarningForCapture();
+            }
+
+            if (section == 0 && CaptureMode.UninstallWarning)
+            {
+                settingDialog.ShowUninstallWarningForCapture();
+            }
+
+            _ = DialogService.ShowAsync(settingDialog, this);
+            if (section == 3)
+            {
+                await Task.WhenAny(settingDialog.PackagesReadyTask, Task.Delay(15000));
+            }
+
+            await Task.Delay(CaptureMode.WaitMilliseconds);
+            CaptureMode.Capture(this);
+            return;
+        }
+
         // 关闭询问浮层：自检时直接摆在窗口里（不真的关窗）
         if (CaptureMode.CloseWindowDialog)
         {

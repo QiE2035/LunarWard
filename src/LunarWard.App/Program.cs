@@ -144,7 +144,9 @@ internal static class Program
             CaptureMode.BeyondSecondTab = args.Contains("--beyond-second-tab");
             CaptureMode.AuthLogin = args.Contains("--auth-login");
             CaptureMode.ScreenshotFolderDialog = args.Contains("--screenshot-folder-dialog");
-            CaptureMode.LauncherSettingDialog = args.Contains("--launcher-setting-dialog");
+            // 对话框现在是窗口内 DialogHost 浮层，由 MainWindow 的截图分支打开；
+            // 老的 LauncherSettingDialog 开关不再设置（GameLauncherPage 里的旧分支失效）。
+            CaptureMode.LauncherSettingOverlay = args.Contains("--launcher-setting-dialog");
             CaptureMode.GachaSeed = ReadArgument(args, "--gacha-seed");
             CaptureMode.GachaDeleteDialog = args.Contains("--gacha-delete-dialog");
             CaptureMode.GachaMaterials = args.Contains("--gacha-materials");
