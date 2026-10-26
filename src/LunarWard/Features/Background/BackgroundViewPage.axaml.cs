@@ -33,12 +33,15 @@ namespace LunarWard.Features.Background;
 /// </list>
 /// </para>
 /// </remarks>
-public partial class BackgroundViewPage : UserControl, INotifyPropertyChanged
+public partial class BackgroundViewPage : Frameworks.PageBase
 {
 
     private readonly ILogger<BackgroundViewPage> _logger = AppConfig.GetLogger<BackgroundViewPage>();
 
 
+
+    // PageBase 继承 AvaloniaObject，其 INotifyPropertyChanged 是显式实现；本页有大量 CLR 属性要通知，
+    // 因此保留一个同名公开事件（new），与上游 PageBase 的 SetProperty 行为一致。
     public new event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(string? propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
