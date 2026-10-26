@@ -41,12 +41,12 @@ public sealed class GameConfigIniTests
 
         try
         {
-            var ini = new ConfigurationBuilder().AddIniFile(path).Build().Get<GameConfigIni>();
+            var ini = new ConfigurationBuilder().AddIniFile(path).Build().Get<LunarWard.Features.GameLauncher.GameConfigIni>();
 
             Assert.NotNull(ini);
-            Assert.Equal("hyp_mihoyo", ini!.Cps);
-            Assert.Equal("5.2.0", ini.GameVersion);
-            Assert.Equal("5.2.0", ini.SdkVersion);
+            Assert.Equal("hyp_mihoyo", ini.Cps);
+            Assert.Equal(new Version(5, 2, 0), ini.GameVersion);
+            Assert.Equal(new Version(5, 2, 0), ini.SdkVersion);
             Assert.Equal("hk4e_cn", ini.GameBiz);
             Assert.Equal("sophon", ini.DownloadingMode);
             Assert.Equal("{\"hk4e_cn\":{\"uapc\":\"x\"}}", ini.Uapc);
