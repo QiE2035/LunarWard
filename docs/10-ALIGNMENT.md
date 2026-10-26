@@ -149,10 +149,11 @@ src/LunarWard/
 
 ### 4.5 进度看板（同名落点/上游文件）
 
-| 分组 | 进度（2026-10-26 17:10 实测，`scripts/check-alignment.py`：599/613 已落 + 7 等价 = 606，缺 7） |
+| 分组 | 进度（2026-10-26 18:30 实测，`scripts/check-alignment.py`：**603/613 已落 + 7 等价 = 610，缺 3**） |
 |---|---|
-| 路径全齐（0 缺失）：GameRecord 47/47、Gacha 40/40、GameLauncher 26/26、Setting 25/25、PlayTime 14/14、Background 13/13、Converters 11/11、GameInstall 9/9、Codec 8/8、Update 8/8、GameSetting 7/7、GameAccount 5/5、SelfQuery 4/4、CloudGame 3/3、GamepadControl 3/3、UrlProtocol 3/3、Database 2/2、Frameworks 2/2、ViewHost 20/20（含 2 个等价：SystemTrayWindow 用 `TrayIcon`、`AccentColorHelper` 落在 Background）、Helpers 16/16（2 等价：`FileDialogNative` 不移植、`AccentColorHelper`）、AppConfig 4/4、App.xaml(.cs)、Program.cs、GameFeatureConfig、HoYoPlay、RPC | 路径全齐 |
-| 进行中：Screenshot 19/23、Overlay 2/4、GameSelector 5/6、Controls 3/5（ColorRectChart 2 个等价） | 收尾中 |
+| 路径全齐（0 缺失）：GameRecord 47/47、Gacha 40/40、GameLauncher 26/26、Setting 25/25、PlayTime 14/14、Background 13/13、Converters 11/11、GameInstall 9/9、Codec 8/8、Update 8/8、GameSetting 7/7、GameAccount 5/5、SelfQuery 4/4、CloudGame 3/3、GamepadControl 3/3、UrlProtocol 3/3、Database 2/2、Frameworks 2/2、ViewHost 20/20（含 2 个等价：SystemTrayWindow 用 `TrayIcon`、`AccentColorHelper` 落在 Background）、Helpers 16/16（2 等价）、Screenshot 23/23、Controls 5/5、GameSelector 5/6、Overlay 2/4、AppConfig 4/4、App.xaml(.cs)、Program.cs、GameFeatureConfig、HoYoPlay、RPC | 路径基本全齐 |
+| 仍缺 3 个文件：`Features/GameSelector/NoAnimationImageExStyle.xaml`（→ launcher-port）、`Features/Overlay/OverlayWindow.xaml(.cs)`（→ dapper-db，抓屏 UI 收尾时落） | 收尾中 |
+| 编译收口：全量重建后 `dotnet build src/LunarWard/LunarWard.csproj --no-incremental` 错误从 3454 → **156**，仅剩 GameRecord 136（webview-webkit）+ GameLauncher 20（launcher-port） | 收尾中 |
 
 总览随时用 `python3 scripts/port-backlog.py` 重算（`--write` 写回 `docs/11-PORT-BACKLOG.md`）。
 注意：「有文件」只代表路径对齐，内容是否按上游实现要逐节核对。

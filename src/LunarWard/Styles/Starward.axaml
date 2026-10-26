@@ -36,6 +36,24 @@
       <SolidColorBrush x:Key="StarAccentForegroundBrush" Color="#FF1A1A1A" />
       <SolidColorBrush x:Key="StarAccentDimBrush" Color="#33CBAD8E" />
 
+
+      <!-- ── WinUI 键名兼容别名（上游 XAML 大量使用 TextFillColor*/ControlOnImage*/Acrylic* 等）── -->
+      <SolidColorBrush x:Key="StarTextPrimaryBrush" Color="{StaticResource StarTextPrimary}" />
+      <SolidColorBrush x:Key="StarTextSecondaryBrush" Color="{StaticResource StarTextSecondary}" />
+      <SolidColorBrush x:Key="StarTextTertiaryBrush" Color="{StaticResource StarTextTertiary}" />
+      <SolidColorBrush x:Key="AccentStarTextPrimary" Color="{StaticResource StarTextPrimary}" />
+      <SolidColorBrush x:Key="StarAccentBackgroundBrush" Color="{StaticResource StarAccentBrush}" />
+      <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="{StaticResource StarTextPrimary}" />
+      <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="{StaticResource StarTextSecondary}" />
+      <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="{StaticResource StarTextTertiary}" />
+      <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="{StaticResource StarTextPrimary}" />
+      <SolidColorBrush x:Key="ControlOnImageFillColorDefaultBrush" Color="{StaticResource StarControlOnImageBrush}" />
+      <SolidColorBrush x:Key="ButtonPointerOverBackgroundThemeBrush" Color="{StaticResource StarControlFillHoverBrush}" />
+      <SolidColorBrush x:Key="SystemFillColorCautionBrush" Color="{StaticResource StarCautionBrush}" />
+      <SolidColorBrush x:Key="CustomAcrylicBrush" Color="{StaticResource StarAcrylicBrush}" />
+      <FontFamily x:Key="SegoeFluentIcons">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+      <FontFamily x:Key="SymbolThemeFontFamily">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
       <!-- 文本 -->
       <SolidColorBrush x:Key="StarTextPrimary" Color="#FFFFFFFF" />
       <SolidColorBrush x:Key="StarTextSecondary" Color="#C5FFFFFF" />

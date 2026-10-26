@@ -31,6 +31,8 @@
     <conv:VisibilityToBoolConverter x:Key="VisibilityToBoolConverter" />
     <conv:WhiteSpaceStringToVisibilityConverter x:Key="WhiteSpaceStringToVisibilityConverter" />
     <conv:Int32NotZeroToVisibilityConverter x:Key="Int32NotZeroToVisibilityConverter" />
+    <conv:BoolReversedConverter x:Key="BoolReversed" />
+    <conv:ObjectToVisibilityConverter x:Key="ObjectToVisibility" />
   </Application.Resources>
 
   <Application.Styles>

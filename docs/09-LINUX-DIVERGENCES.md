@@ -838,3 +838,24 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 | 4 | `AVLN2000: Unable to resolve ... property Padding on type Grid` / `Background on type CachedImage` | `Grid` 无 `Padding`；`Image` 无 `Background`（上游 `ImageEx` 是 `TemplatedControl`） | `ScreenCaptureInfoWindow` 的 `Padding="10"` 移到外层 `Border`；两处缩略图底色把 `Background` 移到外层 `Border`（`Border.thumb-host` / `Border.tile`），`CachedImage` 保持纯 `Image` |
 | 5 | `AVLN2000: Unable to resolve ... AllowDrop / DragOver / Drop on ListBox` | 这三个是 `DragDrop` 的附着属性/事件 | 改 `DragDrop.AllowDrop="True"`、`DragDrop.DragOver="…"`、`DragDrop.Drop="…"` |
 | 6 | `AVLN3000: Unable to find public constructor for type ImageViewWindow2()` | Avalonia XAML 编译器要求 `x:Class` 窗口有公共无参构造；上游两个构造都带参 | 补 `public ImageViewWindow2() { InitializeComponent(); }`（仅满足 XAML 编译器，业务入口仍是两个带参构造） |
+
+## 二十三、跨切面 XAML 收口（2026-10-26，Lead）
+
+全量重建（`--no-incremental`）把主程序 XAML 错误从 3454 压到 156 的过程中，Lead 统一改了以下几类**跨文件机械项**（提交 `d31404b`）：
+
+| # | 现象 | 根因 | 修法 |
+|---|---|---|---|
+| 1 | `AVLN2000: Unable to resolve type Lang from namespace clr-namespace:LunarWard.Language`（1496 条的主因） | `clr-namespace:` 不写 `assembly=` 时只在**当前程序集**解析，跨程序集（Language/Core）解析不到 | 全仓 `clr-namespace:LunarWard.Language` → `using:LunarWard.Language`，`clr-namespace:LunarWard.Core.*` → `using:LunarWard.Core.*`；同程序集命名空间保留 `clr-namespace:` |
+| 2 | `AVLN2000: ... property Text on type MenuItem` / `Name on type MenuFlyout` | Avalonia 的 `MenuItem` 用 `Header`（不是 `Text`）；`Flyout` 不生成 `x:Name` 字段 | `MenuItem Text=` → `Header=`；`MenuFlyout Name=` → `x:Name=`（`Flyout` 上的 `x:Name` 仍需删） |
+| 3 | `AVLN2000: ... HorizontalSpacing / Spacing / VerticalSpacing on type WrapPanel` | Avalonia 12 的 `WrapPanel` 用 `ItemSpacing` + `LineSpacing` | `HorizontalSpacing` → `ItemSpacing`；`VerticalSpacing` → `LineSpacing`；只有 `Spacing` 时两者都写同值 |
+| 4 | `AVLN2000: Unable to resolve type UIElementExtensions from namespace clr-namespace:CommunityToolkit.WinUI` | `CommunityToolkit.WinUI` 的附着属性在 Avalonia 无对应 | `cw:UIElementExtensions.ClipToBounds="True"` → `ClipToBounds="True"`，删 `xmlns:cw` |
+| 5 | `File doesn't contain valid XAML: 'ItemSpacing' is a duplicate attribute` | 上面第 3 条批量替换与既有 `ItemSpacing` 撞车 | 标签内同名属性去重（保留首个），顺手修掉历史遗留的重复属性 |
+
+### 23.1 WinUI 资源键的兼容别名（`Styles/Starward.axaml`）
+
+上游 XAML 大量直接引用 WinUI 主题键，移植文件里保留原名可以少改 XAML，因此在 `Styles/Starward.axaml` 里登记了一批**别名资源**（`Star*` ← → WinUI 名），值指向本地已有的 `StarTextPrimary/Secondary/Tertiary`、`StarControlFillHoverBrush`、`StarAcrylicBrush`、`StarCautionBrush`：
+
+`StarTextPrimaryBrush`、`StarTextSecondaryBrush`、`StarTextTertiaryBrush`、`AccentStarTextPrimary`、`StarAccentBackgroundBrush`、`TextFillColorPrimaryBrush`、`TextFillColorSecondaryBrush`、`TextFillColorTertiaryBrush`、`AccentTextFillColorPrimaryBrush`、`ControlOnImageFillColorDefaultBrush`、`ButtonPointerOverBackgroundThemeBrush`、`SystemFillColorCautionBrush`、`CustomAcrylicBrush`、`SegoeFluentIcons`、`SymbolThemeFontFamily`。
+
+> 本应用固定深色主题（`App.axaml` 的 `RequestedThemeVariant="Dark"`），因此这些别名取深色主题下 WinUI 的固定色值（`#FFFFFFFF` / `#C5FFFFFF` / `#87FFFFFF` 等），**不做浅色映射**；将来若支持浅色需改成 `ThemeVariantScope` 下的两套字典。
+> `BoolReversed`、`ObjectToVisibility` 两个短键也在 `App.axaml` 里补了同名转换器别名（上游 `App.xaml` 的键是全名，个别移植件引用了短名）。
