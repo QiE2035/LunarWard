@@ -558,7 +558,11 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 ### 待办
 
-- **运行验收未完成（等树绿）**：`GameRecordPage` / `LoginPage` 的可实例化 + 截图验收要等 `LunarWard.csproj` 全树编译通过（当前红在 `Features/Screenshot`、`Features/GameLauncher`、`Features/GamepadControl` 等他人目录），届时用 `dotnet run --project src/LunarWard -- --screenshot <png> --page toolbox` 走新外壳 `Features/ViewHost/MainView` 验证。
+- **运行验收（2026-10-26 已完成，树绿后）**：
+  - 单测：`dotnet test tests/LunarWard.UnitTests --filter "FullyQualifiedName~GameRecord"` → 9/9 通过。
+  - 页面渲染：`GameRecordPage` 在真实 `App`（`AppBuilder.Configure<LunarWard.App>()` + `AppConfig.CheckEnviromentAsync()`）里实例化并渲染，左侧 Pane 完整渲染出「登录」入口、13 个工具箱项（旅行者札记/深境螺旋/幻想真境剧诗/幽境危战/开拓日历/模拟宇宙/忘却之庭/虚构叙事/末日幻影/异相仲裁/绸网月报/式舆防卫战/危局强袭战）与「更新设备指纹」，证据 `artifacts/gamerecord/gamerecord-page.png`（1200x700）；`LoginPage` 渲染出工具条（前进/后退/刷新/地址栏/完成）与 WebView 宿主，证据 `artifacts/gamerecord/login-page.png`。
+  - **已知限制**：`dotnet run -- --screenshot <png> --page record` 在新外壳里会被 `MainView.NavigateTo` 的 `CurrentGameFeatureConfig.SupportedPages` 判定拦下并回落到启动器页（本机未安装游戏 → `CurrentGameId == null` → `GameFeatureConfig.Default` 只支持 `GameLauncherPage`），截图出来是启动器（`artifacts/gamerecord/record.png`）。要截到战绩页本体，需给自检入口注入 `CurrentGameId`（或在 `NavigateToForCapture` 里跳过该判定），属外壳 self-check 的后续项。
+  - 另注：XID 嵌入的 WebView 是原生子窗口，`RenderTargetBitmap` 抓不到它的内容（WebView2 同样如此），所以上面的 LoginPage 截图里 WebView 区域是空的；WebView 画面本身的渲染证据见 §五 的 `artifacts/webview-selftest/avalonia-embed.png`。
 - 旧架构 `src/LunarWard/Views/Starward/Pages/Record/*` + `ViewModels/Starward/*` 暂留（导航仍指向旧页），由 lead 在外壳收口时删除。
 - `GameRecordService` 里若有需要 `AppConfig` 新配置项的路径，随 `AppConfig` 落地回填。
 
