@@ -1,0 +1,151 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:LunarWard.Features.Screenshot"
+        xmlns:loc="using:LunarWard.Localization"
+        xmlns:sc="using:LunarWard.Controls"
+        x:Class="LunarWard.Features.Screenshot.ImageViewWindow"
+        Title="Starward Screenshots Viewer"
+        Width="1200"
+        Height="676"
+        Background="#1F1F1F"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="48"
+        TransparencyLevelHint="None">
+
+  <!--
+    上游 Starward.Features.Screenshot.ImageViewWindow（XAML 193 行 + code-behind 565 行）的 Avalonia 移植。
+    Windows 专有替换（docs/09 已登记）：
+      WindowEx / AppWindow.TitleBar / SetDragRectangles / CenterInScreen / SW_SHOWMAXIMIZED
+        → Avalonia Window + ExtendClientAreaToDecorationsHint + 打开时 WindowState=Maximized；
+      ScrollViewer.ZoomMode/ZoomFactor/ChangeView（WinUI ScrollViewer 内置缩放）
+        → RenderTransform（ScaleTransform/RotateTransform/TranslateTransform）+ 自维护缩放/平移状态；
+      CachedImage.Rotation（ImageEx）→ RotateTransform；
+      CustomOverlayAcrylicBrush / ThemeShadow → 半透明背景 Border（Avalonia 无亚克力与阴影资源）。
+  -->
+
+  <Grid x:Name="RootGrid">
+
+    <!--  图片浏览：上游用 ScrollViewer(ZoomMode) 承载，这里用可变换的 Image 宿主  -->
+    <Grid x:Name="Grid_ImageHost"
+          Background="Transparent"
+          ClipToBounds="True"
+          DoubleTapped="_ScrollViewer_Image_DoubleTapped"
+          PointerMoved="_ScrollViewer_Image_PointerMoved"
+          PointerPressed="_ScrollViewer_Image_PointerPressed"
+          PointerReleased="_ScrollViewer_Image_PointerReleased"
+          PointerWheelChanged="_ScrollViewer_Image_PointerWheelChanged"
+          Tapped="_ScrollViewer_Image_Tapped">
+      <Image x:Name="_Image"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center"
+             RenderOptions.BitmapInterpolationMode="MediumQuality"
+             Stretch="None">
+        <Image.RenderTransform>
+          <TransformGroup>
+            <ScaleTransform x:Name="ScaleTransform_Image" />
+            <RotateTransform x:Name="RotateTransform_Image" />
+            <TranslateTransform x:Name="TranslateTransform_Image" />
+          </TransformGroup>
+        </Image.RenderTransform>
+      </Image>
+    </Grid>
+
+    <!--  底部图片预览（上游 GridView，横向缩略图条，仅当有集合时显示）  -->
+    <Border x:Name="_Border_ImageCollection"
+            Height="100"
+            Margin="0,0,0,24"
+            Padding="8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Background="#66000000"
+            CornerRadius="8"
+            IsVisible="False">
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled">
+        <ItemsControl x:Name="_GridView_ImageCollection" ItemsSource="{Binding ImageCollection}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="4" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="local:ScreenshotItem">
+              <Button Padding="0" Background="Transparent" BorderThickness="0" Click="ImageCollectionItem_Click">
+                <sc:CachedImage Height="80" IsThumbnail="True" UriSource="{Binding FilePath}" />
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+
+    <!--  上方工具栏  -->
+    <Border x:Name="_Border_ToolBar"
+            Margin="0,48,0,0"
+            Padding="8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Background="#66000000"
+            CornerRadius="8">
+      <StackPanel Orientation="Horizontal" Spacing="4">
+        <Button x:Name="Button_ZoomOut"
+                Width="36"
+                Height="36"
+                Command="{Binding ZoomOutCommand}"
+                ToolTip.Tip="{Binding [ImageViewPage_ZoomOut], Source={x:Static loc:AppStrings.Instance}}">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE71F;" />
+        </Button>
+        <TextBlock x:Name="_TextBlock_Factor"
+                   Width="40"
+                   VerticalAlignment="Center"
+                   TextAlignment="Center" />
+        <Button x:Name="Button_ZoomIn"
+                Width="36"
+                Height="36"
+                Command="{Binding ZoomInCommand}"
+                ToolTip.Tip="{Binding [ImageViewPage_ZoomIn], Source={x:Static loc:AppStrings.Instance}}">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE8A3;" />
+        </Button>
+        <Button x:Name="Button_Rotate"
+                Width="36"
+                Height="36"
+                Command="{Binding RotateCommand}"
+                ToolTip.Tip="{Binding [ImageViewPage_Rotate], Source={x:Static loc:AppStrings.Instance}}">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE7AD;" />
+        </Button>
+        <Button x:Name="Button_FullScreen"
+                Width="36"
+                Height="36"
+                Command="{Binding FullScreenCommand}"
+                ToolTip.Tip="{Binding [GameSettingPage_FullScreen], Source={x:Static loc:AppStrings.Instance}}">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE740;" />
+        </Button>
+        <Border Width="1" Height="24" Margin="4,0" Background="#33FFFFFF" />
+        <Button x:Name="Button_Copy"
+                Width="36"
+                Height="36"
+                Command="{Binding CopyImageCommand}"
+                ToolTip.Tip="{Binding [Common_Copy], Source={x:Static loc:AppStrings.Instance}}">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE8C8;" />
+        </Button>
+        <Button x:Name="Button_OpenFile"
+                Width="36"
+                Height="36"
+                Command="{Binding OpenFileCommand}"
+                ToolTip.Tip="{Binding [Common_Open], Source={x:Static loc:AppStrings.Instance}}">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE8E5;" />
+        </Button>
+        <Button x:Name="Button_Close"
+                Width="36"
+                Height="36"
+                Command="{Binding CloseCommand}"
+                IsVisible="False"
+                ToolTip.Tip="{Binding [DownloadGamePage_Close], Source={x:Static loc:AppStrings.Instance}}">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE711;" />
+        </Button>
+      </StackPanel>
+    </Border>
+
+  </Grid>
+</Window>

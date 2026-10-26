@@ -290,8 +290,8 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | 9 | `Features/Screenshot/ScreenshotFolderManageDialog.axaml(.cs)` | `ContentDialog` + `ListView` + `Launcher.LaunchFolderPathAsync` + `FileOpenPicker` | `StarwardContentDialog`（`DialogService.ShowAsync`）+ `ListBox` + `xdg-open` + `FileDialogHelper.PickFolderAsync`（StorageProvider）；`MenuFlyoutSeparator`→1px `Border`，`ProgressRing`→`ProgressBar IsIndeterminate`，模板内按钮提示用 `ContainerPrepared` + `ToolTip.SetTip` | Avalonia 无 ContentDialog/ListView 模板差异/WinRT Launcher |
 | 10 | `Features/Screenshot/ScreenshotPage2.axaml(.cs)` | `ItemsView` + `UniformGridLayout` + `AnnotatedScrollBar`（含标签轨道/`ScrollController`/`PART_ToolTipRail` tooltip）+ Storyboard + `mxi:Interaction.Behaviors` | `ScrollViewer` + `ItemsControl` + `WrapPanel`（条目固定 204×115、间距 12）+ 原生 `ScrollBar`；悬停动画改 `Style :pointerover` + `Transitions`；保留「内容超过 3 屏才显示滚动条」判定；`DispatcherQueue.TryEnqueue`→`Dispatcher.UIThread.Post`；`DataPackage` 拖拽→`DataObject`+`DragDrop.DoDragDrop`；复制图片→`Clipboard.SetFilesAsync` | Avalonia 无 ItemsView/AnnotatedScrollBar/Storyboard/Behaviors；**年/月标签绘制省略**（滚动条保留），后续若要标签可自绘轨道 |
 | 11 | `Features/Screenshot/ImageViewWindow2.axaml(.cs)` | `CanvasSwapChainPanel` + Win2D（HDR→SDR、显示器峰值亮度）、视频/GIF 播放、图库条、JxlSharp 导出、裁剪/EXIF 编辑 | 保留顶栏命令（复制/另存为/文件夹/删除/信息）、滚轮锚点缩放、按住拖动、双击还原、←/→ 翻页、删除后跳转并同步集合；渲染用 `Image` + `ScaleTransform`/`TranslateTransform` | Win2D/视频/GIF/图库条/编码导出本轮未落；**这是 1572 行上游文件的子集移植**，缺口登记如下 |
-
 | 12 | `Features/Screenshot/ScreenshotPage.axaml(.cs)` | 分组 `GridView` + `GroupStyle`（sticky headers）+ `GridView.SelectionMode` None/Multiple 切换 + `DragItemsStarting` + `MenuFlyout` + `StorageFile`/`DataPackage` + `ClipboardHelper.SetStorageItems`/`SetBitmap` | 双层 `ItemsControl`（外层分组配 `WrapPanel`，条目 218×128 / 图 206×116，无吸顶）+ 自维护选中集合（条目 `selected` 类）+ `PointerPressed/Moved` 起拖 + `ContextFlyout`+`MenuItem` + `StorageProvider`/`DataObject(DataFormats.Files)` + `Clipboard.SetFilesAsync`/`ClipboardHelper.SetBitmap`；「打开方式」退化为默认应用打开 + 提示 | Avalonia 无 GridView/GroupStyle/ListViewSelectionMode/Behaviors；`ImageBatchConvertWindow` 未移植（§8.4），批量转换按钮先给提示 |
+| 13 | `Features/Screenshot/ImageViewWindow.axaml(.cs)` | `WindowEx` + `AppWindow.TitleBar`（拖动区域/按钮颜色）+ `CenterInScreen` + `SW_SHOWMAXIMIZED` + `ScrollViewer.ZoomMode/ZoomFactor/ChangeView` + `CachedImage.Rotation` + 亚克力背景/`ThemeShadow` + `GWX UIScale` | `Window`（`ExtendClientAreaToDecorationsHint`，打开即 `WindowState.Maximized`）+ 可变换图片宿主（`ScaleTransform`/`RotateTransform`/`TranslateTransform`，自维护缩放与平移、按视口中心缩放）+ `RotateTransform` 旋转 + 半透明 `Border`；提示文案走 `AppStrings` | Avalonia 无 WinUI 内置缩放/亚克力/阴影；缩放率文本不再乘 `UIScale`（按 1.0 计）；`Ctrl+滚轮` 缩放改为显式实现 |
 
 ### 8.4 尚未移植（明确缺口，非「已完成」）
 
@@ -299,10 +299,16 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 |---|---|---|
 | `Features/Screenshot/ScreenCaptureHelper.cs`、`ScreenCaptureContext.cs`、`ScreenCaptureService.cs` | 依赖 `Windows.Graphics.Capture` + `Direct3D11CaptureFramePool` + Win2D + WinRT `DisplayInformation`/HDR；Linux 需外部抓屏后端（X11 `xdotool`+`import`/`xwd`，Wayland `grim`） | Lead 已定「B 后接 A」：先 UI，后抓屏后端；落地时 `BuildXMPMetadata`/`GetMaxCLL` 按上游签名给纯函数实现（HDR 元数据只写不实采），抓屏 API 不可用时 `PlatformNotSupportedException` 且 UI 显示「截图功能不可用」 |
 | `Features/Screenshot/ScreenCaptureInfoWindow.xaml(.cs)` | 同上，且依赖 `Features/Overlay/RunningGame`（由 misc-port 负责，尚未落地） | 抓屏后端完成后一并移植 |
-| `Features/Screenshot/ImageViewWindow.xaml(.cs)` | 上游早期单图查看器（被 `ImageViewWindow2` 取代），当前仓库无调用方 | 低优先；最后补形状 |
 | `Features/Screenshot/ImageBatchConvertWindow.xaml(.cs)` | 909 行；依赖 JxlSharp/ImageSharp/WIC 编码器与 `ScreenCaptureService.BuildXMPMetadata` | 与图片编解码（task-9 `Features/Codec`）一起做 |
 
----
+### 8.5 Features/Overlay（`RunningGame` / `RunningGameService`）
+
+| # | 位置 | 上游 | 本仓库 | 原因/待办 |
+|---|---|---|---|---|
+| 1 | `Features/Overlay/RunningGame.cs` | `User32.IsWindow`/`IsWindowVisible` 校验后回退 `Process.MainWindowHandle`；`WinEventHook` 为 `User32.HWINEVENTHOOK` | `WindowHandle` 仅在为 0 时回退 `Process.MainWindowHandle`；`WinEventHook` 降级为 `nint` 字段 | Linux 无 `User32`；.NET/Linux 的 `MainWindowHandle` 恒为 0，窗口定位留给抓屏后端（X11 `xdotool search --pid`/`xwininfo`，Wayland 无等价物） |
+| 2 | `Features/Overlay/RunningGameService.cs` | `SetWinEventHook(EVENT_SYSTEM_FOREGROUND)` + `WinEventProc` 维护「最近活跃游戏」；`_overlayWindow` 关闭；`GamepadController` 引导键处理；`OpenOverlayWindow()` 首行 `return false;` | 钩子整体移除，「最近活跃」= 最后加入的游戏；空列表时 `_timer.Stop()` + 归还引导键；`OpenOverlayWindow()` 仍恒 `false`；`OverlayWindow` 未移植 | 前台窗口事件在 Linux 无等价物（X11 需 `_NET_ACTIVE_WINDOW` 轮询，未做）；`OverlayWindow.xaml(.cs)` 属 §8.4 缺口，落地后把 `ShowActive` 接回 |
+
+方法名 `AddRuninngGame` 保持上游拼写（`Runinng` 双 n），调用方 `GameLauncherPage` 已按此名接线。
 
 ## 九、Features/Background（2026-10-26，settings-migrate / task-6）
 
@@ -603,3 +609,56 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 - `Features/GameSelector/NoAnimationImageExStyle.xaml`：WinUI `ImageEx` 的样式，Avalonia 无该控件，`Image` 已无淡入动画，样式的存在前提消失。
 - `Features/GameLauncher/CompactCheckBoxStyle.xaml` 的**模板本体**未逐行翻译（见 12.2），只保留紧凑样式语义。
+
+---
+
+## 十七、Features/Background 平台替换与验收（2026-10-26，settings-migrate / task-13）
+
+承接 §九（逐条渲染差异表），本节只记 task-13 的**平台替换清单、去重结论与验收证据**，避免与 §九 重复。
+
+### 17.1 平台替换清单（逐项）
+
+| 上游 API | 本仓库替换 | 说明 |
+|---|---|---|
+| Win2D `CanvasControl` / `CanvasAnimatedControl` / `CanvasBitmap` / `CanvasRenderTarget` | `Bitmap.DecodeToWidth` + `WriteableBitmap` + Avalonia `Image` | 图片缩放解码；视频由 `Services/VideoBackgroundPlayer` 解帧写入 `WriteableBitmap`（960×540 BGRA、24fps 上限、`-an` 无音轨） |
+| `MediaPlayer` / `MediaPlayerElement` / `CompositionVideoSurface` | ffmpeg 子进程 → `VideoHost`（`ContentControl`）内嵌播放视图 | Avalonia 无内置视频；`-an` + 失焦 `SIGSTOP` 控功耗 |
+| `AppWindow` / `AppWindowTitleBar` / `OverlappedPresenter` | 普通 `Window` + `ExtendClientAreaToDecorationsHint` + `WindowStartupLocation=CenterScreen` | 图库窗口的标题栏/图标/居中等价 |
+| `DesktopAcrylicBackdrop` / `MicaController` / `AcrylicBrush` | `Helpers/TransparentBackdrop` + 纯色/模糊降级 | Avalonia 无系统级 Acrylic/Mica；降级不出现透明失效窗口 |
+| `CommunityToolkit.WinUI.Helpers`（`ColorHelper` / `SystemInformation`） | BCL（`System.Drawing.ColorConverter` 等）+ Avalonia API | 无 WinUI 依赖 |
+| `FileOpenPicker` / `StorageFile` / `DataPackage` | `TopLevel.StorageProvider` / `IStorageFile` / `ClipboardHelper` | 选文件、复制路径按 Avalonia 习惯 |
+| `BitmapDecoder`（视频/WebP 预校验） | 不再预校验；播放失败上层回退 | ffmpeg 能力运行时探测，避免误判 |
+
+### 17.2 视频背景降级策略（不许静默黑屏）
+
+`AppBackground.SetVideoBackgroundAsync`：`VideoBackgroundPlayer.StartAsync` 返回 `false`（如系统无 `ffmpeg`）时，`IsVideoPlaying=false`，**静态背景图保持可见**，并调用 `InAppToast.Show("视频背景不可用", "已回退为静态背景图（视频播放需要 ffmpeg）")` 给出可见提示。原先只回退不提示，本轮补齐。
+
+### 17.3 `AccentColorHelper` 去重（防漂移）
+
+上游 `src/Starward/Helpers/AccentColorHelper.cs`（197 行，`GetAccentColor` + `ChangeAppAccentColor`）与上游 `Features/Background/AccentColorHelper.cs` 是两份历史实现。本仓库此前同时存在：
+
+- `src/LunarWard/Features/Background/AccentColorHelper.cs`（125 行，`GetAccentColor(byte[], …)` / `GetAccentColor(nint, …)` / `ChangeAppAccentColor`）——**唯一实现，保留**；
+- `src/LunarWard/Helpers/AccentColorHelper.cs`（252 行，带 `(Back, Fore)` 元组与 `Bitmap`/`Stream` 重载）——**已删除**（`git rm`）。删除前 `grep -rn "AccentColorHelper\." src` 确认无外部调用方。
+
+结论：强调色只有 `Features/Background/AccentColorHelper` 一份，与上游 Features 版对齐；`ChangeAppAccentColor` 仍通过 `AccentColorChangedMessage` 生效。
+
+### 17.4 本轮顺手修掉的编译/行为点
+
+- `BackgroundViewPage.MutliSelect`：Avalonia `SelectionMode` 没有 `None` → 非多选态用 `Single` 并在 `SelectionChanged` 中立即清空选中项（对齐上游 `ListViewSelectionMode.None`）。
+- `BackgroundViewPage` 复制路径：`IClipboard.SetTextAsync`（Avalonia 12 无此成员）→ `Helpers/ClipboardHelper.SetText`。
+- `AppBackground.ChangeBackgroundImageAsync`：`ActualWidth`（WinUI 属性）→ `Bounds.Width`。
+- `BackgroundService.FileIsSupportedVideo(string?)` → `string`（与上游签名一致），调用点补 `filePath is not null` 判空。
+
+### 17.5 DI 注册
+
+`BackgroundService(ILogger<BackgroundService>, HoYoPlayService, HttpClient)` 已注册：`src/LunarWard/AppConfig.ServiceProvider.cs:55` → `sc.AddSingleton<BackgroundService>();`（无需新增）。
+
+### 17.6 验收证据（2026-10-26）
+
+- `dotnet build src/LunarWard/LunarWard.csproj`：`Features/Background` **0 error / 0 warning**；全树其余错误均在其他 agent 在途目录（`Features/GameRecord`、`Features/GameLauncher`、`src/LunarWard.RPC`）。
+- `grep -rn "Starward\.\|Microsoft\.UI\|Windows\.UI\|Microsoft\.Graphics" src/LunarWard/Features/Background`：仅注释命中。
+- 文件数与上游一致：13 个（含 `AppBackground.axaml`、`AppBackgroundImageExStyle.xaml`、图库 `BackgroundViewPage`/`BackgroundViewWindow`）。
+
+### 17.7 仍存缺口（同 §九末）
+
+`BackgroundViewPage` 的**拖拽导出**（`DragItemsStarting` → `DataPackage` 文件对象）未实现；多选复制得到路径文本而非文件对象。Avalonia `StorageProvider` 无法直接构造「文件对象」剪贴板负载，登记为缺口，不阻塞本轮。
+
