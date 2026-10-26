@@ -21,7 +21,7 @@
 - ❌ 上游 `Dapper`，本仓库手写 `SqliteCommand` 拼 SQL。
 - ❌ 上游 `Features/GameLauncher/GameLauncherPage.xaml.cs`，本仓库拆成
   `Views/.../GameLauncherPage.axaml` + `ViewModels/.../GameLauncherPageViewModel.cs`。
-- ❌ 上游 `Starward.RPC` 独立 gRPC 进程，本仓库并改进程内调用。
+- ⚠️ 旧偏离已推翻：上游 `Starward.RPC` 独立 gRPC 进程**已按上游重建**（`src/LunarWard.RPC`，Unix socket 替代 NamedPipe，见 docs/09 §十八）。
 - ❌ 上游 `WebView2`，本仓库干脆不做（必须做 WebKitGTK 等价物）。
 - ❌ 上游 `src/Starward/Features/X`，本仓库 `Services/XxxService.cs` 大杂烩。
 
@@ -120,7 +120,7 @@ src/LunarWard/
 
 | 项 | 上游 | 现状 | 差距 |
 |---|---|---|---|
-| 工程数 | 7 | 8 | Language/Setup.Core 已建；RPC 暂缓（见 §8）；Setup 以 Installer 等价；Launcher 以 Program.cs+Launch 等价 |
+| 工程数 | 7 | 8 | Language / Setup.Core / **RPC 均已建**（RPC 见 §8.1 已作废段）；Setup 以 Installer 等价；Launcher(C++) 以 Program.cs+.desktop 等价 |
 | 主程序文件 | 314 | 202 个同名落点 | 缺 112（见 §4.5）；本地独有 263 个待并入/删除（见 §7） |
 
 已落地工程：`LunarWard.Core`、`LunarWard.Language`、`LunarWard.Setup.Core`、`LunarWard`（=上游 Starward）、
