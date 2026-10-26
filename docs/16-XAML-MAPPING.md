@@ -52,3 +52,18 @@
 已修的级联源（记录在案）：
 - `Features/Gacha/GachaLogPage.axaml` 的 `{Binding ToLocalization()}` → `{Binding LocalizedName}`
 - `Features/GameLauncher/GameLauncherSettingDialog.axaml` 的 `<Pivot>`（无对应类型）→ `Frameworks.Pivot`
+
+## 唯一可信的验收命令（2026-10-26，misc-port 实测）
+
+```bash
+rm -rf /tmp/lwart
+dotnet build src/LunarWard/LunarWard.csproj -t:Rebuild --artifacts-path /tmp/lwart
+```
+
+`--artifacts-path` 把 `obj/`、`bin/` 全量重定向到独立目录，**不会和其他 agent 的并发构建抢 `obj/ref/*.dll`**。共享工作区里用普通 `-t:Rebuild` 会随机出现 `MSB3030 / MSB3554 / CS0006 / CS0016 / AVLN9999(file locked)`，这些是**假错误**，每次数字都不一样；`--no-incremental` 也一样会中招（只是概率低些）。
+
+判读结果时注意：XAML 错误的行前缀是 `Avalonia error AVLNxxxx`，不是 `error CS`，所以 `grep ": error"` 会漏，正确写法：
+
+```bash
+grep -E "error (AVLN|CS)" /tmp/lwart.build.log | sed -E 's#.*/src/LunarWard/##'
+```
