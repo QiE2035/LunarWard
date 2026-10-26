@@ -385,3 +385,37 @@ $ dotnet sln Probe.slnx add Lib/Lib.csproj  # → <Project Path="Lib/Lib.csproj"
 千星奇域颂愿三表（`Launch/Database/GenshinBeyondGachaStore.cs`）。
 **待迁移**：`Core/SelfQuery/SelfQueryStore.cs`（账号记录）、星铁旅历明细
 `TrailblazeCalendarPageViewModel` 的月份缓存、截图索引等其余 JSON 存储。
+
+---
+
+## D16. UI 文案用 .resx + ResourceManager，与上游 Starward 同形态
+
+**决策**：应用自身的界面文案（`LunarWard.App`）放在
+`src/LunarWard.App/Localization/Resources.resx`（**中性语言 = 中文**）+
+`Resources.en-US.resx`（英文附属程序集），由 `AppStrings` 内部的 `ResourceManager`
+读取；**不再维护手写的 `Dictionary<string,string>`**（原先 `AppStrings.cs` 里约 2100 行）。
+
+**上游形态（已核对源码）**：`src/Starward.Language/Lang.resx` 是中性资源（**中性 = 英文**，
+883 条）+ 11 个卫星 `de-DE/es-ES/it-IT/ja-JP/ko-KR/ru-RU/th-TH/vi-VN/zh-CN/zh-HK/zh-TW`，
+配套 `Lang.Designer.cs` 生成强类型属性，XAML 里 `{x:Bind lang:Lang.SettingPage_Language}`；
+游戏数据侧的 `Starward.Core/Localization/CoreLang.resx` 另有 13 种语言。
+
+**理由**（需求方本轮提出：「Starward 用 resx 做 i18n，本项目为什么不采用相同方式？」）：
+1. 上游确实是 resx 形态，本项目用两张手写字典是移植期的临时做法，属于无谓的形态漂移
+   （与 D14「先复制再改」、D15「存储与上游一致」同一取向）。
+2. resx 有现成工具链：XLIFF 交换、翻译平台、IDE 资源编辑器、缺键检查；
+   手写字典只能自己写正则解析源码查重复键（审计 CO-01 就是这么做的，现已改为解析 resx）。
+3. `LunarWard.Core` 的 `CoreLang` 本来就是 resx，App 层跟上后全仓只有一种文案存储形态。
+
+**与上游的三处刻意差异**：
+- **中性语言是中文，不是英文**。本项目中文是母本、英文是翻译，缺键时回退到中文
+  （而不是回退到英文——界面主用户是中文使用者）。卫星语言目前只有 `en-US`；
+- **不生成强类型类**（`ResXFileCodeGenerator`）。键自带点号（`Main.Launch`），强类型会把
+  它拍平成 `Main_Launch`，与 XAML 里按字符串键的索引器绑定
+  `{Binding [Main.Launch], Source={x:Static loc:AppStrings.Instance}}` 及 1000+ 处
+  `AppStrings.Instance["..."]` 调用都对不上；
+- **查不到键时返回键名本身**（上游是返回 null → 显空白）。漏翻译立刻在界面上显形。
+
+**对外 API 一行没变**：`AppStrings.Instance`、索引器 `this[string]`、`SupportedLanguages`
+（`zh-CN`/`en-US`）、`Normalize`、`AllKeys`/`MissingEnglishKeys`、切语言时发的
+`PropertyChanged`（空字符串 + `Item[]`）全部保持；`LunarWard.Core` 的 `CoreLang` 不动。

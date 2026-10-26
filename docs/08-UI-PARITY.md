@@ -240,3 +240,5 @@
 `tests/LunarWard.Installer.UnitTests` 里与下载/超时相关的用例偶发失败（观测到两次：Round 13、Round 35），单独重跑即通过，判定为**耗时敏感**而非逻辑错误。
 
 处理建议（尚未实施）：把固定 `Task.Delay` 改成条件轮询 + 每个用例独立的临时目录，避免共享状态与真实计时器耦合。
+
+> 功能面全量差异（11 个域 / 64 条 A·B·C，含每条的上游与本地 file:line 证据）见 [`docs/ui-diff-full-2026-10-26.md`](ui-diff-full-2026-10-26.md)。
