@@ -39,6 +39,9 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         _log = log;
         Assets = new StarwardAssets(services.Paths, log);
 
+        // 启动时恢复「固定图标条」：直接写后台字段，避免 setter 里的 SaveConfig 造成一次多余写盘。
+        RestoreGameIconsPinned();
+
         Profiles = new ObservableCollection<ProfileItemViewModel>();
         ReloadProfiles();
 
@@ -112,10 +115,17 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(ShowCurrentServerBadge))]
     private bool _isGameIconsPinned;
 
+    /// <summary>启动恢复配置期间为 true：跳过写盘，避免"读出来又原样写回去"。</summary>
+    private bool _restoringGameIconsPinned;
+
     partial void OnIsGameIconsPinnedChanged(bool value)
     {
-        _services.Config.Launcher.GameIconsPinned = value;
-        SaveConfig();
+        if (!_restoringGameIconsPinned)
+        {
+            _services.Config.Launcher.GameIconsPinned = value;
+            SaveConfig();
+        }
+
         if (value)
         {
             IsGameIconsVisible = true;
@@ -123,6 +133,30 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         else if (!IsGameSelectorOpen)
         {
             IsGameIconsVisible = false;
+        }
+    }
+
+
+    /// <summary>
+    /// 从 <see cref="Launch.LauncherConfig"/> 恢复图标条固定状态（<c>Launcher.GameIconsPinned</c>）。
+    /// 恢复期间跳过 <c>SaveConfig</c>，避免启动时把刚读到的配置再原样写一遍盘。
+    /// </summary>
+    private void RestoreGameIconsPinned()
+    {
+        var pinned = _services.Config.Launcher.GameIconsPinned;
+        if (pinned == IsGameIconsPinned)
+        {
+            return;
+        }
+
+        _restoringGameIconsPinned = true;
+        try
+        {
+            IsGameIconsPinned = pinned;
+        }
+        finally
+        {
+            _restoringGameIconsPinned = false;
         }
     }
 
