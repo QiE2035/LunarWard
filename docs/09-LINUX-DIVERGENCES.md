@@ -430,3 +430,44 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | 注销 | 删注册表键 | 删 .desktop 文件 + 清 `~/.config/mimeapps.list` 的 `[Default Applications]` 中对应项 | 同上 | 同上 |
 | scheme | `starward://` | `lunarward://`（`UrlProtocolService.Scheme` 常量） | 品牌 | 若要与上游共存可同时注册两个 scheme |
 | 处理入口 | `App.OnLaunched` 解析激活参数 → 各功能 | `HandleUrlProtocolAsync` → `StartupCommands.RunAsync`（startgame/playtime），`test` 打开测试窗口 | 本仓库命令行入口已集中 | 新增协议动作时两处都要加 |
+
+## 十五、抽卡与云游戏（2026-10-26，gacha-port / task-8）
+
+对应上游 `Features/Gacha/`（40 文件）、`Features/CloudGame/`（3 文件）、`Features/SelfQuery/`（4 文件）。逐文件、逐成员移植；下列差异只出现在**无法等价**的 WinUI/Windows 能力处，其余部分（类名、成员名、SQL、导出格式、UIGF/UIAF 结构、卡池表）与上游逐字一致。
+
+| 位置 | 上游行为 | 本仓库行为 | 原因 | 待办 |
+|---|---|---|---|---|
+| `IValueConverter` 签名（`RarityToGIBgConverter`、`RarityToSRBgConverter`、`RarityToZZZIconConverter`、`GachaPityProgressBackgroundBrushConverter`、`GenshinBeyondGachaPityProgressBackgroundBrushConverter`、`SelfQueryStatsNumberConverter`、`SelfQueryStatsNumberBrushConverter`） | `object Convert(object value, Type targetType, object parameter, string language)` | Avalonia 版 `object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)`，`ConvertBack` 抛 `NotImplementedException` | 两个框架的 `IValueConverter` 定义不同 | — |
+| 稀有度图片路径 | `ms-appx:///Assets/Image/Rarity_5_Background.png` 等 | 字符串**保持上游原样**，由 `Controls/CachedImage.cs` 的 `ToAssetUri` 转 `avares://LunarWard/Assets/...` | `Starward.Assets` 包的 png 已进程序集 avares 资源 | — |
+| 渐变画刷端点 | WinUI `Point(0,0)` / `Point(1,0)` | `new RelativePoint(0, 0, RelativeUnit.Relative)` / `(1, 0)` | Avalonia 用 `RelativePoint` | — |
+| `GachaLogPage` 进度 + 取消 | `new InfoBar{...}` + `InAppToast.MainWindow?.Show(infoBar)`（可更新标题、带取消按钮） | `GachaProgressToast : Border`（`Features/Gacha/GachaProgressToast.cs`）：自绘标题/消息/取消按钮，`InAppToast.MainWindow.Children` 里增删，取消时 `CancellationTokenSource.Cancel()` | Avalonia 无 `InfoBar`，`Helpers/ToastItem` 的 `Message` 是 `init`-only 不能更新 | 若日后 Avalonia 提供等价控件可回退 |
+| `GachaLogPage.xaml` 的 `SplitButton` 菜单 | `SplitButton.Flyout` + `MenuFlyoutItem` | Avalonia `SplitButton`+`MenuFlyout`；`MenuFlyoutItem`→`MenuItem`、`Text`→`Header` | 控件名不同 | — |
+| `GachaLogPage.xaml` 的 `Pivot`/`Segmented`（统计卡 5★/4★ 切换） | `Pivot` + `CommunityToolkit.WinUI.Controls.Segmented` | `TabControl`（隐藏 `ItemsPresenter#PART_ItemsPresenter` 当容器）+ 两个 `ToggleButton Classes="segment"`，代码后置双向同步 | Avalonia 无 Pivot/Segmented | — |
+| `GachaStatsCard` 的 `TextBlock.IsTextTrimmedChanged` | 事件 `IsTextTrimmedChanged` + `ResetGachaTypeTextFontSize()` | `ResetGachaTypeTextFontSize()` 保留，事件处理删除（上游页面从不调用二者） | Avalonia `TextBlock` 无 `IsTextTrimmedChanged` | 无（死代码） |
+| `GridView`（材料网格、ZZZ 图鉴语言列表） | `GridView` + `ItemsWrapGrid`，`SelectionMode=Multiple` | `ItemsControl`+`WrapPanel`（只读网格）；`ListBox`+`WrapPanel`（多选） | Avalonia 只有 `ListBox`/`ItemsControl` | — |
+| `x:Load` 延迟实例化 | `x:Load="{x:Bind EnableXxx}"` | `IsVisible`（元素常驻），集合空时不渲染项目 | Avalonia 无 `x:Load` | — |
+| `Image.Source=BitmapImage` | `new BitmapImage(new Uri("ms-appx:///..."))` | `new Bitmap(path)`（`Assets/...` 本地路径） | Avalonia 无 `BitmapImage` | — |
+| 打开文件夹并选中文件 | `StorageFolder.GetFolderFromPathAsync` + `FolderLauncherOptions.ItemsToSelect` + `Launcher.LaunchFolderAsync` | `Process.Start("xdg-open", 目录)`（导出后打开所在目录；不选中具体文件） | XDG 无“在文件管理器中选中”标准接口 | 可检测 `dbus` FileManager1 `ShowItems` 补上 |
+| 保存/选择文件 | `FileDialogHelper.OpenSaveFileDialogAsync(XamlRoot, ...)` | `Helpers/FileDialogHelper.OpenSaveFileDialogAsync(this, ...)`（`TopLevel.StorageProvider`） | Avalonia 用 `TopLevel.StorageProvider` | — |
+| 应用内对话框 | `new ContentDialog{...}.ShowAsync()` | `new StarwardContentDialog{...}` + `await DialogService.ShowAsync(dialog, this)`，`dialog.PrimaryButtonClicked += ...` 取结果 | Avalonia 无 `ContentDialog` | — |
+| 应用内提示 | `InAppToast.MainWindow?.Success(title, message, 5000)` | 同签名（`Helpers/InAppToast.cs` 已按上游形态移植） | — | — |
+| 窗口标题栏 | `AppWindow.TitleBar.ExtendsContentIntoTitleBar` + `DesktopAcrylicBackdrop` | 由窗口管理器绘制；`AdaptTitleBarButtonColorToActuallTheme()` 是空实现 | Avalonia 无 AppWindow API | — |
+| 主题判定 | `RootGrid.RequestedTheme = ShouldAppsUseDarkMode() ? Dark : Light` | `RootGrid.RequestedThemeVariant = ... ThemeVariant.Dark : ThemeVariant.Light` | 属性名不同 | — |
+| `CloudGameGachaWindow` 的 `WebView2` | `Microsoft.Web.WebView2.CoreWebView2`（`EnsureCoreWebView2Async`、`ExecuteScriptAsync`、`Source`） | `Frameworks/WebView/WebView.cs`（WebKitGTK 4.1），同形 API：`EnsureCoreWebView2Async()`、`CoreWebView2.ExecuteScriptAsync(string)`、`Source` | Linux 无 WebView2（见 §五） | 与 §五 的已知缺口一致 |
+| `CloudGameGachaWindow` 的 `HttpUtility.HtmlDecode` | `System.Web.HttpUtility`（.NET Framework 命名空间） | 保留 `using System.Web;`，.NET 10 由 `System.Web.HttpUtility`（BCL 内置）提供 | — | — |
+| `CloudGameButton.Flyout_Opened` 读注册表 | `HKCU\...\Uninstall\GenshinImpactCloudGame` 的 `DisplayIcon`；`HKLM\...\Genshin Impact Cloud` 的 `InstallPath`+`ExeName`；`HKCU\...\ZenlessZoneZeroCloud` 的 `DisplayIcon`；`Process.GetProcessesByName` + `SessionId` | 保留 `Microsoft.Win32.Registry` 调用（`~/.wine` 注册表由 `Services/WineRegistry.cs` 语义承载）；`SessionId` 判同会话在 Linux 恒为同一会话 | Wine 下云游戏本体可运行，注册表键由 Wine 前缀写入 | 若云游戏不通过 Wine 安装，改为扫描 `~/.local/share/applications` 的 .desktop `Exec=` |
+| `CloudGameButton.StartGameAsync` | `Process.Start(exe)` → `RunningGameService.AddRuninngGame` → `GameStartedMessage` → 3 秒后拉 `lunarward playtime --biz ... --pid ...` | 同上（`RunningGameService` 属 `Features/Overlay`，由 dapper-db 移植；本簇文件按其落地后的签名接线） | — | 待 `Features/Overlay` 落地后编译验证 |
+| `CloudGameButton.InstallGameAsync` | `Launcher.LaunchUriAsync(new Uri(url))` | `Process.Start(new ProcessStartInfo{FileName=url, UseShellExecute=true})`（走 `xdg-open`） | Avalonia `Launcher` 等价物 | — |
+| `ZZZGachaInfoWindow` 取响应请求头 | `args.Request.Uri` + `args.Request.Headers`（`GetHeader("Cookie")`、`ToList()`，含 `x-rpc-lang`） | `Frameworks/WebView` 的 `CoreWebView2WebResourceResponseReceivedEventArgs` 只暴露 `Uri` 与 `Response`；请求头改由 `CoreWebView2.CookieManager.GetCookiesAsync(origin)` 重组 **Cookie** 一项 | WebKitGTK 的资源响应回调不带请求头（`WebKitWebViewCore.cs:259` 的 `ResourceResponseReceived` 只有 uri/status/contentType/body） | `x-rpc-lang` 因此拿不到：`GetAllLanguagesInfoAsync` 里对它的替换不生效（Cookie 的 `mi18nLang` 替换仍生效）。要对齐需扩 `Frameworks/WebView`（非本簇作用域） |
+| `ZZZGachaInfoWindow` 的语言列表多选 | `GridView SelectionMode=Multiple` + `SelectionChanged` 读写 `SelectedItems` | `ListBox SelectionMode="Multiple"`，`SelectedItems` 语义相同 | 控件名不同 | — |
+| `ZZZGachaInfoWindow` 的外链 | `Hyperlink NavigateUri` | `HyperlinkButton Content/NavigateUri` | 控件名不同 | — |
+| `ZZZGachaInfoWindow` 的 `Launcher.LaunchUriAsync(new Uri(folder))` | 资源管理器打开导出目录 | `Process.Start("xdg-open", folder)` | 同前 | — |
+| `SelfQueryPage` 的 `ProgressRing` | `ProgressRing Width=24 Height=24` | `ProgressBar IsIndeterminate="True" Width=24 Height=4` | Avalonia 无 `ProgressRing` | 可自绘圆环 |
+| `SelfQueryPage` 的只读列表 | `ListView SelectionMode="None"` | `ListBox` + `ItemContainer` 的 `IsHitTestVisible=False`、`Background=Transparent` | Avalonia 无 `SelectionMode=None` | — |
+| `SelfQueryStatsNumberBrushConverter` | `Application.Current.Resources["SystemFillColorSuccessBrush"/"SystemFillColorCriticalBrush"]` | `StarSuccessBrush`(#FF6CCB5F) / `StarErrorBrush`(#FFFF99A4) / `Brushes.Transparent` | 资源键不同 | — |
+| `GachaLogItem` 的 `IsUp`（Core 模型放置差异） | 上游 `Core.Gacha.GachaLogItem` 只有 `[JsonPropertyName("is_up")]` 的 int 字段，UP 标记在 `GachaLogItemEx` 上计算 | `LunarWard.Core/Gacha/GachaLogItem.cs:53` 保留 `public int IsUp`（接口原始值）；`GachaLogItemEx.IsUp` 为 `public new bool IsUp`（派生标记），`new` 消 CS0108 | 本地 `GachaLogItem` 多存一份原始字段，`src/LunarWard.Launch` 仍有 `item.IsUp == 1` 用法 | endgame 阶段随旧服务层一起回退 |
+| `GachaLogItemEx` 的 `IsUp` | `public bool IsUp` | `public new bool IsUp`（同上） | 同上 | 同上 |
+| `GachaLogPage`/`GenshinBeyondGachaPage`/`SelfQueryPage` 的旧实现 | 上游只有 `Features/` 下这一份 | 旧 `Views/Starward/Pages/{GachaPage,GenshinBeyondGachaPage,SelfQueryPage}` 与 `ViewModels/Starward/*` 暂留（导航仍指向旧页），新页面在 `Features/` 下同形态就绪 | 外壳/导航收口由 lead 统一处理 | 切换导航后删除旧页与旧 ViewModel |
+| `GachaLogPage` 的 `OnNavigatedTo` 参数 | 上游按 `CurrentGameBiz` | 同上游；`PageBase.OnNavigatedTo` 接受 `GameId` 或 `GameBiz` | — | — |
+| `GachaLogPage.xaml` 的 `FontIcon` 字形（复制成功 √ / 复制图标） | `FontIcon Glyph="&#xE8FB;"` | `TextBlock Classes="icon" Text="&#xE8FB;"`（`Styles/Starward.axaml:133`，`StarIconFontFamily`） | Avalonia 无 `FontIcon` | — |
+| `GachaLogPage.xaml` 的 `InfoBar` 面板 | `InfoBar` | 见本表 `GachaLogPage` 进度行（`GachaProgressToast`） | — | — |
