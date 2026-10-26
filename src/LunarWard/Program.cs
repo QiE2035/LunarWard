@@ -1,3 +1,4 @@
+global using LunarWard.Language;
 using LunarWard.Services;
 using Avalonia;
 using Avalonia.Controls;
