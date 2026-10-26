@@ -104,7 +104,7 @@ public partial class WelcomeWindow : WindowEx
         _taskCompletionSource = new();
         Closed += WelcomeWindow_Closed;
         CenterInScreen(1200, 676);
-        SystemDecorations = SystemDecorations.Full;
+        SystemDecorations = global::Avalonia.Controls.WindowDecorations.Full;
         CanResize = true;
         CanMinimize = false;
         CanMaximize = false;

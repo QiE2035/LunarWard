@@ -92,7 +92,8 @@ public class SystemBackdropHelper
         ResetBackdrop();
         backdropProperty ??= SystemBackdropProperty.AcrylicDefault;
         ApplyProperties();
-        return _window.ActualTransparencyLevel is WindowTransparencyLevel.Blur or WindowTransparencyLevel.Transparent;
+        return _window.ActualTransparencyLevel == WindowTransparencyLevel.Blur
+            || _window.ActualTransparencyLevel == WindowTransparencyLevel.Transparent;
     }
 
 
@@ -111,11 +112,11 @@ public class SystemBackdropHelper
         _window.TransparencyLevelHint = [WindowTransparencyLevel.Blur, WindowTransparencyLevel.Transparent, WindowTransparencyLevel.None];
 
         var effectiveOpacity = Math.Clamp(tintOpacity > 0 ? tintOpacity : 1 - luminosity, 0, 1);
-        _window.Background = new SolidColorBrush(tint, _window.ActualTransparencyLevel is WindowTransparencyLevel.None
+        _window.Background = new SolidColorBrush(tint, _window.ActualTransparencyLevel == WindowTransparencyLevel.None
             ? 1
             : effectiveOpacity);
 
-        if (_window.ActualTransparencyLevel is WindowTransparencyLevel.None)
+        if (_window.ActualTransparencyLevel == WindowTransparencyLevel.None)
         {
             // An opaque compositor: show the fallback color instead of the tint (same as upstream's FallbackColor).
             _window.Background = new SolidColorBrush(fallback);
