@@ -104,7 +104,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
 
 
 
-    private async void GameLauncherSettingDialog_Loaded(object sender, RoutedEventArgs e)
+    private async void GameLauncherSettingDialog_Loaded(object? sender, RoutedEventArgs e)
     {
         CurrentGameBiz = CurrentGameId?.GameBiz ?? GameBiz.None;
         CheckCanRepairGame();
@@ -115,7 +115,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
     }
 
 
-    private void GameLauncherSettingDialog_Unloaded(object sender, RoutedEventArgs e)
+    private void GameLauncherSettingDialog_Unloaded(object? sender, RoutedEventArgs e)
     {
         LatestPackageGroups = null!;
         PreInstallPackageGroups = null!;
@@ -947,7 +947,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void Grid_BackgroundDragIn_DragOver(object sender, DragEventArgs e)
+    private void Grid_BackgroundDragIn_DragOver(object? sender, DragEventArgs e)
     {
         e.DragEffects = DragDropEffects.Copy;
     }
@@ -959,7 +959,7 @@ public sealed partial class GameLauncherSettingDialog : StarwardContentDialog
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private async void Grid_BackgroundDragIn_Drop(object sender, DragEventArgs e)
+    private async void Grid_BackgroundDragIn_Drop(object? sender, DragEventArgs e)
     {
         ChangeBgError = null;
         try

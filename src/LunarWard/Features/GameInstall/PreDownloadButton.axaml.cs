@@ -183,7 +183,7 @@ public sealed partial class PreDownloadButton : UserControl
 
 
 
-    private void Grid_Root_PointerEntered(object sender, PointerEventArgs e)
+    private void Grid_Root_PointerEntered(object? sender, PointerEventArgs e)
     {
         PointerOver = true;
         UpdateButtonState();
@@ -195,7 +195,7 @@ public sealed partial class PreDownloadButton : UserControl
 
 
 
-    private void Grid_Root_PointerExited(object sender, PointerEventArgs e)
+    private void Grid_Root_PointerExited(object? sender, PointerEventArgs e)
     {
         PointerOver = false;
         UpdateButtonState();

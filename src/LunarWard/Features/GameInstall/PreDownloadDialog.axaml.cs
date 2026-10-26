@@ -73,7 +73,7 @@ public sealed partial class PreDownloadDialog : StarwardContentDialog
 
 
 
-    private void PreDownloadDialog_Loaded(object sender, RoutedEventArgs e)
+    private void PreDownloadDialog_Loaded(object? sender, RoutedEventArgs e)
     {
         if (CurrentGameId is null)
         {

@@ -199,11 +199,9 @@ dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj --filter "Fully
 |---|---|
 | 上游 54 文件 → 本地落点 | 52 同名 + 1 等价声明（`NoAnimationImageExStyle.xaml`）+ 1 换手（`GameInstallService.cs` → `LunarWard.RPC`） |
 | `python3 scripts/check-alignment.py --json` 中本簇 `missing` | 仅 `NoAnimationImageExStyle.xaml`（等价声明待 Lead 写入脚本 `EQUIVALENTS`） |
-| `dotnet build src/LunarWard/LunarWard.csproj` | 我的 6 个目录 0 error / 0 AXN；整仓错误全在他人在途目录 |
-| `dotnet test --filter "FullyQualifiedName~GameLauncher"` | 已写 23 个 GameLauncher/Selector 用例 + 3 个 `ParseString` 用例，Rider 语义检查 0 error；执行仍被公用的他人错误挡住（见下） |
-| 当前验收阻塞（2026-10-26 17:35） | 全树约 30 error，全在他人在途文件：`Features/Setting/*`（`PageContext` 未 using、`SettingPage` 构造器变更被 `Views/Starward/StarwardShell.axaml.cs:350` 旧壳引用）、`Services/DialogService.cs`、`App.axaml.cs`（`NoPermissionWindow` ctor / `Log` 重载）、`Features/UrlProtocol/TestUrlProtocolWindow.axaml.cs(42,22)`、`Features/Update/{SetupService,UpdateWindow}`、`Features/GamepadControl/*`、`Features/Screenshot/ScreenCaptureInfoWindow`；我的 6 目录 + `WineRegistry.cs` 0 error / 0 AXN |
-| 提交 | `984f317`（审计补齐：BuildStartInfo / HYP 回退 / WineRegistry.ReadStringAsync / docs14+docs09）、`a5e9f17`（他人落地后的编译回归修复：恢复三按钮、Avalonia 12 拖放/剪贴板/Launcher/TopLevel/FontIcon、RPC GameInstallContext）、`572121a`（`InternalsVisibleTo` + 测试类型修正） |
-| 行为级差异 | 本文件 §1 矩阵逐文件登记；「上游有、本地无」2 处已补（启动环境注入、HYP 回退），其余见 §3 |
+| 全量重建 `dotnet build src/LunarWard/LunarWard.csproj --no-incremental`（2026-10-26 18:5x） | **整仓 0 error 通过**；我的 6 个目录 0 error / 0 AXN（此前增量构建掩盖了 88 项 XAML 错误，已按 `docs/16-XAML-MAPPING.md` 全部清零，降级项登记 `docs/09` §二十四） |
+| `dotnet test --filter "FullyQualifiedName~GameLauncher\|~WineRegistry\|~GameConfigIni\|~GameSelector"` | **已通过：48 个用例全绿**（我的 23 个 + `WineRegistry` 既有/新增） |
+| 提交 | `984f317`（审计补齐：BuildStartInfo / HYP 回退 / WineRegistry.ReadStringAsync / docs14+docs09）、`a5e9f17`（他人落地后的编译回归修复）、`572121a`（`InternalsVisibleTo` + 测试类型修正）、`0e57ef4`（XAML 全量映射 + 绑定属性改 StyledProperty + docs/09 §二十四）、`dc33753`（去 `x:Load`） |
 
 ---
 

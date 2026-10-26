@@ -68,7 +68,7 @@ public sealed partial class InstallGameDialog : StarwardContentDialog
 
 
 
-    private void InstallGameDialog_Loaded(object sender, RoutedEventArgs e)
+    private void InstallGameDialog_Loaded(object? sender, RoutedEventArgs e)
     {
         if (CurrentGameId is null)
         {
@@ -82,7 +82,7 @@ public sealed partial class InstallGameDialog : StarwardContentDialog
 
 
 
-    private void InstallGameDialog_Unloaded(object sender, RoutedEventArgs e)
+    private void InstallGameDialog_Unloaded(object? sender, RoutedEventArgs e)
     {
         Segmented_SelectLanguage.SelectionChanged -= Segmented_SelectLanguage_SelectionChanged;
         Segmented_SelectLanguage.Items.Clear();
@@ -410,7 +410,7 @@ public sealed partial class InstallGameDialog : StarwardContentDialog
 
 
 
-    private void Segmented_SelectLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void Segmented_SelectLanguage_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         _audioLanguage = AudioLanguage.None;
         foreach (ListBoxItem item in Segmented_SelectLanguage.SelectedItems.Cast<ListBoxItem>())

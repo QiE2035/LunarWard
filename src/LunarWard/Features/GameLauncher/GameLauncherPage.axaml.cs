@@ -902,7 +902,7 @@ public sealed partial class GameLauncherPage : PageBase
 
 
 
-    private void RootGrid_DragOver(object sender, DragEventArgs e)
+    private void RootGrid_DragOver(object? sender, DragEventArgs e)
     {
         // 平台替换：WinUI 的 DataView.Contains(StandardDataFormats.StorageItems)
         // → Avalonia 的 DataFormats.Files（见 docs/09 §十二）。
@@ -916,7 +916,7 @@ public sealed partial class GameLauncherPage : PageBase
 
 
 
-    private async void RootGrid_Drop(object sender, DragEventArgs e)
+    private async void RootGrid_Drop(object? sender, DragEventArgs e)
     {
         Border_BackgroundDragIn.Opacity = 0;
         try
@@ -944,7 +944,7 @@ public sealed partial class GameLauncherPage : PageBase
 
 
 
-    private void RootGrid_DragLeave(object sender, DragEventArgs e)
+    private void RootGrid_DragLeave(object? sender, DragEventArgs e)
     {
         Border_BackgroundDragIn.Opacity = 0;
     }
@@ -1065,13 +1065,13 @@ public sealed partial class GameLauncherPage : PageBase
     }
 
 
-    private void Border_SwitchBackgroundImage_PointerEntered(object sender, PointerEventArgs e)
+    private void Border_SwitchBackgroundImage_PointerEntered(object? sender, PointerEventArgs e)
     {
         Border_SwitchBackgroundImage.Opacity = 1;
     }
 
 
-    private void Border_SwitchBackgroundImage_PointerExited(object sender, PointerEventArgs e)
+    private void Border_SwitchBackgroundImage_PointerExited(object? sender, PointerEventArgs e)
     {
         Border_SwitchBackgroundImage.Opacity = 0;
     }
@@ -1079,7 +1079,7 @@ public sealed partial class GameLauncherPage : PageBase
 
     int _switchBackgroundTotalDelta = 0;
 
-    private void Border_SwitchBackgroundImage_PointerWheelChanged(object sender, PointerWheelEventArgs e)
+    private void Border_SwitchBackgroundImage_PointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         int delta = (int)e.Delta.Y;
         _switchBackgroundTotalDelta += delta;

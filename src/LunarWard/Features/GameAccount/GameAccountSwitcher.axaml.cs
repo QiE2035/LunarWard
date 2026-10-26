@@ -4,7 +4,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Input;
 using LunarWard.Core;
 using LunarWard.Language;
 using LunarWard.Services;
