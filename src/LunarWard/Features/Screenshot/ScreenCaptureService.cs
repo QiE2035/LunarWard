@@ -23,7 +23,8 @@ namespace LunarWard.Features.Screenshot;
 /// 结构、成员名与调用方形状照上游；平台相关部分替换如下（逐条登记在 docs/09 §8.4）：
 /// </para>
 /// <list type="bullet">
-/// <item>抓帧：<c>Windows.Graphics.Capture</c> + Win2D → 外部工具（X11 <c>import</c>/<c>xwd</c>、Wayland <c>grim</c>），
+/// <item>抓帧：<c>Windows.Graphics.Capture</c> + Win2D → 外部工具回退链
+/// （<c>grim</c> → <c>spectacle</c> → <c>gnome-screenshot</c> → <c>import</c> → <c>xwd</c>），
 /// 见 <see cref="ScreenCaptureHelper"/>；位图类型 <c>CanvasBitmap</c> → Avalonia <see cref="Bitmap"/>。</item>
 /// <item>HDR/ICC：<c>DisplayInformation</c> / <c>ColorPrimaries</c> / <c>WhiteLevelAdjustmentEffect</c> 无 Linux 等价物，
 /// 一律按 SDR（BT.709）处理，<c>ScreenCaptureItem.HDR</c> 恒 false；<see cref="GetMaxCLL"/> 保留上游直方图算法。</item>

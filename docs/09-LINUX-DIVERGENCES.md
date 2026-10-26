@@ -952,21 +952,37 @@ P6 收尾把启动骨架重写成上游 `src/Starward/App.xaml.cs` 的结构（�
 - Wayland 下无法枚举/激活外部游戏窗口，`OpenOverlayWindow` 会因句柄解析失败返回 `false`（与上游「未启用」的观察结果一致）。
 - 上游 `RunningGameService` 的前台窗口钩子仍未移植（`WinEventHook` 只是字段承载），因此「最近活跃游戏」= 最后 `AddRuninngGame` 的游戏。
 
-### X11/Wayland 抓屏自检结果（2026-10-26，本机 KDE Wayland + XWayland）
+### X11/Wayland 抓屏后端：工具回退链与自检结果（2026-10-26，本机 KDE Wayland + XWayland）
 
-`ScreenCaptureService.Capture()` 在本机**未能出图**，但失败点全部在抓屏工具依赖，不在代码路径：
+**已实现**（`Features/Screenshot/ScreenCaptureHelper.cs`）：每一级失败只记 `LogWarning` 再降级，全部失败才抛 `PlatformNotSupportedException`（由 `ScreenCaptureService` 记 `LogError` + `InAppToast`，进程不崩溃）。
 
-- 本机 `DISPLAY=:0`（XWayland）、`WAYLAND_DISPLAY=wayland-1`；`xdotool`/`import`(ImageMagick 7.1.2)/`convert`/`spectacle` 存在，**`grim` 与 `xwd` 缺失**。
-- `ScreenCaptureHelper.SupportsFullScreenFallback` 只认 `grim`：Wayland 下 `FindWindowByPid` 返回 0 且无 grim → `Capture()` 在「定位不到游戏窗口」处 `LogWarning` 返回（不崩溃、不弹错）。
-- ImageMagick 7.1.2 的 `import` 在本机对任何参数组合都报 `import: missing an image filename '<file>'`（`import -window root out.png` / `png:-` / `magick import` 均同），即 `import` 后端在本机不可用；`xwd` 回退也因缺工具不可用。
-- 本机唯一可用抓屏工具是 `spectacle`：`spectacle -b -n -f -o /tmp/sp.png` 产出 1920×1080 PNG（证明 Linux 侧抓屏能力本身可用）。
-- Guide 截图链路已接通：`Features/GamepadControl/GamepadController.cs` 的 `GuideClick`/`OnShareDown` 就是 `Dispatcher.UIThread.Post(() => ScreenCaptureService.Capture())`（与上游一致），失败点只在后端。
-- 失败降级符合预期：`CaptureInternal` 的 `catch` 走 `LogError` + `InAppToast.MainWindow?.Error("截图失败，请查看日志。")`，进程不崩溃。
+| 顺序 | 工具 | 调用 | 说明 |
+| --- | --- | --- | --- |
+| 1 | `grim` | `grim -` | Wayland 合成器通用抓屏（全输出）；X11 下不生效，故仅在 Wayland 尝试 |
+| 2 | `spectacle` | `spectacle -b -n -f -o <png>` | KDE Plasma 自带，Wayland/X11 都可，非交互全屏 |
+| 3 | `gnome-screenshot` | `gnome-screenshot -f <png>` | GNOME 抓屏 |
+| 4 | `import` | `import -window root png:-` | ImageMagick 抓 X11 root 窗口 |
+| 5 | `xwd` + `convert` | `xwd -root` → `convert xwd:- png:-` | X11 原生兜底 |
 
-后续增量（本次未改）：给 `ScreenCaptureHelper` 扩工具回退链（`grim` → `spectacle -b -n -f -o` → `gnome-screenshot -f` → `import`），并放宽 `SupportsFullScreenFallback` 与 `FindWindowByPid`（XWayland 下应先试 `xdotool`，不要仅凭 `WAYLAND_DISPLAY` 短路）。
+- 窗口级抓取：`xdotool search --pid` → `import -window <id>` → `xwd -id` + `convert` → 全部失败再退整屏链。
+- `SupportsFullScreenFallback`：上述任一整屏工具可用即为 true（不再只认 `grim`）。
+- 区域抓取：`grim -g x,y wxh` / `import -window root -crop`；`spectacle`/`gnome-screenshot` 没有非交互区域参数，不参与该分支。
+- `FindWindowByPid`：**先试 `xdotool`，再判断 Wayland**。XWayland 会话里游戏是 X 客户端（Proton/Wine 默认就是 X11 窗口），xdotool 能解析到真实窗口 id；若按 `WAYLAND_DISPLAY` 提前短路，会无故放弃可用的窗口句柄。只有 Wayland 原生窗口枚举不到时才返回 0，由上层决定退整屏还是报错。
+- 只能「写文件」的工具（spectacle/gnome-screenshot）走 `Path.GetTempPath()` 下的临时 png，读回字节后立即删除。
+
+**本机实测**（`DISPLAY=:0` + `WAYLAND_DISPLAY=wayland-1`，即 XWayland）：
+
+- 工具矩阵：`xdotool`、`import`（ImageMagick **7.1.2**）、`convert`、`spectacle` 存在；`grim`、`xwd`、`gnome-screenshot`、`scrot`、`maim`、`flameshot` 均缺失。
+- ImageMagick 7.1.2 的 `import` 在本机对任何参数组合都失败（`import -window root out.png`、`png:-`、`magick import` 一律 `import: missing an image filename '<file>' @ error/import.c/ImportImageCommand/1291`）→ 第 4 级不可用。
+- `grim`/`xwd`/`gnome-screenshot` 缺失 → 第 1、3、5 级不可用。
+- 第 2 级 `spectacle -b -n -f -o <png>` 可用，产出 1920×1080 PNG → 回退链在本机命中 spectacle，**能出图**。
+- 窗口定位：XWayland 下 `xdotool search --pid` 对 X 客户端有效；Wayland 原生窗口解析不到 → 退整屏。
+- Guide 链路：`Features/GamepadControl/GamepadController.cs` 的 `GuideClick`/`OnShareDown` 就是 `Dispatcher.UIThread.Post(() => ScreenCaptureService.Capture())`（与上游一致）；失败时 `LogError` + `InAppToast.MainWindow?.Error("截图失败，请查看日志。")`。
+
+**与上游的语义差异**：Windows 抓的是游戏窗口像素；Linux 在「Wayland/XWayland 且后端只能整屏」时退化为整屏（可能带进桌面其它窗口）。这是 Wayland 缺按窗口抓取协议的固有差异，无法在本层消除。
 
 ## 二十七、i18n 收尾：删除 `AppStrings`（task-22，2026-10-26，settings-migrate）
 
 - `src/LunarWard/Localization/`（`AppStrings` + 两个 resx）整体删除，界面文案只剩上游 `Lang`；设置页与截图页共 193 处引用迁移完毕。
 - 7 个键映射到上游 `Lang`（`Common_Open/Copy/CopiedToClipboard/Cancel/Delete`、`AboutSetting_UpdatedToTheLatestVersion`、`AboutSettingPage_CurrentVersionIsNotTheLatestVersion`），其余 136 处平台差异说明改为内联中文（见 `docs/15` §7）。
-- 顺带删除未接线的旧页 `Features/Screenshot/ScreenshotPage2.axaml(.cs)`；`ScreenshotFolderManageDialog` 直接用 `Lang`。
+- `Features/Screenshot/ScreenshotPage2.axaml(.cs)` 是**上游文件，保留不删**（即便当前外壳未接线；删掉会让 `check-alignment.py` 变成 missing），本任务只把它的引用换成 `Lang`；`ScreenshotFolderManageDialog` 直接用 `Lang`。
