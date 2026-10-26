@@ -340,14 +340,14 @@ public partial class StarwardShell : UserControl
     {
         ShellPage.Launcher => new Pages.GameLauncherPage(context),
         // GameSetting 已按上游迁到 Features/GameSetting（code-behind，StarwardPage 宿主适配）
-        ShellPage.GameSetting => new Features.GameSetting.GameSettingPage(context),
+        ShellPage.GameSetting => new FeaturePageHost(context, new Features.GameSetting.GameSettingPage()),
         ShellPage.Screenshot => new Pages.ScreenshotPage(context),
         ShellPage.Gacha => new Pages.GachaPage(context),
         ShellPage.Toolbox => new Pages.ToolboxPage(context),
         ShellPage.SelfQuery => new Pages.SelfQueryPage(context),
 
         ShellPage.GenshinBeyondGacha => new Pages.GenshinBeyondGachaPage(context),
-        ShellPage.Settings => new SettingPage(context),
+        ShellPage.Settings => new FeaturePageHost(context, new Features.Setting.SettingPage()),
         _ => throw new ArgumentOutOfRangeException(nameof(page)),
     };
 
