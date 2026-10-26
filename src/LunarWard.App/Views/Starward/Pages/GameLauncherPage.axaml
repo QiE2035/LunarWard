@@ -40,7 +40,7 @@
 
           <!-- 图库（Starward OpenBackgroundViewWindow；Linux 等价为打开背景目录） -->
           <Button Classes="overlay" Padding="6" MinWidth="28"
-                  Command="{Binding OpenBackgroundFolderCommand}"
+                  Command="{Binding OpenBackgroundGalleryCommand}"
                   ToolTip.Tip="{Binding Strings[Launcher.Gallery]}">
             <TextBlock Classes="icon" Text="&#xE91B;" Foreground="{StaticResource StarTextSecondary}" />
           </Button>

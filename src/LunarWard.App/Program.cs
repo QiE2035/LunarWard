@@ -147,6 +147,13 @@ internal static class Program
             // 对话框现在是窗口内 DialogHost 浮层，由 MainWindow 的截图分支打开；
             // 老的 LauncherSettingDialog 开关不再设置（GameLauncherPage 里的旧分支失效）。
             CaptureMode.LauncherSettingOverlay = args.Contains("--launcher-setting-dialog");
+            CaptureMode.GalleryDialog = args.Contains("--gallery-dialog");
+            CaptureMode.PauseVideo = args.Contains("--pause-video");
+            if (ReadArgument(args, "--switch-test") is { Length: > 0 } switchIndex
+                && int.TryParse(switchIndex, out int parsedSwitchIndex))
+            {
+                CaptureMode.SwitchTest = parsedSwitchIndex;
+            }
             CaptureMode.GachaSeed = ReadArgument(args, "--gacha-seed");
             CaptureMode.GachaDeleteDialog = args.Contains("--gacha-delete-dialog");
             CaptureMode.GachaMaterials = args.Contains("--gacha-materials");

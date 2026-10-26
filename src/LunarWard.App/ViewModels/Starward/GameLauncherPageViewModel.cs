@@ -1485,7 +1485,33 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     public Task<Bitmap?> GetBitmapAsync(string value) => _context.Shell.Assets.BitmapAsync(value);
 
 
-    /// <summary>Starward「图库」打开背景浏览窗；Linux 等价为打开背景缓存目录。</summary>
+    /// <summary>
+    /// 「图库」：打开背景浏览浮层（对应上游 <c>BackgroundViewWindow</c> + <c>BackgroundViewPage</c>）。
+    /// 之前这里只是打开缓存目录，用户看到的是文件管理器，与 Starward 不一致。
+    /// </summary>
+    [RelayCommand]
+    private async Task OpenBackgroundGalleryAsync()
+    {
+        var entries = BackgroundImages.ToList();
+        if (entries.Count == 0)
+        {
+            OpenBackgroundFolder();
+            return;
+        }
+
+        var dialog = new Views.Starward.BackgroundViewDialog(
+            entries,
+            GetBitmapAsync,
+            index => SelectBackground(index),
+            OpenBackgroundFolder,
+            Strings["Launcher.Gallery"],
+            SelectedBackgroundIndex);
+
+        await Services.DialogService.ShowAsync(dialog).ConfigureAwait(true);
+    }
+
+
+    /// <summary>在文件管理器里打开背景缓存目录（图库浮层里的「打开文件夹」）。</summary>
     [RelayCommand]
     private void OpenBackgroundFolder()
     {
@@ -1566,13 +1592,22 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
     partial void OnVideoPausedChanged(bool value)
     {
-        if (value)
+        // Starward 的「暂停」不是把画面冻在某一帧，而是收掉视频、露出这一条背景的静态封面
+        // （<c>StartStopButtonIcon</c> 与 <c>StopVideo</c> 的组合）。继续时重新起播。
+        if (CurrentBackground is { } item)
         {
-            _services.Background.Pause();
-        }
-        else
-        {
-            _services.Background.Resume();
+            if (value)
+            {
+                _services.Background.Stop();
+                var poster = item.ImageSource
+                    ?? (item.IsVideo ? _context.Shell.Assets.For()?.Background : null)
+                    ?? item.Value;
+                _ = _context.Shell.ShowStaticBackgroundAsync(poster, item.ThemeSource);
+            }
+            else if (item.IsVideo && _services.Background.IsVideoAvailable)
+            {
+                _context.Shell.ShowVideoBackground(item.VideoSource ?? item.Value, item.ThemeSource);
+            }
         }
 
         OnPropertyChanged(nameof(VideoToggleGlyph));
@@ -1646,7 +1681,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
     /// 这里改成「最新目标胜出 + 单工人串行」：只保留最后一个请求，其余合并。
     /// </remarks>
     [RelayCommand]
-    private async Task SelectBackgroundAsync(int index)
+    private void SelectBackground(int index)
     {
         if (index < 0 || index >= BackgroundImages.Count)
         {
@@ -1660,6 +1695,20 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             return;
         }
 
+        _ = RunBackgroundSwitchWorkerAsync();
+    }
+
+
+    /// <summary>
+    /// 切换工人：串行消费 <see cref="_pendingBackgroundIndex"/>。
+    /// </summary>
+    /// <remarks>
+    /// 不能把这段写成 <c>[RelayCommand] async Task</c>：<see cref="CommunityToolkit.Mvvm.Input.AsyncRelayCommand"/>
+    /// 默认不允许并发执行，切换进行中的连点会被整条丢掉，表现就是「切一次之后再也切不动」。
+    /// 这里用同步命令投递请求、独立的 async 循环落地，命令本身立刻返回。
+    /// </remarks>
+    private async Task RunBackgroundSwitchWorkerAsync()
+    {
         OnPropertyChanged(nameof(IsSwitchingBackground));
 
         try
@@ -1684,12 +1733,17 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             OnPropertyChanged(nameof(IsSwitchingBackground));
 
             // 循环退出与「又来一个新请求」之间可能擦肩而过：补一次派发，避免请求丢失。
-            if (Volatile.Read(ref _pendingBackgroundIndex) >= 0)
+            var pending = Volatile.Read(ref _pendingBackgroundIndex);
+            if (pending >= 0)
             {
-                _ = SelectBackgroundAsync(Volatile.Read(ref _pendingBackgroundIndex));
+                SelectBackground(pending);
             }
         }
     }
+
+
+    /// <summary>等一次切换真正落地（拖放、目录刷新恢复选中时用）。</summary>
+    private Task SelectBackgroundAsync(int index) => ApplyBackgroundAsync(index);
 
 
     private async Task ApplyBackgroundAsync(int index)
