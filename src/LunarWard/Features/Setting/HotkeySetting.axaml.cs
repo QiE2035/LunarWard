@@ -31,8 +31,6 @@ public sealed partial class HotkeySetting : PageBase
         return true;
     }
 
-    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
-
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
     public string? Status
     {
@@ -128,11 +126,11 @@ public sealed partial class HotkeySetting : PageBase
             case HotkeyRegisterResult.NotSupported:
                 // Linux：组合键已保存，但没有全局注册能力 —— 与上游注册失败一样显示 Warning。
                 input.State = HoykeyInputState.Warning;
-                Status = Strings["Settings.Hotkey.SavedNotGlobal"];
+                Status = "已保存。Linux 暂不支持全局热键触发，请在你的桌面环境快捷键设置里绑定。";
                 break;
             default:
                 input.State = HoykeyInputState.Warning;
-                Status = Strings["Settings.Hotkey.HotkeyUnavailable"];
+                Status = "这个输入框是 Starward 的 HotkeyInput；Linux 没有等价的全局热键，控件保留位置但禁用。";
                 break;
         }
     }
@@ -144,9 +142,9 @@ public sealed partial class HotkeySetting : PageBase
     {
         var path = DesktopEntryPath;
         Status = path is null
-            ? Strings["Settings.Hotkey.DesktopEntryMissing"]
+            ? "没有找到已安装的 lunarward.desktop（打包文件在 packaging/lunarward.desktop）"
             : SettingShellActions.TryOpen(path) is { } error
-                ? string.Format(Strings["Settings.Common.OpenFailed"], error)
+                ? string.Format("打开失败：{0}", error)
                 : null;
     }
 

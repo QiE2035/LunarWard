@@ -185,3 +185,35 @@
 - `Lang` 是上游完整体系（英文为中性语言 + 11 个语言附属程序集，879 条），`Lang.Culture` 由配置语言驱动；本仓库原来的 `AppStrings` 只有中英两套且值是自己翻译的，迁移后**文案会切换成上游原文**，个别措辞与旧版不同属预期。
 - 部分映射是“同义不同词”（例如 `Settings.About.Version` → `SettingPage_CurrentVersion` 带冒号），视觉上可能与旧版差一个标点，属可接受的贴近上游。
 - `Settings.Advanced.*` 里与 `lunarward://` 协议相关的文案，上游是 Windows 注册表方案，语义只在“可用的 URL 协议”这一层对齐，具体句子仍是 Linux 方案描述。
+
+---
+
+## 7. 收尾（task-22）：`AppStrings` 已整体删除
+
+本轮把过渡桥彻底拆掉，仓库里不再有第二套界面文案资源：
+
+- 删除 `src/LunarWard/Localization/`（`AppStrings.cs`、`Resources.resx`、`Resources.en-US.resx`），以及只测试它们的
+  `tests/LunarWard.UnitTests/AppStringsTests.cs`、`AppStringsResxTests.cs`。
+- 共替换 **193** 处引用（`Features/Setting` 9 个页面 + `Features/Screenshot` 5 个页面/窗口 + 2 处页面属性）。
+- 只有 **7 个键**在 `Lang` 里有语义等价项，直接改成 `{x:Static lang:Lang.Xxx}` / `Lang.Xxx`：
+
+  | AppStrings 键 | 上游 `Lang` 键 |
+  | --- | --- |
+  | `Settings.Common.Open` | `Common_Open` |
+  | `Settings.Common.CopyPath` | `Common_Copy` |
+  | `Settings.Common.Copied` | `Common_CopiedToClipboard` |
+  | `Settings.Hotkey.CancelEdit` | `Common_Cancel` |
+  | `Settings.Hotkey.Delete` | `Common_Delete` |
+  | `Settings.About.UpToDate` | `AboutSetting_UpdatedToTheLatestVersion` |
+  | `Settings.About.UpdateAvailable` | `AboutSettingPage_CurrentVersionIsNotTheLatestVersion` |
+
+- 其余 **136 处**（`Settings.General.*` / `Settings.Files.*` / `Settings.Download.*` / `Settings.Advanced.*` /
+  `Settings.Hotkey.*` / `Settings.Gamepad.*` / `Settings.Screenshot.*` / `Settings.About.*` 的平台差异说明）
+  在上游 `Lang` 里没有对应键：它们描述的是 Linux 侧的真实差异（XDG 目录、wine 组件索引、无全局热键、无 GameInput…），
+  按 `docs/10-ALIGNMENT.md` §4 的规则改为**内联中文字面量**，并在代码/`XAML` 处保留注释。这些文案目前只有中文，
+  英文界面下也显示中文；若将来上游愿意吸收这些差异文案，再补 `Lang` 键并回填。
+- `SettingLocalization.Normalize` 接管了原 `AppStrings.Normalize`（zh-CN / en-US 归一），语言切换仍由
+  `GeneralSetting` 广播 `LanguageChangedMessage`，`SettingPage` 重建子页以刷新 `x:Static` 静态绑定。
+- `Features/Screenshot/ScreenshotPage2.axaml(.cs)` 是引用旧 `AppStrings` 的未接线旧页（全仓无引用），随本轮删除；
+  `ScreenshotFolderManageDialog` 的 `_strings["Lang 键"]` 改为直接 `Lang.Xxx`。
+- 遗留提示：`docs/15` 前六节记录的映射表是 task-16 试点时的中间状态，最终以本节为准。

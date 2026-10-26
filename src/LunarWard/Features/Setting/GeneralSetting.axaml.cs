@@ -33,8 +33,6 @@ public sealed partial class GeneralSetting : PageBase
         return true;
     }
 
-    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
-
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
     public string? Status
     {
@@ -151,7 +149,8 @@ public sealed partial class GeneralSetting : PageBase
             LunarWard.Platform.AutostartEntry.SetEnabled(
                 value, LunarWard.Platform.AutostartEntry.CurrentExecutable(), LunarWard.Platform.XdgPaths.Default.ConfigHome);
             OnPropertyChanged();
-            Status = string.Format(Strings[value ? "Settings.General.AutostartOn" : "Settings.General.AutostartOff"]);
+            // LunarWard 扩展文案：上游没有开机自启开关，内联即可（见 docs/09 §十一）。
+            Status = value ? "已随登录启动" : "未随登录启动";
         }
     }
 
@@ -166,7 +165,7 @@ public sealed partial class GeneralSetting : PageBase
             new SettingLanguageOption("en-US", "English (en-US)"),
         ];
         _selectedLanguageOption = LanguageOptions.FirstOrDefault(o =>
-            string.Equals(o.Code, Localization.AppStrings.Normalize(AppConfig.Language), StringComparison.Ordinal))
+            string.Equals(o.Code, SettingLocalization.Normalize(AppConfig.Language), StringComparison.Ordinal))
             ?? LanguageOptions[0];
         Announcements = AppConfig.ShowAnnouncements;
         VideoBackground = AppConfig.VideoBackground;
@@ -195,7 +194,7 @@ public sealed partial class GeneralSetting : PageBase
     }
 
 
-    public string SelectedLanguage => SelectedLanguageOption?.Code ?? Strings.Language;
+    public string SelectedLanguage => SelectedLanguageOption?.Code ?? SettingLocalization.Normalize(AppConfig.Language);
 
 
     private void OnSelectedLanguageOptionChanged(SettingLanguageOption value)
@@ -213,9 +212,8 @@ public sealed partial class GeneralSetting : PageBase
     /// <summary>切换语言：立即生效（上游同样即时切换；配置写 <c>Setting</c> 表，无需显式 SaveConfiguration）。</summary>
     public void ApplyLanguage(string code)
     {
-        var normalized = Localization.AppStrings.Normalize(code);
-        var current = Localization.AppStrings.Normalize(AppConfig.Language);
-        Strings.Language = normalized;
+        var normalized = SettingLocalization.Normalize(code);
+        var current = SettingLocalization.Normalize(AppConfig.Language);
         AppConfig.SetLanguage(normalized);
 
         // ComboBox 首次绑定会把 SelectedItem 推回来一次；与当前配置相同就不当作"用户切换"，
@@ -231,7 +229,7 @@ public sealed partial class GeneralSetting : PageBase
         AppConfig.SaveConfiguration();
         WeakReferenceMessenger.Default.Send(new LanguageChangedMessage());
 
-        Status = string.Format(Strings["Settings.General.LanguageChanged"], normalized);
+        Status = string.Format("语言已切换为 {0}", normalized);
         OnPropertyChanged(nameof(IsEnglish));
     }
 

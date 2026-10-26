@@ -964,3 +964,9 @@ P6 收尾把启动骨架重写成上游 `src/Starward/App.xaml.cs` 的结构（�
 - 失败降级符合预期：`CaptureInternal` 的 `catch` 走 `LogError` + `InAppToast.MainWindow?.Error("截图失败，请查看日志。")`，进程不崩溃。
 
 后续增量（本次未改）：给 `ScreenCaptureHelper` 扩工具回退链（`grim` → `spectacle -b -n -f -o` → `gnome-screenshot -f` → `import`），并放宽 `SupportsFullScreenFallback` 与 `FindWindowByPid`（XWayland 下应先试 `xdotool`，不要仅凭 `WAYLAND_DISPLAY` 短路）。
+
+## 二十七、i18n 收尾：删除 `AppStrings`（task-22，2026-10-26，settings-migrate）
+
+- `src/LunarWard/Localization/`（`AppStrings` + 两个 resx）整体删除，界面文案只剩上游 `Lang`；设置页与截图页共 193 处引用迁移完毕。
+- 7 个键映射到上游 `Lang`（`Common_Open/Copy/CopiedToClipboard/Cancel/Delete`、`AboutSetting_UpdatedToTheLatestVersion`、`AboutSettingPage_CurrentVersionIsNotTheLatestVersion`），其余 136 处平台差异说明改为内联中文（见 `docs/15` §7）。
+- 顺带删除未接线的旧页 `Features/Screenshot/ScreenshotPage2.axaml(.cs)`；`ScreenshotFolderManageDialog` 直接用 `Lang`。

@@ -36,8 +36,6 @@ public sealed partial class ScreenshotSetting : PageBase
         return true;
     }
 
-    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
-
 
     public ScreenshotSetting()
     {
@@ -75,7 +73,7 @@ public sealed partial class ScreenshotSetting : PageBase
         {
             if (!Directory.Exists(DirectoryPath))
             {
-                CountText = Strings["Settings.Screenshot.NoGameDirectory"];
+                CountText = "还没有指定游戏目录，截图位置未知。请先在「游戏设置」里选游戏目录。";
                 return;
             }
 
@@ -88,16 +86,16 @@ public sealed partial class ScreenshotSetting : PageBase
                 .ToList();
             long bytes = files.Sum(x => x.Length);
             CountText = files.Count == 0
-                ? Strings["Settings.Screenshot.Empty"]
+                ? "这个游戏还没有截图"
                 : string.Format(
                     CultureInfo.CurrentCulture,
-                    Strings["Settings.Screenshot.Count"],
+                    "共 {0} 张 · {1:0.0} MiB",
                     files.Count,
                     bytes / 1048576.0);
         }
         catch (Exception ex)
         {
-            CountText = Strings["Settings.Screenshot.Empty"];
+            CountText = "这个游戏还没有截图";
             Status = ex.Message;
         }
     }
@@ -138,7 +136,7 @@ public sealed partial class ScreenshotSetting : PageBase
         }
 
         Status = SettingShellActions.TryOpen(target) is { } error
-            ? string.Format(CultureInfo.CurrentCulture, Strings["Settings.Common.OpenFailed"], error)
+            ? string.Format(CultureInfo.CurrentCulture, "打开失败：{0}", error)
             : null;
     }
 
@@ -148,6 +146,6 @@ public sealed partial class ScreenshotSetting : PageBase
     {
         Status = await SettingShellActions.TryCopyAsync(DirectoryPath).ConfigureAwait(true) is { } error
             ? error
-            : Strings["Settings.Common.Copied"];
+            : Lang.Common_CopiedToClipboard;
     }
 }

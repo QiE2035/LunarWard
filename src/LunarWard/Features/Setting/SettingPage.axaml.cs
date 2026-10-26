@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using LunarWard.Language;
-using LunarWard.Localization;
 using LunarWard.Services;
 using LunarWard.Frameworks;
 
@@ -46,8 +45,6 @@ public partial class SettingPage : PageBase
         OnPropertyChanged(name);
         return true;
     }
-
-    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
     private readonly Dictionary<SettingSectionKind, PageBase> _sections = [];
 
     private SettingSectionKind _currentSection;

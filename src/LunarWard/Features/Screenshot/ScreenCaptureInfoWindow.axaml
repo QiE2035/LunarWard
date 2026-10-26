@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:loc="using:LunarWard.Localization"
+        xmlns:lang="using:LunarWard.Language"
         x:Class="LunarWard.Features.Screenshot.ScreenCaptureInfoWindow"
         x:CompileBindings="False"
         Width="320"
@@ -77,7 +77,7 @@
                     <TextBlock HorizontalAlignment="Center"
                                FontSize="12"
                                Foreground="{DynamicResource StarTextSecondaryBrush}"
-                               Text="{Binding [Common_Open], Source={x:Static loc:AppStrings.Instance}}" />
+                               Text="{x:Static lang:Lang.Common_Open}" />
                 </StackPanel>
             </Button>
 
@@ -94,11 +94,11 @@
                         IsVisible="{Binding IsError}"
                         Spacing="2">
                 <TextBlock Foreground="{DynamicResource StarErrorBrush}"
-                           Text="{Binding [ScreenCaptureInfoWindow_ScreenshotFailed], Source={x:Static loc:AppStrings.Instance}}"
+                           Text="{x:Static lang:Lang.ScreenCaptureInfoWindow_ScreenshotFailed}"
                            TextWrapping="Wrap" />
                 <TextBlock FontSize="12"
                            Foreground="{DynamicResource StarTextSecondaryBrush}"
-                           Text="{Binding [ScreenCaptureInfoWindow_CheckTheLogForMoreInformation], Source={x:Static loc:AppStrings.Instance}}"
+                           Text="{x:Static lang:Lang.ScreenCaptureInfoWindow_CheckTheLogForMoreInformation}"
                            TextWrapping="Wrap" />
             </StackPanel>
             <!--  打开  -->
@@ -113,7 +113,7 @@
                     <TextBlock HorizontalAlignment="Center"
                                FontSize="12"
                                Foreground="{DynamicResource StarTextSecondaryBrush}"
-                               Text="{Binding [Common_Open], Source={x:Static loc:AppStrings.Instance}}" />
+                               Text="{x:Static lang:Lang.Common_Open}" />
                 </StackPanel>
             </Button>
         </Grid>

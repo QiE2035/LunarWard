@@ -49,8 +49,6 @@ public sealed partial class FileManageSetting : PageBase
         return true;
     }
 
-    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
-
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
     public string? Status
     {
@@ -93,11 +91,11 @@ public sealed partial class FileManageSetting : PageBase
         // LunarWard 追加的「目录与文件」区块（Starward 没有这一块）：XDG 四个目录 + config.json
         DirectoryRows =
         [
-            new SettingPathRowViewModel(Strings["Settings.Files.ConfigHome"], ConfigHome),
+            new SettingPathRowViewModel("配置目录", ConfigHome),
             new SettingPathRowViewModel(Lang.FileSettingPage_DataFolder, DataHome),
-            new SettingPathRowViewModel(Strings["Settings.Files.CacheHome"], CacheHome),
-            new SettingPathRowViewModel(Strings["Settings.Files.LogDir"], LogDirectory),
-            new SettingPathRowViewModel(Strings["Settings.Files.ConfigFile"], ConfigFile),
+            new SettingPathRowViewModel("缓存目录", CacheHome),
+            new SettingPathRowViewModel("日志目录", LogDirectory),
+            new SettingPathRowViewModel("配置文件", ConfigFile),
         ];
         DataContext = this;
         BackupRequested += OnBackupRequested;
@@ -233,15 +231,15 @@ public sealed partial class FileManageSetting : PageBase
         }
 
         IsBackingUp = true;
-        Status = Strings["Settings.Files.BackingUp"];
+        Status = "正在备份数据库…";
         try
         {
             await Task.Run(() => DatabaseService.BackupDatabase(path)).ConfigureAwait(true);
-            Status = string.Format(CultureInfo.CurrentCulture, Strings["Settings.Files.BackupDone"], path);
+            Status = string.Format(CultureInfo.CurrentCulture, "已备份到 {0}", path);
         }
         catch (Exception ex)
         {
-            Status = string.Format(CultureInfo.CurrentCulture, Strings["Settings.Files.BackupFailed"], ex.Message);
+            Status = string.Format(CultureInfo.CurrentCulture, "备份失败：{0}", ex.Message);
         }
         finally
         {
@@ -262,7 +260,7 @@ public sealed partial class FileManageSetting : PageBase
         }
 
         Status = SettingShellActions.TryOpen(path) is { } error
-            ? string.Format(CultureInfo.CurrentCulture, Strings["Settings.Common.OpenFailed"], error)
+            ? string.Format(CultureInfo.CurrentCulture, "打开失败：{0}", error)
             : null;
     }
 
@@ -281,7 +279,7 @@ public sealed partial class FileManageSetting : PageBase
 
         Status = await SettingShellActions.TryCopyAsync(path).ConfigureAwait(true) is { } error
             ? error
-            : Strings["Settings.Common.Copied"];
+            : Lang.Common_CopiedToClipboard;
     }
 
 
@@ -297,7 +295,7 @@ public sealed partial class FileManageSetting : PageBase
 
         var confirmed = await _confirm(
             Lang.FileSettingPage_ClearCache,
-            string.Format(CultureInfo.CurrentCulture, Strings["Settings.Files.ClearCacheBody"], CacheHome)).ConfigureAwait(true);
+            string.Format(CultureInfo.CurrentCulture, "将删除 {0} 下的缓存内容（保留当天日志）。此操作不可撤销，确定继续？", CacheHome)).ConfigureAwait(true);
 
         if (!confirmed)
         {
@@ -305,7 +303,7 @@ public sealed partial class FileManageSetting : PageBase
         }
 
         IsClearing = true;
-        Status = Strings["Settings.Files.Clearing"];
+        Status = "正在清理…";
         try
         {
             var before = SettingShellActions.DirectorySize(CacheHome);
@@ -344,7 +342,7 @@ public sealed partial class FileManageSetting : PageBase
             var after = SettingShellActions.DirectorySize(CacheHome);
             Status = string.Format(
                 CultureInfo.CurrentCulture,
-                Strings["Settings.Files.ClearCacheDone"],
+                "已清理缓存，释放 {0}",
                 SettingShellActions.Bytes(Math.Max(0, before - after)));
 
             RefreshCacheSize();
@@ -379,7 +377,7 @@ public sealed partial class FileManageSetting : PageBase
         LauncherBackgroundSize = SettingShellActions.Bytes(background);
         CacheSize = string.Format(
             CultureInfo.CurrentCulture,
-            Strings["Settings.Files.CacheSize"],
+            "当前占用 {0}",
             SettingShellActions.Bytes(total));
     }
 

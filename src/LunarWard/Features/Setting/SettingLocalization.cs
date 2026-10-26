@@ -1,6 +1,5 @@
 using System.Globalization;
 using LunarWard.Language;
-using LunarWard.Localization;
 
 namespace LunarWard.Features.Setting;
 
@@ -14,13 +13,25 @@ namespace LunarWard.Features.Setting;
 /// </remarks>
 internal static class SettingLocalization
 {
+    /// <summary>把配置/系统的语言标识归一为界面支持的两种之一（zh-CN / en-US）。</summary>
+    public static string Normalize(string? language)
+    {
+        var text = (language ?? "").Trim().Replace('_', '-');
+        if (text.StartsWith("en", StringComparison.OrdinalIgnoreCase))
+        {
+            return "en-US";
+        }
+        return "zh-CN";
+    }
+
+
     public static void EnsureConfigured()
     {
         try
         {
             // 上游语义：语言来自 AppConfig.Language（启动时 LoadConfiguration → SetLanguage）。
             // 页面可能先于启动流程被构造（截图自检/设计器/测试），这里补齐一次文化与资源文化。
-            string code = AppStrings.Normalize(AppConfig.Language ?? CultureInfo.CurrentUICulture.Name);
+            string code = Normalize(AppConfig.Language ?? CultureInfo.CurrentUICulture.Name);
             CultureInfo culture = CultureInfo.GetCultureInfo(code);
             if (!string.Equals(AppConfig.Language, code, StringComparison.OrdinalIgnoreCase))
             {

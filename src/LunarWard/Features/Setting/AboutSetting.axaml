@@ -43,7 +43,7 @@
       <!-- AboutSetting.xaml:28（Starward：「Developed by Scighost, all rights reserved.」） -->
       <TextBlock Margin="0,4,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.About.Tagline]}" />
+                 Text="Linux 下的《原神》/《绝区零》启动器" />
 
       <!-- AboutSetting.xaml:32-39 -->
       <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="4">
@@ -61,19 +61,19 @@
               CornerRadius="8">
         <StackPanel Spacing="6">
           <Grid ColumnDefinitions="110,*">
-            <TextBlock Text="{Binding Strings[Settings.About.Kernel]}" />
+            <TextBlock Text="系统内核" />
             <TextBlock Grid.Column="1" Text="{Binding System.Kernel}" />
           </Grid>
           <Grid ColumnDefinitions="110,*">
-            <TextBlock Text="{Binding Strings[Settings.About.Session]}" />
+            <TextBlock Text="桌面会话" />
             <TextBlock Grid.Column="1" Text="{Binding System.Session}" />
           </Grid>
           <Grid ColumnDefinitions="110,*">
-            <TextBlock Text="{Binding Strings[Settings.About.GpuDriver]}" />
+            <TextBlock Text="显卡驱动" />
             <TextBlock Grid.Column="1" Text="{Binding System.GpuDriver}" />
           </Grid>
           <Grid ColumnDefinitions="110,*">
-            <TextBlock Text="{Binding Strings[Settings.About.GpuPciId]}" />
+            <TextBlock Text="显卡 PCI ID" />
             <TextBlock Grid.Column="1" Text="{Binding System.GpuPciId}" />
           </Grid>
         </StackPanel>
@@ -126,7 +126,7 @@
                 Padding="8,2"
                 IsVisible="{Binding HasUpdate}"
                 Command="{Binding OpenUpdateCommand}"
-                Content="{Binding Strings[Settings.About.OpenRelease]}" />
+                Content="打开下载页" />
       </Grid>
 
       <!-- AboutSetting.xaml:89-126 相关链接 -->
@@ -159,25 +159,25 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.About.ReplicaNote]}" />
+                 Text="LunarWard 是 Starward 在 Linux 的重实现，界面排版复刻自 Starward（MIT）；启动、运行时与环境变量等平台相关部分为本项目重写。" />
 
       <TextBlock Margin="0,4,0,0"
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.About.License]}" />
+                 Text="本项目以 MIT 许可发布；Starward 的版权归 Scighost 所有。" />
 
       <TextBlock Margin="0,4,0,0"
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.About.Thanks]}" />
+                 Text="致谢：Starward（Scighost）提供了完整的 UI 结构与 Core API；an-anime-team 提供 wine 组件索引；HoYoPlay 官方素材接口用于背景与公告。" />
 
       <TextBlock Margin="0,8,0,0"
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.About.LinksUnavailableNote]}" />
+                 Text="「隐私策略」「赞助开发者」在 LunarWard 没有对应页面，保留 Starward 的链接位置并禁用。" />
 
       <TextBlock Margin="0,8,0,0"
                  Classes="tertiary"

@@ -13,7 +13,6 @@ using LunarWard.Features.GameLauncher;
 using LunarWard.Features.HoYoPlay;
 using LunarWard.Frameworks;
 using LunarWard.Helpers;
-using LunarWard.Localization;
 using LunarWard.Services;
 using System;
 using System.Collections.Generic;
@@ -68,9 +67,6 @@ public partial class ScreenshotPage : PageBase
     private readonly ILogger<ScreenshotPage> _logger = AppConfig.GetLogger<ScreenshotPage>();
 
     private readonly HoYoPlayService _hoyoplayService = AppConfig.GetService<HoYoPlayService>();
-
-
-    public AppStrings Strings => AppStrings.Instance;
 
 
 

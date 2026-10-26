@@ -60,7 +60,7 @@
               HorizontalAlignment="Left"
               IsEnabled="False"
               FontWeight="Bold"
-              ToolTip.Tip="{Binding Strings[Settings.General.HelpTranslateUnavailable]}"
+              ToolTip.Tip="LunarWard 目前只有 zh-CN / en-US 两种文案，没有翻译协作页。"
               Content="{x:Static lang:Lang.AppearanceSettingPage_HelpUsTranslateStarward}" />
 
       <!-- GeneralSetting.xaml:38-40 -->
@@ -82,7 +82,7 @@
                      Content="{x:Static lang:Lang.ExperienceSettingPage_ExitCompletely}" />
         <RadioButton GroupName="CloseWindowOption"
                      IsChecked="{Binding IsAskEveryTime, Mode=TwoWay}"
-                     Content="{Binding Strings[Settings.General.AskEveryTime]}" />
+                     Content="每次关闭时询问" />
       </StackPanel>
 
       <TextBlock Margin="0,6,0,0"
@@ -91,7 +91,7 @@
                  FontSize="12"
                  TextWrapping="Wrap"
                  Foreground="{StaticResource StarTextSecondary}"
-                 Text="{Binding Strings[Settings.General.TrayHint]}" />
+                 Text="最小化到系统托盘需要桌面提供 StatusNotifier（KDE 默认支持，GNOME 需装 AppIndicator 扩展）。选「完全退出」时关闭窗口即退出进程。" />
 
       <!-- LunarWard 扩展：XDG autostart（上游 Windows 走注册表 Run 键） -->
       <StackPanel Margin="0,16,0,0" Orientation="Horizontal" Spacing="12">
@@ -99,7 +99,7 @@
                       OffContent=""
                       OnContent="" />
         <TextBlock VerticalAlignment="Center"
-                   Text="{Binding Strings[Settings.General.Autostart]}" />
+                   Text="开机自动启动（最小化到托盘）" />
       </StackPanel>
 
       <TextBlock Margin="0,6,0,0"
@@ -108,13 +108,13 @@
                  FontSize="12"
                  TextWrapping="Wrap"
                  Foreground="{StaticResource StarTextSecondary}"
-                 Text="{Binding Strings[Settings.General.AutostartHint]}" />
+                 Text="写入 $XDG_CONFIG_HOME/autostart/lunarward.desktop（Exec 带 --start-hidden），登录桌面后在托盘里待命。删除该文件等同于关闭此开关。" />
 
       <TextBlock Margin="0,8,0,0"
                  MaxWidth="820"
                  HorizontalAlignment="Left"
                  Classes="description"
-                 Text="{Binding Strings[Settings.General.CloseDesc]}" />
+                 Text="关闭主窗口时的行为：隐藏到托盘会继续在后台计时/跑更新；完全退出会结束进程。" />
 
       <!-- GeneralSetting.xaml:56-59（账号切换；Windows 走注册表，Linux 走 Wine prefix 的 user.reg） -->
       <ToggleSwitch Margin="0,12,0,0"
@@ -128,7 +128,7 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.General.RegistryUnavailable]}" />
+                 Text="账号数据保存在游戏 Wine prefix 的 user.reg 里；切换账号会把选中快照写回该值。开启后，启动器右下角还会出现账号切换条（需先保存过账号）。" />
 
       <!-- GeneralSetting.xaml:62 MenuFlyoutSeparator -->
       <Border Height="1" Margin="0,20,0,0" Background="{StaticResource StarDividerBrush}" />
@@ -145,55 +145,55 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.General.SystemEffectsUnavailable]}" />
+                 Text="Linux 的透明与动画效果由桌面环境 / 合成器控制，没有 Windows「设置」里的系统效果深链。" />
 
       <!-- ── LunarWard 追加：主题（Starward 的「外观」在 AppearanceSettingPage，
               不在通用页；这里放在 Starward 条目之后）──────────────────────────── -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.General.Theme]}" />
+                 Text="主题" />
 
-      <TextBlock Margin="0,12,0,0" Text="{Binding Strings[Settings.General.ThemeValue]}" />
+      <TextBlock Margin="0,12,0,0" Text="暗色（固定）" />
 
       <TextBlock Margin="0,4,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.General.ThemeDesc]}" />
+                 Text="Starward 跟随 Windows 的亮/暗色设置；LunarWard 只使用暗色，与 Starward 的 Fallback 配色一致，不跟随桌面主题。" />
 
       <!-- ── LunarWard 追加：启动时行为 ─────────────────────────────── -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.General.LaunchBehavior]}" />
+                 Text="启动时行为" />
 
-      <TextBlock Margin="0,12,0,0" Text="{Binding Strings[Settings.General.LaunchBehaviorValue]}" />
+      <TextBlock Margin="0,12,0,0" Text="回到上次使用的游戏档案" />
 
       <TextBlock Margin="0,4,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.General.LaunchBehaviorDesc]}" />
+                 Text="对应 config.json 的 launcher.last_profile_index，只读展示。" />
 
       <!-- ── LunarWard 追加：公告卡 + 动态背景（Starward 是「体验」页的开关）── -->
       <ToggleSwitch Margin="0,20,0,0"
                     IsChecked="{Binding Announcements, Mode=TwoWay}"
-                    OffContent="{Binding Strings[Settings.General.Announcements]}"
-                    OnContent="{Binding Strings[Settings.General.Announcements]}" />
+                    OffContent="显示公告卡"
+                    OnContent="显示公告卡" />
 
       <TextBlock Margin="0,4,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.General.AnnouncementsDesc]}" />
+                 Text="启动器页左下角的公告卡（Banner 与活动 / 公告 / 资讯）。" />
 
       <ToggleSwitch Margin="0,12,0,0"
                     IsChecked="{Binding VideoBackground, Mode=TwoWay}"
-                    OffContent="{Binding Strings[Settings.General.VideoBackground]}"
-                    OnContent="{Binding Strings[Settings.General.VideoBackground]}" />
+                    OffContent="动态背景"
+                    OnContent="动态背景" />
 
       <TextBlock Margin="0,4,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.General.VideoBackgroundDesc]}" />
+                 Text="背景目录里的视频优先于静态图；缺少 libvlc 时自动回退静态图。" />
 
       <!-- 如实标注：两个开关已落盘，但启动器页尚未读取 -->
       <Border Classes="infobar warning" Margin="0,12,0,0">
         <TextBlock FontSize="12"
                    TextWrapping="Wrap"
-                   Text="{Binding Strings[Settings.General.PendingEffect]}" />
+                   Text="这两个开关写入 config.json，但启动器页的读取尚未接入，切换后不会立即生效。" />
       </Border>
 
       <TextBlock Margin="0,8,0,0"

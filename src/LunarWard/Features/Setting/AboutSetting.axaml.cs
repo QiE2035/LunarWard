@@ -43,8 +43,6 @@ public sealed partial class AboutSetting : PageBase
         return true;
     }
 
-    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
-
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
     public string? Status
     {
@@ -82,11 +80,11 @@ public sealed partial class AboutSetting : PageBase
             // LunarWard 不收集个人数据，也没有单独的隐私策略 / 赞助页面：
             // 保留 Starward 的链接位但禁用，而不是指向一个不相干的页面。
             new SettingLinkViewModel(Lang.SettingPage_PrivacyPolicy, null,
-                Strings["Settings.About.PrivacyUnavailable"]),
+                "LunarWard 不收集个人数据，也没有单独的隐私策略文档。"),
             new SettingLinkViewModel(Lang.SettingPage_Donate, null,
-                Strings["Settings.About.DonateUnavailable"]),
-            new SettingLinkViewModel(Strings["Settings.About.Upstream"], "https://github.com/Scighost/Starward"),
-            new SettingLinkViewModel(Strings["Settings.About.Docs"], "https://github.com/QiE2035/LunarWard/blob/main/docs/07-UI-REPLICA.md"),
+                "LunarWard 没有赞助页面。"),
+            new SettingLinkViewModel("上游 Starward", "https://github.com/Scighost/Starward"),
+            new SettingLinkViewModel("文档", "https://github.com/QiE2035/LunarWard/blob/main/docs/07-UI-REPLICA.md"),
         ];
         DataContext = this;
     }
@@ -151,7 +149,7 @@ public sealed partial class AboutSetting : PageBase
 
         IsCheckingUpdate = true;
         HasUpdate = false;
-        UpdateMessage = Strings["Settings.About.Checking"];
+        UpdateMessage = "正在检查…";
         try
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
@@ -162,13 +160,13 @@ public sealed partial class AboutSetting : PageBase
                 case ReleaseCheckStatus.UpdateAvailable:
                     HasUpdate = true;
                     _updateUrl = result.HtmlUrl;
-                    UpdateMessage = string.Format(Strings["Settings.About.UpdateAvailable"], result.LatestVersion ?? "");
+                    UpdateMessage = string.Format(Lang.AboutSettingPage_CurrentVersionIsNotTheLatestVersion, result.LatestVersion ?? "");
                     break;
                 case ReleaseCheckStatus.UpToDate:
-                    UpdateMessage = string.Format(Strings["Settings.About.UpToDate"], result.LatestVersion ?? Version);
+                    UpdateMessage = string.Format(Lang.AboutSetting_UpdatedToTheLatestVersion, result.LatestVersion ?? Version);
                     break;
                 default:
-                    UpdateMessage = string.Format(Strings["Settings.About.CheckFailed"], result.Error ?? "");
+                    UpdateMessage = string.Format("检查更新失败：{0}", result.Error ?? "");
                     break;
             }
         }

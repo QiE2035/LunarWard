@@ -1,10 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:loc="using:LunarWard.Localization"
         xmlns:local="using:LunarWard.Features.Screenshot"
+        xmlns:lang="using:LunarWard.Language"
         x:Class="LunarWard.Features.Screenshot.ImageBatchConvertWindow"
         x:CompileBindings="False"
-        Title="{Binding [ImageBatchConvertWindow_ImageBatchConvert], Source={x:Static loc:AppStrings.Instance}}"
+        Title="{x:Static lang:Lang.ImageBatchConvertWindow_ImageBatchConvert}"
         Width="1000"
         Height="600"
         WindowStartupLocation="CenterOwner">
@@ -20,7 +20,7 @@
         <TextBlock Margin="12,0,0,0"
                    VerticalAlignment="Center"
                    Foreground="{DynamicResource StarTextSecondaryBrush}"
-                   Text="{Binding [ImageBatchConvertWindow_ImageBatchConvert], Source={x:Static loc:AppStrings.Instance}}" />
+                   Text="{x:Static lang:Lang.ImageBatchConvertWindow_ImageBatchConvert}" />
 
         <Grid Grid.Row="1" Margin="12,4,12,0">
             <StackPanel VerticalAlignment="Center"
@@ -30,12 +30,12 @@
                 <Button x:Name="Button_Import"
                         VerticalAlignment="Center"
                         Click="Button_Import_Click"
-                        Content="{Binding [GachaImportAndExportWindow_Import], Source={x:Static loc:AppStrings.Instance}}" />
+                        Content="{x:Static lang:Lang.GachaImportAndExportWindow_Import}" />
                 <!--  输出格式  -->
                 <ComboBox x:Name="ComboBox_OutputFormat"
                           MinWidth="100"
                           VerticalAlignment="Center"
-                          PlaceholderText="{Binding [ImageBatchConvertWindow_SelectOutputFormat], Source={x:Static loc:AppStrings.Instance}}">
+                          PlaceholderText="{x:Static lang:Lang.ImageBatchConvertWindow_SelectOutputFormat}">
                     <ComboBoxItem Content="JPEG" />
                     <ComboBoxItem Content="PNG" />
                     <ComboBoxItem Content="AVIF" />
@@ -45,13 +45,13 @@
                 <ComboBox x:Name="ComboBox_OutputFileExists"
                           MinWidth="120"
                           VerticalAlignment="Center"
-                          PlaceholderText="{Binding [ImageBatchConvertWindow_IfOutputFileExists], Source={x:Static loc:AppStrings.Instance}}">
-                    <ComboBoxItem Content="{Binding [ImageBatchConvertWindow_SkipDefault], Source={x:Static loc:AppStrings.Instance}}" />
-                    <ComboBoxItem Content="{Binding [ImageBatchConvertWindow_Overwrite], Source={x:Static loc:AppStrings.Instance}}" />
-                    <ComboBoxItem Content="{Binding [ImageBatchConvertWindow_Rename], Source={x:Static loc:AppStrings.Instance}}" />
+                          PlaceholderText="{x:Static lang:Lang.ImageBatchConvertWindow_IfOutputFileExists}">
+                    <ComboBoxItem Content="{x:Static lang:Lang.ImageBatchConvertWindow_SkipDefault}" />
+                    <ComboBoxItem Content="{x:Static lang:Lang.ImageBatchConvertWindow_Overwrite}" />
+                    <ComboBoxItem Content="{x:Static lang:Lang.ImageBatchConvertWindow_Rename}" />
                 </ComboBox>
                 <!--  质量  -->
-                <TextBlock VerticalAlignment="Center" Text="{Binding [ImageBatchConvertWindow_Quality], Source={x:Static loc:AppStrings.Instance}}" />
+                <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.ImageBatchConvertWindow_Quality}" />
                 <Slider x:Name="Slider_Quality"
                         Width="120"
                         VerticalAlignment="Center"
@@ -69,7 +69,7 @@
                 <Button x:Name="Button_StartConvert"
                         VerticalAlignment="Center"
                         Click="Button_StartConvert_Click"
-                        Content="{Binding [ImageBatchConvertWindow_StartConvert], Source={x:Static loc:AppStrings.Instance}}" />
+                        Content="{x:Static lang:Lang.ImageBatchConvertWindow_StartConvert}" />
                 <ProgressBar Width="24"
                              Height="4"
                              IsIndeterminate="True"
@@ -85,9 +85,9 @@
                         Orientation="Horizontal"
                         Spacing="12">
                 <!--  停止  -->
-                <Button x:Name="Button_Stop" Click="Button_Stop_Click" Content="{Binding [DownloadGamePage_Stop], Source={x:Static loc:AppStrings.Instance}}" />
+                <Button x:Name="Button_Stop" Click="Button_Stop_Click" Content="{x:Static lang:Lang.DownloadGamePage_Stop}" />
                 <!--  清除  -->
-                <Button x:Name="Button_Clear" Click="Button_Clear_Click" Content="{Binding [Common_Clear], Source={x:Static loc:AppStrings.Instance}}" />
+                <Button x:Name="Button_Clear" Click="Button_Clear_Click" Content="{x:Static lang:Lang.Common_Clear}" />
             </StackPanel>
         </Grid>
 
@@ -100,7 +100,7 @@
             </Grid.ColumnDefinitions>
             <Button x:Name="Button_OutputFolder"
                     Click="Button_OutputFolder_Click"
-                    Content="{Binding [ImageBatchConvertWindow_OutputFolder], Source={x:Static loc:AppStrings.Instance}}" />
+                    Content="{x:Static lang:Lang.ImageBatchConvertWindow_OutputFolder}" />
             <TextBlock Grid.Column="1"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource StarTextSecondaryBrush}"

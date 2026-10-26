@@ -12,9 +12,9 @@ using LunarWard.Features.GameLauncher;
 using LunarWard.Features.HoYoPlay;
 using LunarWard.Frameworks;
 using LunarWard.Helpers;
-using LunarWard.Localization;
 using LunarWard.Services;
 using System;
+using LunarWard.Language;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -60,9 +60,6 @@ public partial class ScreenshotPage2 : PageBase
         PropertyChanged?.Invoke(this, new global::System.ComponentModel.PropertyChangedEventArgs(propertyName));
         return true;
     }
-
-
-    public AppStrings Strings => AppStrings.Instance;
 
 
     private readonly HoYoPlayService _hoyoplayService = AppConfig.GetService<HoYoPlayService>();

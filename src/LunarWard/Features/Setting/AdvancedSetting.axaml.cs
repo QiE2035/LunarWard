@@ -38,8 +38,6 @@ public sealed partial class AdvancedSetting : PageBase
         return true;
     }
 
-    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
-
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
     public string? Status
     {
@@ -104,7 +102,7 @@ public sealed partial class AdvancedSetting : PageBase
         var command = LunarWard.Launch.UrlProtocol.TryParse([$"{LunarWard.Launch.UrlProtocol.Scheme}://launch?profile=genshin-cn"], out var error);
         TestResult = command is null
             ? error ?? "未解析"
-            : string.Format(CultureInfo.CurrentCulture, Strings["Settings.Advanced.TestResult"], LunarWard.Launch.UrlProtocol.Describe(command));
+            : string.Format(CultureInfo.CurrentCulture, "解析结果：{0}", LunarWard.Launch.UrlProtocol.Describe(command));
     }
 
 
@@ -116,14 +114,14 @@ public sealed partial class AdvancedSetting : PageBase
             if (entry is null)
             {
                 IsUrlRegistered = false;
-                return Strings["Settings.Advanced.UrlNotRegistered"];
+                return "未注册";
             }
 
             var content = File.ReadAllText(entry);
             IsUrlRegistered = LunarWard.Launch.UrlProtocol.IsDesktopEntryValid(content);
             return IsUrlRegistered
-                ? $"{Strings["Settings.Advanced.UrlRegistered"]} · {entry}"
-                : $"{Strings["Settings.Advanced.UrlNotRegistered"]} · {entry}";
+                ? $"{"已注册"} · {entry}"
+                : $"{"未注册"} · {entry}";
         }
         catch (Exception ex)
         {
@@ -135,7 +133,7 @@ public sealed partial class AdvancedSetting : PageBase
 
     // ── 日志 ──────────────────────────────────────────────────────────
 
-    public string LogLevelValue => Strings["Settings.Advanced.LogLevelValue"];
+    public string LogLevelValue => "Debug（固定）";
 
     public string LogDirectory => Path.GetDirectoryName(AppConfig.LogFile) ?? LunarWard.Platform.XdgPaths.Default.LogDirectory;
 
@@ -144,7 +142,7 @@ public sealed partial class AdvancedSetting : PageBase
     private void OpenLogFolder()
     {
         Status = SettingShellActions.TryOpen(LogDirectory) is { } error
-            ? string.Format(CultureInfo.CurrentCulture, Strings["Settings.Common.OpenFailed"], error)
+            ? string.Format(CultureInfo.CurrentCulture, "打开失败：{0}", error)
             : null;
     }
 
@@ -160,6 +158,6 @@ public sealed partial class AdvancedSetting : PageBase
     {
         Status = await SettingShellActions.TryCopyAsync(SelfCheckCommand).ConfigureAwait(true) is { } error
             ? error
-            : Strings["Settings.Common.Copied"];
+            : Lang.Common_CopiedToClipboard;
     }
 }

@@ -3,7 +3,7 @@ using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Helpers;
-using LunarWard.Localization;
+using LunarWard.Language;
 using LunarWard.Frameworks.Dialogs;
 using System;
 using System.Collections.Generic;
@@ -35,9 +35,6 @@ public partial class ScreenshotFolderManageDialog : StarwardContentDialog
 {
 
 
-    private readonly AppStrings _strings = AppStrings.Instance;
-
-
     public GameId CurrentGameId { get; set; } = null!;
 
 
@@ -60,11 +57,11 @@ public partial class ScreenshotFolderManageDialog : StarwardContentDialog
         InitializeComponent();
 
         ListBox_ScreenshotFolders.ItemsSource = ScreenshotFolders;
-        TextBlock_Hint.Text = _strings["ScreenshotFolderManageDialog_ImagesFromTheFollowingFoldersWillBeDisplayedInTheGallery"];
-        TextBlock_BackingUp.Text = _strings["ScreenshotFolderManageDialog_BackingUp"];
-        Button_AddFolder.Content = _strings["ScreenshotFolderManageDialog_AddFolder"];
-        Button_Save.Content = _strings["Common_Save"];
-        Button_Cancel.Content = _strings["Common_Cancel"];
+        TextBlock_Hint.Text = Lang.ScreenshotFolderManageDialog_ImagesFromTheFollowingFoldersWillBeDisplayedInTheGallery;
+        TextBlock_BackingUp.Text = Lang.ScreenshotFolderManageDialog_BackingUp;
+        Button_AddFolder.Content = Lang.ScreenshotFolderManageDialog_AddFolder;
+        Button_Save.Content = Lang.Common_Save;
+        Button_Cancel.Content = Lang.Common_Cancel;
         Loaded += ScreenshotFolderManageDialog_Loaded;
         Unloaded += ScreenshotFolderManageDialog_Unloaded;
     }
@@ -97,15 +94,15 @@ public partial class ScreenshotFolderManageDialog : StarwardContentDialog
             Button? backup = item.GetVisualDescendants().OfType<Button>().FirstOrDefault(x => x.Name is "Button_BackupFolder");
             if (open is not null)
             {
-                ToolTip.SetTip(open, _strings["Common_Open"]);
+                ToolTip.SetTip(open, Lang.Common_Open);
             }
             if (remove is not null)
             {
-                ToolTip.SetTip(remove, _strings["Common_Remove"]);
+                ToolTip.SetTip(remove, Lang.Common_Remove);
             }
             if (backup is not null)
             {
-                ToolTip.SetTip(backup, _strings["ScreenshotPage_BackupScreenshots"]);
+                ToolTip.SetTip(backup, Lang.ScreenshotPage_BackupScreenshots);
             }
         }
     }
@@ -221,19 +218,19 @@ public partial class ScreenshotFolderManageDialog : StarwardContentDialog
                             });
                             StackPanel_BackingUp.IsVisible = false;
                             TextBlock_BackupResult.IsVisible = true;
-                            TextBlock_BackupResult.Text = string.Format(_strings["ScreenshotPage_BackedUpNewScreenshots"], count);
+                            TextBlock_BackupResult.Text = string.Format(Lang.ScreenshotPage_BackedUpNewScreenshots, count);
                             return;
                         }
                     }
                     TextBlock_BackupResult.IsVisible = true;
-                    TextBlock_BackupResult.Text = _strings["ScreenshotFolderManageDialog_FailedToBackupScreenshots"];
+                    TextBlock_BackupResult.Text = Lang.ScreenshotFolderManageDialog_FailedToBackupScreenshots;
                     return;
                 }
             }
             catch
             {
                 TextBlock_BackupResult.IsVisible = true;
-                TextBlock_BackupResult.Text = _strings["ScreenshotFolderManageDialog_FailedToBackupScreenshots"];
+                TextBlock_BackupResult.Text = Lang.ScreenshotFolderManageDialog_FailedToBackupScreenshots;
             }
             finally
             {

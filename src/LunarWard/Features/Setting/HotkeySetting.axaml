@@ -34,7 +34,7 @@
            Linux 换成同样位置的说明） -->
       <TextBlock Margin="0,12,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.Hotkey.SingleKeyTips]}" />
+                 Text="Linux 没有跨桌面的全局热键注册接口：Starward 用 RegisterHotKey 注册的 F1–F12 单键快捷键在这里不可用（替代做法见本页末尾）。" />
 
       <!-- HotkeySetting.xaml:26-39 「打开主窗口」 -->
       <StackPanel Margin="0,20,0,0" Orientation="Horizontal" Spacing="12">
@@ -69,20 +69,20 @@
       <!-- ── LunarWard 追加：Linux 全局热键说明（Starward 没有这块）──────────── -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.Hotkey.LinuxSection]}" />
+                 Text="Linux 全局热键（LunarWard 追加）" />
 
       <TextBlock Margin="0,12,0,0"
                  MaxWidth="820"
                  HorizontalAlignment="Left"
                  Classes="description"
-                 Text="{Binding Strings[Settings.Hotkey.LinuxWay]}" />
+                 Text="LunarWard 不注册全局热键：请用 .desktop 启动项或合成器（KDE「自定义快捷方式」/ GNOME「自定义快捷键」）绑定命令，详见 docs/USER-GUIDE.md。" />
 
       <!-- 桌面入口文件（等价于 Starward「热键已注册」的信息位） -->
       <Grid Margin="0,12,0,0" ColumnDefinitions="200,*" ColumnSpacing="12">
         <TextBlock Grid.Column="0"
                    MinWidth="200"
                    VerticalAlignment="Center"
-                   Text="{Binding Strings[Settings.Hotkey.DesktopEntry]}" />
+                   Text="桌面入口文件" />
 
         <StackPanel Grid.Column="1" Spacing="6">
           <TextBlock FontFamily="{StaticResource StarMonoFontFamily}"
@@ -94,20 +94,20 @@
           <TextBlock FontSize="12"
                      Foreground="{StaticResource StarTextSecondary}"
                      TextWrapping="Wrap"
-                     Text="{Binding Strings[Settings.Hotkey.DesktopEntryMissing]}"
+                     Text="没有找到已安装的 lunarward.desktop（打包文件在 packaging/lunarward.desktop）"
                      IsVisible="{Binding !HasDesktopEntry}" />
           <Button Height="32"
                   HorizontalAlignment="Left"
                   IsEnabled="{Binding HasDesktopEntry}"
                   Command="{Binding OpenDesktopEntryCommand}"
-                  Content="{Binding Strings[Settings.Hotkey.OpenDesktopEntry]}" />
+                  Content="打开桌面入口文件" />
         </StackPanel>
       </Grid>
 
       <!-- 桌面入口内容（只读展示） -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.Hotkey.DesktopEntryContent]}" />
+                 Text="桌面入口内容（当前打包文件）" />
 
       <Border Classes="card" Margin="0,12,0,0">
         <TextBox IsReadOnly="True"

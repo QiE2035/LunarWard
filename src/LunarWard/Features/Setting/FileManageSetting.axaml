@@ -98,7 +98,7 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Files.ReselectUnavailable]}" />
+                 Text="Linux 上数据目录由 XDG_CONFIG_HOME / XDG_DATA_HOME 决定（默认 ~/.config、~/.local/share），不能从界面改。" />
 
       <!-- FileManageSetting.xaml:72-108 备份数据库 -->
       <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="16">
@@ -109,7 +109,7 @@
                 Classes="accent"
                 Command="{Binding BackupDatabaseCommand}"
                 IsEnabled="{Binding !IsBackingUp}"
-                ToolTip.Tip="{Binding Strings[Settings.Files.BackupDatabaseHint]}">
+                ToolTip.Tip="把本地数据库备份成单个 .db 文件（SQLite VACUUM INTO，WAL 已合并）">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Classes="icon" FontSize="16" Text="&#xF413;" />
             <TextBlock Text="{x:Static lang:Lang.SettingPage_BackupDatabase}" />
@@ -130,7 +130,7 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Files.BackupUnavailable]}" />
+                 Text="备份会把 LunarWardDatabase.db 的一致性快照写到指定位置（抽卡、账号记录、游戏时长、千星奇域都在里面）；不含游戏本体。" />
 
       <!-- FileManageSetting.xaml:111-123 删除所有设置 -->
       <Button Height="40"
@@ -153,7 +153,7 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Files.DeleteAllUnavailable]}" />
+                 Text="不提供一键删除全部设置（误删风险高）；需要时在「目录与文件」里手动清理配置目录。" />
 
       <!-- FileManageSetting.xaml:126-129 -->
       <TextBlock Margin="0,20,0,0"
@@ -237,7 +237,7 @@
               放在 Starward 全部条目之后，不改动原有顺序。────────────────────── -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.Files.SectionPaths]}" />
+                 Text="目录与文件" />
 
       <ItemsControl ItemsSource="{Binding DirectoryRows}" Margin="0,12,0,0">
         <ItemsControl.ItemTemplate>
@@ -250,13 +250,13 @@
                         Width="72"
                         Command="{Binding $parent[UserControl].((local:FileManageSetting)DataContext).OpenPathCommand}"
                         CommandParameter="{Binding Path}"
-                        Content="{Binding $parent[UserControl].((local:FileManageSetting)DataContext).Strings[Settings.Common.Open]}" />
+                        Content="{x:Static lang:Lang.Common_Open}" />
                 <Button Grid.Column="1"
                         Height="32"
                         Width="88"
                         Command="{Binding $parent[UserControl].((local:FileManageSetting)DataContext).CopyPathCommand}"
                         CommandParameter="{Binding Path}"
-                        Content="{Binding $parent[UserControl].((local:FileManageSetting)DataContext).Strings[Settings.Common.CopyPath]}" />
+                        Content="{x:Static lang:Lang.Common_Copy}" />
                 <TextBlock Grid.Column="2"
                            VerticalAlignment="Center"
                            Margin="4,0,0,0"
@@ -282,7 +282,7 @@
               Command="{Binding OpenConfigFolderCommand}">
         <StackPanel Orientation="Horizontal" Spacing="8">
           <TextBlock Classes="icon" FontSize="16" Text="&#xE838;" />
-          <TextBlock Text="{Binding Strings[Settings.Files.OpenConfigDir]}" />
+          <TextBlock Text="打开配置目录" />
         </StackPanel>
       </Button>
 

@@ -42,9 +42,6 @@ public sealed partial class DownloadSetting : PageBase
         return true;
     }
 
-
-    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
-
     /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
     public string? Status
     {
@@ -68,7 +65,7 @@ public sealed partial class DownloadSetting : PageBase
         InitializeComponent();
         ConcurrencyValue = string.Format(
             CultureInfo.CurrentCulture,
-            Strings["Settings.Download.ConcurrencyValue"]);
+            "按 CPU 核心数（Parallel.ForEachAsync 默认）");
 
         RefreshIndexState();
         DataContext = this;
@@ -79,9 +76,9 @@ public sealed partial class DownloadSetting : PageBase
 
     public string ConcurrencyValue { get; }
 
-    public string TimeoutValue => Strings["Settings.Download.TimeoutValue"];
+    public string TimeoutValue => "30 分钟";
 
-    public string RetriesValue => Strings["Settings.Download.RetriesValue"];
+    public string RetriesValue => "HTTP 瞬时错误 3 次 / 安装流程 5 次";
 
     public string ComponentSource => Wine.ComponentInstaller.IndexBaseUrl;
 
@@ -125,7 +122,7 @@ public sealed partial class DownloadSetting : PageBase
             var indexPath = Path.Join(LunarWard.Platform.XdgPaths.Default.ComponentsDirectory, "components.json");
             if (!File.Exists(indexPath))
             {
-                IndexState = Strings["Settings.Download.NeverUpdated"];
+                IndexState = "尚未下载索引";
                 ComponentCount = "";
                 WineGroups.Clear();
                 return;
@@ -135,14 +132,14 @@ public sealed partial class DownloadSetting : PageBase
 
             IndexState = string.Format(
                 CultureInfo.CurrentCulture,
-                Strings["Settings.Download.IndexState"],
+                "本地索引：{0}",
                 stamp.ToString("yyyy-MM-dd HH:mm", CultureInfo.CurrentCulture));
 
             var wineCount = index.Wine.Sum(g => Installer.Repository.ReadGroup("wine", g.Name).Count);
             var dxvkCount = index.Dxvk.Sum(g => Installer.Repository.ReadGroup("dxvk", g.Name).Count);
             ComponentCount = string.Format(
                 CultureInfo.CurrentCulture,
-                Strings["Settings.Download.ComponentCount"],
+                "{0} 个 wine 组件 · {1} 个 dxvk 组件",
                 wineCount,
                 dxvkCount);
 
@@ -179,20 +176,20 @@ public sealed partial class DownloadSetting : PageBase
     private async Task UpdateIndexAsync()
     {
         IsUpdating = true;
-        Status = Strings["Settings.Download.Updating"];
+        Status = "正在更新组件索引…";
         try
         {
-            var progress = new Progress<string>(line => Status = $"{Strings["Settings.Download.Updating"]}  {line}");
+            var progress = new Progress<string>(line => Status = $"{"正在更新组件索引…"}  {line}");
             var result = await Installer.UpdateIndexAsync(progress).ConfigureAwait(true);
             RefreshIndexState();
             Status = result.Success
-                ? string.Format(CultureInfo.CurrentCulture, Strings["Settings.Download.IndexUpdated"], result.UpdatedFiles)
-                : string.Format(CultureInfo.CurrentCulture, Strings["Settings.Download.IndexFailed"],
+                ? string.Format(CultureInfo.CurrentCulture, "索引已更新（{0} 个文件）", result.UpdatedFiles)
+                : string.Format(CultureInfo.CurrentCulture, "索引更新失败：{0}",
                     string.Join("; ", result.Errors));
         }
         catch (Exception ex)
         {
-            Status = string.Format(CultureInfo.CurrentCulture, Strings["Settings.Download.IndexFailed"], ex.Message);
+            Status = string.Format(CultureInfo.CurrentCulture, "索引更新失败：{0}", ex.Message);
         }
         finally
         {

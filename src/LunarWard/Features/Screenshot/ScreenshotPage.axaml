@@ -1,7 +1,7 @@
 <sf:PageBase xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:LunarWard.Features.Screenshot"
-             xmlns:loc="using:LunarWard.Localization"
+        xmlns:lang="using:LunarWard.Language"
              xmlns:sc="using:LunarWard.Controls"
              xmlns:sf="using:LunarWard.Frameworks"
              x:Class="LunarWard.Features.Screenshot.ScreenshotPage"
@@ -60,7 +60,7 @@
       <TextBlock HorizontalAlignment="Center"
                  FontSize="16"
                  Foreground="{DynamicResource StarTextSecondary}"
-                 Text="{Binding [ScreenshotPage_ScreenshotFolderDoesNotExist], Source={x:Static loc:AppStrings.Instance}}" />
+                 Text="{x:Static lang:Lang.ScreenshotPage_ScreenshotFolderDoesNotExist}" />
     </StackPanel>
 
     <ScrollViewer Name="ScrollViewer_Images"
@@ -100,39 +100,39 @@
                                     Header="{Binding FileInfo}"
                                     IsEnabled="False" />
                           <Separator />
-                          <MenuItem Click="MenuFlyoutItem_Open_Click" Header="{Binding [Common_Open], Source={x:Static loc:AppStrings.Instance}}">
+                          <MenuItem Click="MenuFlyoutItem_Open_Click" Header="{x:Static lang:Lang.Common_Open}">
                             <MenuItem.Icon>
                               <TextBlock Classes="icon" Text="&#xE8A7;" />
                             </MenuItem.Icon>
                           </MenuItem>
-                          <MenuItem Click="MenuFlyoutItem_CopyFile_Click" Header="{Binding [ImageViewWindow2_CopyFile], Source={x:Static loc:AppStrings.Instance}}">
+                          <MenuItem Click="MenuFlyoutItem_CopyFile_Click" Header="{x:Static lang:Lang.ImageViewWindow2_CopyFile}">
                             <MenuItem.Icon>
                               <TextBlock Classes="icon" Text="&#xE8C8;" />
                             </MenuItem.Icon>
                           </MenuItem>
-                          <MenuItem Click="MenuFlyoutItem_CopyAsJPG_Click" Header="{Binding [ImageViewWindow2_CopyAsJPG], Source={x:Static loc:AppStrings.Instance}}">
+                          <MenuItem Click="MenuFlyoutItem_CopyAsJPG_Click" Header="{x:Static lang:Lang.ImageViewWindow2_CopyAsJPG}">
                             <MenuItem.Icon>
                               <TextBlock Classes="icon" Text="&#xF413;" />
                             </MenuItem.Icon>
                           </MenuItem>
                           <Separator />
-                          <MenuItem Click="MenuFlyoutItem_OpenInExplorer_Click" Header="{Binding [ImageViewWindow2_OpenInExplorer], Source={x:Static loc:AppStrings.Instance}}">
+                          <MenuItem Click="MenuFlyoutItem_OpenInExplorer_Click" Header="{x:Static lang:Lang.ImageViewWindow2_OpenInExplorer}">
                             <MenuItem.Icon>
                               <TextBlock Classes="icon" Text="&#xEC50;" />
                             </MenuItem.Icon>
                           </MenuItem>
-                          <MenuItem Click="MenuFlyoutItem_OpenWithDefault_Click" Header="{Binding [ImageViewWindow2_OpenWithDefaultApp], Source={x:Static loc:AppStrings.Instance}}">
+                          <MenuItem Click="MenuFlyoutItem_OpenWithDefault_Click" Header="{x:Static lang:Lang.ImageViewWindow2_OpenWithDefaultApp}">
                             <MenuItem.Icon>
                               <TextBlock Classes="icon" Text="&#xE91B;" />
                             </MenuItem.Icon>
                           </MenuItem>
-                          <MenuItem Click="MenuFlyoutItem_OpenWith_Click" Header="{Binding [ImageViewWindow2_OpenWith], Source={x:Static loc:AppStrings.Instance}}">
+                          <MenuItem Click="MenuFlyoutItem_OpenWith_Click" Header="{x:Static lang:Lang.ImageViewWindow2_OpenWith}">
                             <MenuItem.Icon>
                               <TextBlock Classes="icon" Text="&#xE7AC;" />
                             </MenuItem.Icon>
                           </MenuItem>
                           <Separator />
-                          <MenuItem Click="MenuFlyoutItem_Delete_Click" Header="{Binding [Common_Delete], Source={x:Static loc:AppStrings.Instance}}">
+                          <MenuItem Click="MenuFlyoutItem_Delete_Click" Header="{x:Static lang:Lang.Common_Delete}">
                             <MenuItem.Icon>
                               <TextBlock Classes="icon" Text="&#xE74D;" />
                             </MenuItem.Icon>
@@ -168,12 +168,12 @@
                  VerticalAlignment="Center"
                  Foreground="{DynamicResource StarTextSecondary}" />
       <ToggleButton Name="ToggleButton_MultiSelect"
-                    Content="{Binding [ScreenshotPage_MultiSelect], Source={x:Static loc:AppStrings.Instance}}"
+                    Content="{x:Static lang:Lang.ScreenshotPage_MultiSelect}"
                     IsChecked="{Binding MutliSelect, Mode=TwoWay}" />
       <Button Name="Button_BatchConvert"
               Command="{Binding OpenImageBatchConvertWindowCommand}"
-              Content="{Binding [ScreenshotPage_BatchConvert], Source={x:Static loc:AppStrings.Instance}}" />
-      <Button Command="{Binding ManageScreenshotFolderCommand}" Content="{Binding [ScreenshotPage_ManageScreenshotFolders], Source={x:Static loc:AppStrings.Instance}}" />
+              Content="{x:Static lang:Lang.ScreenshotPage_BatchConvert}" />
+      <Button Command="{Binding ManageScreenshotFolderCommand}" Content="{x:Static lang:Lang.ScreenshotPage_ManageScreenshotFolders}" />
     </StackPanel>
 
   </Grid>

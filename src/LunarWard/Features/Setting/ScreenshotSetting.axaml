@@ -106,7 +106,7 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Screenshot.NoChangeFolder]}" />
+                 Text="截图目录由游戏决定（原神 / 绝区零在 &lt;游戏目录&gt;/ScreenShot，星穹铁道在 StarRail_Data/ScreenShots），启动器不能改。" />
 
       <!-- ScreenshotSetting.xaml:77-79 -->
       <TextBlock Margin="0,16,0,0"
@@ -116,7 +116,7 @@
       <!-- ScreenshotSetting.xaml:82-85（Starward 是「单键快捷键需管理员权限」，Linux 换成同样位置的说明） -->
       <TextBlock Margin="0,8,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.Hotkey.SingleKeyTips]}" />
+                 Text="Linux 没有跨桌面的全局热键注册接口：Starward 用 RegisterHotKey 注册的 F1–F12 单键快捷键在这里不可用（替代做法见本页末尾）。" />
 
       <!-- ScreenshotSetting.xaml:88-96 HotkeyInput →
            Starward 的 HotkeyInput.xaml：边框 1、圆角 4、文字「点击设置快捷键」。Linux 没有
@@ -129,7 +129,7 @@
               BorderBrush="{StaticResource StarTextTertiary}"
               BorderThickness="1"
               CornerRadius="4"
-              ToolTip.Tip="{Binding Strings[Settings.Hotkey.HotkeyUnavailable]}">
+              ToolTip.Tip="这个输入框是 Starward 的 HotkeyInput；Linux 没有等价的全局热键，控件保留位置但禁用。">
         <TextBlock HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Margin="12,6"
@@ -155,7 +155,7 @@
                 IsEnabled="False">
           <TextBlock VerticalAlignment="Center"
                      Foreground="{StaticResource StarTextSecondary}"
-                     Text="{Binding Strings[Settings.Screenshot.GameDecides]}" />
+                     Text="由游戏决定（PNG / JPG / WebP）" />
         </Border>
       </StackPanel>
 
@@ -164,7 +164,7 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Screenshot.FormatUnavailable]}" />
+                 Text="Starward 用 WIC 转 AVIF / JPEG XL（PNG/AVIF/JPEG XL × 中/高/无损）；Linux 没有等价的系统转码器，LunarWard 也不改写游戏截图，所以这一段保留位置但不可用。" />
 
       <!-- ScreenshotSetting.xaml:134-137 色彩管理 -->
       <ToggleSwitch Margin="0,4,0,0"
@@ -202,7 +202,7 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Screenshot.CaptureButtonsUnavailable]}" />
+                 Text="Starward 的「测试截图 / 清除缩略图缓存」依赖它自己的截图管线；LunarWard 不接管截图，这两个按钮保留位置并禁用。" />
 
       <!-- ScreenshotSetting.xaml:166-169 截图错误（LunarWard 不采集，永远折叠） -->
       <TextBlock Margin="0,12,0,0"
@@ -219,7 +219,7 @@
       <TextBlock FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Screenshot.FeatureDesc]}" />
+                 Text="Starward 的截图功能截取当前运行的游戏画面，并受窗口最小化/超出屏幕等限制；LunarWard 不截取游戏画面：图片由游戏自己写入，本页只统计数量与占用、打开目录。" />
 
       <!-- ScreenshotSetting.xaml:180-184 -->
       <TextBlock Margin="0,6,0,0"
@@ -232,7 +232,7 @@
                Starward 没有这块；放在全部 Starward 条目之后。──────────────────── -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Screenshot.Directory]}" />
+                 Text="截图目录" />
 
       <TextBlock Margin="0,8,0,0"
                  FontSize="12"

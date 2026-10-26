@@ -56,13 +56,13 @@
                  FontSize="14"
                  Foreground="{StaticResource StarCautionBrush}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Gamepad.Unavailable]}" />
+                 Text="Linux 上没有 GameInput 组件，手柄增强不可用。" />
 
       <TextBlock Margin="0,8,0,0"
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Gamepad.Desc]}" />
+                 Text="Starward 的手柄增强依赖 Windows 的 GameInput / XInput 模拟与全局按键注入；Linux 没有等价且稳定的方案，因此这项不提供控件。" />
 
       <!-- GamepadControlSetting.xaml:70 MenuFlyoutSeparator -->
       <Border Height="1" Margin="0,12,0,12" Background="{StaticResource StarDividerBrush}" />
@@ -180,17 +180,17 @@
               放在全部 Starward 条目之后）──────────────────────────────────────── -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.Gamepad.LinuxSection]}" />
+                 Text="Linux 上的替代方案（LunarWard 追加）" />
 
       <TextBlock Margin="0,8,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.Gamepad.SteamInput]}" />
+                 Text="需要手柄操作时请用 Steam Input（把游戏作为非 Steam 游戏加入 Steam）或桌面合成器自带的手柄映射。" />
 
       <TextBlock Margin="0,4,0,0"
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Gamepad.KeptForParity]}" />
+                 Text="菜单项保留是为了与 Starward 的排版一致：点进来能看到说明，而不是一个不存在的开关。" />
     </StackPanel>
   </ScrollViewer>
 </UserControl>
