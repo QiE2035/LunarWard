@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>LunarWard</RootNamespace>
@@ -52,7 +52,6 @@
     <ProjectReference Include="..\LunarWard.Language\LunarWard.Language.csproj" />
     <ProjectReference Include="..\LunarWard.Platform\LunarWard.Platform.csproj" />
     <ProjectReference Include="..\LunarWard.Wine\LunarWard.Wine.csproj" />
-    <ProjectReference Include="..\LunarWard.Launch\LunarWard.Launch.csproj" />
     <ProjectReference Include="..\LunarWard.Installer\LunarWard.Installer.csproj" />
     <ProjectReference Include="..\LunarWard.RPC\LunarWard.RPC.csproj" />
     <ProjectReference Include="..\LunarWard.Setup.Core\LunarWard.Setup.Core.csproj" />
@@ -60,6 +59,11 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 抽卡 Excel 导出模板：上游需要输出目录下的 Assets/Template；源码随 Launch 折叠放这里，靠 Link 保持输出相对路径 -->
+    <None Update="Launch\Assets\Template\*.xlsx" CopyToOutputDirectory="PreserveNewest" Link="Assets/Template/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

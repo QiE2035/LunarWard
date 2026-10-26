@@ -1,10 +1,9 @@
-<Solution>
+﻿<Solution>
   <Folder Name="/src/">
     <Project Path="src/LunarWard/LunarWard.csproj" />
     <Project Path="src/LunarWard.Core/LunarWard.Core.csproj" />
     <Project Path="src/LunarWard.Language/LunarWard.Language.csproj" />
     <Project Path="src/LunarWard.Installer/LunarWard.Installer.csproj" />
-    <Project Path="src/LunarWard.Launch/LunarWard.Launch.csproj" />
     <Project Path="src/LunarWard.Platform/LunarWard.Platform.csproj" />
     <Project Path="src/LunarWard.RPC/LunarWard.RPC.csproj" />
     <Project Path="src/LunarWard.Setup.Core/LunarWard.Setup.Core.csproj" />

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <RootNamespace>LunarWard.UnitTests</RootNamespace>
@@ -12,7 +12,6 @@
     <ProjectReference Include="..\..\src\LunarWard.Core\LunarWard.Core.csproj" />
     <ProjectReference Include="..\..\src\LunarWard.Platform\LunarWard.Platform.csproj" />
     <ProjectReference Include="..\..\src\LunarWard.Wine\LunarWard.Wine.csproj" />
-    <ProjectReference Include="..\..\src\LunarWard.Launch\LunarWard.Launch.csproj" />
     <ProjectReference Include="..\..\src\LunarWard\LunarWard.csproj" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <RootNamespace>LunarWard.IntegrationTests</RootNamespace>
@@ -11,7 +11,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\LunarWard.Platform\LunarWard.Platform.csproj" />
     <ProjectReference Include="..\..\src\LunarWard.Wine\LunarWard.Wine.csproj" />
-    <ProjectReference Include="..\..\src\LunarWard.Launch\LunarWard.Launch.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="native\fakeproc.c" CopyToOutputDirectory="PreserveNewest" />

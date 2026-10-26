@@ -1,4 +1,5 @@
-using Dapper;
+﻿using Dapper;
+using LunarWard.Features.Database;
 using Microsoft.Data.Sqlite;
 using System.Data;
 
@@ -42,7 +43,7 @@ public sealed class LunarWardDatabase
 
         // 库里有账号 cookie / 抽卡 authkey：建库前收紧目录，建库后收紧主库与侧车文件。
         LimitPermissions();
-        DatabaseService.InitializeDatabase(_connectionString, Path);
+        DatabaseService.InitializeDatabase(_connectionString);
         LimitPermissions();
     }
 

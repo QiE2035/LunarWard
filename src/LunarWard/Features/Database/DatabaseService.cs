@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -62,15 +62,46 @@ internal static class DatabaseService
         lock (_lock)
         {
             using var con = CreateConnection();
-            int version = con.QueryFirstOrDefault<int>("PRAGMA USER_VERSION;");
-            if (version == 0)
-            {
-                con.Execute("PRAGMA JOURNAL_MODE = WAL;");
-            }
-            foreach (var sql in DatabaseSqls.Skip(version))
-            {
-                con.Execute(sql);
-            }
+            InitializeCore(con);
+        }
+    }
+
+
+    /// <summary>
+    /// LunarWard：按任意连接串创建连接。上游只有一个全局库，LunarWard 的
+    /// <see cref="LunarWard.Launch.Database.LunarWardDatabase"/> 实例封装（抓包库等）走这里。
+    /// </summary>
+    internal static SqliteConnection CreateConnection(string connectionString)
+    {
+        var con = new SqliteConnection(connectionString);
+        con.Open();
+        return con;
+    }
+
+
+    /// <summary>
+    /// LunarWard：对指定连接串执行与 <see cref="SetDatabase(string)"/> 相同的建库/升级流程。
+    /// </summary>
+    internal static void InitializeDatabase(string connectionString)
+    {
+        lock (_lock)
+        {
+            using var con = CreateConnection(connectionString);
+            InitializeCore(con);
+        }
+    }
+
+
+    private static void InitializeCore(SqliteConnection con)
+    {
+        int version = con.QueryFirstOrDefault<int>("PRAGMA USER_VERSION;");
+        if (version == 0)
+        {
+            con.Execute("PRAGMA JOURNAL_MODE = WAL;");
+        }
+        foreach (var sql in DatabaseSqls.Skip(version))
+        {
+            con.Execute(sql);
         }
     }
 
