@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl x:Class="LunarWard.Features.GameInstall.PreDownloadButton"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.GameInstall"
+             x:CompileBindings="False">
+
+    <Grid x:Name="Grid_Root"
+          Height="44"
+          Background="Transparent"
+          CornerRadius="16"
+          PointerEntered="Grid_Root_PointerEntered"
+          PointerExited="Grid_Root_PointerExited">
+
+        <Border x:Name="Border_TextShadowTarget" />
+
+        <Button Name="Button_PreDownloadGame"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{Binding PredownloadCommand}"
+                CornerRadius="16"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                IsEnabled="{Binding IsButtonEnabled}"
+                Style="{DynamicResource PredownloadButtonStyle}">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition MinWidth="52" />
+                </Grid.ColumnDefinitions>
+                <!--  Icon: Download / Play / Pause  -->
+                <TextBlock Margin="0,2,0,0"
+                           FontFamily="{DynamicResource SegoeFluentIcons}"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Text="{Binding ButtonIcon}" />
+                <!--  按键文本：预下载 / 等待中 / 已暂停 / 已完成 / 百分比进度  -->
+                <TextBlock Grid.Column="1"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Text="{Binding ButtonText}" />
+            </Grid>
+        </Button>
+
+        <!--  下载进度  -->
+        <Popup x:Name="Popup_DownloadProgress"
+               DesiredPlacement="Top"
+               PlacementTarget="{Binding Grid_Root}">
+            <Border MinWidth="200"
+                    MaxWidth="240"
+                    Padding="20,12,20,12"
+                    Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                    CornerRadius="8">
+                <StackPanel>
+                    <!--  下载状态  -->
+                    <TextBlock FontSize="14"
+                               FontWeight="Bold"
+                               Text="{Binding InstallStateText}" />
+                    <!--  下载进度  -->
+                    <StackPanel Margin="0,8,0,0"
+                                Orientation="Horizontal"
+                                Spacing="8"
+                                IsVisible="{Binding DownloadBytesText, Converter={StaticResource ObjectToVisibilityConverter}}">
+                        <TextBlock Classes="icon" Text="&#xF012;" FontSize="14"
+                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Text="{Binding DownloadBytesText}" />
+                    </StackPanel>
+                    <!--  速度  -->
+                    <StackPanel Margin="0,4,0,0"
+                                Orientation="Horizontal"
+                                Spacing="8"
+                                IsVisible="{Binding DownloadSpeedText, Converter={StaticResource ObjectToVisibilityConverter}}">
+                        <TextBlock Classes="icon" Text="&#xEC4A;" FontSize="14"
+                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Text="{Binding DownloadSpeedText}" />
+                    </StackPanel>
+                    <!--  剩余时间  -->
+                    <StackPanel Margin="0,4,0,0"
+                                Orientation="Horizontal"
+                                Spacing="8"
+                                IsVisible="{Binding RemainTimeText, Converter={StaticResource ObjectToVisibilityConverter}}">
+                        <TextBlock Classes="icon" Text="&#xE917;" FontSize="14"
+                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Text="{Binding RemainTimeText}" />
+                    </StackPanel>
+                    <!--  错误信息  -->
+                    <TextBlock Margin="0,8,0,0"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               MaxLines="3"
+                               Text="{Binding ErrorMessage}"
+                               TextWrapping="Wrap"
+                               IsVisible="{Binding ErrorMessage, Converter={StaticResource ObjectToVisibilityConverter}}" />
+
+                </StackPanel>
+            </Border>
+
+        </Popup>
+
+    </Grid>
+
+</UserControl>

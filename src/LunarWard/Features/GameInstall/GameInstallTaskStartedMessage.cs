@@ -1,4 +1,4 @@
-using LunarWard.Installer;
+using LunarWard.RPC.GameInstall;
 
 namespace LunarWard.Features.GameInstall;
 

@@ -12,7 +12,7 @@ using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Features.Background;
 using LunarWard.Features.GameInstall;
-using LunarWard.Features.GameInstall;
+using LunarWard.RPC.GameInstall;
 using LunarWard.Features.HoYoPlay;
 using LunarWard.Features.ViewHost;
 using LunarWard.Frameworks;
