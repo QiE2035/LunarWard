@@ -743,3 +743,46 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 | `Services/WineRegistry` | 上游无对应（Windows `Registry.GetValue`） | 新增 `ReadStringAsync`（REG_SZ）+ 纯函数 `ParseString`（值名可带引号、数据可含空格、本地化「值未设置」→ `null`）；未改 DWORD/BINARY 路径与既有签名 | HYP `GameInstallPath` 是 REG_SZ，原有 API 只有 DWORD/BINARY | — |
 | `Features/GameLauncher/GameLauncherPage` 拖放换背景 | `e.DataView.Contains(StandardDataFormats.StorageItems)` + `GetDeferral()` + `DataView.GetStorageItemsAsync()` + `StorageFile` | `e.Data.Contains(DataFormats.Files)` + `e.Data.GetFiles()` + `IStorageFile`（Avalonia 无 deferral） | Avalonia 拖放 API 不同 | — |
 | `Features/GameLauncher/GameLauncherPage` 复制/保存背景 | `ClipboardHelper.SetStorageItems(DataPackageOperation.Copy, StorageFile)`；`Launcher.LaunchFolderAsync(FolderLauncherOptions{ ItemsToSelect })` | `TopLevel.Clipboard.SetFilesAsync([IStorageFile])`；保存后 `TopLevel.Launcher.LaunchDirectoryInfoAsync(所在目录)`（Linux 无「在文件管理器中选中」语义） | WinUI 专有 API | 如需「选中」语义，等 Avalonia 提供 `reveal` API |
+
+---
+
+## 二十一、Features/ViewHost（窗口外壳：MainWindow / MainView / 等价控件，2026-10-26，Lead）
+
+上游 `Features/ViewHost` 共 20 个文件，本仓库全部落位（`src/LunarWard/Features/ViewHost/`），本节记录其中的平台替换点。
+本章追加在文末：docs/09 的章节编号在前几轮并行开发中出现过「十一/十二」重复，收尾阶段统一重排（见 docs/10 §7 endgame 第 8 步）。
+
+### 21.1 三个等价控件（`src/LunarWard/Frameworks/`）
+
+| 上游（WinUI） | 本仓库 | 说明 |
+| --- | --- | --- |
+| `Microsoft.UI.Xaml.Controls.Frame` | `Frameworks/Frame.cs` | 只保留 `Navigate(Type, object?, NavigationTransitionInfo?)` + `SourcePageType`；**不写 `DataContext`**（本仓库页面在构造函数里 `DataContext = this`，写了会覆盖绑定），参数通过 `PageBase.OnNavigatedTo(object?)` 传递，语义与上游一致（GameId / GameBiz） |
+| `NavigationView` | `Frameworks/NavigationView.cs` | 只实现上游用到的部分：`LeftCompact` 折叠栏、`MenuItems`（`NavigationViewItem` / `NavigationViewItemSeparator`）、`PaneCustomContent`、`SelectedItem`、`ItemInvoked`；栏宽 `CompactPaneLength`，条目 40×40 图标 + ToolTip。**未实现**：BackButton、PaneToggleButton、展开态、顶部模式（本项目不使用） |
+| `FontIcon` | `Frameworks/FontIcon.cs` | 字体图标即「图标字体的 TextBlock」；`Glyph` 写法与上游一致，字体取 `StarIconFontFamily`（`Assets/Font/Segoe Fluent Icons.ttf`） |
+| `NavigationTransitionInfo` / `SuppressNavigationTransitionInfo` | 同 `Frameworks/Frame.cs` | 仅保留类型以便上游代码原样编译；Avalonia 侧不做导航动画 |
+
+### 21.2 MainView（`Features/ViewHost/MainView.axaml(.cs)`）
+
+- `{ThemeResource CustomAcrylicBrush}` → `{StaticResource StarAcrylicBrush}`；`Border.OpacityTransition` → `Transitions/DoubleTransition`。
+- 上游 `[INotifyPropertyChanged]` **不能**用在 `UserControl`（AvaloniaObject）派生类上（MVVMTK0001），改为手写 `INotifyPropertyChanged` + `OnPropertyChanged`；`CurrentGameFeatureConfig` 因上游类型是 `internal`，属性也改 `internal`（同程序集可见，XAML 不绑定它）。
+- `XamlRoot.GetWindowHandle()` → `Helpers/XamlRootExtension` 的 `FindTopLevel()` + `TryGetPlatformHandle()`。
+- `DispatcherQueue` → `Dispatcher.UIThread`；`Visibility` → `IsVisible`；`ToolTipService.SetToolTip` → `ToolTip.SetTip`。
+- `MainView_Frame.SourcePageType` 由 `Frameworks.Frame` 提供（与上游同名）。
+
+### 21.3 MainWindow（`Features/ViewHost/MainWindow.axaml(.cs)`）
+
+| 上游 | 本仓库 | 说明 |
+| --- | --- | --- |
+| `AppWindow.TitleBar.*` / `OverlappedPresenter(IsMaximizable=false, IsResizable=false)` | `WindowEx`（`AdaptTitleBarButtonColorToActuallTheme` / `CanResize=false`） | 无 Win32 标题栏 API，尺寸/装饰由 Avalonia 窗口承担 |
+| `WindowSubclassProc`（`WM_HOTKEY` 44444/44445、`WM_WTSSESSION_CHANGE`、`WM_DEVICECHANGE`） | **不移植** | X11 没有等价的窗口子类化钩子；全局热键在 Linux 返回不支持（`HotkeyManager`），锁屏/设备插拔消息保留类型但无发送源。`RunningGameService.OpenOverlayWindow()` 与 `ScreenCaptureService.Capture()` 的调用入口留在注释里，等 Overlay/截图热键有 Linux 后端再接 |
+| `WTSRegisterSessionNotification` | 删除 | 仅 Windows 桌面会话 |
+| `AppWindow.Closing` + `ContentDialog` | `Closing` + `DialogService.ShowAsync(MainWindowCloseDialog)` | `ContentDialogResult` → `PrimaryButtonClicked` 事件 + `confirmed` 布尔；`DefaultButton` 无等价物（StarwardContentDialog 固定样式） |
+| `App.Current.EnsureSystemTray()` | `App.EnsureSystemTray()`（新建 `SystemTrayWindow`） | 旧 `Services/TrayService` 与新的 `TrayIcon` 并存，endgame 删除旧者 |
+| `App.Current.Exit()` | `IClassicDesktopStyleApplicationLifetime.Shutdown()` | 退出前仍执行 `DatabaseService.AutoBackupToAppDataLocal`（最多等 30s） |
+| `User32.SetCursorPos`（`ShowByGamepad` 把光标移到窗口中心） | **不移植** | Avalonia 无跨平台光标定位 API；只做 `Activate()` |
+| `RequestedTheme` 抖动刷新强调色 | `Application.Current.RequestedThemeVariant` 抖动 | 与上游同一思路（强制重新解析主题资源） |
+
+### 21.4 运行验收（待树绿）
+
+- `Features/ViewHost` 全目录编译 0 error（含 `MainWindow` / `MainView` / 三个 Frameworks 等价件）。
+- **未做**：真机启动 `MainWindow` 的视觉验收（新外壳尚未接入 `Program.cs` 启动路径，见 docs/10 §7 第 5 步）；`--screenshot` 自检路由仍走旧 `Views/Starward` 页面。
+- 已知阻塞：`MainView.NavigateTo` 里 `GameSettingPage` 仍是旧 `Views/Starward/StarwardPage` 基类（`PageContext` 构造），`Frameworks.Frame` 只处理 `PageBase`；task-11 切壳后统一。
