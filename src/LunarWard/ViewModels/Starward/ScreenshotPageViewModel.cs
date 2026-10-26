@@ -30,7 +30,7 @@ namespace LunarWard.ViewModels.Starward;
 /// </remarks>
 public sealed partial class ScreenshotPageViewModel : StarwardPageViewModel
 {
-    /// <summary>页面内操作反馈（导出/复制）停留时间；同时会用外壳的 <see cref="Services.InAppToast"/> 弹一条。</summary>
+    /// <summary>页面内操作反馈（导出/复制）停留时间；同时会用外壳的 <see cref="Services.ToastService"/> 弹一条。</summary>
     private static readonly TimeSpan FeedbackDuration = TimeSpan.FromSeconds(3.5);
 
 
@@ -351,7 +351,7 @@ public sealed partial class ScreenshotPageViewModel : StarwardPageViewModel
         ErrorText = null;
         ActionText = message;
         RestartFeedbackTimer();
-        LunarWard.Services.InAppToast.Success(Strings["Screenshot.Title"], message);
+        LunarWard.Services.ToastService.Success(Strings["Screenshot.Title"], message);
     }
 
 

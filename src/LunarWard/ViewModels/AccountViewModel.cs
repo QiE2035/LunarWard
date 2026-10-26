@@ -146,7 +146,7 @@ public sealed partial class AccountViewModel : ObservableObject
         Reload();
         StatusText = $"已保存账号 {snapshot.Name}";
         ErrorText = null;
-        Services.InAppToast.Success("已保存账号", snapshot.Name);
+        Services.ToastService.Success("已保存账号", snapshot.Name);
     }
 
 
@@ -174,7 +174,7 @@ public sealed partial class AccountViewModel : ObservableObject
 
         StatusText = $"已切换到 {Selected.Name}";
         ErrorText = null;
-        Services.InAppToast.Success("已切换账号", Selected.Name);
+        Services.ToastService.Success("已切换账号", Selected.Name);
         RefreshCurrent();
     }
 
