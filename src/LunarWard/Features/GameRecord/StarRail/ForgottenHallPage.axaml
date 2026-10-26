@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.StarRail.ForgottenHallPage"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:hall="clr-namespace:LunarWard.Core.GameRecord.StarRail.ForgottenHall"
              xmlns:lang="clr-namespace:LunarWard.Language"
@@ -13,10 +15,8 @@
              xmlns:sfgr="clr-namespace:LunarWard.Features.GameRecord">
 
     <UserControl.Resources>
-        <BitmapImage x:Key="StarIcon" Source="ms-appx:///Assets/Image/IconChallengeStarYellow.png" />
-        <BitmapImage x:Key="StarwardModeStarIcon" Source="ms-appx:///Assets/Image/IconChallengeStarStarward.png" />
-        <BitmapImage x:Key="StarwardModeNodeBg" Source="ms-appx:///Assets/Image/StarwardModeNodeBg.png" />
-        <BitmapImage x:Key="StarwardModeCrown" Source="ms-appx:///Assets/Image/StarwardModeCrown.png" />
+        <grconv:RangeConverter x:Key="RangeConverter" />
+        <grconv:RankToVisibilityConverter x:Key="RankToVisibilityConverter" />
         <sfg:RarityToSRBgConverter x:Key="RarityToSRBgConverter" />
     </UserControl.Resources>
 
@@ -43,7 +43,7 @@
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
                        Foreground="{DynamicResource StarTextSecondary}"
-                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+                       Text="{x:Static lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
         <StackPanel Margin="0,24,0,0"
@@ -58,19 +58,18 @@
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0"
-                    Translation="0,0,16"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE9D9;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Summary}" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -82,7 +81,7 @@
                   ItemsSource="{Binding ForgottenHallList}"
                   SelectionChanged="ListView_ForgottenHall_SelectionChanged"
                   SelectionMode="Single"
-                  IsVisible="{Binding ForgottenHallList, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                  IsVisible="{Binding ForgottenHallList, Converter={StaticResource ObjectToVisibilityConverter}}">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="Margin" Value="0,4,0,4" />
@@ -107,7 +106,7 @@
                             <Image Width="20"
                                    Height="20"
                                    VerticalAlignment="Center"
-                                   Source="{StaticResource StarIcon}" />
+                                   Source="avares://LunarWard/Assets/Image/IconChallengeStarYellow.png" />
                             <TextBlock VerticalAlignment="Center"
                                        Foreground="{DynamicResource StarTextSecondary}"
                                        Text="{Binding StarNum}" />
@@ -117,12 +116,12 @@
                                     VerticalAlignment="Center"
                                     Background="{DynamicResource StarTextSecondary}"
                                     Opacity="0.25"
-                                    IsVisible="{Binding ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
+                                    IsVisible="{Binding ExtraStarNum, Converter={StaticResource Int32NotZeroToVisibilityConverter}}" />
                             <Image Width="20"
                                    Height="20"
                                    VerticalAlignment="Center"
-                                   Source="{StaticResource StarwardModeStarIcon}"
-                                   IsVisible="{Binding ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
+                                   Source="avares://LunarWard/Assets/Image/IconChallengeStarStarward.png"
+                                   IsVisible="{Binding ExtraStarNum, Converter={StaticResource Int32NotZeroToVisibilityConverter}}" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
@@ -133,13 +132,13 @@
 
         <ScrollViewer Grid.RowSpan="2"
                       Grid.Column="1"
-                      IsVisible="{Binding CurrentForgottenHall, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                      IsVisible="{Binding CurrentForgottenHall, Converter={StaticResource ObjectToVisibilityConverter}}">
             <StackPanel Margin="24" Spacing="8">
 
                 <Grid>
                     <!--  统计周期  -->
                     <TextBlock Foreground="{DynamicResource StarTextSecondary}">
-                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="{x:Static lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentForgottenHall.BeginTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
                         <Run Text=" - " />
@@ -149,8 +148,7 @@
                 </Grid>
 
                 <!--  出战统计  -->
-                <Grid Margin="0,-4,0,0"
-                      Translation="0,0,16">
+                <Grid Margin="0,-4,0,0" RenderTransform="translate(0,0)">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -168,7 +166,7 @@
                         <Image Width="24"
                                Height="24"
                                VerticalAlignment="Center"
-                               Source="{StaticResource StarIcon}" />
+                               Source="avares://LunarWard/Assets/Image/IconChallengeStarYellow.png" />
                         <TextBlock VerticalAlignment="Center"
                                    FontSize="16"
                                    Text="{Binding CurrentForgottenHall.StarNum}" />
@@ -178,12 +176,12 @@
                                 VerticalAlignment="Center"
                                 Background="{DynamicResource StarTextSecondary}"
                                 Opacity="0.25"
-                                IsVisible="{Binding CurrentForgottenHall.ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
+                                IsVisible="{Binding CurrentForgottenHall.ExtraStarNum, Converter={StaticResource Int32NotZeroToVisibilityConverter}}" />
                         <Image Width="24"
                                Height="24"
                                VerticalAlignment="Center"
-                               Source="{StaticResource StarwardModeStarIcon}"
-                               IsVisible="{Binding CurrentForgottenHall.ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
+                               Source="avares://LunarWard/Assets/Image/IconChallengeStarStarward.png"
+                               IsVisible="{Binding CurrentForgottenHall.ExtraStarNum, Converter={StaticResource Int32NotZeroToVisibilityConverter}}" />
                     </StackPanel>
                     <!--  最高关卡  -->
                     <TextBlock  x:Name="TextBlock_Deepest"
@@ -192,7 +190,7 @@
                                VerticalAlignment="Center"
                                IsTextTrimmedChanged="TextBlock_Deepest_IsTextTrimmedChanged"
                                TextTrimming="CharacterEllipsis">
-                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ForgottenHallPage_FarthestStage}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ForgottenHallPage_FarthestStage}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentForgottenHall.MaxFloor}" />
                     </TextBlock>
@@ -201,7 +199,7 @@
                                Grid.Column="2"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ForgottenHallPage_TimesChallenged}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ForgottenHallPage_TimesChallenged}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentForgottenHall.BattleNum}" />
                     </TextBlock>
@@ -215,15 +213,14 @@
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel HorizontalSpacing="12"
-                                          VerticalSpacing="12" />
+                                          Spacing="12" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="hall:ForgottenHallFloorDetail">
                             <StackPanel Width="388"
                                         Background="{DynamicResource StarOverlayAcrylicBrush}"
-                                        CornerRadius="8,28,8,8"
-                                        Translation="0,0,16">
+                                        CornerRadius="8,28,8,8" RenderTransform="translate(0,0)">
 
                                 <!--  title & Node1 & Node2  -->
                                 <Grid Height="300">
@@ -249,7 +246,7 @@
                                                    Text="{Binding Name}"
                                                    TextTrimming="CharacterEllipsis" />
                                         <TextBlock FontSize="12" Foreground="{DynamicResource StarTextSecondary}">
-                                            <Run Text="{Binding lang:Lang.ForgottenHallPage_CyclesUsed}" />
+                                            <Run Text="{x:Static lang:Lang.ForgottenHallPage_CyclesUsed}" />
                                             <Run Text="{Binding RoundNum}" />
                                         </TextBlock>
                                     </StackPanel>
@@ -261,7 +258,7 @@
                                         <StackPanel HorizontalAlignment="Right"
                                                     Orientation="Horizontal"
                                                     Spacing="2">
-                                            <ItemsControl ItemsSource="{Binding linq:Enumerable.Range(0, NormalStarNum)}">
+                                            <ItemsControl ItemsSource="{Binding NormalStarNum, Converter={StaticResource RangeConverter}}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <StackPanel Orientation="Horizontal" />
@@ -272,7 +269,7 @@
                                                         <Image Width="24"
                                                                Height="24"
                                                                VerticalAlignment="Center"
-                                                               Source="{StaticResource StarIcon}" />
+                                                               Source="avares://LunarWard/Assets/Image/IconChallengeStarYellow.png" />
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
@@ -287,7 +284,7 @@
                                                     />
                                             <!--  额外星星  -->
                                             <ItemsControl x:Name="ExtraStarsControl"
-                                                          ItemsSource="{Binding linq:Enumerable.Range(0, ExtraStarNum)}"
+                                                          ItemsSource="{Binding ExtraStarNum, Converter={StaticResource RangeConverter}}"
                                                          >
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
@@ -299,7 +296,7 @@
                                                         <Image Width="24"
                                                                Height="24"
                                                                VerticalAlignment="Center"
-                                                               Source="{StaticResource StarwardModeStarIcon}" />
+                                                               Source="avares://LunarWard/Assets/Image/IconChallengeStarStarward.png" />
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
@@ -311,8 +308,8 @@
                                                Grid.ColumnSpan="2"
                                                Margin="0,8,0,0"
                                                FontSize="12"
-                                               IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
-                                        <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
+                                               IsVisible="{Binding IsFast, Converter={StaticResource BoolToVisibilityReversedConverter}}">
+                                        <Run Text="{x:Static lang:Lang.ForgottenHallPage_TeamSetup}" />
                                         <Run Text="1" />
                                         <Run Text="" />
                                         <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding Node1.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
@@ -322,7 +319,7 @@
                                                   Grid.ColumnSpan="2"
                                                   HorizontalAlignment="Center"
                                                   ItemsSource="{Binding Node1.Avatars}"
-                                                  IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                                  IsVisible="{Binding IsFast, Converter={StaticResource BoolToVisibilityReversedConverter}}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <StackPanel Orientation="Horizontal" Spacing="12" />
@@ -340,11 +337,10 @@
                                                             VerticalAlignment="Top"
                                                             Background="#A0000000"
                                                             CornerRadius="0,12,0,8"
-                                                            IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                            IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                   IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>
                                                     <Border Height="16"
@@ -366,8 +362,8 @@
                                     <TextBlock Grid.Row="3"
                                                Grid.ColumnSpan="2"
                                                FontSize="12"
-                                               IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
-                                        <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
+                                               IsVisible="{Binding IsFast, Converter={StaticResource BoolToVisibilityReversedConverter}}">
+                                        <Run Text="{x:Static lang:Lang.ForgottenHallPage_TeamSetup}" />
                                         <Run Text="2" />
                                         <Run Text="" />
                                         <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding Node2.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
@@ -378,7 +374,7 @@
                                                   Margin="0,0,0,4"
                                                   HorizontalAlignment="Center"
                                                   ItemsSource="{Binding Node2.Avatars}"
-                                                  IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                                  IsVisible="{Binding IsFast, Converter={StaticResource BoolToVisibilityReversedConverter}}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <StackPanel Orientation="Horizontal" Spacing="12" />
@@ -396,11 +392,10 @@
                                                             VerticalAlignment="Top"
                                                             Background="#A0000000"
                                                             CornerRadius="0,12,0,8"
-                                                            IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                            IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                   IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>
                                                     <Border Height="16"
@@ -425,11 +420,11 @@
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
                                                 Spacing="8"
-                                                IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityConverter}}">
+                                                IsVisible="{Binding IsFast, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <Image Width="120" Source="ms-appx:///Assets/Image/20004.png" />
                                         <TextBlock HorizontalAlignment="Center"
                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                   Text="{Binding lang:Lang.ForgottenHallPage_QuickCleared}" />
+                                                   Text="{x:Static lang:Lang.ForgottenHallPage_QuickCleared}" />
                                     </StackPanel>
 
                                 </Grid>
@@ -454,16 +449,16 @@
                                            Margin="0,3,0,-1"
                                            Stretch="Fill"
                                            VerticalAlignment="Top"
-                                           Source="{StaticResource StarwardModeNodeBg}" />
+                                           Source="avares://LunarWard/Assets/Image/StarwardModeNodeBg.png" />
                                     <StackPanel Grid.Row="0"
                                                 Orientation="Horizontal">
                                         <Image MaxHeight="14"
                                            Margin="4,3,0,0"
-                                           Source="{StaticResource StarwardModeCrown}" />
+                                           Source="avares://LunarWard/Assets/Image/StarwardModeCrown.png" />
                                         <TextBlock FontSize="12"
                                                    VerticalAlignment="Center"
                                                    Margin="6,3,0,0">
-                                            <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
+                                            <Run Text="{x:Static lang:Lang.ForgottenHallPage_TeamSetup}" />
                                             <Run Text="3" />
                                             <Run Text="" />
                                             <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding Node3.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
@@ -492,11 +487,10 @@
                                                             VerticalAlignment="Top"
                                                             Background="#A0000000"
                                                             CornerRadius="0,12,0,8"
-                                                            IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                            IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                   IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>
                                                     <Border Height="16"

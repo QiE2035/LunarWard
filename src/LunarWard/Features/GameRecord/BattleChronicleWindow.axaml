@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sf:WindowEx x:Class="LunarWard.Features.GameRecord.BattleChronicleWindow"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord"
@@ -17,7 +18,6 @@
         <TextBlock Margin="24,0,144,0"
                    VerticalAlignment="Center"
                    FontSize="14"
-                   IsTextScaleFactorEnabled="False"
                    Text="{Binding bbsWebBridge.DocumentTitle}"
                    TextTrimming="CharacterEllipsis" />
 

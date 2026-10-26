@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.Genshin.SpiralAbyssPage"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:abyss="clr-namespace:LunarWard.Core.GameRecord.Genshin.SpiralAbyss"
              xmlns:lang="clr-namespace:LunarWard.Language"
@@ -12,7 +14,8 @@
              xmlns:sfg="clr-namespace:LunarWard.Features.Gacha">
 
     <UserControl.Resources>
-        <BitmapImage x:Key="AbyssIcon" Source="ms-appx:///Assets/Image/UI_Icon_Tower_Star.png" />
+        <grconv:RangeConverter x:Key="RangeConverter" />
+        <grconv:RankToVisibilityConverter x:Key="RankToVisibilityConverter" />
         <local:SpiralAbyssBattleAvatarsSelectConverter x:Key="SpiralAbyssBattleAvatarsSelectConverter" />
         <sfg:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />
     </UserControl.Resources>
@@ -41,7 +44,7 @@
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
                        Foreground="{DynamicResource StarTextSecondary}"
-                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+                       Text="{x:Static lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
         <StackPanel Margin="0,24,0,0"
@@ -56,19 +59,18 @@
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0"
-                    Translation="0,0,16"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE9D9;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Summary}" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -101,7 +103,7 @@
                                Width="20"
                                Height="20"
                                HorizontalAlignment="Left"
-                               Source="{StaticResource AbyssIcon}" />
+                               Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star.png" />
                         <TextBlock Grid.Row="1"
                                    Margin="24,0,0,2"
                                    VerticalAlignment="Center"
@@ -116,12 +118,12 @@
 
         <ScrollViewer Grid.RowSpan="2"
                       Grid.Column="1"
-                      IsVisible="{Binding CurrentAbyss, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                      IsVisible="{Binding CurrentAbyss, Converter={StaticResource ObjectToVisibilityConverter}}">
             <StackPanel Margin="24" Spacing="8">
                 <Grid>
                     <!--  统计周期  -->
                     <TextBlock Foreground="{DynamicResource StarTextSecondary}">
-                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="{x:Static lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentAbyss.StartTime.LocalDateTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
                         <Run Text=" - " />
@@ -129,8 +131,7 @@
                     </TextBlock>
                 </Grid>
                 <!--  出战统计  -->
-                <Grid Margin="0,-4,0,0"
-                      Translation="0,0,16">
+                <Grid Margin="0,-4,0,0" RenderTransform="translate(0,0)">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition />
@@ -143,7 +144,7 @@
                         <Image Width="24"
                                Height="24"
                                VerticalAlignment="Center"
-                               Source="{StaticResource AbyssIcon}" />
+                               Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star.png" />
                         <TextBlock VerticalAlignment="Center"
                                    FontSize="16"
                                    Text="{Binding CurrentAbyss.TotalStar}" />
@@ -153,7 +154,7 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                FontSize="16">
-                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_DeepestDescent}" />
+                        <Run Text="{x:Static lang:Lang.SpiralAbyssPage_DeepestDescent}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentAbyss.MaxFloor}" />
                     </TextBlock>
@@ -162,7 +163,7 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                FontSize="16">
-                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_BattlesFought}" />
+                        <Run Text="{x:Static lang:Lang.SpiralAbyssPage_BattlesFought}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentAbyss.TotalBattleCount}" />
                     </TextBlock>
@@ -172,10 +173,9 @@
                 <TextBlock Margin="0,8,0,0"
                            FontSize="16"
                            Foreground="{DynamicResource StarTextSecondary}"
-                           Text="{Binding lang:Lang.SpiralAbyssPage_Picked}"
+                           Text="{x:Static lang:Lang.SpiralAbyssPage_Picked}"
                            IsVisible="{Binding HasData}" />
-                <Grid
-                      Translation="0,0,16"
+                <Grid RenderTransform="translate(0,0)"
                       IsVisible="{Binding HasData}">
                     <ItemsControl HorizontalAlignment="Center"
                                   VerticalAlignment="Center"
@@ -220,7 +220,7 @@
                                                FontWeight="SemiBold"
                                                Foreground="#84603D">
                                         <Run Text="{Binding Value}" />
-                                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_Times}" />
+                                        <Run Text="{x:Static lang:Lang.SpiralAbyssPage_Times}" />
                                     </TextBlock>
                                 </Grid>
                             </DataTemplate>
@@ -232,10 +232,9 @@
                 <TextBlock Margin="0,8,0,0"
                            FontSize="16"
                            Foreground="{DynamicResource StarTextSecondary}"
-                           Text="{Binding lang:Lang.SpiralAbyssPage_CombatStats}"
+                           Text="{x:Static lang:Lang.SpiralAbyssPage_CombatStats}"
                            IsVisible="{Binding HasData}" />
-                <Grid
-                      Translation="0,0,16"
+                <Grid RenderTransform="translate(0,0)"
                       IsVisible="{Binding HasData}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -260,23 +259,23 @@
                     <!--  最多击破数  -->
                     <TextBlock Grid.Row="0"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.SpiralAbyssPage_MostDefeats}" />
+                               Text="{x:Static lang:Lang.SpiralAbyssPage_MostDefeats}" />
                     <!--  最强一击  -->
                     <TextBlock Grid.Row="1"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.SpiralAbyssPage_StrongestSingleStrike}" />
+                               Text="{x:Static lang:Lang.SpiralAbyssPage_StrongestSingleStrike}" />
                     <!--  承受最多伤害  -->
                     <TextBlock Grid.Row="2"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.SpiralAbyssPage_MostDamageTaken}" />
+                               Text="{x:Static lang:Lang.SpiralAbyssPage_MostDamageTaken}" />
                     <!--  元素战技施放数  -->
                     <TextBlock Grid.Row="3"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.SpiralAbyssPage_ElementalSkillsUnleashed}" />
+                               Text="{x:Static lang:Lang.SpiralAbyssPage_ElementalSkillsUnleashed}" />
                     <!--  元素爆发次数  -->
                     <TextBlock Grid.Row="4"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.SpiralAbyssPage_ElementalBrustsUnleashed}" />
+                               Text="{x:Static lang:Lang.SpiralAbyssPage_ElementalBrustsUnleashed}" />
 
                     <sc:CachedImage Grid.Row="0"
                                     Grid.Column="1"
@@ -345,8 +344,7 @@
                     
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="abyss:SpiralAbyssFloor">
-                            <Grid
-                                  Translation="0,0,16">
+                            <Grid RenderTransform="translate(0,0)">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="28" />
                                     <RowDefinition />
@@ -360,7 +358,7 @@
                                             Spacing="8">
                                     <Image Width="24"
                                            Height="24"
-                                           Source="{StaticResource AbyssIcon}" />
+                                           Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star.png" />
                                     <TextBlock Margin="0,0,0,2"
                                                VerticalAlignment="Center"
                                                FontSize="16">
@@ -383,7 +381,7 @@
                                                         <ColumnDefinition Width="Auto" />
                                                         <ColumnDefinition />
                                                     </Grid.ColumnDefinitions>
-                                                    <MenuFlyoutSeparator Grid.ColumnSpan="3" Margin="0,8,0,8" />
+                                                    <Separator/>
                                                     <!--  顶部  -->
                                                     <Grid  x:Name="Grid_LevelTimeAndStar"
                                                           Grid.Row="1"
@@ -401,13 +399,13 @@
                                                                        Text="{Binding FirstBattleTime.LocalDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                                         </StackPanel>
                                                         <!--  星星  -->
-                                                        <ItemsControl HorizontalAlignment="Right" ItemsSource="{Binding linq:Enumerable.Range(0, Star)}">
+                                                        <ItemsControl HorizontalAlignment="Right" ItemsSource="{Binding Star, Converter={StaticResource RangeConverter}}">
                                                             
                                                             <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
                                                                     <Image Width="20"
                                                                            Height="20"
-                                                                           Source="{StaticResource AbyssIcon}" />
+                                                                           Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star.png" />
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
@@ -426,13 +424,13 @@
                                                                    FontSize="12"
                                                                    Foreground="{DynamicResource StarTextSecondary}"
                                                                    Text="{Binding FirstBattleTime.LocalDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
-                                                        <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding linq:Enumerable.Range(0, Star)}">
+                                                        <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding Star, Converter={StaticResource RangeConverter}}">
                                                             
                                                             <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
                                                                     <Image Width="20"
                                                                            Height="20"
-                                                                           Source="{StaticResource AbyssIcon}" />
+                                                                           Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star.png" />
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>

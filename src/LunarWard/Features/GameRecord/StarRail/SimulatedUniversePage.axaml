@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.StarRail.SimulatedUniversePage"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
@@ -42,7 +43,7 @@
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
                        Foreground="{DynamicResource StarTextSecondary}"
-                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+                       Text="{x:Static lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
         <StackPanel Margin="0,24,0,0"
@@ -57,19 +58,18 @@
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0"
-                    Translation="0,0,16"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE9D9;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Summary}" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -81,7 +81,7 @@
                   ItemsSource="{Binding RecordBasicList}"
                   SelectionChanged="ListView_SimulatedUniverse_SelectionChanged"
                   SelectionMode="Single"
-                  IsVisible="{Binding RecordBasicList, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                  IsVisible="{Binding RecordBasicList, Converter={StaticResource ObjectToVisibilityConverter}}">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="Margin" Value="0,4,0,4" />
@@ -112,9 +112,8 @@
 
 
                 <!--  数据总览  -->
-                <Grid Margin="0,0,0,16"
-                      Translation="0,0,16"
-                      IsVisible="{Binding BasicInfo, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                <Grid Margin="0,0,0,16" RenderTransform="translate(0,0)"
+                      IsVisible="{Binding BasicInfo, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -128,7 +127,7 @@
                     <TextBlock Grid.Column="0"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.SimulatedUniversePage_AbilityTreeBuffsActivated}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.SimulatedUniversePage_AbilityTreeBuffsActivated}" />
                         <Run Text="" />
                         <Run Text="{Binding BasicInfo.UnlockedSkillPoints}" />
                     </TextBlock>
@@ -136,7 +135,7 @@
                     <TextBlock Grid.Column="1"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.SimulatedUniversePage_UnlockedCurios}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.SimulatedUniversePage_UnlockedCurios}" />
                         <Run Text="" />
                         <Run Text="{Binding BasicInfo.UnlockedMiracleNum}" />
                     </TextBlock>
@@ -144,21 +143,20 @@
                     <TextBlock Grid.Column="2"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.SimulatedUniversePage_UnlockedBlessings}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.SimulatedUniversePage_UnlockedBlessings}" />
                         <Run Text="" />
                         <Run Text="{Binding BasicInfo.UnlockedBuffNum}" />
                     </TextBlock>
                 </Grid>
 
 
-                <Grid
-                      Translation="0,0,16"
-                      IsVisible="{Binding CurrentRecord, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                <Grid RenderTransform="translate(0,0)"
+                      IsVisible="{Binding CurrentRecord, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <!--  本期通关次数  -->
                     <TextBlock Margin="12,0,0,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.SimulatedUniversePage_NumberOfClears}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.SimulatedUniversePage_NumberOfClears}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentRecord.Basic.FinishCount}" />
                     </TextBlock>
@@ -168,7 +166,7 @@
                                HorizontalAlignment="Right"
                                VerticalAlignment="Center"
                                Foreground="{DynamicResource StarTextSecondary}">
-                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="{x:Static lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentRecord.Basic.ScheduleBegin, StringFormat='{}{0:yyyy/MM/dd}'}" />
                         <Run Text=" - " />
@@ -179,13 +177,12 @@
 
                 <ItemsControl Margin="0,16,0,0"
                                ItemsSource="{Binding CurrentRecord.Records}"
-                               IsVisible="{Binding CurrentRecord, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                               IsVisible="{Binding CurrentRecord, Converter={StaticResource ObjectToVisibilityConverter}}">
                     
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="su:SimulatedUniverseRecordItem">
                             <Border Background="{DynamicResource StarOverlayAcrylicBrush}"
-                                    CornerRadius="8"
-                                    Translation="0,0,16">
+                                    CornerRadius="8" RenderTransform="translate(0,0)">
                                 <Expander Padding="16,0,16,12"
                                           HorizontalAlignment="Stretch"
                                           Background="Transparent"
@@ -221,7 +218,7 @@
                                                     <TextBlock HorizontalAlignment="Center"
                                                                FontSize="12"
                                                                Foreground="{DynamicResource StarTextSecondary}"
-                                                               Text="{Binding lang:Lang.SimulatedUniversePage_HighestScore}" />
+                                                               Text="{x:Static lang:Lang.SimulatedUniversePage_HighestScore}" />
                                                     <TextBlock HorizontalAlignment="Center"
                                                                FontSize="16"
                                                                Text="{Binding Score}" />
@@ -232,14 +229,14 @@
                                                        VerticalAlignment="Center"
                                                        FontSize="12"
                                                        Foreground="{DynamicResource StarTextSecondary}">
-                                                <Run Text="{Binding lang:Lang.SimulatedUniversePage_ChallengedOn}" />
+                                                <Run Text="{x:Static lang:Lang.SimulatedUniversePage_ChallengedOn}" />
                                                 <Run Text="" />
                                                 <Run Text="{Binding FinishTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                             </TextBlock>
-                                            <MenuFlyoutSeparator />
+                                            <Separator/>
 
                                             <!--  通关角色  -->
-                                            <TextBlock Text="{Binding lang:Lang.SimulatedUniversePage_CharactersUsed}" />
+                                            <TextBlock Text="{x:Static lang:Lang.SimulatedUniversePage_CharactersUsed}" />
                                             <ItemsControl ItemsSource="{Binding FinalLineup}">
                                                 
                                                 <ItemsControl.ItemTemplate>
@@ -304,11 +301,11 @@
                                         <StackPanel HorizontalAlignment="Stretch">
                                             <!--  缓存的角色  -->
                                             <TextBlock HorizontalAlignment="Left"
-                                                       Text="{Binding lang:Lang.SimulatedUniversePage_CachedCharacters}"
-                                                       IsVisible="{Binding CachedAvatars, Converter={DynamicResource CollectionToVisibilityConverter}}" />
+                                                       Text="{x:Static lang:Lang.SimulatedUniversePage_CachedCharacters}"
+                                                       IsVisible="{Binding CachedAvatars, Converter={StaticResource CollectionToVisibilityConverter}}" />
                                             <ItemsControl Margin="0,8,0,0"
                                                           ItemsSource="{Binding CachedAvatars}"
-                                                          IsVisible="{Binding CachedAvatars, Converter={DynamicResource CollectionToVisibilityConverter}}">
+                                                          IsVisible="{Binding CachedAvatars, Converter={StaticResource CollectionToVisibilityConverter}}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <StackPanel Orientation="Horizontal" Spacing="8" />
@@ -327,7 +324,7 @@
                                             <!--  获得祝福  -->
                                             <TextBlock Margin="0,12,0,0"
                                                        HorizontalAlignment="Left"
-                                                       Text="{Binding lang:Lang.SimulatedUniversePage_BlessingsObtained}" />
+                                                       Text="{x:Static lang:Lang.SimulatedUniversePage_BlessingsObtained}" />
                                             <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding Buffs}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
@@ -382,7 +379,7 @@
                                             <!--  获得奇物  -->
                                             <TextBlock Margin="0,12,0,0"
                                                        HorizontalAlignment="Left"
-                                                       Text="{Binding lang:Lang.SimulatedUniversePage_CuriosObtained}" />
+                                                       Text="{x:Static lang:Lang.SimulatedUniversePage_CuriosObtained}" />
                                             <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding Miracles}">
                                                 
                                                 <ItemsControl.ItemTemplate>

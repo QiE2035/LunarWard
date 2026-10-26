@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.Genshin.ImaginariumTheaterPage"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
@@ -12,13 +13,6 @@
              xmlns:sfg="clr-namespace:LunarWard.Features.Gacha">
 
     <UserControl.Resources>
-        <BitmapImage x:Key="MedalIcon_0" Source="ms-appx:///Assets/Image/UI_RoleCombat_Medal_0.png" />
-        <BitmapImage x:Key="MedalIcon_1" Source="ms-appx:///Assets/Image/UI_RoleCombat_Medal_1.png" />
-        <BitmapImage x:Key="MedalIcon_2" Source="ms-appx:///Assets/Image/UI_RoleCombat_Medal_2.png" />
-        <BitmapImage x:Key="MedalIcon_3" Source="ms-appx:///Assets/Image/UI_RoleCombat_Medal_3.png" />
-        <BitmapImage x:Key="StarIcon_1" Source="ms-appx:///Assets/Image/UI_Icon_Tower_Star1.png" />
-        <BitmapImage x:Key="StarIcon_2" Source="ms-appx:///Assets/Image/UI_Icon_Tower_Star2.png" />
-        <BitmapImage x:Key="FlowerIcon" Source="ms-appx:///Assets/Image/UI_DisplayItemIcon_410016.png" />
         <local:TheaterStarIconVisibilityConverter x:Key="TheaterStarIconVisibilityConverter" />
         <sfg:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />
     </UserControl.Resources>
@@ -48,7 +42,7 @@
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
                        Foreground="{DynamicResource StarTextSecondary}"
-                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+                       Text="{x:Static lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
         <StackPanel Margin="0,24,0,0"
@@ -63,19 +57,18 @@
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0"
-                    Translation="0,0,16"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE9D9;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Summary}" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -112,8 +105,7 @@
                         <TextBlock Grid.Row="1"
                                    Margin="24,0,0,2"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource StarTextSecondary}"
-                                   IsTextScaleFactorEnabled="False">
+                                   Foreground="{DynamicResource StarTextSecondary}">
                             <Run Text="{Binding MaxRoundId}" /><Run Text="/" /><Run Text="{Binding local:ImaginariumTheaterPage.DifficultyIdToMaxRound(DifficultyId)}" />
                         </TextBlock>
                         <Image Grid.Row="1"
@@ -121,12 +113,11 @@
                                Height="20"
                                Margin="64,0,0,0"
                                HorizontalAlignment="Left"
-                               Source="{StaticResource StarIcon_1}" />
+                               Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star1.png" />
                         <TextBlock Grid.Row="1"
                                    Margin="88,0,0,2"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource StarTextSecondary}"
-                                   IsTextScaleFactorEnabled="False">
+                                   Foreground="{DynamicResource StarTextSecondary}">
                             <Run Text="{Binding MedalNum}" /><Run Text="/" /><Run Text="{Binding local:ImaginariumTheaterPage.DifficultyIdToMaxRound(DifficultyId)}" />
                         </TextBlock>
                     </Grid>
@@ -136,12 +127,12 @@
 
         <ScrollViewer Grid.RowSpan="2"
                       Grid.Column="1"
-                      IsVisible="{Binding CurrentTheater, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                      IsVisible="{Binding CurrentTheater, Converter={StaticResource ObjectToVisibilityConverter}}">
             <StackPanel Margin="12,24,24,24" Spacing="8">
                 <Grid>
                     <!--  统计周期  -->
                     <TextBlock HorizontalAlignment="Right" Foreground="{DynamicResource StarTextSecondary}">
-                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="{x:Static lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentTheater.StartTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
                         <Run Text=" - " />
@@ -150,13 +141,12 @@
                     <!--  演出回顾  -->
                     <TextBlock FontSize="16"
                                Foreground="{DynamicResource StarTextSecondary}"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_PastPerformances}"
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_PastPerformances}"
                                IsVisible="{Binding HasData}" />
                 </Grid>
 
                 <!--  演出回顾  -->
-                <Grid
-                      Translation="0,0,16"
+                <Grid RenderTransform="translate(0,0)"
                       IsVisible="{Binding HasData}">
                     <Grid.RowDefinitions>
                         <RowDefinition MinHeight="32" />
@@ -180,23 +170,23 @@
                     <!--  最佳纪录  -->
                     <TextBlock Grid.Row="0"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_BestRecord}" />
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_BestRecord}" />
                     <!--  明星挑战星章  -->
                     <TextBlock Grid.Row="1"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_StarChallengeStellas}" />
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_StarChallengeStellas}" />
                     <!--  消耗幻剧之花  -->
                     <TextBlock Grid.Row="2"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_FantasiaFlowersUsed}" />
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_FantasiaFlowersUsed}" />
                     <!--  触发场外观众声援  -->
                     <TextBlock Grid.Row="3"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_TriggeredExternalAudienceSupport}" />
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_TriggeredExternalAudienceSupport}" />
                     <!--  助演角色支援其他玩家  -->
                     <TextBlock Grid.Row="4"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_SupportingCastCharactersAssistOtherPlayers}" />
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_SupportingCastCharactersAssistOtherPlayers}" />
 
 
                     <StackPanel Grid.Row="0"
@@ -214,7 +204,7 @@
                             <Run Text="{Binding local:ImaginariumTheaterPage.ActX(CurrentTheater.Stat.MaxRoundId)}" />
                         </TextBlock>
                         <TextBlock VerticalAlignment="Center" IsVisible="{Binding local:ImaginariumTheaterPage.LunarModeVisibility(CurrentTheater.Stat.DifficultyId)}">
-                            <Run Text="{Binding lang:Lang.ImaginariumTheaterPage_Arcana}" />
+                            <Run Text="{x:Static lang:Lang.ImaginariumTheaterPage_Arcana}" />
                             <Run Text="{Binding CurrentTheater.Stat.TarotFinishedCnt}" />
                         </TextBlock>
                     </StackPanel>
@@ -234,10 +224,10 @@
                                     <Image Width="20"
                                            Height="20"
                                            Opacity="0.6"
-                                           Source="{StaticResource StarIcon_2}" />
+                                           Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star2.png" />
                                     <Image Width="20"
                                            Height="20"
-                                           Source="{StaticResource StarIcon_1}"
+                                           Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star1.png"
                                            IsVisible="{Binding Converter={StaticResource TheaterStarIconVisibilityConverter}}" />
                                 </Grid>
                             </DataTemplate>
@@ -249,7 +239,7 @@
                                 Spacing="8">
                         <Image Width="24"
                                Height="24"
-                               Source="{StaticResource FlowerIcon}" />
+                               Source="avares://LunarWard/Assets/Image/UI_DisplayItemIcon_410016.png" />
                         <TextBlock VerticalAlignment="Center" Text="{Binding CurrentTheater.Stat.CoinNum}" />
                     </StackPanel>
                     <TextBlock Grid.Row="3"
@@ -258,7 +248,7 @@
                                VerticalAlignment="Center">
                         <Run Text="{Binding CurrentTheater.Stat.AvatarBonusNum}" />
                         <Run Text="" />
-                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_Times}" />
+                        <Run Text="{x:Static lang:Lang.SpiralAbyssPage_Times}" />
                     </TextBlock>
                     <TextBlock Grid.Row="4"
                                Grid.Column="1"
@@ -266,15 +256,14 @@
                                VerticalAlignment="Center">
                         <Run Text="{Binding CurrentTheater.Stat.RentCnt}" />
                         <Run Text="" />
-                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_Times}" />
+                        <Run Text="{x:Static lang:Lang.SpiralAbyssPage_Times}" />
                     </TextBlock>
 
                 </Grid>
 
 
                 <!--  战斗统计  -->
-                <Grid Margin="0,8,0,0"
-                      Translation="0,0,16"
+                <Grid Margin="0,8,0,0" RenderTransform="translate(0,0)"
                       IsVisible="{Binding local:ImaginariumTheaterPage.FightStatisicVisibility(CurrentTheater.Detail.FightStatisic.TotalUseTime)}">
                     <Grid.RowDefinitions>
                         <RowDefinition MinHeight="32" />
@@ -299,23 +288,23 @@
                     <!--  演出总时长  -->
                     <TextBlock Grid.Row="0"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_TotalPerformanceDuration}" />
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_TotalPerformanceDuration}" />
                     <!--  最高伤害输出  -->
                     <TextBlock Grid.Row="1"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_HighestDamageDealt}" />
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_HighestDamageDealt}" />
                     <!--  击败最多敌人  -->
                     <TextBlock Grid.Row="2"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_MostOpponentsDefeated}" />
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_MostOpponentsDefeated}" />
                     <!--  最高承受伤害  -->
                     <TextBlock Grid.Row="3"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.SpiralAbyssPage_MostDamageTaken}" />
+                               Text="{x:Static lang:Lang.SpiralAbyssPage_MostDamageTaken}" />
                     <!--  最快完成演出队伍  -->
                     <TextBlock Grid.Row="4"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.ImaginariumTheaterPage_TeamThatCompletedThePerformanceFastest}" />
+                               Text="{x:Static lang:Lang.ImaginariumTheaterPage_TeamThatCompletedThePerformanceFastest}" />
 
                     <TextBlock Grid.Row="0"
                                Grid.Column="1"
@@ -372,9 +361,8 @@
 
 
                 <!--  参演名单  -->
-                <Grid Margin="0,8,0,0"
-                      Translation="0,0,16"
-                      IsVisible="{Binding CurrentTheater.Detail.RoundsData, Converter={DynamicResource CollectionToVisibilityConverter}}">
+                <Grid Margin="0,8,0,0" RenderTransform="translate(0,0)"
+                      IsVisible="{Binding CurrentTheater.Detail.RoundsData, Converter={StaticResource CollectionToVisibilityConverter}}">
                     <ItemsControl ItemsSource="{Binding CurrentTheater.Detail.RoundsData}">
                         
                         <ItemsControl.ItemTemplate>
@@ -394,16 +382,16 @@
                                             <Image Width="24"
                                                    Height="24"
                                                    Opacity="0.6"
-                                                   Source="{StaticResource StarIcon_2}" />
+                                                   Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star2.png" />
                                             <Image Width="24"
                                                    Height="24"
-                                                   Source="{StaticResource StarIcon_1}"
-                                                   IsVisible="{Binding IsGetMedal, Converter={DynamicResource BoolToVisibilityConverter}}" />
+                                                   Source="avares://LunarWard/Assets/Image/UI_Icon_Tower_Star1.png"
+                                                   IsVisible="{Binding IsGetMedal, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         </Grid>
                                         <TextBlock VerticalAlignment="Center"
                                                    FontSize="16"
                                                    Text="{Binding local:ImaginariumTheaterPage.ActX(RoundId)}"
-                                                   IsVisible="{Binding IsTarot, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
+                                                   IsVisible="{Binding IsTarot, Converter={StaticResource BoolToVisibilityReversedConverter}}" />
                                         <TextBlock VerticalAlignment="Center"
                                                    FontSize="16"
                                                    Text="{Binding local:ImaginariumTheaterPage.ArcanaChallengeX(TarotSerialNo)}"
@@ -433,8 +421,7 @@
                                                                VerticalAlignment="Bottom"
                                                                FontSize="14"
                                                                FontWeight="SemiBold"
-                                                               Foreground="#84603D"
-                                                               IsTextScaleFactorEnabled="False">
+                                                               Foreground="#84603D">
                                                         <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                     </TextBlock>
                                                 </Grid>
@@ -456,7 +443,7 @@
                                             </Grid.RowDefinitions>
                                             <TextBlock VerticalAlignment="Center"
                                                        Foreground="{DynamicResource StarTextSecondary}"
-                                                       Text="{Binding lang:Lang.ImaginariumTheaterPage_BrilliantBlessing}" />
+                                                       Text="{x:Static lang:Lang.ImaginariumTheaterPage_BrilliantBlessing}" />
                                             <sc:ColorfulTextBlock Grid.Row="1"
                                                                   FontSize="12"
                                                                   Foreground="{DynamicResource StarTextSecondary}"
@@ -547,13 +534,13 @@
                                             </StackPanel>
                                         </Grid>
                                         <!--  奇妙助益  -->
-                                        <Grid RowSpacing="4" IsVisible="{Binding Buffs, Converter={DynamicResource CollectionToVisibilityConverter}}">
+                                        <Grid RowSpacing="4" IsVisible="{Binding Buffs, Converter={StaticResource CollectionToVisibilityConverter}}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition />
                                             </Grid.RowDefinitions>
                                             <TextBlock Foreground="{DynamicResource StarTextSecondary}">
-                                                <Run Text="{Binding lang:Lang.ImaginariumTheaterPage_WondrousBoon}" />
+                                                <Run Text="{x:Static lang:Lang.ImaginariumTheaterPage_WondrousBoon}" />
                                                 <Run Text="" />
                                                 <Run Text="x" />
                                                 <Run Text="{Binding Buffs.Count}" />
@@ -591,13 +578,13 @@
                                             </ItemsControl>
                                         </Grid>
                                         <!--  神秘收获  -->
-                                        <Grid RowSpacing="4" IsVisible="{Binding ChoiceCards, Converter={DynamicResource CollectionToVisibilityConverter}}">
+                                        <Grid RowSpacing="4" IsVisible="{Binding ChoiceCards, Converter={StaticResource CollectionToVisibilityConverter}}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition />
                                             </Grid.RowDefinitions>
                                             <TextBlock Foreground="{DynamicResource StarTextSecondary}">
-                                                <Run Text="{Binding lang:Lang.ImaginariumTheaterPage_MysteryCache}" />
+                                                <Run Text="{x:Static lang:Lang.ImaginariumTheaterPage_MysteryCache}" />
                                                 <Run Text="" />
                                                 <Run Text="x" />
                                                 <Run Text="{Binding ChoiceCards.Count}" />

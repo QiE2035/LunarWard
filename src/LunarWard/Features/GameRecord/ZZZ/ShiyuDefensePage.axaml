@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.ZZZ.ShiyuDefensePage"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:cw="clr-namespace:CommunityToolkit.WinUI"
              xmlns:lang="clr-namespace:LunarWard.Language"
@@ -13,6 +15,8 @@
              xmlns:sfgr="clr-namespace:LunarWard.Features.GameRecord">
 
     <UserControl.Resources>
+        <grconv:RangeConverter x:Key="RangeConverter" />
+        <grconv:RankToVisibilityConverter x:Key="RankToVisibilityConverter" />
         <local:ZZZRarityToIconConverter x:Key="ZZZRarityToIconConverter" />
     </UserControl.Resources>
 
@@ -39,7 +43,7 @@
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
                        Foreground="{DynamicResource StarTextSecondary}"
-                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+                       Text="{x:Static lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
         <StackPanel Margin="0,24,0,0"
@@ -54,19 +58,18 @@
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0"
-                    Translation="0,0,16"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE9D9;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Summary}" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -77,7 +80,7 @@
                   ItemsSource="{Binding ShiyuDefenseList}"
                   SelectionChanged="ListView_ShiyuDefense_SelectionChanged"
                   SelectionMode="Single"
-                  IsVisible="{Binding ShiyuDefenseList, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                  IsVisible="{Binding ShiyuDefenseList, Converter={StaticResource ObjectToVisibilityConverter}}">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="Margin" Value="0,4,0,4" />
@@ -124,13 +127,13 @@
         <!--  v1  -->
         <ScrollViewer Grid.RowSpan="2"
                       Grid.Column="1"
-                      IsVisible="{Binding CurrentShiyuDefense, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                      IsVisible="{Binding CurrentShiyuDefense, Converter={StaticResource ObjectToVisibilityConverter}}">
             <StackPanel Margin="24" Spacing="8">
 
                 <Grid>
                     <!--  统计周期  -->
                     <TextBlock Foreground="{DynamicResource StarTextSecondary}">
-                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="{x:Static lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentShiyuDefense.BeginTime.LocalDateTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
                         <Run Text=" - " />
@@ -142,8 +145,7 @@
                 <Grid
                      
                      
-                      RowSpacing="8"
-                      Translation="0,0,16">
+                      RowSpacing="8" RenderTransform="translate(0,0)">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -225,7 +227,7 @@
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis">
-                            <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_HighestStageCleared}" />
+                            <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ShiyuDefensePage_HighestStageCleared}" />
                             <Run Text="" />
                             <Run Text="{Binding CurrentShiyuDefense.MaxLayer}" />
                         </TextBlock>
@@ -235,7 +237,7 @@
                                    Grid.Column="1"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center">
-                            <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_47LayerClearTime}" />
+                            <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ShiyuDefensePage_47LayerClearTime}" />
                             <Run Text="" />
                             <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(CurrentShiyuDefense.BattleTime47)}" />
                         </TextBlock>
@@ -254,8 +256,7 @@
                                   HorizontalAlignment="Stretch"
                                  
                                  
-                                  RowSpacing="8"
-                                  Translation="0,0,16">
+                                  RowSpacing="8" RenderTransform="translate(0,0)">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
@@ -281,7 +282,7 @@
                                             FontSize="12"
                                             Foreground="{DynamicResource StarTextTertiary}">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_FrontierEffects}" />
+                                            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.ShiyuDefensePage_FrontierEffects}" />
                                             <TextBlock Margin="2,1,0,0"
                                                        VerticalAlignment="Center"
                                                        FontFamily="{DynamicResource StarIconFontFamily}"
@@ -330,7 +331,7 @@
                                                Text="{Binding FloorChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                 </StackPanel>
 
-                                <MenuFlyoutSeparator Grid.Row="1" Grid.ColumnSpan="3" />
+                                <Separator/>
 
 
                                 <!--  阵容1  -->
@@ -349,7 +350,7 @@
                                             FontSize="12"
                                             Foreground="{DynamicResource StarTextTertiary}">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_EnemyDetails}" />
+                                            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.ShiyuDefensePage_EnemyDetails}" />
                                             <TextBlock Margin="2,1,0,0"
                                                        VerticalAlignment="Center"
                                                        FontFamily="{DynamicResource StarIconFontFamily}"
@@ -392,7 +393,7 @@
                                                                         <TextBlock Margin="0,0,8,0"
                                                                                    VerticalAlignment="Center"
                                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                                   Text="{Binding lang:Lang.ShiyuDefensePage_Weakness}" />
+                                                                                   Text="{x:Static lang:Lang.ShiyuDefensePage_Weakness}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
                                                                                IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(IceWeakness, 1)}" />
@@ -418,7 +419,7 @@
                                                                         <TextBlock Margin="0,0,8,0"
                                                                                    VerticalAlignment="Center"
                                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                                   Text="{Binding lang:Lang.ShiyuDefensePage_Resistance}" />
+                                                                                   Text="{x:Static lang:Lang.ShiyuDefensePage_Resistance}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
                                                                                IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(IceWeakness, -1)}" />
@@ -484,8 +485,7 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Bottom"
                                                                FontSize="12"
-                                                               Foreground="{DynamicResource StarTextSecondary}"
-                                                               IsTextScaleFactorEnabled="False">
+                                                               Foreground="{DynamicResource StarTextSecondary}">
                                                         <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                     </TextBlock>
                                                     <!--  稀有度  -->
@@ -506,11 +506,10 @@
                                                             VerticalAlignment="Top"
                                                             Background="#A0000000"
                                                             CornerRadius="0,8,0,4"
-                                                            IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                            IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                   IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>
                                                 </Grid>
@@ -552,8 +551,7 @@
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Bottom"
                                                    FontSize="12"
-                                                   Foreground="{DynamicResource StarTextSecondary}"
-                                                   IsTextScaleFactorEnabled="False">
+                                                   Foreground="{DynamicResource StarTextSecondary}">
                                             <Run Text="Lv." /><Run Text="{Binding Node1.Buddy.Level}" />
                                         </TextBlock>
                                         <!--  稀有度  -->
@@ -577,14 +575,12 @@
                                            Grid.Column="0"
                                            Margin="2,0,0,0"
                                            FontSize="12">
-                                    <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
+                                    <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
                                     <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(Node1.BattleTime)}" />
                                 </TextBlock>
 
                                 <!--  分割线  -->
-                                <AppBarSeparator Grid.Row="2"
-                                                 Grid.RowSpan="3"
-                                                 Grid.Column="1" />
+                                <Separator/>
 
                                 <!--  阵容2  -->
                                 <Grid Grid.Row="2"
@@ -603,7 +599,7 @@
                                             FontSize="12"
                                             Foreground="{DynamicResource StarTextTertiary}">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_EnemyDetails}" />
+                                            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.ShiyuDefensePage_EnemyDetails}" />
                                             <TextBlock Margin="2,1,0,0"
                                                        VerticalAlignment="Center"
                                                        FontFamily="{DynamicResource StarIconFontFamily}"
@@ -646,7 +642,7 @@
                                                                         <TextBlock Margin="0,0,8,0"
                                                                                    VerticalAlignment="Center"
                                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                                   Text="{Binding lang:Lang.ShiyuDefensePage_Weakness}" />
+                                                                                   Text="{x:Static lang:Lang.ShiyuDefensePage_Weakness}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
                                                                                IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(IceWeakness, 1)}" />
@@ -672,7 +668,7 @@
                                                                         <TextBlock Margin="0,0,8,0"
                                                                                    VerticalAlignment="Center"
                                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                                   Text="{Binding lang:Lang.ShiyuDefensePage_Resistance}" />
+                                                                                   Text="{x:Static lang:Lang.ShiyuDefensePage_Resistance}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
                                                                                IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(IceWeakness, -1)}" />
@@ -738,8 +734,7 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Bottom"
                                                                FontSize="12"
-                                                               Foreground="{DynamicResource StarTextSecondary}"
-                                                               IsTextScaleFactorEnabled="False">
+                                                               Foreground="{DynamicResource StarTextSecondary}">
                                                         <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                     </TextBlock>
                                                     <!--  稀有度  -->
@@ -760,11 +755,10 @@
                                                             VerticalAlignment="Top"
                                                             Background="#A0000000"
                                                             CornerRadius="0,8,0,4"
-                                                            IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                            IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                   IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>
                                                 </Grid>
@@ -806,8 +800,7 @@
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Bottom"
                                                    FontSize="12"
-                                                   Foreground="{DynamicResource StarTextSecondary}"
-                                                   IsTextScaleFactorEnabled="False">
+                                                   Foreground="{DynamicResource StarTextSecondary}">
                                             <Run Text="Lv." /><Run Text="{Binding Node2.Buddy.Level}" />
                                         </TextBlock>
                                         <!--  稀有度  -->
@@ -831,7 +824,7 @@
                                            Grid.Column="3"
                                            Margin="2,0,0,0"
                                            FontSize="12">
-                                    <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
+                                    <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
                                     <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(Node2.BattleTime)}" />
                                 </TextBlock>
 
@@ -846,13 +839,13 @@
         <!--  v2  -->
         <ScrollViewer Grid.RowSpan="2"
                       Grid.Column="1"
-                      IsVisible="{Binding CurrentShiyuDefenseV2, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                      IsVisible="{Binding CurrentShiyuDefenseV2, Converter={StaticResource ObjectToVisibilityConverter}}">
             <StackPanel Margin="24" Spacing="8">
 
                 <Grid>
                     <!--  统计周期  -->
                     <TextBlock Foreground="{DynamicResource StarTextSecondary}">
-                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="{x:Static lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentShiyuDefenseV2.BeginTime.LocalDateTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
                         <Run Text=" - " />
@@ -866,8 +859,7 @@
                       HorizontalAlignment="Center"
                      
                      
-                      RowSpacing="8"
-                      Translation="0,0,16">
+                      RowSpacing="8" RenderTransform="translate(0,0)">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -877,7 +869,7 @@
                     <Grid>
 
                         <StackPanel>
-                            <TextBlock FontWeight="Bold" Text="{Binding lang:Lang.ShiyuDefensePage_CriticalNodeFifthFrontier}" />
+                            <TextBlock FontWeight="Bold" Text="{x:Static lang:Lang.ShiyuDefensePage_CriticalNodeFifthFrontier}" />
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <TextBlock FontSize="28"
                                            FontWeight="Bold"
@@ -911,8 +903,8 @@
                                    VerticalAlignment="Bottom"
                                    FontSize="12"
                                    Foreground="{DynamicResource StarTextSecondary}"
-                                   IsVisible="{Binding CurrentShiyuDefenseV2.Brief.BattleTime, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}">
-                            <Run Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
+                                   IsVisible="{Binding CurrentShiyuDefenseV2.Brief.BattleTime, Converter={StaticResource Int32NotZeroToVisibilityConverter}}">
+                            <Run Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
                             <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(CurrentShiyuDefenseV2.Brief.BattleTime)}" />
                         </TextBlock>
 
@@ -965,7 +957,7 @@
                                                 FontSize="12"
                                                 Foreground="{DynamicResource StarTextTertiary}">
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_FrontierEffects}" />
+                                                <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.ShiyuDefensePage_FrontierEffects}" />
                                                 <TextBlock Margin="2,1,0,0"
                                                            VerticalAlignment="Center"
                                                            FontFamily="{DynamicResource StarIconFontFamily}"
@@ -991,8 +983,8 @@
                                         <TextBlock Margin="0,4,0,0"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                   IsVisible="{Binding BattleTime, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}">
-                                            <Run Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
+                                                   IsVisible="{Binding BattleTime, Converter={StaticResource Int32NotZeroToVisibilityConverter}}">
+                                            <Run Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
                                             <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(BattleTime)}" />
                                         </TextBlock>
                                         <!--  通关时刻  -->
@@ -1000,7 +992,7 @@
                                                    FontSize="12"
                                                    Foreground="{DynamicResource StarTextSecondary}"
                                                    IsVisible="{Binding local:ShiyuDefensePage.ChallengeTimeVisibility(ChallengeTime)}">
-                                            <Run Text="{Binding lang:Lang.ClearedAt}" />
+                                            <Run Text="{x:Static lang:Lang.ClearedAt}" />
                                             <Run Text="{Binding ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                         </TextBlock>
                                     </StackPanel>
@@ -1042,8 +1034,7 @@
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Bottom"
                                                                    FontSize="12"
-                                                                   Foreground="{DynamicResource StarTextSecondary}"
-                                                                   IsTextScaleFactorEnabled="False">
+                                                                   Foreground="{DynamicResource StarTextSecondary}">
                                                             <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                         </TextBlock>
                                                         <!--  稀有度  -->
@@ -1064,11 +1055,10 @@
                                                                 VerticalAlignment="Top"
                                                                 Background="#A0000000"
                                                                 CornerRadius="0,8,0,4"
-                                                                IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                                IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}">
                                                             <TextBlock Margin="4,2,4,2"
                                                                        FontSize="14"
                                                                        Foreground="{DynamicResource StarTextSecondary}"
-                                                                       IsTextScaleFactorEnabled="False"
                                                                        Text="{Binding Rank}" />
                                                         </Border>
                                                     </Grid>
@@ -1110,8 +1100,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Bottom"
                                                        FontSize="12"
-                                                       Foreground="{DynamicResource StarTextSecondary}"
-                                                       IsTextScaleFactorEnabled="False">
+                                                       Foreground="{DynamicResource StarTextSecondary}">
                                                 <Run Text="Lv." /><Run Text="{Binding Buddy.Level}" />
                                             </TextBlock>
                                             <!--  稀有度  -->
@@ -1145,8 +1134,7 @@
                       HorizontalAlignment="Center"
                      
                      
-                      RowSpacing="4"
-                      Translation="0,0,16">
+                      RowSpacing="4" RenderTransform="translate(0,0)">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -1156,14 +1144,14 @@
                     <!--  通关评分  -->
                     <Grid>
                         <StackPanel>
-                            <TextBlock FontWeight="Bold" Text="{Binding lang:Lang.ShiyuDefensePage_CriticalNodeFourthFrontier}" />
+                            <TextBlock FontWeight="Bold" Text="{x:Static lang:Lang.ShiyuDefensePage_CriticalNodeFourthFrontier}" />
                             <!--  buff  -->
                             <Button Margin="-2,2,0,0"
                                     Padding="2"
                                     FontSize="12"
                                     Foreground="{DynamicResource StarTextTertiary}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_FrontierEffects}" />
+                                    <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.ShiyuDefensePage_FrontierEffects}" />
                                     <TextBlock Margin="2,1,0,0"
                                                VerticalAlignment="Center"
                                                FontFamily="{DynamicResource StarIconFontFamily}"
@@ -1198,10 +1186,10 @@
                                Source="{Binding CurrentShiyuDefenseV2.FourthLayerDetail.Rating, Converter={StaticResource ZZZRarityToIconConverter}}" />
                     </Grid>
 
-                    <MenuFlyoutSeparator Grid.Row="1" Grid.ColumnSpan="3" />
+                    <Separator/>
 
                     <!--  分割线  -->
-                    <AppBarSeparator Grid.Row="2" Padding="0" />
+                    <Separator/>
 
                     <!--  阵容  -->
                     <ItemsControl Grid.Row="2" ItemsSource="{Binding CurrentShiyuDefenseV2.FourthLayerDetail.LayerChallenges}">
@@ -1227,8 +1215,8 @@
                                     <!--  通关时长  -->
                                     <TextBlock Margin="2,0,0,0" 
                                                FontSize="12"
-                                               IsVisible="{Binding BattleTime, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}">
-                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
+                                               IsVisible="{Binding BattleTime, Converter={StaticResource Int32NotZeroToVisibilityConverter}}">
+                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
                                         <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(BattleTime)}" />
                                     </TextBlock>
                                     
@@ -1270,8 +1258,7 @@
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Bottom"
                                                                    FontSize="12"
-                                                                   Foreground="{DynamicResource StarTextSecondary}"
-                                                                   IsTextScaleFactorEnabled="False">
+                                                                   Foreground="{DynamicResource StarTextSecondary}">
                                                             <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                         </TextBlock>
                                                         <!--  稀有度  -->
@@ -1292,11 +1279,10 @@
                                                                 VerticalAlignment="Top"
                                                                 Background="#A0000000"
                                                                 CornerRadius="0,8,0,4"
-                                                                IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                                IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}">
                                                             <TextBlock Margin="4,2,4,2"
                                                                        FontSize="14"
                                                                        Foreground="{DynamicResource StarTextSecondary}"
-                                                                       IsTextScaleFactorEnabled="False"
                                                                        Text="{Binding Rank}" />
                                                         </Border>
                                                     </Grid>
@@ -1338,8 +1324,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Bottom"
                                                        FontSize="12"
-                                                       Foreground="{DynamicResource StarTextSecondary}"
-                                                       IsTextScaleFactorEnabled="False">
+                                                       Foreground="{DynamicResource StarTextSecondary}">
                                                 <Run Text="Lv." /><Run Text="{Binding Buddy.Level}" />
                                             </TextBlock>
                                             <!--  稀有度  -->

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.ZZZ.DeadlyAssaultPage"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:cw="clr-namespace:CommunityToolkit.WinUI"
              xmlns:fic="clr-namespace:LunarWard.Core.GameRecord.ZZZ.DeadlyAssault"
@@ -15,9 +17,8 @@
              xmlns:sfgr="clr-namespace:LunarWard.Features.GameRecord">
 
     <UserControl.Resources>
-        <BitmapImage x:Key="StarIconLight" Source="ms-appx:///Assets/Image/star-icon-light.5a286c6d.png" />
-        <BitmapImage x:Key="StarIconDark" Source="ms-appx:///Assets/Image/star-icon-dark.28cb98f1.png" />
-        <BitmapImage x:Key="StarIconHard" Source="ms-appx:///Assets/Image/star-icon-hard.13c9ee51.png" />
+        <grconv:RangeConverter x:Key="RangeConverter" />
+        <grconv:RankToVisibilityConverter x:Key="RankToVisibilityConverter" />
         <local:ZZZRarityToIconConverter x:Key="ZZZRarityToIconConverter" />
     </UserControl.Resources>
 
@@ -44,7 +45,7 @@
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
                        Foreground="{DynamicResource StarTextSecondary}"
-                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+                       Text="{x:Static lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
         <StackPanel Margin="0,24,0,0"
@@ -59,19 +60,18 @@
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
             <Button Height="36"
                     BorderThickness="0"
-                    CornerRadius="0,18,18,0"
-                    Translation="0,0,16"
+                    CornerRadius="0,18,18,0" RenderTransform="translate(0,0)"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE9D9;" />
-                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Summary}" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -82,7 +82,7 @@
                   ItemsSource="{Binding DeadlyAssaultList}"
                   SelectionChanged="ListView_DeadlyAssault_SelectionChanged"
                   SelectionMode="Single"
-                  IsVisible="{Binding DeadlyAssaultList, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                  IsVisible="{Binding DeadlyAssaultList, Converter={StaticResource ObjectToVisibilityConverter}}">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="Margin" Value="0,4,0,4" />
@@ -106,18 +106,16 @@
                         <StackPanel Grid.Row="1"
                                     Orientation="Horizontal"
                                     Spacing="4"
-                                    IsVisible="{Binding HasHard, Converter={DynamicResource BoolToVisibilityConverter}}">
+                                    IsVisible="{Binding HasHard, Converter={StaticResource BoolToVisibilityConverter}}">
                             <TextBlock MinWidth="46"
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource StarTextSecondary}"
-                                       IsTextScaleFactorEnabled="False"
                                        Text="{Binding HardTotalScore}" />
                             <Image Width="20"
                                    Height="20"
-                                   Source="{StaticResource StarIconHard}" />
+                                   Source="avares://LunarWard/Assets/Image/star-icon-hard.13c9ee51.png" />
                             <TextBlock VerticalAlignment="Center"
-                                       Foreground="{DynamicResource StarTextSecondary}"
-                                       IsTextScaleFactorEnabled="False">
+                                       Foreground="{DynamicResource StarTextSecondary}">
                                 <Run Text="x" /><Run Text="{Binding HardTotalStar}" />
                             </TextBlock>
                         </StackPanel>
@@ -128,14 +126,12 @@
                             <TextBlock MinWidth="46"
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource StarTextSecondary}"
-                                       IsTextScaleFactorEnabled="False"
                                        Text="{Binding TotalScore}" />
                             <Image Width="20"
                                    Height="20"
-                                   Source="{StaticResource StarIconLight}" />
+                                   Source="avares://LunarWard/Assets/Image/star-icon-light.5a286c6d.png" />
                             <TextBlock VerticalAlignment="Center"
-                                       Foreground="{DynamicResource StarTextSecondary}"
-                                       IsTextScaleFactorEnabled="False">
+                                       Foreground="{DynamicResource StarTextSecondary}">
                                 <Run Text="x" /><Run Text="{Binding TotalStar}" />
                             </TextBlock>
                         </StackPanel>
@@ -146,13 +142,13 @@
 
         <ScrollViewer Grid.RowSpan="2"
                       Grid.Column="1"
-                      IsVisible="{Binding CurrentDeadlyAssault, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                      IsVisible="{Binding CurrentDeadlyAssault, Converter={StaticResource ObjectToVisibilityConverter}}">
             <StackPanel Margin="24" Spacing="8">
 
                 <Grid>
                     <!--  统计周期  -->
                     <TextBlock Foreground="{DynamicResource StarTextSecondary}">
-                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="{x:Static lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentDeadlyAssault.StartTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
                         <Run Text=" - " />
@@ -166,9 +162,8 @@
                       HorizontalAlignment="Center"
                      
                      
-                      RowSpacing="8"
-                      Translation="0,0,16"
-                      IsVisible="{Binding CurrentDeadlyAssault.HasHard, Converter={DynamicResource BoolToVisibilityConverter}}">
+                      RowSpacing="8" RenderTransform="translate(0,0)"
+                      IsVisible="{Binding CurrentDeadlyAssault.HasHard, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -177,7 +172,7 @@
                     <!--  通关评分  -->
                     <Grid>
                         <StackPanel Margin="4,4,0,0">
-                            <TextBlock FontWeight="Bold" Text="{Binding lang:Lang.DeadlyAssaultPage_AdversityMode}" />
+                            <TextBlock FontWeight="Bold" Text="{x:Static lang:Lang.DeadlyAssaultPage_AdversityMode}" />
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <TextBlock FontSize="28"
                                            FontWeight="Bold"
@@ -206,7 +201,7 @@
                             <Image Width="36"
                                    Height="36"
                                    VerticalAlignment="Center"
-                                   Source="{StaticResource StarIconHard}" />
+                                   Source="avares://LunarWard/Assets/Image/star-icon-hard.13c9ee51.png" />
                             <TextBlock Margin="0,0,4,0"
                                        VerticalAlignment="Center"
                                        FontSize="20"
@@ -230,8 +225,7 @@
                                      
                                       ColumnSpacing="16"
                                      
-                                      RowSpacing="4"
-                                      Translation="0,0,16">
+                                      RowSpacing="4" RenderTransform="translate(0,0)">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
@@ -287,7 +281,7 @@
                                                    Text="{Binding Score}" />
                                         <ItemsControl Margin="4,3,0,0"
                                                       VerticalAlignment="Center"
-                                                      ItemsSource="{Binding linq:Enumerable.Range(0, Star)}">
+                                                      ItemsSource="{Binding Star, Converter={StaticResource RangeConverter}}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Orientation="Horizontal" />
@@ -297,7 +291,7 @@
                                                 <DataTemplate>
                                                     <Image Width="24"
                                                            Height="24"
-                                                           Source="{StaticResource StarIconHard}" />
+                                                           Source="avares://LunarWard/Assets/Image/star-icon-hard.13c9ee51.png" />
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
@@ -306,7 +300,7 @@
                                     <TextBlock Grid.Row="2"
                                                Grid.Column="1"
                                                FontSize="12">
-                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ClearedAt}" />
+                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ClearedAt}" />
                                         <Run Text="{Binding ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                     </TextBlock>
                                     <!--  代理人  -->
@@ -347,8 +341,7 @@
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Bottom"
                                                                    FontSize="12"
-                                                                   Foreground="{DynamicResource StarTextSecondary}"
-                                                                   IsTextScaleFactorEnabled="False">
+                                                                   Foreground="{DynamicResource StarTextSecondary}">
                                                             <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                         </TextBlock>
                                                         <!--  稀有度  -->
@@ -369,11 +362,10 @@
                                                                 VerticalAlignment="Top"
                                                                 Background="#A0000000"
                                                                 CornerRadius="0,8,0,4"
-                                                                IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                                IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}">
                                                             <TextBlock Margin="4,2,4,2"
                                                                        FontSize="14"
                                                                        Foreground="{DynamicResource StarTextSecondary}"
-                                                                       IsTextScaleFactorEnabled="False"
                                                                        Text="{Binding Rank}" />
                                                         </Border>
                                                     </Grid>
@@ -415,8 +407,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Bottom"
                                                        FontSize="12"
-                                                       Foreground="{DynamicResource StarTextSecondary}"
-                                                       IsTextScaleFactorEnabled="False">
+                                                       Foreground="{DynamicResource StarTextSecondary}">
                                                 <Run Text="Lv." /><Run Text="{Binding Buddy.Level}" />
                                             </TextBlock>
                                             <!--  稀有度  -->
@@ -471,8 +462,7 @@
                       HorizontalAlignment="Center"
                      
                      
-                      RowSpacing="8"
-                      Translation="0,0,16">
+                      RowSpacing="8" RenderTransform="translate(0,0)">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
@@ -483,7 +473,7 @@
                     <Grid>
                         <!--  TotalScore  -->
                         <StackPanel Margin="4,4,0,0">
-                            <TextBlock FontWeight="Bold" Text="{Binding lang:Lang.DeadlyAssaultPage_TrialMode}" />
+                            <TextBlock FontWeight="Bold" Text="{x:Static lang:Lang.DeadlyAssaultPage_TrialMode}" />
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <TextBlock FontSize="28"
                                            FontWeight="Bold"
@@ -512,7 +502,7 @@
                             <Image Width="36"
                                    Height="36"
                                    VerticalAlignment="Center"
-                                   Source="{StaticResource StarIconLight}" />
+                                   Source="avares://LunarWard/Assets/Image/star-icon-light.5a286c6d.png" />
                             <TextBlock Margin="0,0,4,0"
                                        VerticalAlignment="Center"
                                        FontSize="20"
@@ -537,8 +527,7 @@
                                      
                                       ColumnSpacing="16"
                                      
-                                      RowSpacing="4"
-                                      Translation="0,0,16">
+                                      RowSpacing="4" RenderTransform="translate(0,0)">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
@@ -594,7 +583,7 @@
                                                    Text="{Binding Score}" />
                                         <ItemsControl Margin="4,3,0,0"
                                                       VerticalAlignment="Center"
-                                                      ItemsSource="{Binding linq:Enumerable.Range(0, Star)}">
+                                                      ItemsSource="{Binding Star, Converter={StaticResource RangeConverter}}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Orientation="Horizontal" />
@@ -604,7 +593,7 @@
                                                 <DataTemplate>
                                                     <Image Width="24"
                                                            Height="24"
-                                                           Source="{StaticResource StarIconLight}" />
+                                                           Source="avares://LunarWard/Assets/Image/star-icon-light.5a286c6d.png" />
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
@@ -613,7 +602,7 @@
                                     <TextBlock Grid.Row="2"
                                                Grid.Column="1"
                                                FontSize="12">
-                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ClearedAt}" />
+                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ClearedAt}" />
                                         <Run Text="{Binding ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                     </TextBlock>
                                     <!--  代理人  -->
@@ -654,8 +643,7 @@
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Bottom"
                                                                    FontSize="12"
-                                                                   Foreground="{DynamicResource StarTextSecondary}"
-                                                                   IsTextScaleFactorEnabled="False">
+                                                                   Foreground="{DynamicResource StarTextSecondary}">
                                                             <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                         </TextBlock>
                                                         <!--  稀有度  -->
@@ -676,11 +664,10 @@
                                                                 VerticalAlignment="Top"
                                                                 Background="#A0000000"
                                                                 CornerRadius="0,8,0,4"
-                                                                IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                                IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}">
                                                             <TextBlock Margin="4,2,4,2"
                                                                        FontSize="14"
                                                                        Foreground="{DynamicResource StarTextSecondary}"
-                                                                       IsTextScaleFactorEnabled="False"
                                                                        Text="{Binding Rank}" />
                                                         </Border>
                                                     </Grid>
@@ -722,8 +709,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Bottom"
                                                        FontSize="12"
-                                                       Foreground="{DynamicResource StarTextSecondary}"
-                                                       IsTextScaleFactorEnabled="False">
+                                                       Foreground="{DynamicResource StarTextSecondary}">
                                                 <Run Text="Lv." /><Run Text="{Binding Buddy.Level}" />
                                             </TextBlock>
                                             <!--  稀有度  -->

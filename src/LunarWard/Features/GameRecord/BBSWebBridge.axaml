@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <UserControl x:Class="LunarWard.Features.GameRecord.BBSWebBridge"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
@@ -27,14 +28,14 @@
                     <Button Command="{Binding SaveScreenshotCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE74E;" />
-                            <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.Common_Save}" />
+                            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.Common_Save}" />
                         </StackPanel>
                     </Button>
                     <!--  复制  -->
                     <Button Command="{Binding CopyScreenshotCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE8C8;" />
-                            <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.Common_Copy}" />
+                            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.Common_Copy}" />
                         </StackPanel>
                     </Button>
                 </StackPanel>

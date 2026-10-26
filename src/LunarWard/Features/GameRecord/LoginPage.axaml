@@ -79,7 +79,7 @@
                         <TextBlock  x:Name="TextBlock_Tip"
                                    MaxWidth="360"
                                    Foreground="{DynamicResource StarAccentForegroundBrush}"
-                                   Text="{Binding lang:Lang.LoginPage_ClickThisButtonAfterLoggingIn}"
+                                   Text="{x:Static lang:Lang.LoginPage_ClickThisButtonAfterLoggingIn}"
                                    TextWrapping="Wrap" />
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>

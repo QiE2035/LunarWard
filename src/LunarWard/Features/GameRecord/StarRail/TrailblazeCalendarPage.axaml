@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.StarRail.TrailblazeCalendarPage"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
@@ -40,7 +41,7 @@
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
                        Foreground="{DynamicResource StarTextSecondary}"
-                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+                       Text="{x:Static lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
         <StackPanel Margin="0,24,0,0"
@@ -60,15 +61,15 @@
                                       />
                         <fw:FontIcon Classes="icon" FontSize="16"
                                   Glyph="&#xE72C;"
-                                  IsVisible="{Binding InitializeDataCommand.IsRunning, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
+                                  IsVisible="{Binding InitializeDataCommand.IsRunning, Converter={StaticResource BoolToVisibilityReversedConverter}}" />
                     </Grid>
-                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
             <Button x:Name="Button_GetDetails" Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
-                    IsEnabled="{Binding GetDataDetailsCommand.IsRunning, Converter={DynamicResource BoolReversedConverter}}">
+                    IsEnabled="{Binding GetDataDetailsCommand.IsRunning, Converter={StaticResource BoolReversedConverter}}">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -78,9 +79,9 @@
                                       />
                         <fw:FontIcon Classes="icon" FontSize="16"
                                   Glyph="&#xEA37;"
-                                  IsVisible="{Binding GetDataDetailsCommand.IsRunning, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
+                                  IsVisible="{Binding GetDataDetailsCommand.IsRunning, Converter={StaticResource BoolToVisibilityReversedConverter}}" />
                     </Grid>
-                    <TextBlock Text="{Binding lang:Lang.TravelersDiaryPage_GetDetails}" />
+                    <TextBlock Text="{x:Static lang:Lang.TravelersDiaryPage_GetDetails}" />
                 </StackPanel>
                 <Button.Flyout>
                     <MenuFlyout x:Name="MenuFlyout_GetDetails" Placement="RightEdgeAlignedTop" />
@@ -137,11 +138,10 @@
                 <!--  Real-Time Data  -->
                 <TextBlock FontSize="16"
                            Foreground="{DynamicResource StarTextSecondary}"
-                           Text="{Binding lang:Lang.TravelersDiaryPage_RealTimeData}"
-                           IsVisible="{Binding CurrentSummary, Converter={DynamicResource ObjectToVisibilityConverter}}" />
-                <Grid
-                      Translation="0,0,16"
-                      IsVisible="{Binding CurrentSummary, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                           Text="{x:Static lang:Lang.TravelersDiaryPage_RealTimeData}"
+                           IsVisible="{Binding CurrentSummary, Converter={StaticResource ObjectToVisibilityConverter}}" />
+                <Grid RenderTransform="translate(0,0)"
+                      IsVisible="{Binding CurrentSummary, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -158,7 +158,7 @@
                     <TextBlock Grid.Row="0"
                                Grid.Column="0"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.TravelersDiaryPage_AcquiredThisDay}" />
+                               Text="{x:Static lang:Lang.TravelersDiaryPage_AcquiredThisDay}" />
                     <StackPanel Grid.Row="0"
                                 Grid.Column="1"
                                 Orientation="Horizontal"
@@ -174,8 +174,7 @@
                             <Image Width="24" Source="ms-appx:///Assets/Image/101.png" />
                             <Image Width="24"
                                    RenderTransformOrigin="0.25,0.75"
-                                   Source="ms-appx:///Assets/Image/102.png"
-                                   Translation="1,-2,0"
+                                   Source="ms-appx:///Assets/Image/102.png" RenderTransform="translate(1,-2)"
                                    IsVisible="True">
                                 <Image.RenderTransform>
                                     <RotateTransform Angle="30" />
@@ -188,7 +187,7 @@
                     <TextBlock Grid.Row="1"
                                Grid.Column="0"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.TravelersDiaryPage_AcquiredThisMonth}" />
+                               Text="{x:Static lang:Lang.TravelersDiaryPage_AcquiredThisMonth}" />
                     <StackPanel Grid.Row="1"
                                 Grid.Column="1"
                                 Orientation="Horizontal"
@@ -204,8 +203,7 @@
                             <Image Width="24" Source="ms-appx:///Assets/Image/101.png" />
                             <Image Width="24"
                                    RenderTransformOrigin="0.25,0.75"
-                                   Source="ms-appx:///Assets/Image/102.png"
-                                   Translation="1,-2,0"
+                                   Source="ms-appx:///Assets/Image/102.png" RenderTransform="translate(1,-2)"
                                    IsVisible="True">
                                 <Image.RenderTransform>
                                     <RotateTransform Angle="30" />
@@ -218,7 +216,7 @@
                     <TextBlock Grid.Row="2"
                                Margin="0,8,0,0"
                                Foreground="{DynamicResource StarTextSecondary}"
-                               Text="{Binding lang:Lang.TrailblazeCalendarPage_StellarJadeSources}" />
+                               Text="{x:Static lang:Lang.TrailblazeCalendarPage_StellarJadeSources}" />
                     <sc:ColorRectChart Grid.Row="3"
                                        Grid.ColumnSpan="3"
                                        Height="20"
@@ -234,7 +232,7 @@
                             <ItemsPanelTemplate>
                                 <WrapPanel HorizontalSpacing="12"
                                               Orientation="Horizontal"
-                                              VerticalSpacing="4" />
+                                              Spacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
@@ -258,14 +256,13 @@
                 <TextBlock Margin="0,8,0,0"
                            FontSize="16"
                            Foreground="{DynamicResource StarTextSecondary}"
-                           IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
-                    <Run Text="{Binding lang:Lang.TravelersDiaryPage_HistoricalData}" />
+                           IsVisible="{Binding SelectMonthData, Converter={StaticResource ObjectToVisibilityConverter}}">
+                    <Run Text="{x:Static lang:Lang.TravelersDiaryPage_HistoricalData}" />
                     <Run Text="" />
                     <Run Text="{Binding SelectMonthData.Month}" />
                 </TextBlock>
-                <Grid
-                      Translation="0,0,16"
-                      IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                <Grid RenderTransform="translate(0,0)"
+                      IsVisible="{Binding SelectMonthData, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -282,7 +279,7 @@
                     <TextBlock Grid.Row="1"
                                Grid.Column="0"
                                VerticalAlignment="Center"
-                               Text="{Binding lang:Lang.TravelersDiaryPage_AcquiredThisMonth}" />
+                               Text="{x:Static lang:Lang.TravelersDiaryPage_AcquiredThisMonth}" />
                     <StackPanel Grid.Row="1"
                                 Grid.Column="1"
                                 Orientation="Horizontal"
@@ -298,8 +295,7 @@
                             <Image Width="24" Source="ms-appx:///Assets/Image/101.png" />
                             <Image Width="24"
                                    RenderTransformOrigin="0.25,0.75"
-                                   Source="ms-appx:///Assets/Image/102.png"
-                                   Translation="1,-2,0"
+                                   Source="ms-appx:///Assets/Image/102.png" RenderTransform="translate(1,-2)"
                                    IsVisible="True">
                                 <Image.RenderTransform>
                                     <RotateTransform Angle="30" />
@@ -312,7 +308,7 @@
                     <TextBlock Grid.Row="2"
                                Margin="0,8,0,0"
                                Foreground="{DynamicResource StarTextSecondary}"
-                               Text="{Binding lang:Lang.TrailblazeCalendarPage_StellarJadeSources}" />
+                               Text="{x:Static lang:Lang.TrailblazeCalendarPage_StellarJadeSources}" />
                     <sc:ColorRectChart Grid.Row="3"
                                        Grid.ColumnSpan="3"
                                        Height="20"
@@ -328,7 +324,7 @@
                             <ItemsPanelTemplate>
                                 <WrapPanel HorizontalSpacing="12"
                                               Orientation="Horizontal"
-                                              VerticalSpacing="4" />
+                                              Spacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
@@ -352,16 +348,15 @@
                 <TextBlock Margin="0,8,0,0"
                            FontSize="16"
                            Foreground="{DynamicResource StarTextSecondary}"
-                           IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
-                    <Run Text="{Binding lang:Lang.HoyolabToolboxPage_DailyData}" />
+                           IsVisible="{Binding SelectMonthData, Converter={StaticResource ObjectToVisibilityConverter}}">
+                    <Run Text="{x:Static lang:Lang.HoyolabToolboxPage_DailyData}" />
                     <Run Text="" />
                     <Run Text="{Binding SelectMonthData.Month}" />
                 </TextBlock>
                 <Border Padding="12,8,12,8"
                         Background="{DynamicResource StarOverlayAcrylicBrush}"
-                        CornerRadius="8"
-                        Translation="0,0,16"
-                        IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                        CornerRadius="8" RenderTransform="translate(0,0)"
+                        IsVisible="{Binding SelectMonthData, Converter={StaticResource ObjectToVisibilityConverter}}">
                     <ItemsControl ItemsSource="{Binding DayDataList}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -399,8 +394,7 @@
                                         <Image Width="24" Source="ms-appx:///Assets/Image/101.png" />
                                         <Image Width="24"
                                                RenderTransformOrigin="0.25,0.75"
-                                               Source="ms-appx:///Assets/Image/102.png"
-                                               Translation="1,-2,0"
+                                               Source="ms-appx:///Assets/Image/102.png" RenderTransform="translate(1,-2)"
                                                IsVisible="True">
                                             <Image.RenderTransform>
                                                 <RotateTransform Angle="30" />

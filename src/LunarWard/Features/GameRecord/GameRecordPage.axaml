@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.GameRecordPage"
+        x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
@@ -75,7 +76,7 @@
                     <StackPanel Grid.Column="1"
                                 VerticalAlignment="Center"
                                 Spacing="2"
-                                IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                                IsVisible="{Binding CurrentRole, Converter={StaticResource ObjectToVisibilityConverter}}">
                         <TextBlock Text="{Binding CurrentRole.Nickname}" TextTrimming="CharacterEllipsis" />
                         <TextBlock FontSize="12" Foreground="{DynamicResource StarTextSecondary}">
                             <Run Text="{Binding CurrentRole.RegionName}" />
@@ -89,20 +90,20 @@
                             Grid.ColumnSpan="2"
                             Margin="0,0,12,0"
                             BorderThickness="0"
-                            Content="{Binding lang:Lang.HoyolabToolboxPage_LogIn}"
-                            IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityReversedConverter}}">
+                            Content="{x:Static lang:Lang.HoyolabToolboxPage_LogIn}"
+                            IsVisible="{Binding CurrentRole, Converter={StaticResource ObjectToVisibilityReversedConverter}}">
                         <Button.Flyout>
                             <MenuFlyout x:Name="Flyout_LoginMenu_1" Placement="BottomEdgeAlignedLeft">
-                                <MenuFlyoutItem Command="{Binding WebLoginCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_WebLogin}">
-                                    <MenuFlyoutItem.Icon>
+                                <MenuItem Command="{Binding WebLoginCommand}" Text="{x:Static lang:Lang.HoyolabToolboxPage_WebLogin}">
+                                    <MenuItem.Icon>
                                         <fw:FontIcon Classes="icon" Glyph="&#xE774;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Command="{Binding InputCookieCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_InputCookie}">
-                                    <MenuFlyoutItem.Icon>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Command="{Binding InputCookieCommand}" Text="{x:Static lang:Lang.HoyolabToolboxPage_InputCookie}">
+                                    <MenuItem.Icon>
                                         <fw:FontIcon Classes="icon" Glyph="&#xE70F;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>
@@ -113,7 +114,7 @@
                             Height="44"
                             Margin="0,0,12,0"
                             Padding="0"
-                            IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                            IsVisible="{Binding CurrentRole, Converter={StaticResource ObjectToVisibilityConverter}}">
                         <StackPanel Spacing="-6">
                             <fw:FontIcon Classes="icon" FontSize="16"
                                       Foreground="{DynamicResource StarTextSecondary}"
@@ -152,7 +153,7 @@
                                             Command="{Binding RefreshGameRoleInfoCommand}">
                                         <StackPanel Orientation="Horizontal" Spacing="12">
                                             <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.HoyolabToolboxPage_RefreshInfo}" />
+                                            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.HoyolabToolboxPage_RefreshInfo}" />
                                         </StackPanel>
                                     </Button>
 
@@ -163,26 +164,26 @@
                                             HorizontalContentAlignment="Left">
                                         <StackPanel Orientation="Horizontal" Spacing="12">
                                             <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE710;" />
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.HoyolabToolboxPage_LogIn}" />
+                                            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.HoyolabToolboxPage_LogIn}" />
                                         </StackPanel>
                                         <Button.Flyout>
                                             <MenuFlyout x:Name="Flyout_LoginMenu_2" Placement="RightEdgeAlignedTop">
-                                                <MenuFlyoutItem Command="{Binding WebLoginCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_WebLogin}">
-                                                    <MenuFlyoutItem.Icon>
+                                                <MenuItem Command="{Binding WebLoginCommand}" Text="{x:Static lang:Lang.HoyolabToolboxPage_WebLogin}">
+                                                    <MenuItem.Icon>
                                                         <fw:FontIcon Classes="icon" Glyph="&#xE774;" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                                <MenuFlyoutItem Command="{Binding InputCookieCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_InputCookie}">
-                                                    <MenuFlyoutItem.Icon>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                                <MenuItem Command="{Binding InputCookieCommand}" Text="{x:Static lang:Lang.HoyolabToolboxPage_InputCookie}">
+                                                    <MenuItem.Icon>
                                                         <fw:FontIcon Classes="icon" Glyph="&#xE70F;" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                             </MenuFlyout>
                                         </Button.Flyout>
                                     </Button>
 
 
-                                    <MenuFlyoutSeparator Grid.Row="1" Grid.ColumnSpan="2" />
+                                    <Separator/>
 
                                     <ListBox  x:Name="ListView_GameRoles"
                                               Grid.Row="2"
@@ -215,22 +216,22 @@
                                                             Foreground="{DynamicResource StarTextSecondary}">
                                                         <Button.Flyout>
                                                             <MenuFlyout Placement="RightEdgeAlignedTop">
-                                                                <MenuFlyoutItem  x:Name="MenuFlyoutItem_CopyCookie"
+                                                                <MenuItem  x:Name="MenuFlyoutItem_CopyCookie"
                                                                                 Click="MenuFlyoutItem_CopyCookie_Click"
                                                                                 Tag="{x:Bind}"
-                                                                                Text="{Binding lang:Lang.HoyolabToolboxPage_CopyCookie}">
-                                                                    <MenuFlyoutItem.Icon>
+                                                                                Text="{x:Static lang:Lang.HoyolabToolboxPage_CopyCookie}">
+                                                                    <MenuItem.Icon>
                                                                         <fw:FontIcon Classes="icon" Glyph="&#xE8C8;" />
-                                                                    </MenuFlyoutItem.Icon>
-                                                                </MenuFlyoutItem>
-                                                                <MenuFlyoutItem  x:Name="MenuFlyoutItem_DeleteGameRole"
+                                                                    </MenuItem.Icon>
+                                                                </MenuItem>
+                                                                <MenuItem  x:Name="MenuFlyoutItem_DeleteGameRole"
                                                                                 Click="MenuFlyoutItem_DeleteGameRole_Click"
                                                                                 Tag="{x:Bind}"
-                                                                                Text="{Binding lang:Lang.HoyolabToolboxPage_DeleteGameRole}">
-                                                                    <MenuFlyoutItem.Icon>
+                                                                                Text="{x:Static lang:Lang.HoyolabToolboxPage_DeleteGameRole}">
+                                                                    <MenuItem.Icon>
                                                                         <fw:FontIcon Classes="icon" Glyph="&#xE74D;" />
-                                                                    </MenuFlyoutItem.Icon>
-                                                                </MenuFlyoutItem>
+                                                                    </MenuItem.Icon>
+                                                                </MenuItem>
                                                             </MenuFlyout>
                                                         </Button.Flyout>
                                                     </Button>
@@ -271,7 +272,7 @@
                                    Width="20"
                                    Source="avares://LunarWard/Assets/Image/ced4deac2162690105bbc8baad2b51a3_4109616186965788891.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_BattleChronicle}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_BattleChronicle}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </Button.Content>
@@ -288,7 +289,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/4bb2f9e21b6c64201692c4ea76a2faca_7020708978085976578.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_TravelersDiary}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_TravelersDiary}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -305,7 +306,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/UI_MapIcon_Abyss.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_SpiralAbyss}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_SpiralAbyss}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -322,7 +323,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/UI_MapIcon_RoleCombat.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_ImaginariumTheater}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_ImaginariumTheater}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -339,7 +340,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/UI_MapIcon_HardChallenge.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_StygianOnslaught}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_StygianOnslaught}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -357,7 +358,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/097aa51ae0b4bc0c9c9e6aca6dab0744_10826781894277788.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_TrailblazeMonthlyCalendar}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_TrailblazeMonthlyCalendar}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -374,7 +375,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/RougeAchievementIcon_s.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_SimulatedUniverse}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_SimulatedUniverse}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -391,7 +392,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/AbyssIcon01.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_ForgottenHall}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_ForgottenHall}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -408,7 +409,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/ChallengeStory.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_PureFiction}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_PureFiction}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -425,7 +426,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/ApocalypticShadow.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_ApocalypticShadow}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_ApocalypticShadow}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -442,7 +443,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/ChallengePeak.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.GameRecordPage_AnomalyArbitration}"
+                                       Text="{x:Static lang:Lang.GameRecordPage_AnomalyArbitration}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -460,7 +461,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/54085a560686bda74c3025944b65260e_8414768992789038554.gif" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_InterKnotMonthlyReport}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_InterKnotMonthlyReport}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -477,7 +478,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/d123daeb4a7960524371e769944555f1.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_ShiyuDefense}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_ShiyuDefense}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -494,7 +495,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Width="20" Source="avares://LunarWard/Assets/Image/286c59f117e997c10676888648b6e1b4.png" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding lang:Lang.HoyolabToolboxPage_DeadlyAssault}"
+                                       Text="{x:Static lang:Lang.HoyolabToolboxPage_DeadlyAssault}"
                                        TextTrimming="CharacterEllipsis" />
                         </Grid>
                     </ListBoxItem.Content>
@@ -509,7 +510,7 @@
                         Click="NavigationViewItem_UpdateDeviceInfo_Click">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <fw:FontIcon Classes="icon" Glyph="&#xE928;" />
-                        <TextBlock Text="{Binding lang:Lang.HoyolabToolboxPage_UpdateDeviceFingerprint}"
+                        <TextBlock Text="{x:Static lang:Lang.HoyolabToolboxPage_UpdateDeviceFingerprint}"
                                    TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Button>
