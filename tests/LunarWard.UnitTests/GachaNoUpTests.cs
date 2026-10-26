@@ -1,12 +1,13 @@
 using LunarWard.Core.Gacha;
-using LunarWard.Launch;
 using Xunit;
 
 namespace LunarWard.UnitTests;
 
 /// <summary>
-/// <see cref="GachaNoUp.ComputeIsUp"/> 与 <see cref="GachaService.ApplyUpFlags"/>：
-/// 上游 <c>GenshinGachaService.GetGachaLogItemEx</c> 的「常驻物品 + 时间段 → 不是 UP」规则。
+/// <see cref="GachaNoUp.ComputeIsUp"/>：上游 <c>GenshinGachaService.GetGachaLogItemEx</c>
+/// 的「常驻物品 + 时间段 → 不是 UP」规则。
+/// <para>ApplyUpFlags 的用例随旧的 <c>LunarWard.Launch.GachaService</c> 一起删掉了：
+/// 该职责已由移植的 <c>Features/Gacha/*GachaService</c> 承担。</para>
 /// </summary>
 public class GachaNoUpTests
 {
@@ -38,36 +39,5 @@ public class GachaNoUpTests
         Assert.False(GachaNoUp.ComputeIsUp("genshin", 301, 10000042, new DateTime(2020, 12, 1)));
         Assert.True(GachaNoUp.ComputeIsUp("genshin", 301, 10000042, new DateTime(2021, 2, 20)));
         Assert.False(GachaNoUp.ComputeIsUp("genshin", 301, 10000042, new DateTime(2024, 12, 1)));
-    }
-
-    [Fact]
-    public void ApplyUpFlags_RecomputesRank5Only()
-    {
-        static GachaRecord Record(int id, int rank, int itemId, bool isUp) => new()
-        {
-            Id = id,
-            Name = "x",
-            ItemType = "角色",
-            RankType = rank,
-            GachaType = 301,
-            GachaTypeName = "角色活动祈愿",
-            Time = new DateTime(2026, 1, 1),
-            Uid = 100000001,
-            IsUp = isUp,
-            ItemId = itemId,
-        };
-
-        var records = new List<GachaRecord>
-        {
-            Record(1, 5, 10000016, true),   // 库里标了 UP，但迪卢克是常驻 → 重算成 false
-            Record(2, 5, 10000089, false),  // 芙宁娜 → true
-            Record(3, 4, 10000016, true),   // 4★ 不动
-        };
-
-        var result = GachaService.ApplyUpFlags("genshin", records);
-
-        Assert.False(result[0].IsUp);
-        Assert.True(result[1].IsUp);
-        Assert.True(result[2].IsUp);
     }
 }

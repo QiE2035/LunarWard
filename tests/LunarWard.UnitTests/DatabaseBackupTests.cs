@@ -1,58 +1,56 @@
-using LunarWard.Launch;
-using LunarWard.Launch.Database;
+using Dapper;
+using LunarWard.Features.Database;
+using Microsoft.Data.Sqlite;
 using Xunit;
 
 namespace LunarWard.UnitTests;
 
-/// <summary>文件管理页「备份数据库」（SQLite <c>VACUUM INTO</c>）的端到端校验。</summary>
+/// <summary>文件管理页「备份数据库」：<see cref="DatabaseService.BackupDatabase"/> 的热备份语义。</summary>
 public class DatabaseBackupTests
 {
-    private static GachaRecord Record(long id, string name) => new()
-    {
-        Id = id,
-        Uid = 100000001,
-        GachaType = 301,
-        ItemId = 10000000 + (int)id,
-        ItemType = "武器",
-        GachaTypeName = "角色活动祈愿",
-        Name = name,
-        Time = new DateTime(2026, 1, 1).AddMinutes(id),
-        RankType = id % 2 == 0 ? 4 : 3,
-        Count = 1,
-    };
+    private const string Key = "backup-test";
 
 
     [Fact]
-    public void BackupTo_WritesConsistentSnapshotThatCanBeReopened()
+    public void BackupDatabase_WritesSnapshotThatCanBeReopened()
     {
         using var temp = new TempDirectory();
-        var source = new LunarWardDatabase(Path.Join(temp.Path, LunarWardDatabase.FileName));
-        new GachaLogStore(source).Merge("genshin", [Record(1, "A"), Record(2, "B")], "zh-cn");
+        DatabaseService.SetDatabase(temp.Path);
+        DatabaseService.SetValue(Key, "A");
 
         var backupPath = Path.Join(temp.Combine("backup"), "LunarWard_20261025.db");
-        source.BackupTo(backupPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(backupPath)!);
+        DatabaseService.BackupDatabase(backupPath);
 
         Assert.True(File.Exists(backupPath));
-        var restored = new GachaLogStore(new LunarWardDatabase(backupPath));
-        var items = restored.GetAll("genshin");
-        Assert.Equal(2, items.Count);
-        Assert.Equal("B", items[1].Name);
+        Assert.Equal("A", ReadValue(backupPath));
     }
 
 
     [Fact]
-    public void BackupTo_OverwritesExistingTargetAtomically()
+    public void BackupDatabase_OverwritesPreviousBackup()
     {
         using var temp = new TempDirectory();
-        var source = new LunarWardDatabase(Path.Join(temp.Path, LunarWardDatabase.FileName));
-        new GachaLogStore(source).Merge("genshin", [Record(1, "A")], "zh-cn");
-
         var target = temp.Combine("out.db");
-        File.WriteAllText(target, "stale");
-        source.BackupTo(target);
+        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
 
-        var restored = new GachaLogStore(new LunarWardDatabase(target));
-        Assert.Single(restored.GetAll("genshin"));
+        DatabaseService.SetDatabase(temp.Path);
+        DatabaseService.SetValue(Key, "old");
+        DatabaseService.BackupDatabase(target);
+        Assert.Equal("old", ReadValue(target));
+
+        DatabaseService.SetValue(Key, "new");
+        DatabaseService.BackupDatabase(target);
+        Assert.Equal("new", ReadValue(target));
         Assert.False(File.Exists(target + ".tmp"));
+    }
+
+
+    private static string? ReadValue(string file)
+    {
+        SqliteConnection.ClearAllPools();
+        using var con = new SqliteConnection($"DataSource={file};Pooling=False;");
+        con.Open();
+        return con.QueryFirstOrDefault<string>("SELECT Value FROM KVT WHERE Key = @key;", new { key = Key });
     }
 }

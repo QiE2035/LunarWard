@@ -129,7 +129,7 @@ public class WineRegistryInstallPathProviderTests
     [Fact]
     public void ReadsInstallPathFromUserReg()
     {
-        var provider = new LunarWard.Games.WineRegistryInstallPathProvider(
+        var provider = new LunarWard.Wine.WineRegistryInstallPathProvider(
             "/prefix", driveZRoot: "/home/u/.local/share/wine/drive_c");
 
         // 1) 解析出来的是原始 Windows 路径
@@ -154,7 +154,7 @@ public class WineRegistryInstallPathProviderTests
     [InlineData(@"relative\path", "/prefix/drive_c/relative/path")]
     public void TranslateToLinux_HandlesAllDriveForms(string windowsPath, string expected)
     {
-        var provider = new LunarWard.Games.WineRegistryInstallPathProvider(
+        var provider = new LunarWard.Wine.WineRegistryInstallPathProvider(
             "/prefix", driveZRoot: "/");
         Assert.Equal(expected, provider.TranslateToLinux(windowsPath));
     }
@@ -163,7 +163,7 @@ public class WineRegistryInstallPathProviderTests
     [Fact]
     public void MissingKey_ReturnsNull()
     {
-        var provider = new LunarWard.Games.WineRegistryInstallPathProvider("/prefix");
+        var provider = new LunarWard.Wine.WineRegistryInstallPathProvider("/prefix");
         Assert.Null(provider.ParseInstallPath(SampleUserReg, "Software\\miHoYo\\Star Rail"));
     }
 
@@ -171,7 +171,7 @@ public class WineRegistryInstallPathProviderTests
     [Fact]
     public void EmptyOrGarbage_ReturnsNull()
     {
-        var provider = new LunarWard.Games.WineRegistryInstallPathProvider("/prefix");
+        var provider = new LunarWard.Wine.WineRegistryInstallPathProvider("/prefix");
         Assert.Null(provider.ParseInstallPath("", "Software\\miHoYo\\原神"));
         Assert.Null(provider.ParseInstallPath("not a registry file", "Software\\miHoYo\\原神"));
     }
