@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sf:WindowEx x:Class="LunarWard.Features.UrlProtocol.TestUrlProtocolWindow"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:LunarWard.Features.UrlProtocol"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:sf="using:LunarWard.Frameworks"
+             Width="480"
+             Height="400"
+             CanMaximize="False"
+             CanResize="False"
+             Title="TestUrlProtocolWindow"
+             mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid">
+        <StackPanel Margin="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+            <!-- 上游 <Image Source="ms-appx:///Assets/logo.png" />。
+                 logo.png 来自 Starward.Assets 内容包（输出目录 Assets/，不在 AvaloniaResource 里），
+                 运行时按路径解码，见 code-behind。 -->
+            <Image x:Name="LogoImage"
+                   Width="80"
+                   Height="80" />
+            <TextBlock Margin="0,16,0,0"
+                       HorizontalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="SemiBold"
+                       Text="Test URL Protocol" />
+
+            <TextBlock Margin="0,48,0,0"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Text="Executable path:" />
+            <TextBlock x:Name="TextBlock_ExePath"
+                       Margin="0,2,0,0"
+                       TextWrapping="Wrap" />
+
+            <TextBlock Margin="0,8,0,0"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Text="Startup arguments:" />
+            <TextBlock x:Name="TextBlock_Argu"
+                       Margin="0,2,0,0"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+
+</sf:WindowEx>
