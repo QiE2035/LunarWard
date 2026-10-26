@@ -41,7 +41,7 @@ public sealed partial class SimulateInputTipsWindow : WindowEx
     private const double AnimationConvergence = 0.85;
 
 
-    private readonly DispatcherTimer _timer = new(TimeSpan.FromMilliseconds(16));
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(16) };
 
     private EllipseGeometry? _holeGeometry;
 
@@ -78,7 +78,7 @@ public sealed partial class SimulateInputTipsWindow : WindowEx
         CanMaximize = false;
         CanResize = false;
         ShowInTaskbar = false;
-        SystemDecorations = SystemDecorations.None;
+        SystemDecorations = global::Avalonia.Controls.WindowDecorations.None;
         Topmost = true;
         if (Screens.Primary is { } screen)
         {

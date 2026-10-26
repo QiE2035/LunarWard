@@ -39,7 +39,8 @@ public sealed partial class TestUrlProtocolWindow : WindowEx
         }
         if (!ShouldAppsUseDarkMode())
         {
-            RootGrid.RequestedThemeVariant = ThemeVariant.Light;
+            // 上游给 RootGrid 设 RequestedTheme；Avalonia 只在窗口级提供 RequestedThemeVariant，语义等价。
+            RequestedThemeVariant = ThemeVariant.Light;
         }
         // 上游 MicaController/DesktopAcrylicController 支持时切换系统背景；Avalonia 无等价 API，
         // 窗口保持默认背景（docs/09）。

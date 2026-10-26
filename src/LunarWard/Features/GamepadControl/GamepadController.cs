@@ -863,6 +863,14 @@ internal static class GamepadController
     }
 
 
+    /// <summary>
+    /// 把 Win32 语义的 <see cref="VirtualKey"/> 转成注入层使用的 <see cref="VirtualKeyCode"/>。
+    /// 上游只有一个 <c>Windows.System.VirtualKey</c>；本仓库按职责拆两套枚举（读法见 docs/09 «手柄增强»），
+    /// 两者数值等价，此方法只做边界处的显式转换，避免隐式混用。
+    /// </summary>
+    private static VirtualKeyCode ToCode(VirtualKey virtualKey) => (VirtualKeyCode)(ushort)virtualKey;
+
+
     private static void KeyEvent(GamepadButtons changedButtons, GamepadButtons currentButtons, GamepadButtons keyButton, VirtualKey virtualKey)
     {
         if (changedButtons.HasFlag(keyButton))
@@ -890,13 +898,13 @@ internal static class GamepadController
         if (changed.HasFlag(GamepadButtons.LeftShoulder) && current.HasFlag(GamepadButtons.LeftShoulder))
         {
             _x11?.KeyDown(VirtualKey.Menu);
-            _x11?.ModifiedKeyStroke([VirtualKey.Shift], [VirtualKey.Tab]);
+            _x11?.ModifiedKeyStroke([ToCode(VirtualKey.Shift)], [ToCode(VirtualKey.Tab)]);
             _lastSwitchWindowTimestamp = currentTimestamp;
         }
         else if (changed.HasFlag(GamepadButtons.RightShoulder) && current.HasFlag(GamepadButtons.RightShoulder))
         {
             _x11?.KeyDown(VirtualKey.Menu);
-            _x11?.ModifiedKeyStroke([], [VirtualKey.Tab]);
+            _x11?.ModifiedKeyStroke([], [ToCode(VirtualKey.Tab)]);
             _lastSwitchWindowTimestamp = currentTimestamp;
         }
         else if (changed.HasFlag(GamepadButtons.LeftShoulder) || changed.HasFlag(GamepadButtons.RightShoulder))
@@ -907,11 +915,11 @@ internal static class GamepadController
         {
             if (current.HasFlag(GamepadButtons.LeftShoulder))
             {
-                _x11?.ModifiedKeyStroke([VirtualKey.Shift], [VirtualKey.Tab]);
+                _x11?.ModifiedKeyStroke([ToCode(VirtualKey.Shift)], [ToCode(VirtualKey.Tab)]);
             }
             else if (current.HasFlag(GamepadButtons.RightShoulder))
             {
-                _x11?.ModifiedKeyStroke([], [VirtualKey.Tab]);
+                _x11?.ModifiedKeyStroke([], [ToCode(VirtualKey.Tab)]);
             }
             _lastSwitchWindowTimestamp = currentTimestamp;
         }

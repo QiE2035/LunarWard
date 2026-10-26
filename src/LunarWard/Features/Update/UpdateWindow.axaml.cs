@@ -77,7 +77,9 @@ public sealed partial class UpdateWindow : WindowEx, INotifyPropertyChanged
     {
         Title = "LunarWard · Update";
         CanResize = false;
-        RootGrid.RequestedThemeVariant = ShouldAppsUseDarkMode() ? ThemeVariant.Dark : ThemeVariant.Light;
+        // 上游给 RootGrid 设 RequestedTheme（Grid 支持），Avalonia 的 RequestedThemeVariant 只在 StyledElement 上，
+        // 这里提到窗口级，语义等价（整个内容区都跟随）。
+        RequestedThemeVariant = ShouldAppsUseDarkMode() ? ThemeVariant.Dark : ThemeVariant.Light;
         // 上游 DesktopAcrylicBackdrop → 半透明底色（docs/09）：星穹背景色 + 全透明窗口
         TransparencyLevelHint = [WindowTransparencyLevel.Transparent];
         Background = this.TryFindResource("StarAcrylicBrush", out object? brush) ? brush as Avalonia.Media.IBrush : null;
