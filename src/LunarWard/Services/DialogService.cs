@@ -74,7 +74,7 @@ public static class DialogService
 
         // 遮罩淡入：DialogHost 自带的 OverlayBackground 已设为透明，
         // 改由主窗口那一层可控 Opacity 的 Border 负责（关闭时同样淡出）。
-        MainWindow.SetDialogScrimVisible(true);
+        LunarWard.Features.ViewHost.MainWindow.SetDialogScrimVisible(true);
         try
         {
             await DialogHost.Show(dialog, dialogHost, new DialogOpenedEventHandler((_, args) =>
@@ -86,7 +86,7 @@ public static class DialogService
         }
         finally
         {
-            MainWindow.SetDialogScrimVisible(false);
+            LunarWard.Features.ViewHost.MainWindow.SetDialogScrimVisible(false);
             dialog.CloseRequested -= OnCloseRequested;
             dialog.NotifyClosed();
             Gate.Exit();
@@ -125,7 +125,7 @@ public static class DialogService
             }
         }
 
-        // 优先用新外壳（Features/ViewHost/MainWindow）的浮层；旧壳还在时回退到它。
-        return LunarWard.Features.ViewHost.MainWindow.CurrentDialogHost ?? MainWindow.ContentDialogHost;
+        // 唯一外壳（Features/ViewHost/MainWindow）的浮层；旧壳已删除。
+        return LunarWard.Features.ViewHost.MainWindow.CurrentDialogHost;
     }
 }

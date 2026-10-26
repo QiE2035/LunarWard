@@ -46,12 +46,21 @@ public sealed partial class MainWindow : WindowEx
     public static DialogHostAvalonia.DialogHost? CurrentDialogHost => Current?.RootDialogHost;
 
 
+    /// <summary>淡入/淡出对话框遮罩（旧壳同名 API，DialogService 依赖）。</summary>
+    public static void SetDialogScrimVisible(bool visible)
+    {
+        if (Current?.DialogScrim is { } scrim)
+        {
+            scrim.Opacity = visible ? 1 : 0;
+        }
+    }
+
+
     public MainWindow()
     {
         Current = this;
         InitializeComponent();
         InitializeMainWindow();
-        App.EnsureSystemTray();
         WeakReferenceMessenger.Default.Register<AccentColorChangedMessage>(this, OnAccentColorChanged);
         WeakReferenceMessenger.Default.Register<GameStartedMessage>(this, OnGameStarted);
     }
@@ -131,6 +140,7 @@ public sealed partial class MainWindow : WindowEx
             }
             if (option is MainWindowCloseOption.Hide)
             {
+                App.Current.EnsureSystemTray();
                 Hide();
             }
             if (option is MainWindowCloseOption.Exit)

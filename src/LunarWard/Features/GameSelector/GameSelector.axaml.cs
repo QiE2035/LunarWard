@@ -880,7 +880,7 @@ public sealed partial class GameSelector : UserControl, INotifyPropertyChanged
             return null;
         }
 
-        WineRegistry registry = new(UnixProcessLauncher.Default, AppServices.Current.Log);
+        WineRegistry registry = new(UnixProcessLauncher.Default, AppConfig.GetService<LogService>());
         string? value = await registry.ReadStringAsync(
             GamePrefixContext.CurrentWineBinary ?? "wine",
             prefix,

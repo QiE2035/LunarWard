@@ -36,7 +36,7 @@ namespace LunarWard.Features.Update;
 /// <item><c>DesktopAcrylicBackdrop</c> → 窗口背景 <c>StarAcrylicBrush</c>（无合成器模糊，只有半透明底色）。</item>
 /// <item><c>AppWindow.MoveAndResize</c> + <c>DisplayArea</c> → <see cref="WindowEx.CenterInScreen(int?, int?)"/>（按屏幕工作区等比收缩）。</item>
 /// <item><c>DispatcherQueueTimer</c> → <see cref="DispatcherTimer"/>。</item>
-/// <item><c>Windows.System.Launcher</c> → <see cref="AppServices.OpenUriAsync"/>（xdg-open 语义）。</item>
+/// <item><c>Windows.System.Launcher</c> → <see cref="Frameworks.ShellHelper.OpenUri"/>（xdg-open 语义）。</item>
 /// <item>WebView2 初始化失败的 <c>COMException</c> → <see cref="InvalidOperationException"/>（WebKitGTK 缺失时抛出）。</item>
 /// <item><c>Finish()</c> 里的 <c>RpcService.KeepRunningOnExited(false, noLongerChange: true)</c>：本仓库 Features/RPC 尚未移植，
 /// 留 <c>TODO(port)</c>，不改变其余流程。</item>
@@ -221,7 +221,7 @@ public sealed partial class UpdateWindow : WindowEx, INotifyPropertyChanged
                 _logger.LogInformation("Open url: {url}", url);
                 if (url is not null)
                 {
-                    await AppServices.Current.OpenUriAsync(url);
+                    Frameworks.ShellHelper.OpenUri(url);
                 }
             }
         }
@@ -764,7 +764,7 @@ public sealed partial class UpdateWindow : WindowEx, INotifyPropertyChanged
     {
         try
         {
-            _ = AppServices.Current.OpenUriAsync(args.Uri);
+            _ = Frameworks.ShellHelper.OpenUri(args.Uri);
             args.Handled = true;
         }
         catch { }

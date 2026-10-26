@@ -180,7 +180,7 @@ public sealed partial class AboutSetting : PageBase
 
 
     [RelayCommand]
-    private void OpenUpdateAsync()
+    private void OpenUpdate()
     {
         if (_updateUrl is { Length: > 0 } url)
         {
@@ -190,7 +190,7 @@ public sealed partial class AboutSetting : PageBase
 
 
     [RelayCommand]
-    private void OpenLinkAsync(SettingLinkViewModel? link)
+    private void OpenLink(SettingLinkViewModel? link)
     {
         if (link?.Url is null)
         {

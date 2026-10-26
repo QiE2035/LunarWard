@@ -4,8 +4,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 
-// 折叠 LunarWard.Platform 后，原来能通过 Platform 的 IVT 访问 internal 类型的
-// LunarWard.Installer 仍需可见（Installer 尚未折叠）。
-[assembly: InternalsVisibleTo("LunarWard.Installer")]
+// 折叠 LunarWard.Platform / LunarWard.Installer 后，两者与本程序集同一 assembly，
+// 不再需要为 Installer 开 IVT（测试工程的可见性由 csproj 的 InternalsVisibleTo 提供）。
 
 [assembly: SupportedOSPlatform("linux")]

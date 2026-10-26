@@ -25,6 +25,12 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch" />
 
+    <!-- 对话框遮罩：DialogHost 的 OverlayBackground 设为透明，由这一层负责可淡入淡出的暗化（旧壳同款）。 -->
+    <Border x:Name="DialogScrim"
+            Background="#66000000"
+            IsHitTestVisible="False"
+            Opacity="0" />
+
     <StackPanel MaxWidth="600"
                 Margin="24,72,24,72"
                 VerticalAlignment="Bottom">

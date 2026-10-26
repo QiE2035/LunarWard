@@ -1,5 +1,9 @@
-using LunarWard.Services;
+using LunarWard.Core;
+using LunarWard.Core.HoYoPlay;
+using LunarWard.Features.GameLauncher;
+using LunarWard.Features.PlayTime;
 using System;
+using System.Web;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -18,9 +22,8 @@ namespace LunarWard.Features.UrlProtocol;
 /// 再用 <c>xdg-mime default</c> 把它设成默认处理程序。
 /// </para>
 /// <para>
-/// 协议 URL 的处理复用本仓库已有的 <see cref="StartupCommands"/>（上游是
-/// <c>App.xaml.cs</c> 里 <c>HandleUrlProtocolAsync</c> + 服务容器；本仓库的
-/// <c>startgame</c>/<c>playtime</c> 子命令与上游语义一致，且不依赖 UI 线程）。
+/// 协议 URL 的处理与上游 <c>HandleUrlProtocolAsync</c> 一致：直接从服务容器取
+/// <c>GameLauncherService</c> / <c>PlayTimeRecordService</c> 执行，不经过进程重启。
 /// </para>
 /// <para>平台替换点逐条登记 docs/09-LINUX-DIVERGENCES.md。</para>
 /// </remarks>
@@ -117,10 +120,40 @@ internal class UrlProtocolService
                     return false;
                 }
                 // 上游此处检查 AppConfig.UserDataFolder 是否为空（便携版首次启动前可能没初始化）。
-                // 本仓库的数据目录由 XdgPaths 计算，始终有值（并在 AppServices 构造时创建）。
-                if (uri.Host is "startgame" or "playtime")
+                // 本仓库的数据目录由 XdgPaths 计算，始终有值（并在 AppConfig.CheckEnviromentAsync 时创建）。
+                if (uri.Host is "startgame")
                 {
-                    return await DispatchAsync(url).ConfigureAwait(false);
+                    if (GameBiz.TryParse(uri.AbsolutePath.Trim('/'), out GameBiz biz) && GameId.FromGameBiz(biz) is GameId gameId)
+                    {
+                        var kvs = HttpUtility.ParseQueryString(uri.Query);
+                        string? installPath = kvs["install_path"];
+                        await AppConfig.GetService<GameLauncherService>().StartGameAsync(gameId, installPath);
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Cannot parse the game_biz \"{uri.AbsolutePath.Trim('/')}\".");
+                    }
+                    return true;
+                }
+                if (uri.Host is "playtime")
+                {
+                    if (GameBiz.TryParse(uri.AbsolutePath.Trim('/'), out GameBiz biz) && GameId.FromGameBiz(biz) is GameId gameId)
+                    {
+                        var kvs = HttpUtility.ParseQueryString(uri.Query);
+                        if (int.TryParse(kvs["pid"], out int pid))
+                        {
+                            await AppConfig.GetService<PlayTimeRecordService>().StartProcessToLogAsync(gameId, pid);
+                        }
+                        else
+                        {
+                            await AppConfig.GetService<PlayTimeRecordService>().StartProcessToLogAsync(gameId);
+                        }
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Cannot parse the game_biz \"{uri.AbsolutePath.Trim('/')}\".");
+                    }
+                    return true;
                 }
             }
         }
@@ -132,22 +165,6 @@ internal class UrlProtocolService
             return true;
         }
         return false;
-    }
-
-
-
-    /// <summary>
-    /// 分发到 <see cref="StartupCommands"/>（上游是 <c>AppConfig.GetService&lt;GameLauncherService&gt;()</c>
-    /// / <c>PlayTimeRecordService</c> 的直接调用）。
-    /// </summary>
-    private static async Task<bool> DispatchAsync(string url)
-    {
-        int exitCode = await StartupCommands.RunAsync([url]).ConfigureAwait(false);
-        if (exitCode != 0)
-        {
-            Console.Error.WriteLine($"[UrlProtocol] 处理失败（exit={exitCode}）：{url}");
-        }
-        return true;
     }
 
 

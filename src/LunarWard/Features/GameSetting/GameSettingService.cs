@@ -56,7 +56,7 @@ internal static class GameSettingService
 
 
 
-    private static readonly Lazy<WineRegistry> _registry = new(() => new WineRegistry(UnixProcessLauncher.Default, AppServices.Current.Log));
+    private static readonly Lazy<WineRegistry> _registry = new(() => new WineRegistry(UnixProcessLauncher.Default, AppConfig.GetService<LogService>()));
 
 
     private static string Prefix => GamePrefixContext.CurrentPrefix!;
