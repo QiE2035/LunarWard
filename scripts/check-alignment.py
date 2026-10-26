@@ -60,6 +60,12 @@ EQUIVALENTS = {
         "不移植：Win32 COM 细节，由 Avalonia StorageProvider 覆盖（docs/09 六）",
     ("src/Starward", "Features/ViewHost/SystemTrayWindow.xaml"):
         "托盘菜单改 Avalonia NativeMenu，由 Features/ViewHost/SystemTrayWindow.cs 承载（docs/09 五）",
+    ("src/Starward", "Features/ViewHost/SystemTrayWindow.xaml.cs"):
+        "托盘宿主改 Avalonia TrayIcon，由 Features/ViewHost/SystemTrayWindow.cs 承载（docs/09 五）",
+    ("src/Starward", "Helpers/AccentColorHelper.cs"):
+        "唯一定位在 Features/Background/AccentColorHelper.cs（上游同名实现迁到该处，docs/09 六/十七）",
+    ("src/Starward.RPC", "NamedPipesConnectionFactory.cs"):
+        "UnixSocketConnectionFactory.cs：NamedPipe → Unix socket（docs/09 十八）",
 }
 
 SOURCE_TREES = [
