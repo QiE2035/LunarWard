@@ -1439,7 +1439,8 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
                 entry.Value,
                 entry.ImageSource,
                 entry.VideoSource,
-                entry.Kind == BackgroundKind.Official));
+                entry.Kind == BackgroundKind.Official,
+                entry.ThemeSource));
         }
 
         ShowBackgroundBar = BackgroundImages.Count > 1;
@@ -1703,14 +1704,14 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
         if (item.IsVideo && _services.Background.IsVideoAvailable && _services.Config.Launcher.VideoBackground)
         {
-            _context.Shell.ShowVideoBackground(item.VideoSource ?? item.Value);
+            _context.Shell.ShowVideoBackground(item.VideoSource ?? item.Value, item.ThemeSource);
             return;
         }
 
         // 静态图，或视频不可用（ffmpeg 缺失/关闭动态背景）时用兜底图
         var imageSource = item.ImageSource
             ?? (item.IsVideo ? _context.Shell.Assets.For()?.Background : item.Value);
-        await _context.Shell.ShowStaticBackgroundAsync(imageSource).ConfigureAwait(true);
+        await _context.Shell.ShowStaticBackgroundAsync(imageSource, item.ThemeSource).ConfigureAwait(true);
     }
 
 
@@ -1958,7 +1959,8 @@ public sealed record BackgroundSwitchItem(
     string Value,
     string? ImageSource = null,
     string? VideoSource = null,
-    bool IsOfficial = false)
+    bool IsOfficial = false,
+    string? ThemeSource = null)
 {
     public bool IsVideo => !string.IsNullOrWhiteSpace(VideoSource) || BackgroundCatalog.IsSupportedVideo(Value);
 }

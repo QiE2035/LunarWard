@@ -10,7 +10,8 @@
         CanResize="False"
         CanMaximize="False"
         WindowStartupLocation="CenterScreen"
-        Background="#FF1E1E1E"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
         ExtendClientAreaToDecorationsHint="False"
         WindowDecorations="None"
         TextOptions.TextRenderingMode="Antialias"
@@ -29,6 +30,12 @@
     Avalonia 没有内建等价物，这里用 DialogHost.Avalonia 提供同一语义
     （暗化底层内容 + 居中卡片 + 圆角/阴影；OverlayBackground 对应 WinUI ContentDialogSmokeFill #66000000），对话框内容本身仍是普通 UserControl。
   -->
+  <!--
+    Win11 由 DWM 给窗口圆角（8px）。Linux 上没有等价的窗口管理器处理（无边框窗口就是直角），
+    所以这里让窗口透明、把内容裁进一个 8px 圆角的 Border —— KWin 支持 ARGB 窗口，视觉与 Windows 一致。
+  -->
+  <Border x:Name="RootBorder" CornerRadius="8" ClipToBounds="True"
+          Background="#FF1E1E1E" BorderBrush="#1AFFFFFF" BorderThickness="1">
   <dh:DialogHost x:Name="RootDialogHost" CloseOnClickAway="False" OverlayBackground="#66000000">
     <Grid RowDefinitions="48,*">
 
@@ -53,4 +60,5 @@
     </StackPanel>
     </Grid>
   </dh:DialogHost>
+  </Border>
 </Window>

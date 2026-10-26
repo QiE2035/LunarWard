@@ -52,6 +52,13 @@ public partial class MainWindow : Window
 
     private void OnOpened(object? sender, EventArgs e)
     {
+        // 圆角靠「透明窗口 + 圆角裁剪」实现。合成器不给透明窗口时（ActualTransparencyLevel 为 None）
+        // 四角会发黑，所以退回直角。
+        if (RootBorder is not null && ActualTransparencyLevel == WindowTransparencyLevel.None)
+        {
+            RootBorder.CornerRadius = default;
+        }
+
         if (!CaptureMode.Enabled)
         {
             return;

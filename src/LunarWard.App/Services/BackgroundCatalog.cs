@@ -21,7 +21,8 @@ public enum BackgroundKind
 /// <param name="ImageSource">图片：本地绝对路径或 https URL（可为 null，纯视频条目也有兜底图）。</param>
 /// <param name="VideoSource">视频：本地绝对路径或 https URL。</param>
 /// <param name="Title">显示名。</param>
-public sealed record BackgroundEntry(BackgroundKind Kind, string? ImageSource, string? VideoSource, string Title)
+/// <param name="ThemeSource">版本亮点海报（含 logo 与标题文字，PNG 透明底）：叠在背景图/视频帧之上。</param>
+public sealed record BackgroundEntry(BackgroundKind Kind, string? ImageSource, string? VideoSource, string Title, string? ThemeSource = null)
 {
     public bool IsVideo => !string.IsNullOrWhiteSpace(VideoSource);
 
@@ -75,15 +76,17 @@ public static class BackgroundCatalog
 
             var image = background.Background?.Url;
             var video = background.Video?.Url;
+            // 上游 AppBackground 会把 theme（logo/标题文字海报）叠在背景或视频帧上。
+            var theme = background.Theme?.Url;
 
             if (string.Equals(background.Type, GameBackground.BACKGROUND_TYPE_VIDEO, StringComparison.Ordinal)
                 && !string.IsNullOrWhiteSpace(video))
             {
-                result.Add(new BackgroundEntry(BackgroundKind.Official, image, video, "官方动态背景"));
+                result.Add(new BackgroundEntry(BackgroundKind.Official, image, video, "官方动态背景", theme));
             }
             else if (!string.IsNullOrWhiteSpace(image))
             {
-                result.Add(new BackgroundEntry(BackgroundKind.Official, image, null, "官方背景"));
+                result.Add(new BackgroundEntry(BackgroundKind.Official, image, null, "官方背景", theme));
             }
         }
 

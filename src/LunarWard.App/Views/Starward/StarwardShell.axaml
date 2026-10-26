@@ -24,6 +24,16 @@
       <ContentPresenter x:Name="VideoBackgroundHost" IsHitTestVisible="False" />
 
       <!--
+        上游 AppBackground：官方背景的 theme 是一张透明底 PNG（左上角是游戏 logo 与版本标题文字），
+        静态图时合成到背景位图、视频时压在每一帧上。这里用同尺寸的 Image 层叠，效果一致。
+      -->
+      <Image Source="{Binding BackgroundOverlayImage}"
+             Stretch="UniformToFill"
+             IsVisible="{Binding HasBackgroundOverlay}"
+             IsHitTestVisible="False"
+             RenderOptions.BitmapInterpolationMode="HighQuality" />
+
+      <!--
         上游 AppBackground 在右上/右下各有一片 400×400 暗角渐变。这里去掉：
         在亮色版本图上它们看起来就是两块黑色半透明遮罩（用户反馈），
         而开始游戏按钮与便笺时钟本身自带底色，不需要这层压暗。

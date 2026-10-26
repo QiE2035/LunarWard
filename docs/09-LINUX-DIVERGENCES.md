@@ -73,6 +73,8 @@
 | 右上 / 右下 400×400 暗角渐变（`AppBackground.xaml`、右侧 200px 竖条） | **整层去掉** | 在亮色版本图上看起来是两块黑色半透明遮罩（用户反馈），且「开始游戏」按钮与便笺时钟自带底色，不需要压暗。上游这两层是为亮色壁纸准备的可读性兜底，去掉后与素材无关的页面仍靠 `Border_OverlayMask` 压暗 |
 | 标题栏整宽拖拽层（`AppWindow.TitleBar` + 内容层之上的 48px Grid） | 窗口级 `PointerPressed` + `y ≤ 48` 判断，控件自己接管的点击不参与 | Avalonia 的 `Border`/`Grid` 铺 `Transparent` 会吃掉下层命中，导致左上角游戏切换按钮只有下边沿能点（用户反馈）。改由窗口过滤：只把顶栏空白处当拖拽区 |
 | 背景切换条 60px 命中区 | `<Panel Background="Transparent">` | Avalonia 中无 `Background` 的 `Panel` **不参与命中测试**。原来内容收起后指针进不来，切换条只出现一次就再也呼不出（用户反馈） |
+| 窗口圆角 8 + 1px `#1AFFFFFF` 描边（Win11 由 DWM 画） | 透明窗口 + 8px 圆角 `Border ClipToBounds` 自绘 | Linux 没有等价窗口管理器处理（无边框窗口就是直角）；KWin 支持 ARGB 窗口，视觉一致。`ActualTransparencyLevel == None` 时自动退回直角，避免四角发黑 |
+| `gameBackground.Theme` 版本亮点海报（含 logo/标题文字） | 独立 `Image` 层 `UniformToFill` 叠在背景图/视频帧之上 | 上游静态图用 Win2D 先合成进位图、视频用 `VideoFrameAvailable` 逐帧混合；Avalonia 直接叠一层即可得到同样画面，省掉每帧 CPU 合成。本地自定义背景没有 theme，该层自动隐藏 |
 | 公告 Banner `FlipView` 滚轮翻页 | 手写 `PointerWheelChanged` → 上一页/下一页 | Avalonia 无 `FlipView`；上游 FlipView 的触摸/滚轮切换用等价手势复刻 |
 
 - **文字抗锯齿**：Windows 用 ClearType 子像素渲染，Avalonia 默认也是子像素，截图里能在

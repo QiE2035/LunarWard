@@ -62,6 +62,7 @@
 | 游戏图标条 | 顶部 60 高、Margin 56,0,0,0、Padding 6,0,12,0；40×40 图标横排、Spacing 0，每项右下角 20×20 区服角标 + `#60000000` 遮罩（当前/悬停 0）；收起时 `Translation -100`，只在 60px 高度内命中 |
 | 游戏选择层 | 全屏 `#80000000`、Padding 68,80,0,0；**每款游戏一张卡**（192×108、`#40000000`、圆角 8、UniformToFill 缩略图），区服收在卡片内；点卡片才弹区服 Flyout（Bottom/Transient），单区服直接切换；悬停显示「选择游戏服务器」；点空白 / ESC / 右上关闭 |
 | 已安装游戏 | 卡片下方 Expander（MinWidth 820、`#0DFFFFFF` 圆角 8）：占用大小 + 硬链接节省 + 自动查找 + 刷新，展开为每区服一行（图标/游戏名/区服角标/区服名/容量/路径） |
+| 版本亮点海报 | 官方背景的 `theme`（透明底 PNG，左上角是游戏 logo + 版本标题文字）叠在背景图/视频帧之上，`UniformToFill`；本地自定义背景没有这一层 |
 | 公告卡 | 左 60、底 40，380×304，圆角 8，`CustomAcrylic`；上半 Banner 176 高，下半 Pivot 124 高 |
 | 公告卡 Banner | `UniformToFill`，圆角 8；悬停右下角显示 `1/3` 计数；**滚轮上一页/下一页**（上游 FlipView 行为）；点击打开链接 |
 | 公告卡 Pivot | 表头 `活动 / 公告 / 资讯`，16px Bold，header 高 36，左右 margin 12，选中下划线 3px 圆角；右侧公告铃铛按钮（E789）带红点 |
@@ -75,7 +76,7 @@
 | 背景切换条 | 背景数 > 1 且悬停底部 60px 区时出现：可点圆点 + 图库/复制/另存为/播放按钮；滚轮切上一张/下一张 |
 | 公告/Update Toast | 底部居中，宽 ≤600，距底 72 |
 
-背景来源（`BackgroundCatalog`）：官方接口 `getAllGameBasicInfo` 的 `backgrounds`（图片 + `type=BACKGROUND_TYPE_VIDEO` 的官方动态背景，`ffmpeg` 直接流式解码 https）→ 游戏素材版本海报 → `~/.cache/lunarward/background` 下的本地图片/视频；切换条只在可选项 > 1 时出现。
+背景来源（`BackgroundCatalog`）：官方接口 `getAllGameBasicInfo` 的 `backgrounds`（图片 + `type=BACKGROUND_TYPE_VIDEO` 的官方动态背景；视频先落盘到 `~/.cache/lunarward/bg/`，`ffmpeg` 读本地文件解码，不再反复拉流）→ 游戏素材版本海报 → `~/.cache/lunarward/background` 下的本地图片/视频；切换条只在可选项 > 1 时出现。
 
 ## 3. 视觉 token
 

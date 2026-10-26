@@ -847,7 +847,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     /// <summary>
     /// 切到视频背景：本地文件或官方 https 视频（ffmpeg 子进程流式解码）。
     /// </summary>
-    public void ShowVideoBackground(string source)
+    public void ShowVideoBackground(string source, string? overlaySource = null)
     {
         if (string.IsNullOrWhiteSpace(source))
         {
@@ -856,14 +856,16 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
         _videoBackground = source;
         BackgroundImage = null;
+        _ = SetBackgroundOverlayAsync(overlaySource);
         VideoBackgroundRequested?.Invoke(this, source);
     }
 
 
     /// <summary>切到静态图背景（本地或远程），同时卸载视频层。</summary>
-    public async Task ShowStaticBackgroundAsync(string? source)
+    public async Task ShowStaticBackgroundAsync(string? source, string? overlaySource = null)
     {
         ClearVideoBackground();
+        await SetBackgroundOverlayAsync(overlaySource).ConfigureAwait(true);
 
         if (string.IsNullOrWhiteSpace(source))
         {
@@ -873,6 +875,48 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         if (await Assets.BitmapAsync(source).ConfigureAwait(true) is { } bitmap)
         {
             BackgroundImage = bitmap;
+        }
+    }
+
+
+    private Bitmap? _backgroundOverlay;
+
+    /// <summary>
+    /// 版本亮点海报（上游 <c>gameBackground.Theme</c>：透明底 PNG，左上角是 logo 与版本标题文字），
+    /// 叠在背景图或视频帧之上。本地自定义背景没有这一层。
+    /// </summary>
+    public Bitmap? BackgroundOverlayImage
+    {
+        get => _backgroundOverlay;
+        private set
+        {
+            if (SetProperty(ref _backgroundOverlay, value))
+            {
+                OnPropertyChanged(nameof(HasBackgroundOverlay));
+            }
+        }
+    }
+
+    public bool HasBackgroundOverlay => _backgroundOverlay is not null;
+
+
+    /// <summary>换/清版本亮点海报；空值表示该背景没有 theme（本地自定义背景）。</summary>
+    public async Task SetBackgroundOverlayAsync(string? source)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            BackgroundOverlayImage = null;
+            return;
+        }
+
+        try
+        {
+            BackgroundOverlayImage = await Assets.BitmapAsync(source).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"版本亮点海报加载失败：{ex.Message}");
+            BackgroundOverlayImage = null;
         }
     }
 
