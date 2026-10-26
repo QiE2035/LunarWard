@@ -537,3 +537,69 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 **同批删除（消灭本地发明）**：`Views/Starward/Pages/GameSettingPage.axaml(.cs)`（48 KB，`x:DataType=vm:GameSettingPageViewModel`）、`ViewModels/Starward/GameSettingPageViewModel.cs`（1672 行）、`GameSettingProgramViewModel.cs`（585 行）、`GameSettingOptions.cs`。宿主 `StarwardShell.CreatePage` 的 `ShellPage.GameSetting` 分支改为 `Features.GameSetting.GameSettingPage`。
 `Services/GameSettingRegistry.cs` 保留（单测 `WineRegistryTests` 覆盖其注册表键映射，与页面无关）。
 **未移植（明确缺口）**：无（上游 7 个文件全部有同名落点）。
+
+---
+
+## 十二、Features/GameSelector、GameLauncherPage、GameLauncherSettingDialog、GameInstall 对话框（2026-10-26，launcher-port / task-7）
+
+上游这四组 UI 在本仓库已同名落点（`Features/GameSelector/`、`Features/GameLauncher/`、`Features/GameInstall/`）。逐文件对应的平台替换如下（服务层见 §七）：
+
+### 12.1 GameSelector（`GameSelector.xaml` 572 行 → `.axaml`）
+
+| 项 | 上游 | 本仓库 | 原因 |
+|---|---|---|---|
+| 窗口尺寸变化监听 | `XamlRoot.Changed` + `XamlRoot.RasterizationScale` | `TopLevel.GetTopLevel(this).ScalingChanged` + `ILayoutRoot.RenderScaling` | Avalonia 无 XamlRoot |
+| 标题栏拖拽区 | `XamlRoot.SetWindowDragRectangles(...)` | 空实现 + `WeakReferenceMessenger.Send(new MainWindowDragRectAdaptToGameIconMessage(false))` | 拖拽区由 `WindowEx.SetDragRectangles` 在宿主统一设置（§七 #7） |
+| 图标区收起动画 | `Grid.Translation`（Vector3）+ OpacityTransition | `RenderTransform = new TranslateTransform(0,-100)` + `Opacity` + `IsHitTestVisible` | Avalonia 无 `Translation` 属性/Vector3 |
+| 服务器弹出菜单 | `FlyoutBase.GetAttachedFlyout(ele)?.ShowAt(...)` + `VisualTreeHelper.GetOpenPopupsForXamlRoot` 关闭 | `FlyoutBase.ShowAttachedFlyout(ele)` + 自持 `_currentFlyout?.Hide()` | 无 RasterizationScale/XamlRoot 弹窗枚举 |
+| 自动搜索已安装游戏 | 读 `HKCU\Software\miHoYo\HYP\1_1\{biz}` / `Cognosphere\HYP\1_0\{biz}` 的 `GameInstallPath` | `GameLauncherService.GetGameInstallPath(biz)` + `AppConfig.GetGameInstallPathRemovable` | Linux 无 HYP 注册表；安装路径由本仓库配置承载 |
+| 硬链接占用去重 | `Kernel32.GetFileInformationByHandleEx<FILE_ID_INFO>` | `FileIdentity`（`libc stat` 的 `st_dev`/`st_ino`） | 无 Win32 API（§七 #8） |
+| `TeachingTip` | CommunityToolkit `TeachingTip` | `Popup` + Border/文本/按钮 | Avalonia 无 TeachingTip |
+| `mxi:Interaction.Behaviors` + Storyboard | PointerEntered/Exited 触发的 opacity 动画 | 删除（悬停过渡改用 Avalonia 样式自带反馈） | 无 Interactivity/Storyboard 触发器 |
+| `sc:CachedImage` | Starward.Controls.CachedImage | `Image`（TODO：task-4 的 CachedImage 落地后换回） | 控件归 task-4 |
+
+### 12.2 GameLauncherPage（`GameLauncherPage.xaml` 45 KB → `.axaml`）
+
+| 项 | 上游 | 本仓库 | 原因 |
+|---|---|---|---|
+| 页面基类 | `PageBase`（WinUI Page） | `LunarWard.Frameworks.PageBase`（同名同语义） | 见文档 §一 |
+| 未移植控件 | `sfp:PlayTimeButton`、`sfc:CloudGameButton`、`sfgd:DailyNoteButton` | 整块注释 + `<!-- TODO(跨任务) -->` 占位 | 分属 Features/PlayTime、CloudGame、GameRecord/DailyNote 三个并行任务，尚未落点 |
+| 超链接 | `Hyperlink`（NavigateUri） | `Button Classes="link"` + `Click` → `TopLevel.Launcher.LaunchUriAsync` | Avalonia 无 Hyperlink 控件 |
+| 定时器 | `DispatcherQueueTimer` | `DispatcherTimer` | 命名差异 |
+| `ObservableProperty` 分部属性 | MVVM Toolkit 源生成 | 手写字段 + `SetProperty` + `OnXxxChanged` | Avalonia UserControl/PageBase 已实现 `INotifyPropertyChanged`，源生成器报 `MVVMTK0001` |
+| 紧凑复选框 | `CompactCheckBoxStyle.xaml`（375 行整份 CheckBox 模板 + VisualStateManager + AnimatedIcon） | `Features/GameLauncher/CompactCheckBoxStyle.axaml`：`CheckBox.compact` 样式（尺寸/字号/前景色），不重写模板 | Avalonia 无 VisualStateManager/AnimatedIcon；Fluent 模板已是等价基线 |
+| DX12 提示框 | `ContentDialog` | `StarwardContentDialog`（`DX12IntroDialog`） | §七 #16 |
+| 游戏公告 | `GameNoticeWindow` + WebView2 | `WindowEx` + `Frameworks/WebView`（WebKitGTK） | §七 #17 |
+
+### 12.3 GameLauncherSettingDialog（`GameLauncherSettingDialog.xaml` 42 KB → `.axaml`）
+
+| 项 | 上游 | 本仓库 | 原因 |
+|---|---|---|---|
+| 对话框根 | `ContentDialog` + `ContentDialog.Resources`（MaxWidth/Padding/SmokeFill） | `controls:StarwardContentDialog`，删 Resources 块 | 遮罩/宽度由 DialogService 宿主提供 |
+| 左侧导航 | `NavigationView`（PaneHeader + MenuItems + ItemInvoked） | `Grid ColumnDefinitions="200,*"` + 左 `ListBox`（4 个 `ListBoxItem Tag=0..3`）+ `SelectionChanged` | Avalonia 无 NavigationView |
+| 右侧翻页 | `FlipView` | `Carousel`（保留 `FlipView_Settings` 名称） | Avalonia 无 FlipView；Carousel 语义等价 |
+| 分段选择语音 | `cwc:Segmented`（Multiple） | `StackPanel` + 4 个 `ToggleButton`（`Tag=zh-cn/...`，`IsCheckedChanged` 收敛选择） | Avalonia 无 CommunityToolkit Segmented |
+| 超链接 | `Hyperlink`（2 处） | `Button Classes="link" Tag=<url>` + `Click` | 同上 |
+| `ObservableProperty` | 4 个分部属性 | 手写属性 + `OnXxxChanged` | 同 12.2 |
+| 文本裁剪事件 | `TextBlock.IsTextTrimmedChanged` | 删除（Avalonia 无该事件） | 无等价 API |
+| `MainWindow` 拖拽区 | `XamlRoot.SetWindowDragRectangles` | `MainWindowDragRectAdaptToGameIconMessage` | 同 12.1 |
+| `GameInstall` 调用 | 上游同一份 `GameInstallService` | 由 rpc-port 的 `Features/GameInstall/GameInstallService.cs`（gRPC 版）承接 | 该文件归 task-10 |
+
+### 12.4 GameInstall 三个对话框（`InstallGameDialog` / `PreDownloadButton` / `PreDownloadDialog`）
+
+| 项 | 上游 | 本仓库 | 原因 |
+|---|---|---|---|
+| 对话框根 | `ContentDialog` | `controls:StarwardContentDialog` | §七 #16 |
+| 音频语言分段 | `cwc:Segmented`（Multiple） | `ListBox SelectionMode="Multiple"` + `ListBoxItem Tag=zh-cn..`（`ItemsPanel` 横向 StackPanel） | Avalonia 无 Segmented；ListBox 保留 `SelectedItems` 语义 |
+| `ObservableProperty` | 3+3 个分部属性（含 `NotifyPropertyChangedFor`） | 手写属性 + `OnPropertyChanged(nameof(...))` | 同 12.2 |
+| 目录选择 | `FileDialogHelper.PickFolderAsync(this.XamlRoot)` | `FileDialogHelper.PickFolderAsync(this)`（`TopLevel.StorageProvider`） | 无 XamlRoot（§七 #16） |
+| 文本裁剪事件 | `TextBlock.IsTextTrimmedChanged` | 删除 | 无等价 API |
+| `RelayCommand Close` | 与 `ContentDialog.Hide()` 同名 | 改名 `CloseDialogCommand` → `this.Close()` | 基类同名递归 |
+| 安装任务类型 | `Starward.RPC.GameInstall.*` | `LunarWard.RPC.GameInstall.*`（rpc-port 落点，`GameInstallContext`/`GameInstallState`/`GameInstallRequest`） | RPC 层归 task-10 |
+| `FontIcon` 图标 | `FontIcon Glyph` | `TextBlock Classes="icon"` | 仓库无 FontIcon 类（§七 #18） |
+| 阴影 | `cu:AttachedDropShadow` + `Scene3D.Color` | 删除 | Avalonia 无 WinUI 阴影合成效果（改用 BoxShadow/边框） |
+
+### 12.5 明确未移植（同 §7.3）
+
+- `Features/GameSelector/NoAnimationImageExStyle.xaml`：WinUI `ImageEx` 的样式，Avalonia 无该控件，`Image` 已无淡入动画，样式的存在前提消失。
+- `Features/GameLauncher/CompactCheckBoxStyle.xaml` 的**模板本体**未逐行翻译（见 12.2），只保留紧凑样式语义。

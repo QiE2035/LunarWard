@@ -1,0 +1,32 @@
+<!--
+  上游 Starward/Features/GameLauncher/CompactCheckBoxStyle.xaml 的 Avalonia 对应物。
+
+  上游那一份是整份 CheckBox ControlTemplate（375 行，含 VisualStateManager 的
+  Normal/PointerOver/Pressed/Checked 状态与 AnimatedIcon 动画）。Avalonia 没有
+  VisualStateManager，控件模板也换成了 Fluent 的 TemplatePart 结构，逐行翻译模板
+  只会得到一份与 WinUI 视觉并不一致的副本，因此这里保留「紧凑复选框」的语义：
+  最小宽度、图标尺寸、字号与文字颜色，状态表现沿用 Avalonia Fluent 模板。
+  差异已登记 docs/09 §七。
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Style Selector="CheckBox.compact">
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{DynamicResource StarTextSecondary}" />
+  </Style>
+
+  <Style Selector="CheckBox.compact /template/ Border#NormalRectangle">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="16" />
+  </Style>
+
+  <Style Selector="CheckBox.compact /template/ TextBlock#ContentPresenter">
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+
+</Styles>

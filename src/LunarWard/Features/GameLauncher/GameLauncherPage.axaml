@@ -10,6 +10,11 @@
              x:Class="LunarWard.Features.GameLauncher.GameLauncherPage"
              x:CompileBindings="False">
 
+    <sf:PageBase.Styles>
+        <StyleInclude Source="avares://LunarWard/Features/GameLauncher/CompactCheckBoxStyle.axaml" />
+    </sf:PageBase.Styles>
+
+
 
     <Page.Resources>
         <x:Double x:Key="PipsPagerButtonWidth">20</x:Double>
@@ -603,7 +608,7 @@
                               VerticalContentAlignment="Center"
                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                               IsChecked="{Binding EnableDX12, Mode=TwoWay}"
-                              Style="{DynamicResource CompactCheckBoxStyle}">
+                              Classes="compact">
                         <TextBlock Margin="-2,0,0,4"
                                    VerticalAlignment="Center"
                                    FontSize="12"
