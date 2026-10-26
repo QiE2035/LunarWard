@@ -514,7 +514,7 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 | 缺口 | 上游用法 | 本仓库现状 | 影响的窗口 |
 | --- | --- | --- | --- |
-| 导航拦截 | `NavigationStarting` 里设 `args.Cancel = true` 拦站外跳转 | `CoreWebView2NavigationStartingEventArgs.Cancel` 只能记录，不生效（门面只告警） | `LoginPage`（`miyoushe`/`hoyolab` 里点外链会真的跳走） |
+| 导航拦截 | `NavigationStarting` 里设 `args.Cancel = true` 拦站外跳转（**上游目前没有窗口真的这么做**，`LoginPage` 只用该事件换图标；全树 `args.Cancel` 只出现在 `GameAccountSwitcher`/`MainWindow` 的非 WebView 事件里） | `CoreWebView2NavigationStartingEventArgs.Cancel` 只记录 + 告警，不生效；真需要拦截时在 `WebKitWebViewCore` 的 `decide-policy` 信号里拒绝 `NAVIGATION_ACTION` 即可（互操作层已连上该信号） | 暂无人使用；`LoginPage` 行为与上游一致 |
 | 资源嗅探只认 JSON | `WebResourceResponseReceived` 读任意响应体 | 只有 URI 含 `.json` 的资源会被抓取并提供 `GetContentAsync()` | `ZZZGachaInfoWindow` |
 | 请求头 | `args.Request.Headers.GetHeader("Cookie")` / `x-rpc-lang` | 资源响应回调不带请求头，只能用 `CookieManager.GetCookiesAsync(origin)` 重组 Cookie | `ZZZGachaInfoWindow` |
 | DevTools 协议 | `CallDevToolsProtocolMethodAsync("Page.captureScreenshot", ...)` | 只实现 `Page.captureScreenshot`（走 `webkit_web_view_get_snapshot`），其它方法抛 `PlatformNotSupportedException` | `BBSWebBridge`（截图分享功能已可用） |
