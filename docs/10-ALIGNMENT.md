@@ -200,7 +200,7 @@ src/LunarWard/
 | 5 | `src/LunarWard/Views/**`、`ViewModels/**`、`AppServices.cs`（旧 UI 层整层） | 125+ | **已完成**：`Features/ViewHost/MainWindow+MainView` 成为唯一外壳；`App.axaml.cs` 重写为上游 `App.xaml.cs` 结构（`OnFrameworkInitializationCompleted` ≡ OnLaunched / `HandleStartupAsync` / `EnsureMainWindow` / `EnsureSystemTray` / `Exit`），`AppInstance`→`Frameworks/SingleInstance`，`Timer`→`DispatcherTimer`。提交 `675af80`、`8893576`、本步多个提交 |
 | 6 | `src/LunarWard.Launch/**`（69 个，含旧 Database/启动逻辑） | 69 | **已完成**：Launch 折叠进 `src/LunarWard/Launch/`，旧 `Database/**` 16 个生产文件与 13 个孤儿测试删除（f394de9、2a9c6fe），调用点迁到 `Features/Database/DatabaseService` |
 | 7 | `src/LunarWard.{Games,Platform,Wine,Installer}` | 4 工程 | **已完成**：Games/Platform/Wine/Installer 折叠进 `src/LunarWard/{Wine,Platform}/` 与 `Features/GameInstall/Installer/`（06c0553…4221c97）；`LunarWard.slnx` = 5 src + 3 tests |
-| 8 | `src/LunarWard/Localization/AppStrings.cs`、`Styles/Starward.axaml` 等本地独有层 | ~10 | `LunarWard.Language` + `Features/*` 样式；`AppStrings` 删除进行中（task-22）。其余本地独有层按 `docs/17-PLATFORM-LAYER.md` 分类保留（平台层）或删除（门面） |
+| 8 | `src/LunarWard/Localization/AppStrings.cs`、`Styles/Starward.axaml` 等本地独有层 | ~10 | **已完成**：`AppStrings` + `Resources*.resx` + 相关测试整层删除（176bdda，task-22），9 个页面改 `{x:Static lang:Lang.Xxx}`；`Styles/Starward.axaml` 等其余本地层按 `docs/17-PLATFORM-LAYER.md` 分类保留（平台层） |
 
 删除前置条件：`scripts/check-alignment.py` 报告「本地独有文件数 = 已登记白名单」（脚本已落地，见 §6）。
 
@@ -214,7 +214,11 @@ src/LunarWard/
 - **旧数据层删除完成**：`Launch/Database/**`（旧手搓 store）、`Wine/GameAccountStore`、旧 `Launch/{Gacha*,Uigf4*,PlayTime*}` 共 16 个生产文件 + 13 个孤儿测试；`DatabaseService` 成为唯一入口。
 - **Linux 数据库加固补回**（a5c04a0）：上游在 Windows 下依赖目录 ACL，Linux 无等价物 → `DatabaseFilePermissions` 在打开连接后把主库与 WAL 侧车收紧到 0600。
 - **平台层账面**：新增 `docs/17-PLATFORM-LAYER.md` 逐类登记上游没有的 118 个文件（平台层/等价物/进程内化/本地扩展），本 goal 的「偏移」以此文件为唯一索引。
-- 待办：`AppStrings` 删除（task-22）、`AboutSetting` 更新路径统一（task-23）、抓屏回退链（dapper-db）、`Services/**` 剩余文件归属登记。
+- **`AppStrings` 删除完成**（176bdda，task-22）：`Localization/` 整目录 + 两个 resx + 相关测试删除，`{Binding Strings[...]}` 0 命中，全仓走上游 `{x:Static lang:Lang.Xxx}`。
+- **关于页更新路径统一完成**（fb80654，task-23）：删除自造 `ReleaseChecker` 与 12 个孤儿用例，改走上游 `UpdateService`+`NuGetVersion` 比较+`UpdateWindow.NewVersion`；预览渠道开关恢复可写。
+- **抓屏回退链完成**（fbfd517，dapper-db）：grim→spectacle→gnome-screenshot→import→xwd 五级降级、XWayland 先试 xdotool、补回 `DatabaseFilePermissionsTests` 5 用例。
+- **`Services/**` 剩余 14 个文件**已逐条登记在 `docs/17-PLATFORM-LAYER.md`（平台层等价物：XDG 路径/进程树/Wine 注册表/背景目录/Avalonia 对话框宿主等），保留而非删除。
+- 终验（`bash scripts/verify.sh`）：构建 0 错误、595 测试全绿、17 页截图全过、`check-alignment.py` PASS。
 
 
 ## 8. 开放决策（需 Lead 拍板，暂记）
@@ -223,8 +227,9 @@ src/LunarWard/
    **决策已推翻**（2026-10-26）：NamedPipe → Unix domain socket（`NamedPipesConnectionFactory` → `UnixSocketConnectionFactory`），
    独立进程照建（`src/LunarWard.RPC`，rpc-port 已交付，`SelfTest` 见到 `SELFTEST_OK`）。ACL 部分用 `chmod 0600` + 同用户校验，
    NativeLib 的 zstd 用 `ZstdSharp.Port` 等价。详见 `docs/09-LINUX-DIVERGENCES.md` 的 RPC 节。
-2. **Setup 安装器**：上游用 `Aprillz.MewUI`（Windows 专有 UI）。等价物 = 现有 `LunarWard.Installer`（Avalonia），
-   不复刻 MewUI。
+2. **Setup 安装器**：上游用 `Aprillz.MewUI`（Windows 专有 UI）。等价物 = 安装引擎进程内化到
+   `src/LunarWard/Features/GameInstall/Installer/`（25 文件，承接原 `LunarWard.Installer` 工程），
+   由主程序内 UI 驱动，不复刻 MewUI；`Starward.Setup.Core` 已整项目移植为 `LunarWard.Setup.Core`。
 3. **Launcher（C++ 壳）**：上游 3 个 C++ 文件负责启动前环境；Linux 由 `Program.cs` + `.desktop` 承担，不写 C++。
 4. **`Controls/ColorRectChart`**：本地已有等价 Avalonia 实现（`ChartLegend` 记录 + 硬边渐变），不重复造，登记 §09。
 5. **`Helpers/FileDialogNative.cs`**：Win32 COM 对话框细节，StorageProvider 已覆盖，**不移植**。
