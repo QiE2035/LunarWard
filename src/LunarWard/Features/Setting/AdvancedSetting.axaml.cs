@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Views.Starward;
 using LunarWard.Launch;
-using UrlProtocol = LunarWard.Launch.UrlProtocol;
 
 namespace LunarWard.Features.Setting;
 
@@ -59,7 +58,7 @@ public sealed partial class AdvancedSetting : SettingPageBase
 
 
     /// <summary>协议说明（<c>lunarward://</c> 的 MimeType 来自 <see cref="UrlProtocol"/>）。</summary>
-    public string MimeType => UrlProtocol.MimeType;
+    public string MimeType => LunarWard.Launch.UrlProtocol.MimeType;
 
 
     private string? _testResult;
@@ -74,10 +73,10 @@ public sealed partial class AdvancedSetting : SettingPageBase
     [RelayCommand]
     private void TestUrlProtocol()
     {
-        var command = UrlProtocol.TryParse([$"{UrlProtocol.Scheme}://launch?profile=genshin-cn"], out var error);
+        var command = LunarWard.Launch.UrlProtocol.TryParse([$"{LunarWard.Launch.UrlProtocol.Scheme}://launch?profile=genshin-cn"], out var error);
         TestResult = command is null
             ? error ?? "未解析"
-            : string.Format(CultureInfo.CurrentCulture, Strings["Settings.Advanced.TestResult"], UrlProtocol.Describe(command));
+            : string.Format(CultureInfo.CurrentCulture, Strings["Settings.Advanced.TestResult"], LunarWard.Launch.UrlProtocol.Describe(command));
     }
 
 
@@ -93,7 +92,7 @@ public sealed partial class AdvancedSetting : SettingPageBase
             }
 
             var content = File.ReadAllText(entry);
-            IsUrlRegistered = UrlProtocol.IsDesktopEntryValid(content);
+            IsUrlRegistered = LunarWard.Launch.UrlProtocol.IsDesktopEntryValid(content);
             return IsUrlRegistered
                 ? $"{Strings["Settings.Advanced.UrlRegistered"]} · {entry}"
                 : $"{Strings["Settings.Advanced.UrlNotRegistered"]} · {entry}";

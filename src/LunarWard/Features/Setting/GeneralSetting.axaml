@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:local="using:LunarWard.Features.Setting"
              x:Class="LunarWard.Features.Setting.GeneralSetting"
              x:DataType="local:GeneralSetting">
@@ -32,7 +33,7 @@
     <StackPanel>
 
       <!-- GeneralSetting.xaml:19 -->
-      <TextBlock Classes="section" Text="{Binding Strings[Settings.Language]}" />
+      <TextBlock Classes="section" Text="{x:Static lang:Lang.SettingPage_Language}" />
 
       <!-- GeneralSetting.xaml:20-27 -->
       <ComboBox Height="36"
@@ -60,12 +61,12 @@
               IsEnabled="False"
               FontWeight="Bold"
               ToolTip.Tip="{Binding Strings[Settings.General.HelpTranslateUnavailable]}"
-              Content="{Binding Strings[Settings.General.HelpTranslate]}" />
+              Content="{x:Static lang:Lang.AppearanceSettingPage_HelpUsTranslateStarward}" />
 
       <!-- GeneralSetting.xaml:38-40 -->
       <TextBlock Margin="0,20,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.General.CloseWindowOption]}" />
+                 Text="{x:Static lang:Lang.ExperienceSettingPage_CloseWindowOption}" />
 
       <!--
         GeneralSetting.xaml:41-54：上游 Hide/Exit 两项，配置为 0 时等于「每次询问」。
@@ -75,10 +76,10 @@
       <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="24">
         <RadioButton GroupName="CloseWindowOption"
                      IsChecked="{Binding IsCloseToTray, Mode=TwoWay}"
-                     Content="{Binding Strings[Settings.General.MinimizeToTray]}" />
+                     Content="{x:Static lang:Lang.ExperienceSettingPage_MinimizeToSystemTray}" />
         <RadioButton GroupName="CloseWindowOption"
                      IsChecked="{Binding IsCloseToExit, Mode=TwoWay}"
-                     Content="{Binding Strings[Settings.General.ExitCompletely]}" />
+                     Content="{x:Static lang:Lang.ExperienceSettingPage_ExitCompletely}" />
         <RadioButton GroupName="CloseWindowOption"
                      IsChecked="{Binding IsAskEveryTime, Mode=TwoWay}"
                      Content="{Binding Strings[Settings.General.AskEveryTime]}" />
@@ -118,8 +119,8 @@
       <!-- GeneralSetting.xaml:56-59（账号切换；Windows 走注册表，Linux 走 Wine prefix 的 user.reg） -->
       <ToggleSwitch Margin="0,12,0,0"
                     IsChecked="{Binding EnableGameAccountSwitcher, Mode=TwoWay}"
-                    OffContent="{Binding Strings[Settings.General.RegistrySwitcher]}"
-                    OnContent="{Binding Strings[Settings.General.RegistrySwitcher]}" />
+                    OffContent="{x:Static lang:Lang.SettingPage_RegistryBasedGameAccountSwitchingFeature}"
+                    OnContent="{x:Static lang:Lang.SettingPage_RegistryBasedGameAccountSwitchingFeature}" />
 
       <TextBlock Margin="0,4,0,0"
                  MaxWidth="820"
@@ -135,7 +136,7 @@
       <!-- GeneralSetting.xaml:65-68 -->
       <TextBlock Margin="0,20,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.General.SystemEffectsIntro]}" />
+                 Text="{x:Static lang:Lang.SettingPage_ForABetterExperiencePleaseEnableTheFollowingFeaturesInSystemSettings}" />
 
       <!-- GeneralSetting.xaml:69-82 的透明/动画深链行：Linux 没有 ms-settings → 说明 -->
       <TextBlock Margin="0,12,0,0"

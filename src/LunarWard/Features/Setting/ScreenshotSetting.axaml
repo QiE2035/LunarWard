@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:local="using:LunarWard.Features.Setting"
              x:Class="LunarWard.Features.Setting.ScreenshotSetting"
              x:DataType="local:ScreenshotSetting">
@@ -40,12 +41,12 @@
     <StackPanel>
 
       <!-- ScreenshotSetting.xaml:19 -->
-      <TextBlock Classes="section" Text="{Binding Strings[Screenshot.Title]}" />
+      <TextBlock Classes="section" Text="{x:Static lang:Lang.MainPage_GameScreenshot}" />
 
       <!-- ScreenshotSetting.xaml:22-25 -->
       <TextBlock Margin="0,12,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.Screenshot.BuiltinFolderDesc]}" />
+                 Text="{x:Static lang:Lang.ScreenshotSetting_TheBuiltInScreenshotFeatureWillSaveImagesToTheFollowingFolder}" />
 
       <!-- ScreenshotSetting.xaml:28-73 -->
       <Grid Margin="0,8,0,0">
@@ -64,7 +65,7 @@
                 IsEnabled="False">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Classes="icon" FontSize="16" Text="&#xE8DE;" />
-            <TextBlock Text="{Binding Strings[Settings.Common.ChangeFolder]}" />
+            <TextBlock Text="{x:Static lang:Lang.Common_ChangeFolder}" />
           </StackPanel>
         </Button>
 
@@ -110,7 +111,7 @@
       <!-- ScreenshotSetting.xaml:77-79 -->
       <TextBlock Margin="0,16,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.Screenshot.Shortcut]}" />
+                 Text="{x:Static lang:Lang.ScreenshotSetting_ScreenshotShortcut}" />
 
       <!-- ScreenshotSetting.xaml:82-85（Starward 是「单键快捷键需管理员权限」，Linux 换成同样位置的说明） -->
       <TextBlock Margin="0,8,0,0"
@@ -133,17 +134,17 @@
                    VerticalAlignment="Center"
                    Margin="12,6"
                    Foreground="{StaticResource StarTextSecondary}"
-                   Text="{Binding Strings[Settings.Hotkey.ClickToSet]}" />
+                   Text="{x:Static lang:Lang.HotkeyInput_ClickToSetShortcutKeys}" />
       </Border>
 
       <!-- ScreenshotSetting.xaml:100-102 -->
       <TextBlock Margin="0,16,0,0"
                  Classes="section"
-                 Text="{Binding Strings[Settings.Screenshot.OtherOptions]}" />
+                 Text="{x:Static lang:Lang.ScreenshotSetting_OtherOptions}" />
 
       <!-- ScreenshotSetting.xaml:105-124（Segmented → 只显示实际格式的禁用占位块） -->
       <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="12">
-        <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Settings.Screenshot.FormatAndQuality]}" />
+        <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.ScreenshotSetting_FormatAndQuality}" />
         <Border Height="32"
                 VerticalAlignment="Center"
                 Padding="12,0"
@@ -168,31 +169,31 @@
       <!-- ScreenshotSetting.xaml:134-137 色彩管理 -->
       <ToggleSwitch Margin="0,4,0,0"
                     IsEnabled="False"
-                    OffContent="{Binding Strings[Settings.Screenshot.ColorManagement]}"
-                    OnContent="{Binding Strings[Settings.Screenshot.ColorManagement]}" />
+                    OffContent="{x:Static lang:Lang.ScreenshotSetting_ColorManagement}"
+                    OnContent="{x:Static lang:Lang.ScreenshotSetting_ColorManagement}" />
 
       <!-- ScreenshotSetting.xaml:140-143 自动复制截图文件 -->
       <ToggleSwitch Margin="0,-4,0,0"
                     IsEnabled="False"
-                    OffContent="{Binding Strings[Settings.Screenshot.AutoCopy]}"
-                    OnContent="{Binding Strings[Settings.Screenshot.AutoCopy]}" />
+                    OffContent="{x:Static lang:Lang.ScreenshotSetting_AutoCopyScreenshotFile}"
+                    OnContent="{x:Static lang:Lang.ScreenshotSetting_AutoCopyScreenshotFile}" />
 
       <!-- ScreenshotSetting.xaml:146-149 自动转换为 SDR 图片 -->
       <ToggleSwitch Margin="0,-4,0,0"
                     IsEnabled="False"
-                    OffContent="{Binding Strings[Settings.Screenshot.AutoSdr]}"
-                    OnContent="{Binding Strings[Settings.Screenshot.AutoSdr]}" />
+                    OffContent="{x:Static lang:Lang.ScreenshotSetting_AutoConvertToSDRImage}"
+                    OnContent="{x:Static lang:Lang.ScreenshotSetting_AutoConvertToSDRImage}" />
 
       <!-- ScreenshotSetting.xaml:152-154 -->
       <TextBlock FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Screenshot.HdrNote]}" />
+                 Text="{x:Static lang:Lang.ScreenshotSetting_WhenCapturingHDRImagesSDRVersionWillAlsoBeSaved}" />
 
       <!-- ScreenshotSetting.xaml:156-163 -->
       <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="12">
-        <Button IsEnabled="False" Content="{Binding Strings[Settings.Screenshot.TestCapture]}" />
-        <Button IsEnabled="False" Content="{Binding Strings[Settings.Screenshot.ClearThumbnailCache]}" />
+        <Button IsEnabled="False" Content="{x:Static lang:Lang.ScreenshotSetting_TestScreenshot}" />
+        <Button IsEnabled="False" Content="{x:Static lang:Lang.ScreenshotSetting_ClearThumbnailCache}" />
       </StackPanel>
 
       <TextBlock Margin="0,4,0,0"
@@ -225,7 +226,7 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Screenshot.GamepadSuggestion]}" />
+                 Text="{x:Static lang:Lang.ScreenshotSetting_ScreenshotWithGamepadSuggestion}" />
 
       <!-- ── LunarWard 追加：截图目录统计（张数 / 占用 / 打开 / 复制）────────────
                Starward 没有这块；放在全部 Starward 条目之后。──────────────────── -->
@@ -249,7 +250,7 @@
                 Command="{Binding OpenDirectoryCommand}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Classes="icon" FontSize="16" Text="&#xE838;" />
-            <TextBlock Text="{Binding Strings[Screenshot.OpenDirectory]}" />
+            <TextBlock Text="{x:Static lang:Lang.ScreenshotPage_OpenFolder}" />
           </StackPanel>
         </Button>
         <Button Height="40"
@@ -260,7 +261,7 @@
                 Command="{Binding CopyPathCommand}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Classes="icon" FontSize="16" Text="&#xE8C8;" />
-            <TextBlock Text="{Binding Strings[Screenshot.CopyPath]}" />
+            <TextBlock Text="{x:Static lang:Lang.ImageViewWindow2_CopyPath}" />
           </StackPanel>
         </Button>
       </StackPanel>

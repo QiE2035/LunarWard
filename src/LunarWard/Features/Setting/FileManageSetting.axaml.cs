@@ -1,3 +1,4 @@
+using LunarWard.Language;
 using System.Globalization;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -61,7 +62,7 @@ public sealed partial class FileManageSetting : SettingPageBase
         DirectoryRows =
         [
             new SettingPathRowViewModel(Strings["Settings.Files.ConfigHome"], ConfigHome),
-            new SettingPathRowViewModel(Strings["Settings.Files.DataHome"], DataHome),
+            new SettingPathRowViewModel(Lang.FileSettingPage_DataFolder, DataHome),
             new SettingPathRowViewModel(Strings["Settings.Files.CacheHome"], CacheHome),
             new SettingPathRowViewModel(Strings["Settings.Files.LogDir"], LogDirectory),
             new SettingPathRowViewModel(Strings["Settings.Files.ConfigFile"], ConfigFile),
@@ -264,7 +265,7 @@ public sealed partial class FileManageSetting : SettingPageBase
         }
 
         var confirmed = await _confirm(
-            Strings["Settings.Files.ClearCacheTitle"],
+            Lang.FileSettingPage_ClearCache,
             string.Format(CultureInfo.CurrentCulture, Strings["Settings.Files.ClearCacheBody"], CacheHome)).ConfigureAwait(true);
 
         if (!confirmed)
@@ -466,7 +467,7 @@ public sealed partial class FileManageSetting : SettingPageBase
 
         var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = Strings["Settings.Files.BackupDatabase"],
+            Title = Lang.SettingPage_BackupDatabase,
             SuggestedFileName = $"LunarWard_{DateTime.Now:yyyyMMdd_HHmmss}.db",
             DefaultExtension = "db",
             FileTypeChoices = [new FilePickerFileType("SQLite") { Patterns = ["*.db"] }],

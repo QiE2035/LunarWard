@@ -1,4 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using LunarWard.Language;
 using LunarWard.Services;
 using LunarWard.Views.Starward;
 
@@ -173,6 +175,11 @@ public sealed partial class GeneralSetting : SettingPageBase
         }
 
         SaveConfig();
+
+        // 设置页已迁到上游 Lang 资源，静态绑定不会自己刷新：换文化 + 广播消息，宿主页据此重建子页。
+        Lang.Culture = System.Globalization.CultureInfo.GetCultureInfo(normalized);
+        WeakReferenceMessenger.Default.Send(new LanguageChangedMessage());
+
         Status = string.Format(Strings["Settings.General.LanguageChanged"], normalized);
         OnPropertyChanged(nameof(IsEnglish));
     }

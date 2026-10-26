@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using LunarWard.Language;
 using LunarWard.Localization;
 
 namespace LunarWard.Features.Setting;
@@ -41,7 +42,7 @@ public sealed partial class HotkeyInput : UserControl
     {
         InitializeComponent();
         // 文案/tooltip 在代码里赋值（本控件不固定 DataContext，见 .axaml 顶部注释）。
-        TextBlock_ClickToSetHotkey.Text = Strings["Settings.Hotkey.ClickToSet"];
+        TextBlock_ClickToSetHotkey.Text = Lang.HotkeyInput_ClickToSetShortcutKeys;
         ToolTip.SetTip(Button_DeleteHotkey, Strings["Settings.Hotkey.Delete"]);
         ToolTip.SetTip(Button_CancelEdit, Strings["Settings.Hotkey.CancelEdit"]);
         // 隧道阶段接收键盘事件：内部 Button 获得焦点时也能录制。
@@ -171,7 +172,7 @@ public sealed partial class HotkeyInput : UserControl
     private void UpdateText()
     {
         HotkeyText = GetHotkeyText(Modifiers, Key);
-        EditingText = GetHotkeyText(_editingModifiers, _editingKey) ?? Strings["Settings.Hotkey.Editing"];
+        EditingText = GetHotkeyText(_editingModifiers, _editingKey) ?? Lang.HotkeyInput_PressTheShortcutKeys;
         TextBlock_HotkeyText.Text = HotkeyText;
         TextBlock_HotkeyText_Warning.Text = HotkeyText;
         TextBlock_EditingText.Text = EditingText;

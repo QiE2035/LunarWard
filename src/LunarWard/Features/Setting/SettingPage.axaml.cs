@@ -1,6 +1,9 @@
 using System.ComponentModel;
+using Avalonia.LogicalTree;
+using CommunityToolkit.Mvvm.Messaging;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using LunarWard.Language;
 using LunarWard.Localization;
 using LunarWard.Services;
 using LunarWard.Views.Starward;
@@ -39,6 +42,9 @@ public partial class SettingPage : SettingPageBase
     {
         InitializeComponent();
         DataContext = this;
+
+        // 语言切换：设置页已迁到上游 Lang 资源，静态绑定不会自更新，宿主负责重建文案与子页。
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (_, _) => OnLanguageChanged());
 
         _currentSection = ResolveInitialSection();
         SelectSection(_currentSection);
@@ -123,6 +129,63 @@ public partial class SettingPage : SettingPageBase
         }
 
         ShowSection(kind);
+    }
+
+
+    /// <summary>界面语言变化后刷新本页静态文案，并重建当前子页（上游是 <c>Bindings.Update()</c>）。</summary>
+    private void OnLanguageChanged()
+    {
+        var header = FindTextBlocks(this).FirstOrDefault(x => x.Classes.Contains("pane-header"));
+        if (header is not null)
+        {
+            header.Text = Lang.SettingPage_AppSettings;
+        }
+
+        foreach (var item in SectionList.Items.OfType<ListBoxItem>())
+        {
+            if (SettingSectionTags.Parse(item.Tag as string) is not { } kind)
+            {
+                continue;
+            }
+
+            if (FindTextBlocks(item).LastOrDefault() is { } label)
+            {
+                label.Text = kind switch
+                {
+                    SettingSectionKind.About => Lang.SettingPage_About,
+                    SettingSectionKind.General => Lang.SettingPage_General,
+                    SettingSectionKind.Download => Lang.SettingPage_Download,
+                    SettingSectionKind.FileManage => Lang.SettingPage_FileManagement,
+                    SettingSectionKind.Screenshot => Lang.MainPage_GameScreenshot,
+                    SettingSectionKind.Hotkey => Lang.SettingPage_KeyboardShortcuts,
+                    SettingSectionKind.Gamepad => Lang.SettingPage_ControllerEnhancement,
+                    SettingSectionKind.Advanced => Lang.SettingPage_Advanced,
+                    SettingSectionKind.Toolbox => Lang.SettingPage_Toolbox,
+                    _ => label.Text,
+                };
+            }
+        }
+
+        // 子页的文案是编译期静态绑定，只能重建实例；旧实例随字典丢弃。
+        _sections.Clear();
+        ShowSection(_currentSection);
+    }
+
+
+    private static IEnumerable<TextBlock> FindTextBlocks(ILogical logical)
+    {
+        foreach (var child in logical.LogicalChildren)
+        {
+            if (child is TextBlock textBlock)
+            {
+                yield return textBlock;
+            }
+
+            foreach (var descendant in FindTextBlocks(child))
+            {
+                yield return descendant;
+            }
+        }
     }
 
 
@@ -246,8 +309,8 @@ public partial class SettingPage : SettingPageBase
         _confirmCompletion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         ConfirmTitle = title;
         ConfirmBody = body;
-        ConfirmText = Strings["Settings.Common.Confirm"];
-        CancelText = Strings["Settings.Common.Cancel"];
+        ConfirmText = Lang.SelectDirectoryPage_OK;
+        CancelText = Lang.SelectDirectoryPage_Cancel;
         IsConfirmOpen = true;
         return _confirmCompletion.Task;
     }

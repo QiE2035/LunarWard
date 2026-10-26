@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:local="using:LunarWard.Features.Setting"
              x:Class="LunarWard.Features.Setting.GamepadControlSetting"
              x:DataType="local:GamepadControlSetting">
@@ -38,17 +39,17 @@
 
       <!-- GamepadControlSetting.xaml:22-30 -->
       <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Spacing="20">
-        <TextBlock Classes="section" Text="{Binding Strings[Settings.ControllerEnhancement]}" />
+        <TextBlock Classes="section" Text="{x:Static lang:Lang.SettingPage_ControllerEnhancement}" />
         <ToggleSwitch Margin="0,-4,0,-4"
                       IsEnabled="False"
-                      OffContent="{Binding Strings[Settings.Common.Disabled]}"
-                      OnContent="{Binding Strings[Settings.Common.Enabled]}" />
+                      OffContent="{x:Static lang:Lang.Common_Disabled}"
+                      OnContent="{x:Static lang:Lang.Common_Enabled}" />
       </StackPanel>
 
       <!-- GamepadControlSetting.xaml:33-36 -->
       <TextBlock Margin="0,8,0,0"
                  Classes="description"
-                 Text="{Binding Strings[Settings.Gamepad.XboxOnly]}" />
+                 Text="{x:Static lang:Lang.GamepadControlSetting_OnlySupportXboxControllerProtocol}" />
 
       <!-- GamepadControlSetting.xaml:38-68 的 GameInput 警示位：Linux 上不可用的原因 -->
       <TextBlock Margin="0,8,0,0"
@@ -68,11 +69,11 @@
 
       <!-- GamepadControlSetting.xaml:73-82 -->
       <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Spacing="20">
-        <TextBlock Classes="section" Text="{Binding Strings[Settings.Gamepad.SimulateInput]}" />
+        <TextBlock Classes="section" Text="{x:Static lang:Lang.GamepadControlSetting_SimulateInput}" />
         <ToggleSwitch Margin="0,-4,0,-4"
                       IsEnabled="False"
-                      OffContent="{Binding Strings[Settings.Common.Disabled]}"
-                      OnContent="{Binding Strings[Settings.Common.Enabled]}" />
+                      OffContent="{x:Static lang:Lang.Common_Disabled}"
+                      OnContent="{x:Static lang:Lang.Common_Enabled}" />
       </StackPanel>
 
       <!-- GamepadControlSetting.xaml:85-88 -->
@@ -80,7 +81,7 @@
                  MaxWidth="820"
                  HorizontalAlignment="Left"
                  Classes="description"
-                 Text="{Binding Strings[Settings.Gamepad.SimulateInputDesc]}" />
+                 Text="{x:Static lang:Lang.GamepadControlSetting_SimulateInputDesc}" />
 
       <!-- GamepadControlSetting.xaml:91-96 长按导航键 -->
       <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
@@ -89,7 +90,7 @@
                    Text="&#xE9A1;" />
         <TextBlock Margin="12,0,0,0"
                    VerticalAlignment="Center"
-                   Text="{Binding Strings[Settings.Gamepad.LongPressGuide]}" />
+                   Text="{x:Static lang:Lang.GamepadControlSetting_LongPressGuideButtonDesc}" />
       </StackPanel>
 
       <!-- GamepadControlSetting.xaml:99-108 同时按下左右摇杆键 -->
@@ -105,34 +106,34 @@
                    Text="&#xE7FC;" />
         <TextBlock Margin="12,0,0,0"
                    VerticalAlignment="Center"
-                   Text="{Binding Strings[Settings.Gamepad.BothThumbsticks]}" />
+                   Text="{x:Static lang:Lang.GamepadControlSetting_BothThumbsticksDesc}" />
       </StackPanel>
 
       <!-- GamepadControlSetting.xaml:110 MenuFlyoutSeparator -->
       <Border Height="1" Margin="0,12,0,12" Background="{StaticResource StarDividerBrush}" />
 
       <!-- GamepadControlSetting.xaml:113 -->
-      <TextBlock Classes="section" Text="{Binding Strings[Settings.Gamepad.ButtonMapping]}" />
+      <TextBlock Classes="section" Text="{x:Static lang:Lang.GamepadControlSetting_ButtonMapping}" />
 
       <!-- GamepadControlSetting.xaml:116-144 导航键 -->
       <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="12">
         <TextBlock Classes="icon"
                    FontSize="20"
                    Text="&#xE9A1;" />
-        <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Settings.Gamepad.GuideButton]}" />
+        <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.GamepadControlSetting_GuideButton}" />
         <ComboBox MinWidth="160"
                   VerticalAlignment="Center"
                   SelectedIndex="0"
                   IsEnabled="False">
-          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.NoAction]}" />
-          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.GameScreenshot]}" />
-          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.KeyboardKeys]}" />
+          <ComboBoxItem Content="{x:Static lang:Lang.GamepadControlSetting_NoAction}" />
+          <ComboBoxItem Content="{x:Static lang:Lang.GamepadControlSetting_GameScreenshot}" />
+          <ComboBoxItem Content="{x:Static lang:Lang.GamepadControlSetting_KeyboardKeys}" />
         </ComboBox>
         <TextBox MinWidth="160"
                  HorizontalAlignment="Left"
                  IsEnabled="False"
                  IsVisible="False"
-                 PlaceholderText="{Binding Strings[Settings.Gamepad.EnterKeyText]}" />
+                 PlaceholderText="{x:Static lang:Lang.GamepadControlSetting_EnterKeyText}" />
       </StackPanel>
 
       <!-- GamepadControlSetting.xaml:147-175 分享键 -->
@@ -140,20 +141,20 @@
         <TextBlock Classes="icon"
                    FontSize="20"
                    Text="&#xE72D;" />
-        <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Settings.Gamepad.ShareButton]}" />
+        <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.GamepadControlSetting_ShareButton}" />
         <ComboBox MinWidth="160"
                   VerticalAlignment="Center"
                   SelectedIndex="0"
                   IsEnabled="False">
-          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.NoAction]}" />
-          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.GameScreenshot]}" />
-          <ComboBoxItem Content="{Binding Strings[Settings.Gamepad.KeyboardKeys]}" />
+          <ComboBoxItem Content="{x:Static lang:Lang.GamepadControlSetting_NoAction}" />
+          <ComboBoxItem Content="{x:Static lang:Lang.GamepadControlSetting_GameScreenshot}" />
+          <ComboBoxItem Content="{x:Static lang:Lang.GamepadControlSetting_KeyboardKeys}" />
         </ComboBox>
         <TextBox MinWidth="160"
                  HorizontalAlignment="Left"
                  IsEnabled="False"
                  IsVisible="False"
-                 PlaceholderText="{Binding Strings[Settings.Gamepad.EnterKeyText]}" />
+                 PlaceholderText="{x:Static lang:Lang.GamepadControlSetting_EnterKeyText}" />
       </StackPanel>
 
       <!-- GamepadControlSetting.xaml:179-197 -->
@@ -161,19 +162,19 @@
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Gamepad.MappingGuideDesc]}" />
+                 Text="{x:Static lang:Lang.GamepadControlSetting_ButtonMappingGuideDesc}" />
 
       <TextBlock Margin="0,2,0,0"
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Gamepad.MappingKeyboardDesc]}" />
+                 Text="{x:Static lang:Lang.GamepadControlSetting_ButtonMappingKeyboardDesc}" />
 
       <TextBlock Margin="0,2,0,0"
                  FontSize="12"
                  Foreground="{StaticResource StarTextSecondary}"
                  TextWrapping="Wrap"
-                 Text="{Binding Strings[Settings.Gamepad.MappingShareDesc]}" />
+                 Text="{x:Static lang:Lang.GamepadControlSetting_ButtonMappingShareDesc}" />
 
       <!-- ── LunarWard 追加：Linux 上的替代方案（Starward 没有这一块，
               放在全部 Starward 条目之后）──────────────────────────────────────── -->

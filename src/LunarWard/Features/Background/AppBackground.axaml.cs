@@ -13,6 +13,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Features.HoYoPlay;
 using LunarWard.Features.ViewHost;
+using LunarWard.Helpers;
 using LunarWard.Services;
 using Microsoft.Extensions.Logging;
 
@@ -546,7 +547,7 @@ public partial class AppBackground : UserControl, INotifyPropertyChanged
                 if (!started)
                 {
                     // 平台替换：Linux 视频背景走 ffmpeg 子进程，失败时回退为静态图并明确提示，避免静默黑屏。
-                    InAppToast.Show("视频背景不可用", "已回退为静态背景图（视频播放需要 ffmpeg）");
+                    InAppToast.MainWindow?.Warning("视频背景不可用", "已回退为静态背景图（视频播放需要 ffmpeg）");
                 }
                 if (started)
                 {

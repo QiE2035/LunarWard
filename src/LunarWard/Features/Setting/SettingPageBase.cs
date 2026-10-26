@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
+using LunarWard.Language;
 using LunarWard.Localization;
 using LunarWard.Services;
 using LunarWard.Views.Starward;
@@ -27,6 +28,21 @@ public abstract class SettingPageBase : StarwardPage, INotifyPropertyChanged
     protected SettingPageBase(PageContext context)
         : base(context)
     {
+        SyncLanguage();
+    }
+
+
+    /// <summary>
+    /// 把配置里的界面语言同步到上游式 <see cref="Lang"/> 资源文化。
+    /// <para>
+    /// 上游用 <c>ResourceManager</c> 的 <c>Culture</c> 选语言；本仓库设置页完成 i18n 迁移后
+    /// 也走同一套，所以进入任何设置子页前都要先对齐，否则会按系统文化渲染。
+    /// </para>
+    /// </summary>
+    protected void SyncLanguage()
+    {
+        var code = LunarWard.Localization.AppStrings.Normalize(Context.Services.Config.Launcher.Language);
+        Lang.Culture = System.Globalization.CultureInfo.GetCultureInfo(code);
     }
 
 

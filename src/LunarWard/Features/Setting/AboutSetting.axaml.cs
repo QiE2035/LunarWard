@@ -1,3 +1,4 @@
+using LunarWard.Language;
 using System.Reflection;
 using LunarWard.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -39,14 +40,14 @@ public sealed partial class AboutSetting : SettingPageBase
         // + LunarWard 追加的两条（上游 Starward / 文档）。
         Links =
         [
-            new SettingLinkViewModel(Strings["Settings.About.Homepage"], "https://github.com/QiE2035/LunarWard"),
-            new SettingLinkViewModel(Strings["Settings.About.Issues"], "https://github.com/QiE2035/LunarWard/issues"),
-            new SettingLinkViewModel(Strings["Settings.About.Releases"], "https://github.com/QiE2035/LunarWard/releases"),
+            new SettingLinkViewModel(Lang.SettingPage_ProjectHomepage, "https://github.com/QiE2035/LunarWard"),
+            new SettingLinkViewModel(Lang.SettingPage_ReportIssue, "https://github.com/QiE2035/LunarWard/issues"),
+            new SettingLinkViewModel(Lang.SettingPage_ReleaseHistroy, "https://github.com/QiE2035/LunarWard/releases"),
             // LunarWard 不收集个人数据，也没有单独的隐私策略 / 赞助页面：
             // 保留 Starward 的链接位但禁用，而不是指向一个不相干的页面。
-            new SettingLinkViewModel(Strings["Settings.About.Privacy"], null,
+            new SettingLinkViewModel(Lang.SettingPage_PrivacyPolicy, null,
                 Strings["Settings.About.PrivacyUnavailable"]),
-            new SettingLinkViewModel(Strings["Settings.About.Donate"], null,
+            new SettingLinkViewModel(Lang.SettingPage_Donate, null,
                 Strings["Settings.About.DonateUnavailable"]),
             new SettingLinkViewModel(Strings["Settings.About.Upstream"], "https://github.com/Scighost/Starward"),
             new SettingLinkViewModel(Strings["Settings.About.Docs"], "https://github.com/QiE2035/LunarWard/blob/main/docs/07-UI-REPLICA.md"),

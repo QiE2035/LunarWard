@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
              x:Class="LunarWard.Features.Setting.SettingPage"
              x:DataType="local:SettingPage"
              xmlns:local="using:LunarWard.Features.Setting">
@@ -101,7 +102,7 @@
 
       <TextBlock Grid.Row="0"
                  Classes="pane-header"
-                 Text="{Binding Strings[Settings.AppSettings]}" />
+                 Text="{x:Static lang:Lang.SettingPage_AppSettings}" />
 
       <ListBox Grid.Row="1"
                x:Name="SectionList"
@@ -124,7 +125,7 @@
             <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
               <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE946;" />
               <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
-                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.About]}" />
+                         TextTrimming="CharacterEllipsis" Text="{x:Static lang:Lang.SettingPage_About}" />
             </Grid>
           </Panel>
         </ListBoxItem>
@@ -138,7 +139,7 @@
             <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
               <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE81E;" />
               <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
-                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.General]}" />
+                         TextTrimming="CharacterEllipsis" Text="{x:Static lang:Lang.SettingPage_General}" />
             </Grid>
           </Panel>
         </ListBoxItem>
@@ -152,7 +153,7 @@
             <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
               <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE896;" />
               <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
-                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.Download]}" />
+                         TextTrimming="CharacterEllipsis" Text="{x:Static lang:Lang.SettingPage_Download}" />
             </Grid>
           </Panel>
         </ListBoxItem>
@@ -166,7 +167,7 @@
             <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
               <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE8F1;" />
               <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
-                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.FileManagement]}" />
+                         TextTrimming="CharacterEllipsis" Text="{x:Static lang:Lang.SettingPage_FileManagement}" />
             </Grid>
           </Panel>
         </ListBoxItem>
@@ -180,7 +181,7 @@
             <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
               <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE91B;" />
               <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
-                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.Screenshot]}" />
+                         TextTrimming="CharacterEllipsis" Text="{x:Static lang:Lang.MainPage_GameScreenshot}" />
             </Grid>
           </Panel>
         </ListBoxItem>
@@ -194,7 +195,7 @@
             <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
               <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xEDA7;" />
               <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
-                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.KeyboardShortcuts]}" />
+                         TextTrimming="CharacterEllipsis" Text="{x:Static lang:Lang.SettingPage_KeyboardShortcuts}" />
             </Grid>
           </Panel>
         </ListBoxItem>
@@ -208,7 +209,7 @@
             <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
               <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE7C4;" />
               <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
-                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.ControllerEnhancement]}" />
+                         TextTrimming="CharacterEllipsis" Text="{x:Static lang:Lang.SettingPage_ControllerEnhancement}" />
             </Grid>
           </Panel>
         </ListBoxItem>
@@ -222,7 +223,7 @@
             <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
               <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xEA86;" />
               <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
-                         TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.Advanced]}" />
+                         TextTrimming="CharacterEllipsis" Text="{x:Static lang:Lang.SettingPage_Advanced}" />
             </Grid>
           </Panel>
         </ListBoxItem>
@@ -241,7 +242,7 @@
               <Grid ColumnDefinitions="16,*" Margin="16,0,12,0" VerticalAlignment="Center">
                 <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xEC7A;" />
                 <TextBlock Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"
-                           TextTrimming="CharacterEllipsis" Text="{Binding Strings[Settings.Toolbox]}" />
+                           TextTrimming="CharacterEllipsis" Text="{x:Static lang:Lang.SettingPage_Toolbox}" />
               </Grid>
             </Panel>
           </StackPanel>

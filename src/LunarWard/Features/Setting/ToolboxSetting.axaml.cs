@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LunarWard.Language;
 using LunarWard.Views.Starward;
 using LunarWard.Launch;
 
@@ -23,7 +24,7 @@ public sealed partial class ToolboxSetting : SettingPageBase
         [
             new ToolboxItem(
                 "\uE7FC",
-                Strings["Settings.Toolbox.GameSetting"],
+                Lang.LauncherPage_GameSetting,
                 Strings["Settings.Toolbox.GameSettingDesc"],
                 () => Shell.Navigate(ShellPage.GameSetting)),
             new ToolboxItem(
@@ -38,7 +39,7 @@ public sealed partial class ToolboxSetting : SettingPageBase
                 OpenEnvironmentShell),
             new ToolboxItem(
                 "\uE91B",
-                Strings["Settings.Toolbox.Screenshot"],
+                Lang.MainPage_GameScreenshot,
                 Strings["Settings.Toolbox.ScreenshotDesc"],
                 () => Shell.Navigate(ShellPage.Screenshot)),
         ];

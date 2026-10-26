@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:local="using:LunarWard.Features.Setting"
              x:Class="LunarWard.Features.Setting.HotkeySetting"
              x:DataType="local:HotkeySetting">
@@ -27,7 +28,7 @@
     <StackPanel HorizontalAlignment="Stretch">
 
       <!-- HotkeySetting.xaml:17 -->
-      <TextBlock Classes="section" Text="{Binding Strings[Settings.KeyboardShortcuts]}" />
+      <TextBlock Classes="section" Text="{x:Static lang:Lang.SettingPage_KeyboardShortcuts}" />
 
       <!-- HotkeySetting.xaml:20-23（Starward 原文是「单键快捷键需管理员权限」，
            Linux 换成同样位置的说明） -->
@@ -39,7 +40,7 @@
       <StackPanel Margin="0,20,0,0" Orientation="Horizontal" Spacing="12">
         <TextBlock MinWidth="200"
                    VerticalAlignment="Center"
-                   Text="{Binding Strings[Settings.Hotkey.OpenMainWindow]}" />
+                   Text="{x:Static lang:Lang.HotkeySetting_OpenMainWindow}" />
 
         <!-- HotkeySetting.xaml:32-38 HotkeyInput（控件实现见 HotkeyInput.axaml） -->
         <local:HotkeyInput x:Name="HotkeyInput_ShowMainWindow"
@@ -54,7 +55,7 @@
       <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="12">
         <TextBlock MinWidth="200"
                    VerticalAlignment="Center"
-                   Text="{Binding Strings[Settings.Hotkey.GameScreenshot]}" />
+                   Text="{x:Static lang:Lang.GamepadControlSetting_GameScreenshot}" />
 
         <!-- HotkeySetting.xaml:48-54 HotkeyInput -->
         <local:HotkeyInput x:Name="HotkeyInput_ScreenshotCapture"
