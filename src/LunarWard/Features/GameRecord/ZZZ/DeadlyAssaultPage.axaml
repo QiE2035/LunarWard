@@ -40,10 +40,10 @@
                     IsVisible="False">
             <Image Width="160"
                    Height="160"
-                   Source="{DynamicResource EmojiBangboo}" />
+                   Source="avares://LunarWard/Assets/Image/pamu.db6c2c7b.png" />
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Foreground="{DynamicResource StarTextSecondary}"
                        Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
@@ -54,8 +54,7 @@
             <Button Height="36"
                     BorderThickness="0"
                     Command="{Binding RefreshDataCommand}"
-                    CornerRadius="0,18,18,0"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    CornerRadius="0,18,18,0">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -66,8 +65,6 @@
             <Button Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
-                    Shadow="{DynamicResource ThemeShadow}"
-                    Style="{DynamicResource AccentButtonStyle}"
                     Translation="0,0,16"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
@@ -112,14 +109,14 @@
                                     IsVisible="{Binding HasHard, Converter={DynamicResource BoolToVisibilityConverter}}">
                             <TextBlock MinWidth="46"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        IsTextScaleFactorEnabled="False"
                                        Text="{Binding HardTotalScore}" />
                             <Image Width="20"
                                    Height="20"
                                    Source="{StaticResource StarIconHard}" />
                             <TextBlock VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        IsTextScaleFactorEnabled="False">
                                 <Run Text="x" /><Run Text="{Binding HardTotalStar}" />
                             </TextBlock>
@@ -130,14 +127,14 @@
                                     Spacing="4">
                             <TextBlock MinWidth="46"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        IsTextScaleFactorEnabled="False"
                                        Text="{Binding TotalScore}" />
                             <Image Width="20"
                                    Height="20"
                                    Source="{StaticResource StarIconLight}" />
                             <TextBlock VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        IsTextScaleFactorEnabled="False">
                                 <Run Text="x" /><Run Text="{Binding TotalStar}" />
                             </TextBlock>
@@ -154,7 +151,7 @@
 
                 <Grid>
                     <!--  统计周期  -->
-                    <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                         <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentDeadlyAssault.StartTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
@@ -170,7 +167,6 @@
                      
                      
                       RowSpacing="8"
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding CurrentDeadlyAssault.HasHard, Converter={DynamicResource BoolToVisibilityConverter}}">
                     <Grid.RowDefinitions>
@@ -235,7 +231,6 @@
                                       ColumnSpacing="16"
                                      
                                       RowSpacing="4"
-                                      Shadow="{DynamicResource ThemeShadow}"
                                       Translation="0,0,16">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -311,7 +306,7 @@
                                     <TextBlock Grid.Row="2"
                                                Grid.Column="1"
                                                FontSize="12">
-                                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ClearedAt}" />
+                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ClearedAt}" />
                                         <Run Text="{Binding ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                     </TextBlock>
                                     <!--  代理人  -->
@@ -352,7 +347,7 @@
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Bottom"
                                                                    FontSize="12"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    IsTextScaleFactorEnabled="False">
                                                             <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                         </TextBlock>
@@ -377,7 +372,7 @@
                                                                 IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                                                             <TextBlock Margin="4,2,4,2"
                                                                        FontSize="14"
-                                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                                        IsTextScaleFactorEnabled="False"
                                                                        Text="{Binding Rank}" />
                                                         </Border>
@@ -420,7 +415,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Bottom"
                                                        FontSize="12"
-                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                        IsTextScaleFactorEnabled="False">
                                                 <Run Text="Lv." /><Run Text="{Binding Buddy.Level}" />
                                             </TextBlock>
@@ -460,7 +455,7 @@
                                         <sc:ColorfulTextBlock Grid.Row="1"
                                                               Margin="0,8,0,0"
                                                               FontSize="12"
-                                                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                              Foreground="{DynamicResource StarTextSecondary}"
                                                               Text="{Binding Buff[0].Desc}"
                                                               TextWrapping="Wrap" />
                                     </Grid>
@@ -477,7 +472,6 @@
                      
                      
                       RowSpacing="8"
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16">
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -544,7 +538,6 @@
                                       ColumnSpacing="16"
                                      
                                       RowSpacing="4"
-                                      Shadow="{DynamicResource ThemeShadow}"
                                       Translation="0,0,16">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -620,7 +613,7 @@
                                     <TextBlock Grid.Row="2"
                                                Grid.Column="1"
                                                FontSize="12">
-                                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ClearedAt}" />
+                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ClearedAt}" />
                                         <Run Text="{Binding ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                     </TextBlock>
                                     <!--  代理人  -->
@@ -661,7 +654,7 @@
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Bottom"
                                                                    FontSize="12"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    IsTextScaleFactorEnabled="False">
                                                             <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                         </TextBlock>
@@ -686,7 +679,7 @@
                                                                 IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                                                             <TextBlock Margin="4,2,4,2"
                                                                        FontSize="14"
-                                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                                        IsTextScaleFactorEnabled="False"
                                                                        Text="{Binding Rank}" />
                                                         </Border>
@@ -729,7 +722,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Bottom"
                                                        FontSize="12"
-                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                        IsTextScaleFactorEnabled="False">
                                                 <Run Text="Lv." /><Run Text="{Binding Buddy.Level}" />
                                             </TextBlock>
@@ -769,7 +762,7 @@
                                         <sc:ColorfulTextBlock Grid.Row="1"
                                                               Margin="0,8,0,0"
                                                               FontSize="12"
-                                                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                              Foreground="{DynamicResource StarTextSecondary}"
                                                               Text="{Binding Buff[0].Desc}"
                                                               TextWrapping="Wrap" />
                                     </Grid>

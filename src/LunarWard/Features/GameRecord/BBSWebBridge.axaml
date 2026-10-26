@@ -24,14 +24,14 @@
                  >
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <!--  保存  -->
-                    <Button Command="{Binding SaveScreenshotCommand}" Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                    <Button Command="{Binding SaveScreenshotCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE74E;" />
                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.Common_Save}" />
                         </StackPanel>
                     </Button>
                     <!--  复制  -->
-                    <Button Command="{Binding CopyScreenshotCommand}" Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                    <Button Command="{Binding CopyScreenshotCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE8C8;" />
                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.Common_Copy}" />
@@ -40,8 +40,7 @@
                 </StackPanel>
                 <!--  关闭  -->
                 <Button HorizontalAlignment="Right"
-                        Command="{Binding CloseScreenshotGridCommand}"
-                        Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                        Command="{Binding CloseScreenshotGridCommand}">
                     <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE711;" />
                 </Button>
             </Grid>

@@ -44,10 +44,10 @@
                     IsVisible="False">
             <Image Width="160"
                    Height="160"
-                   Source="{DynamicResource EmojiPaimon}" />
+                   Source="avares://LunarWard/Assets/Image/UI_EmotionIcon5.png" />
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Foreground="{DynamicResource StarTextSecondary}"
                        Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
@@ -58,8 +58,7 @@
             <Button Height="36"
                     BorderThickness="0"
                     Command="{Binding RefreshDataCommand}"
-                    CornerRadius="0,18,18,0"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    CornerRadius="0,18,18,0">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -70,8 +69,6 @@
             <Button Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
-                    Shadow="{DynamicResource ThemeShadow}"
-                    Style="{DynamicResource AccentButtonStyle}"
                     Translation="0,0,16"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
@@ -115,7 +112,7 @@
                         <TextBlock Grid.Row="1"
                                    Margin="24,0,0,2"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Foreground="{DynamicResource StarTextSecondary}"
                                    IsTextScaleFactorEnabled="False">
                             <Run Text="{Binding MaxRoundId}" /><Run Text="/" /><Run Text="{Binding local:ImaginariumTheaterPage.DifficultyIdToMaxRound(DifficultyId)}" />
                         </TextBlock>
@@ -128,7 +125,7 @@
                         <TextBlock Grid.Row="1"
                                    Margin="88,0,0,2"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Foreground="{DynamicResource StarTextSecondary}"
                                    IsTextScaleFactorEnabled="False">
                             <Run Text="{Binding MedalNum}" /><Run Text="/" /><Run Text="{Binding local:ImaginariumTheaterPage.DifficultyIdToMaxRound(DifficultyId)}" />
                         </TextBlock>
@@ -143,7 +140,7 @@
             <StackPanel Margin="12,24,24,24" Spacing="8">
                 <Grid>
                     <!--  统计周期  -->
-                    <TextBlock HorizontalAlignment="Right" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    <TextBlock HorizontalAlignment="Right" Foreground="{DynamicResource StarTextSecondary}">
                         <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentTheater.StartTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
@@ -152,16 +149,13 @@
                     </TextBlock>
                     <!--  演出回顾  -->
                     <TextBlock FontSize="16"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Foreground="{DynamicResource StarTextSecondary}"
                                Text="{Binding lang:Lang.ImaginariumTheaterPage_PastPerformances}"
                                IsVisible="{Binding HasData}" />
                 </Grid>
 
                 <!--  演出回顾  -->
                 <Grid
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding HasData}">
                     <Grid.RowDefinitions>
@@ -178,11 +172,11 @@
                     <Border Grid.Row="1"
                             Grid.ColumnSpan="3"
                             Margin="-24,0,-24,0"
-                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                            Background="{DynamicResource StarCardBackgroundBrush}" />
                     <Border Grid.Row="3"
                             Grid.ColumnSpan="3"
                             Margin="-24,0,-24,0"
-                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                            Background="{DynamicResource StarCardBackgroundBrush}" />
                     <!--  最佳纪录  -->
                     <TextBlock Grid.Row="0"
                                VerticalAlignment="Center"
@@ -280,10 +274,6 @@
 
                 <!--  战斗统计  -->
                 <Grid Margin="0,8,0,0"
-                     
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding local:ImaginariumTheaterPage.FightStatisicVisibility(CurrentTheater.Detail.FightStatisic.TotalUseTime)}">
                     <Grid.RowDefinitions>
@@ -300,11 +290,11 @@
                     <Border Grid.Row="1"
                             Grid.ColumnSpan="3"
                             Margin="-24,0,-24,0"
-                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                            Background="{DynamicResource StarCardBackgroundBrush}" />
                     <Border Grid.Row="3"
                             Grid.ColumnSpan="3"
                             Margin="-24,0,-24,0"
-                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                            Background="{DynamicResource StarCardBackgroundBrush}" />
 
                     <!--  演出总时长  -->
                     <TextBlock Grid.Row="0"
@@ -383,10 +373,6 @@
 
                 <!--  参演名单  -->
                 <Grid Margin="0,8,0,0"
-                     
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding CurrentTheater.Detail.RoundsData, Converter={DynamicResource CollectionToVisibilityConverter}}">
                     <ItemsControl ItemsSource="{Binding CurrentTheater.Detail.RoundsData}">
@@ -423,7 +409,7 @@
                                                    Text="{Binding local:ImaginariumTheaterPage.ArcanaChallengeX(TarotSerialNo)}"
                                                    IsVisible="{Binding IsTarot}" />
                                         <TextBlock VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    Text="{Binding FinishDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                     </StackPanel>
                                     <!--  阵容  -->
@@ -469,11 +455,11 @@
                                                 <RowDefinition />
                                             </Grid.RowDefinitions>
                                             <TextBlock VerticalAlignment="Center"
-                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                        Text="{Binding lang:Lang.ImaginariumTheaterPage_BrilliantBlessing}" />
                                             <sc:ColorfulTextBlock Grid.Row="1"
                                                                   FontSize="12"
-                                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                  Foreground="{DynamicResource StarTextSecondary}"
                                                                   Text="{Binding SplendourBuff.Summary.Desc}"
                                                                   TextWrapping="Wrap" />
                                             <StackPanel Grid.Row="2"
@@ -485,7 +471,7 @@
                                                            Source="ms-appx:///Assets/Image/UI_Icon_RoleCombat_Buff_Blessing_LevelUp.png" />
                                                     <TextBlock HorizontalAlignment="Center"
                                                                FontSize="12"
-                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                               Foreground="{DynamicResource StarTextSecondary}">
                                                         <Run Text="Lv." /><Run Text="{Binding SplendourBuff.Summary.TotalLevel}" />
                                                     </TextBlock>
                                                 </StackPanel>
@@ -512,12 +498,12 @@
                                                                                     <TextBlock HorizontalAlignment="Center"
                                                                                                VerticalAlignment="Center"
                                                                                                FontSize="14"
-                                                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                                                               Foreground="{DynamicResource StarTextSecondary}">
                                                                                         <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                                                     </TextBlock>
                                                                                     <TextBlock VerticalAlignment="Center"
                                                                                                FontSize="14"
-                                                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                               Foreground="{DynamicResource StarTextSecondary}"
                                                                                                Text="{Binding Name}" />
                                                                                 </StackPanel>
                                                                                 <ItemsControl ItemsSource="{Binding LevelEffect}">
@@ -534,11 +520,11 @@
                                                                                                     <ColumnDefinition />
                                                                                                 </Grid.ColumnDefinitions>
                                                                                                 <TextBlock FontSize="12"
-                                                                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                                           Foreground="{DynamicResource StarTextSecondary}"
                                                                                                            Text="●" />
                                                                                                 <sc:ColorfulTextBlock Grid.Column="1"
                                                                                                                       FontSize="12"
-                                                                                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                                                      Foreground="{DynamicResource StarTextSecondary}"
                                                                                                                       Text="{Binding Desc}"
                                                                                                                       TextWrapping="Wrap" />
                                                                                             </Grid>
@@ -551,7 +537,7 @@
                                                                 </sc:CachedImage>
                                                                 <TextBlock HorizontalAlignment="Center"
                                                                            FontSize="12"
-                                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                                           Foreground="{DynamicResource StarTextSecondary}">
                                                                     <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                                 </TextBlock>
                                                             </StackPanel>
@@ -566,7 +552,7 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition />
                                             </Grid.RowDefinitions>
-                                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                            <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                                                 <Run Text="{Binding lang:Lang.ImaginariumTheaterPage_WondrousBoon}" />
                                                 <Run Text="" />
                                                 <Run Text="x" />
@@ -594,7 +580,7 @@
                                                                                Text="{Binding Name}" />
                                                                     <sc:ColorfulTextBlock Margin="0,12,0,0"
                                                                                           FontSize="14"
-                                                                                          Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                          Foreground="{DynamicResource StarTextSecondary}"
                                                                                           Text="{Binding Desc}"
                                                                                           TextWrapping="Wrap" />
                                                                 </StackPanel>
@@ -610,7 +596,7 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition />
                                             </Grid.RowDefinitions>
-                                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                            <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                                                 <Run Text="{Binding lang:Lang.ImaginariumTheaterPage_MysteryCache}" />
                                                 <Run Text="" />
                                                 <Run Text="x" />
@@ -640,7 +626,7 @@
                                                                                Text="{Binding Name}" />
                                                                     <sc:ColorfulTextBlock Margin="0,12,0,0"
                                                                                           FontSize="14"
-                                                                                          Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                          Foreground="{DynamicResource StarTextSecondary}"
                                                                                           Text="{Binding Desc}"
                                                                                           TextWrapping="Wrap" />
                                                                 </StackPanel>

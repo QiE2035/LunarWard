@@ -35,10 +35,10 @@
                     IsVisible="False">
             <Image Width="160"
                    Height="160"
-                   Source="{DynamicResource EmojiBangboo}" />
+                   Source="avares://LunarWard/Assets/Image/pamu.db6c2c7b.png" />
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Foreground="{DynamicResource StarTextSecondary}"
                        Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
@@ -49,8 +49,7 @@
             <Button Height="36"
                     BorderThickness="0"
                     Command="{Binding RefreshDataCommand}"
-                    CornerRadius="0,18,18,0"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    CornerRadius="0,18,18,0">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -61,8 +60,6 @@
             <Button Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
-                    Shadow="{DynamicResource ThemeShadow}"
-                    Style="{DynamicResource AccentButtonStyle}"
                     Translation="0,0,16"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
@@ -106,14 +103,14 @@
                                    Stretch="UniformToFill" />
                             <TextBlock Margin="6,0,0,2"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        IsVisible="{Binding local:ShiyuDefensePage.V1VersionVisibility(Version)}">
                                 <Run Text="x" />
                                 <Run Text="{Binding MaxRatingTimes}" />
                             </TextBlock>
                             <TextBlock Margin="2,0,0,2"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        IsVisible="{Binding local:ShiyuDefensePage.V2VersionVisibility(Version)}">
                                 <Run Text="" />
                                 <Run Text="{Binding V2Score}" />
@@ -132,7 +129,7 @@
 
                 <Grid>
                     <!--  统计周期  -->
-                    <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                         <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentShiyuDefense.BeginTime.LocalDateTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
@@ -146,7 +143,6 @@
                      
                      
                       RowSpacing="8"
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16">
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -172,7 +168,7 @@
                                    Height="40"
                                    Source="ms-appx:///Assets/Image/S_Level.png" />
                             <TextBlock VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        Text="x" />
                             <TextBlock VerticalAlignment="Center"
                                        FontSize="16"
@@ -190,7 +186,7 @@
                                    Height="40"
                                    Source="ms-appx:///Assets/Image/A_Level.png" />
                             <TextBlock VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        Text="x" />
                             <TextBlock VerticalAlignment="Center"
                                        FontSize="16"
@@ -208,7 +204,7 @@
                                    Height="40"
                                    Source="ms-appx:///Assets/Image/B_Level.png" />
                             <TextBlock VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        Text="x" />
                             <TextBlock VerticalAlignment="Center"
                                        FontSize="16"
@@ -229,7 +225,7 @@
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis">
-                            <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ShiyuDefensePage_HighestStageCleared}" />
+                            <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_HighestStageCleared}" />
                             <Run Text="" />
                             <Run Text="{Binding CurrentShiyuDefense.MaxLayer}" />
                         </TextBlock>
@@ -239,7 +235,7 @@
                                    Grid.Column="1"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center">
-                            <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ShiyuDefensePage_47LayerClearTime}" />
+                            <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_47LayerClearTime}" />
                             <Run Text="" />
                             <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(CurrentShiyuDefense.BattleTime47)}" />
                         </TextBlock>
@@ -259,7 +255,6 @@
                                  
                                  
                                   RowSpacing="8"
-                                  Shadow="{DynamicResource ThemeShadow}"
                                   Translation="0,0,16">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -278,19 +273,18 @@
                                 <StackPanel VerticalAlignment="Center" Spacing="4">
                                     <!--  名称  -->
                                     <TextBlock FontWeight="Bold"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Foreground="{DynamicResource StarTextSecondary}"
                                                Text="{Binding ZoneName}" />
                                     <!--  buff  -->
                                     <Button Margin="-2,0,0,0"
                                             Padding="2"
                                             FontSize="12"
-                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                            Foreground="{DynamicResource StarTextTertiary}">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_FrontierEffects}" />
                                             <TextBlock Margin="2,1,0,0"
                                                        VerticalAlignment="Center"
-                                                       FontFamily="{DynamicResource SegoeFluentIcons}"
+                                                       FontFamily="{DynamicResource StarIconFontFamily}"
                                                        FontSize="10"
                                                        Text="&#xF08F;" />
                                         </StackPanel>
@@ -305,7 +299,7 @@
                                                                 <StackPanel Spacing="4">
                                                                     <TextBlock Text="{Binding Title}" />
                                                                     <sc:ColorfulTextBlock FontSize="12"
-                                                                                          Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                          Foreground="{DynamicResource StarTextSecondary}"
                                                                                           Text="{Binding Text}"
                                                                                           TextWrapping="Wrap" />
                                                                 </StackPanel>
@@ -332,7 +326,7 @@
                                     <!--  通关时间  -->
                                     <TextBlock HorizontalAlignment="Right"
                                                FontSize="12"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Foreground="{DynamicResource StarTextSecondary}"
                                                Text="{Binding FloorChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                 </StackPanel>
 
@@ -346,20 +340,19 @@
                                     <Image Grid.Row="2"
                                                 Height="20"
                                                 HorizontalAlignment="Left"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                Foreground="{DynamicResource StarTextTertiary}"
                                                 Source="ms-appx:///Assets/Image/1.0064dde1.png" />
 
                                     <!--  敌方阵容  -->
                                     <Button Padding="2"
                                             HorizontalAlignment="Right"
                                             FontSize="12"
-                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                            Foreground="{DynamicResource StarTextTertiary}">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_EnemyDetails}" />
                                             <TextBlock Margin="2,1,0,0"
                                                        VerticalAlignment="Center"
-                                                       FontFamily="{DynamicResource SegoeFluentIcons}"
+                                                       FontFamily="{DynamicResource StarIconFontFamily}"
                                                        FontSize="10"
                                                        Text="&#xF08F;" />
                                         </StackPanel>
@@ -398,7 +391,7 @@
                                                                                 Spacing="4">
                                                                         <TextBlock Margin="0,0,8,0"
                                                                                    VerticalAlignment="Center"
-                                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                                    Text="{Binding lang:Lang.ShiyuDefensePage_Weakness}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
@@ -424,7 +417,7 @@
                                                                                 Spacing="4">
                                                                         <TextBlock Margin="0,0,8,0"
                                                                                    VerticalAlignment="Center"
-                                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                                    Text="{Binding lang:Lang.ShiyuDefensePage_Resistance}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
@@ -491,7 +484,7 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Bottom"
                                                                FontSize="12"
-                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               Foreground="{DynamicResource StarTextSecondary}"
                                                                IsTextScaleFactorEnabled="False">
                                                         <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                     </TextBlock>
@@ -516,7 +509,7 @@
                                                             IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>
@@ -559,7 +552,7 @@
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Bottom"
                                                    FontSize="12"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    IsTextScaleFactorEnabled="False">
                                             <Run Text="Lv." /><Run Text="{Binding Node1.Buddy.Level}" />
                                         </TextBlock>
@@ -584,7 +577,7 @@
                                            Grid.Column="0"
                                            Margin="2,0,0,0"
                                            FontSize="12">
-                                    <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
+                                    <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
                                     <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(Node1.BattleTime)}" />
                                 </TextBlock>
 
@@ -601,20 +594,19 @@
                                     <Image Grid.Row="2"
                                                 Height="20"
                                                 HorizontalAlignment="Left"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                Foreground="{DynamicResource StarTextTertiary}"
                                                 Source="ms-appx:///Assets/Image/2.d6319270.png" />
 
                                     <!--  敌方阵容  -->
                                     <Button Padding="2"
                                             HorizontalAlignment="Right"
                                             FontSize="12"
-                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                            Foreground="{DynamicResource StarTextTertiary}">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_EnemyDetails}" />
                                             <TextBlock Margin="2,1,0,0"
                                                        VerticalAlignment="Center"
-                                                       FontFamily="{DynamicResource SegoeFluentIcons}"
+                                                       FontFamily="{DynamicResource StarIconFontFamily}"
                                                        FontSize="10"
                                                        Text="&#xF08F;" />
                                         </StackPanel>
@@ -653,7 +645,7 @@
                                                                                 Spacing="4">
                                                                         <TextBlock Margin="0,0,8,0"
                                                                                    VerticalAlignment="Center"
-                                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                                    Text="{Binding lang:Lang.ShiyuDefensePage_Weakness}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
@@ -679,7 +671,7 @@
                                                                                 Spacing="4">
                                                                         <TextBlock Margin="0,0,8,0"
                                                                                    VerticalAlignment="Center"
-                                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                                    Text="{Binding lang:Lang.ShiyuDefensePage_Resistance}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
@@ -746,7 +738,7 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Bottom"
                                                                FontSize="12"
-                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               Foreground="{DynamicResource StarTextSecondary}"
                                                                IsTextScaleFactorEnabled="False">
                                                         <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                     </TextBlock>
@@ -771,7 +763,7 @@
                                                             IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>
@@ -814,7 +806,7 @@
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Bottom"
                                                    FontSize="12"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    IsTextScaleFactorEnabled="False">
                                             <Run Text="Lv." /><Run Text="{Binding Node2.Buddy.Level}" />
                                         </TextBlock>
@@ -839,7 +831,7 @@
                                            Grid.Column="3"
                                            Margin="2,0,0,0"
                                            FontSize="12">
-                                    <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
+                                    <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
                                     <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(Node2.BattleTime)}" />
                                 </TextBlock>
 
@@ -859,7 +851,7 @@
 
                 <Grid>
                     <!--  统计周期  -->
-                    <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                         <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentShiyuDefenseV2.BeginTime.LocalDateTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
@@ -875,7 +867,6 @@
                      
                      
                       RowSpacing="8"
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16">
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -906,7 +897,7 @@
                                 </Grid>
                             </StackPanel>
                             <TextBlock FontSize="12"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        Text="{Binding CurrentShiyuDefenseV2.Brief.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
                                        IsVisible="{Binding local:ShiyuDefensePage.ChallengeTimeVisibility(CurrentShiyuDefenseV2.Brief.ChallengeTime)}"/>
                         </StackPanel>
@@ -919,7 +910,7 @@
                         <TextBlock HorizontalAlignment="Right"
                                    VerticalAlignment="Bottom"
                                    FontSize="12"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Foreground="{DynamicResource StarTextSecondary}"
                                    IsVisible="{Binding CurrentShiyuDefenseV2.Brief.BattleTime, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}">
                             <Run Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
                             <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(CurrentShiyuDefenseV2.Brief.BattleTime)}" />
@@ -972,13 +963,12 @@
                                         <Button Margin="-2,2,0,0"
                                                 Padding="2"
                                                 FontSize="12"
-                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                                Foreground="{DynamicResource StarTextTertiary}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_FrontierEffects}" />
                                                 <TextBlock Margin="2,1,0,0"
                                                            VerticalAlignment="Center"
-                                                           FontFamily="{DynamicResource SegoeFluentIcons}"
+                                                           FontFamily="{DynamicResource StarIconFontFamily}"
                                                            FontSize="10"
                                                            Text="&#xF08F;" />
                                             </StackPanel>
@@ -989,7 +979,7 @@
                                                         <StackPanel Spacing="4">
                                                             <TextBlock Text="{Binding Buff.Title}" />
                                                             <sc:ColorfulTextBlock FontSize="12"
-                                                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                  Foreground="{DynamicResource StarTextSecondary}"
                                                                                   Text="{Binding Buff.Text}"
                                                                                   TextWrapping="Wrap" />
                                                         </StackPanel>
@@ -1000,7 +990,7 @@
                                         <!--  通关时长  -->
                                         <TextBlock Margin="0,4,0,0"
                                                    FontSize="12"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    IsVisible="{Binding BattleTime, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}">
                                             <Run Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
                                             <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(BattleTime)}" />
@@ -1008,7 +998,7 @@
                                         <!--  通关时刻  -->
                                         <TextBlock Margin="0,4,0,0"
                                                    FontSize="12"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    IsVisible="{Binding local:ShiyuDefensePage.ChallengeTimeVisibility(ChallengeTime)}">
                                             <Run Text="{Binding lang:Lang.ClearedAt}" />
                                             <Run Text="{Binding ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
@@ -1052,7 +1042,7 @@
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Bottom"
                                                                    FontSize="12"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    IsTextScaleFactorEnabled="False">
                                                             <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                         </TextBlock>
@@ -1077,7 +1067,7 @@
                                                                 IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                                                             <TextBlock Margin="4,2,4,2"
                                                                        FontSize="14"
-                                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                                        IsTextScaleFactorEnabled="False"
                                                                        Text="{Binding Rank}" />
                                                         </Border>
@@ -1120,7 +1110,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Bottom"
                                                        FontSize="12"
-                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                        IsTextScaleFactorEnabled="False">
                                                 <Run Text="Lv." /><Run Text="{Binding Buddy.Level}" />
                                             </TextBlock>
@@ -1156,7 +1146,6 @@
                      
                      
                       RowSpacing="4"
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -1172,13 +1161,12 @@
                             <Button Margin="-2,2,0,0"
                                     Padding="2"
                                     FontSize="12"
-                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                    Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                    Foreground="{DynamicResource StarTextTertiary}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.ShiyuDefensePage_FrontierEffects}" />
                                     <TextBlock Margin="2,1,0,0"
                                                VerticalAlignment="Center"
-                                               FontFamily="{DynamicResource SegoeFluentIcons}"
+                                               FontFamily="{DynamicResource StarIconFontFamily}"
                                                FontSize="10"
                                                Text="&#xF08F;" />
                                 </StackPanel>
@@ -1189,7 +1177,7 @@
                                             <StackPanel Spacing="4">
                                                 <TextBlock Text="{Binding CurrentShiyuDefenseV2.FourthLayerDetail.Buff.Title}" />
                                                 <sc:ColorfulTextBlock FontSize="12"
-                                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                      Foreground="{DynamicResource StarTextSecondary}"
                                                                       Text="{Binding CurrentShiyuDefenseV2.FourthLayerDetail.Buff.Text}"
                                                                       TextWrapping="Wrap" />
                                             </StackPanel>
@@ -1199,7 +1187,7 @@
                             </Button>
                             <!--  通关时刻  -->
                             <TextBlock FontSize="12"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        Text="{Binding GetFourthLayerChallengeTime(CurrentShiyuDefenseV2)}"/>
                         </StackPanel>
                         <!--  评分图  -->
@@ -1240,7 +1228,7 @@
                                     <TextBlock Margin="2,0,0,0" 
                                                FontSize="12"
                                                IsVisible="{Binding BattleTime, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}">
-                                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
+                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ShiyuDefensePage_ClearTime}" />
                                         <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(BattleTime)}" />
                                     </TextBlock>
                                     
@@ -1282,7 +1270,7 @@
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Bottom"
                                                                    FontSize="12"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    IsTextScaleFactorEnabled="False">
                                                             <Run Text="Lv." /><Run Text="{Binding Level}" />
                                                         </TextBlock>
@@ -1307,7 +1295,7 @@
                                                                 IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                                                             <TextBlock Margin="4,2,4,2"
                                                                        FontSize="14"
-                                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                                        IsTextScaleFactorEnabled="False"
                                                                        Text="{Binding Rank}" />
                                                         </Border>
@@ -1350,7 +1338,7 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Bottom"
                                                        FontSize="12"
-                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                        IsTextScaleFactorEnabled="False">
                                                 <Run Text="Lv." /><Run Text="{Binding Buddy.Level}" />
                                             </TextBlock>

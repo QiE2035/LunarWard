@@ -37,10 +37,10 @@
                     IsVisible="False">
             <Image Width="160"
                    Height="160"
-                   Source="{DynamicResource EmojiPaimon}" />
+                   Source="avares://LunarWard/Assets/Image/UI_EmotionIcon5.png" />
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Foreground="{DynamicResource StarTextSecondary}"
                        Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
@@ -51,8 +51,7 @@
             <Button Height="36"
                     BorderThickness="0"
                     Command="{Binding RefreshDataCommand}"
-                    CornerRadius="0,18,18,0"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    CornerRadius="0,18,18,0">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -63,8 +62,6 @@
             <Button Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
-                    Shadow="{DynamicResource ThemeShadow}"
-                    Style="{DynamicResource AccentButtonStyle}"
                     Translation="0,0,16"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
@@ -108,7 +105,7 @@
                         <TextBlock Grid.Row="1"
                                    Margin="24,0,0,2"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Foreground="{DynamicResource StarTextSecondary}"
                                    Text="{Binding TotalStar}" />
                     </Grid>
                 </DataTemplate>
@@ -123,7 +120,7 @@
             <StackPanel Margin="24" Spacing="8">
                 <Grid>
                     <!--  统计周期  -->
-                    <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                         <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentAbyss.StartTime.LocalDateTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
@@ -133,10 +130,6 @@
                 </Grid>
                 <!--  出战统计  -->
                 <Grid Margin="0,-4,0,0"
-                     
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
@@ -178,13 +171,10 @@
                 <!--  出战次数  -->
                 <TextBlock Margin="0,8,0,0"
                            FontSize="16"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Foreground="{DynamicResource StarTextSecondary}"
                            Text="{Binding lang:Lang.SpiralAbyssPage_Picked}"
                            IsVisible="{Binding HasData}" />
                 <Grid
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding HasData}">
                     <ItemsControl HorizontalAlignment="Center"
@@ -241,13 +231,10 @@
                 <!--  战斗数据榜  -->
                 <TextBlock Margin="0,8,0,0"
                            FontSize="16"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Foreground="{DynamicResource StarTextSecondary}"
                            Text="{Binding lang:Lang.SpiralAbyssPage_CombatStats}"
                            IsVisible="{Binding HasData}" />
                 <Grid
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding HasData}">
                     <Grid.RowDefinitions>
@@ -265,11 +252,11 @@
                     <Border Grid.Row="1"
                             Grid.ColumnSpan="3"
                             Margin="-24,0,-24,0"
-                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                            Background="{DynamicResource StarCardBackgroundBrush}" />
                     <Border Grid.Row="3"
                             Grid.ColumnSpan="3"
                             Margin="-24,0,-24,0"
-                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                            Background="{DynamicResource StarCardBackgroundBrush}" />
                     <!--  最多击破数  -->
                     <TextBlock Grid.Row="0"
                                VerticalAlignment="Center"
@@ -359,9 +346,6 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="abyss:SpiralAbyssFloor">
                             <Grid
-                                 
-                                 
-                                  Shadow="{DynamicResource ThemeShadow}"
                                   Translation="0,0,16">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="28" />
@@ -410,10 +394,10 @@
                                                                     Orientation="Horizontal"
                                                                     Spacing="8">
                                                             <TextBlock FontSize="12"
-                                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                                        Text="{Binding local:SpiralAbyssPage.LevelX(Index)}" />
                                                             <TextBlock FontSize="12"
-                                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                       Foreground="{DynamicResource StarTextSecondary}"
                                                                        Text="{Binding FirstBattleTime.LocalDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                                         </StackPanel>
                                                         <!--  星星  -->
@@ -436,11 +420,11 @@
                                                                 VerticalAlignment="Center"
                                                                 Spacing="4">
                                                         <TextBlock HorizontalAlignment="Center"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    Text="{Binding local:SpiralAbyssPage.LevelX(Index)}" />
                                                         <TextBlock HorizontalAlignment="Center"
                                                                    FontSize="12"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    Text="{Binding FirstBattleTime.LocalDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                                         <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding linq:Enumerable.Range(0, Star)}">
                                                             

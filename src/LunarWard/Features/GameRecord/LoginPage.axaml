@@ -27,31 +27,28 @@
                         Width="36"
                         Height="32"
                         Padding="0"
-                        Click="Button_GoBack_Click"
-                        Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                        Click="Button_GoBack_Click">
                     <fw:FontIcon Classes="icon" FontSize="16"
-                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                              Foreground="{DynamicResource StarTextSecondary}"
                               Glyph="&#xEC52;" />
                 </Button>
                 <Button  x:Name="Button_GoForward"
                         Width="36"
                         Height="32"
                         Padding="0"
-                        Click="Button_GoForward_Click"
-                        Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                        Click="Button_GoForward_Click">
                     <fw:FontIcon Classes="icon" FontSize="16"
-                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                              Foreground="{DynamicResource StarTextSecondary}"
                               Glyph="&#xEBE7;" />
                 </Button>
                 <Button  x:Name="Button_RefreshOrCancel"
                         Width="36"
                         Height="32"
                         Padding="0"
-                        Click="Button_RefreshOrCancel_Click"
-                        Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                        Click="Button_RefreshOrCancel_Click">
                     <fw:FontIcon Classes="icon"  x:Name="FontIcon_RefreshOrCancel"
                               FontSize="16"
-                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                              Foreground="{DynamicResource StarTextSecondary}"
                               Glyph="&#xE72C;" />
                 </Button>
             </StackPanel>
@@ -68,21 +65,20 @@
                     Padding="0"
                     BorderThickness="0"
                     Click="Button_Finish_Click"
-                    CornerRadius="16"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    CornerRadius="16">
                 <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE8FB;" />
                 <FlyoutBase.AttachedFlyout>
                     <Flyout Placement="BottomEdgeAlignedLeft">
                         <Flyout.FlyoutPresenterStyle>
                             <Style TargetType="FlyoutPresenter">
-                                <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                                <Setter Property="Background" Value="{DynamicResource StarAccentBrush}" />
                                 <Setter Property="Padding" Value="16,12,16,12" />
                                 <Setter Property="BorderThickness" Value="0" />
                             </Style>
                         </Flyout.FlyoutPresenterStyle>
                         <TextBlock  x:Name="TextBlock_Tip"
                                    MaxWidth="360"
-                                   Foreground="{DynamicResource TextOnAccentAAFillColorPrimaryBrush}"
+                                   Foreground="{DynamicResource StarAccentForegroundBrush}"
                                    Text="{Binding lang:Lang.LoginPage_ClickThisButtonAfterLoggingIn}"
                                    TextWrapping="Wrap" />
                     </Flyout>

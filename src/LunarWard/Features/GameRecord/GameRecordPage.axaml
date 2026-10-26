@@ -77,7 +77,7 @@
                                 Spacing="2"
                                 IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityConverter}}">
                         <TextBlock Text="{Binding CurrentRole.Nickname}" TextTrimming="CharacterEllipsis" />
-                        <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                        <TextBlock FontSize="12" Foreground="{DynamicResource StarTextSecondary}">
                             <Run Text="{Binding CurrentRole.RegionName}" />
                             <Run Text="" />
                             <Run Text="Lv." /><Run Text="{Binding CurrentRole.Level}" />
@@ -90,7 +90,6 @@
                             Margin="0,0,12,0"
                             BorderThickness="0"
                             Content="{Binding lang:Lang.HoyolabToolboxPage_LogIn}"
-                            Style="{DynamicResource AccentButtonStyle}"
                             IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityReversedConverter}}">
                         <Button.Flyout>
                             <MenuFlyout x:Name="Flyout_LoginMenu_1" Placement="BottomEdgeAlignedLeft">
@@ -114,21 +113,20 @@
                             Height="44"
                             Margin="0,0,12,0"
                             Padding="0"
-                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}"
                             IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityConverter}}">
                         <StackPanel Spacing="-6">
                             <fw:FontIcon Classes="icon" FontSize="16"
-                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                      Foreground="{DynamicResource StarTextSecondary}"
                                       Glyph="&#xE70E;" />
                             <fw:FontIcon Classes="icon" FontSize="16"
-                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                      Foreground="{DynamicResource StarTextSecondary}"
                                       Glyph="&#xE70D;" />
                         </StackPanel>
                         <Button.Flyout>
                             <Flyout x:Name="Flyout_GameRoles" Placement="BottomEdgeAlignedRight">
                                 <Flyout.FlyoutPresenterStyle>
                                     <Style TargetType="FlyoutPresenter">
-                                        <Setter Property="Background" Value="{DynamicResource CustomAcrylicBrush}" />
+                                        <Setter Property="Background" Value="{DynamicResource StarAcrylicBrush}" />
                                         <Setter Property="BorderThickness" Value="0" />
                                         <Setter Property="Padding" Value="4" />
                                     </Style>
@@ -151,8 +149,7 @@
                                             Margin="4,0,4,0"
                                             HorizontalAlignment="Stretch"
                                             HorizontalContentAlignment="Left"
-                                            Command="{Binding RefreshGameRoleInfoCommand}"
-                                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                            Command="{Binding RefreshGameRoleInfoCommand}">
                                         <StackPanel Orientation="Horizontal" Spacing="12">
                                             <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
                                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.HoyolabToolboxPage_RefreshInfo}" />
@@ -163,8 +160,7 @@
                                     <Button Grid.Column="1"
                                             Margin="4,0,4,0"
                                             HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Left"
-                                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                            HorizontalContentAlignment="Left">
                                         <StackPanel Orientation="Horizontal" Spacing="12">
                                             <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE710;" />
                                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.HoyolabToolboxPage_LogIn}" />
@@ -203,7 +199,7 @@
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel VerticalAlignment="Center" Spacing="2">
                                                         <TextBlock Text="{Binding Nickname}" TextTrimming="CharacterEllipsis" />
-                                                        <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                        <TextBlock FontSize="12" Foreground="{DynamicResource StarTextSecondary}">
                                                             <Run Text="{Binding RegionName}" />
                                                             <Run Text="" />
                                                             <Run Text="Lv." /><Run Text="{Binding Level}" />
@@ -215,9 +211,8 @@
                                                             Padding="0"
                                                             VerticalAlignment="Stretch"
                                                             Content="&#xE712;"
-                                                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                                            FontFamily="{DynamicResource StarFontFamily}"
+                                                            Foreground="{DynamicResource StarTextSecondary}">
                                                         <Button.Flyout>
                                                             <MenuFlyout Placement="RightEdgeAlignedTop">
                                                                 <MenuFlyoutItem  x:Name="MenuFlyoutItem_CopyCookie"

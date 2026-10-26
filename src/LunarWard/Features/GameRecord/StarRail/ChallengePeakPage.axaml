@@ -31,7 +31,7 @@
                         IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                     <TextBlock Margin="4,2,4,2"
                                FontSize="14"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Foreground="{DynamicResource StarTextSecondary}"
                                IsTextScaleFactorEnabled="False"
                                Text="{Binding Rank}" />
                 </Border>
@@ -71,10 +71,10 @@
                     IsVisible="False">
             <Image Width="160"
                    Height="160"
-                   Source="{DynamicResource EmojiPom}" />
+                   Source="avares://LunarWard/Assets/Image/20008.png" />
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Foreground="{DynamicResource StarTextSecondary}"
                        Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
@@ -85,8 +85,7 @@
             <Button Height="36"
                     BorderThickness="0"
                     Command="{Binding RefreshDataCommand}"
-                    CornerRadius="0,18,18,0"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    CornerRadius="0,18,18,0">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -97,8 +96,6 @@
             <Button Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
-                    Shadow="{DynamicResource ThemeShadow}"
-                    Style="{DynamicResource AccentButtonStyle}"
                     Translation="0,0,16"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
@@ -151,14 +148,14 @@
                                    Height="20"
                                    Source="ms-appx:///Assets/Image/boss_star.ae0258cf.png" />
                             <TextBlock Margin="0,0,0,2"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        Text="{Binding BossStars}" />
                             <Image Width="20"
                                    Height="20"
                                    Margin="4,0,0,0"
                                    Source="ms-appx:///Assets/Image/normal_star.751a6e2d.png" />
                             <TextBlock Margin="0,0,0,2"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        Text="{Binding MobStars}" />
                         </StackPanel>
                     </Grid>
@@ -173,7 +170,7 @@
             <StackPanel Margin="24" Spacing="8">
 
                 <!--  统计周期  -->
-                <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                     <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
                     <Run Text="" />
                     <Run Text="{Binding CurrentChallengePeakRecord.Group.BeginTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
@@ -183,10 +180,6 @@
 
                 <!--  统计  -->
                 <Grid Margin="0,-4,0,0"
-                     
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
@@ -206,7 +199,7 @@
                                 <Image Width="20"
                                        Height="20"
                                        Source="ms-appx:///Assets/Image/boss_star.ae0258cf.png" />
-                                <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                                     <Run Text="x" />
                                     <Run Text="{Binding CurrentChallengePeakRecord.BossStars}" />
                                 </TextBlock>
@@ -215,7 +208,7 @@
                                 <Image Width="20"
                                        Height="20"
                                        Source="ms-appx:///Assets/Image/normal_star.751a6e2d.png" />
-                                <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                                     <Run Text="x" />
                                     <Run Text="{Binding CurrentChallengePeakRecord.MobStars}" />
                                 </TextBlock>
@@ -244,9 +237,6 @@
                 <TextBlock Margin="0,8,0,0" Text="{Binding lang:Lang.ChallengePeakPage_KingInCheckStageRecords}" />
 
                 <Grid Height="192"
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -295,7 +285,7 @@
                             <fw:FontIcon Classes="icon" Margin="20,2,4,0"
                                       VerticalAlignment="Center"
                                       FontSize="12"
-                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                      Foreground="{DynamicResource StarTextSecondary}"
                                       Glyph="&#xEC61;" />
                             <TextBlock Margin="0,0,4,0"
                                        VerticalAlignment="Center"
@@ -322,7 +312,7 @@
 
                         <!--  暂无通关战绩  -->
                         <TextBlock Margin="0,8,0,0"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Foreground="{DynamicResource StarTextSecondary}"
                                    Text="{Binding lang:Lang.ChallengePeakPage_NoClearanceRecords}"
                                    IsVisible="{Binding CurrentChallengePeakRecord.BossRecord, Converter={DynamicResource ObjectToVisibilityReversedConverter}}" />
 
@@ -335,7 +325,7 @@
                                 Spacing="8"
                                 IsVisible="{Binding CurrentChallengePeakRecord.BossRecord, Converter={DynamicResource ObjectToVisibilityConverter}}">
                         <!--  通关时间  -->
-                        <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding CurrentChallengePeakRecord.BossRecord.ChallengeTime, StringFormat='{}{0:yyyy.MM.dd HH:mm}'}" />
+                        <TextBlock Foreground="{DynamicResource StarTextSecondary}" Text="{Binding CurrentChallengePeakRecord.BossRecord.ChallengeTime, StringFormat='{}{0:yyyy.MM.dd HH:mm}'}" />
                         <!--  队伍  -->
                         <ItemsControl Grid.Row="3"
                                       Grid.ColumnSpan="3"
@@ -361,7 +351,7 @@
                                             Source="{Binding CurrentChallengePeakRecord.BossRecord.Buff.Icon}" />
                             <TextBlock VerticalAlignment="Center" Text="{Binding CurrentChallengePeakRecord.BossRecord.Buff.NameMi18n}" />
                         </StackPanel>
-                        <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        <TextBlock Foreground="{DynamicResource StarTextSecondary}"
                                    Text="{Binding CurrentChallengePeakRecord.BossRecord.Buff.DescMi18n}"
                                    TextWrapping="Wrap" />
                     </StackPanel>
@@ -375,8 +365,6 @@
 
 
                 <Grid
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16">
 
                     <ItemsControl ItemsSource="{Binding CurrentChallengePeakRecord.Mobs}">
@@ -420,7 +408,7 @@
                                             <fw:FontIcon Classes="icon" Margin="20,2,4,0"
                                                       VerticalAlignment="Center"
                                                       FontSize="12"
-                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                      Foreground="{DynamicResource StarTextSecondary}"
                                                       Glyph="&#xEC61;" />
                                             <TextBlock Margin="0,0,4,0"
                                                        VerticalAlignment="Center"
@@ -452,7 +440,7 @@
 
                                         <!--  暂无通关战绩  -->
                                         <TextBlock Margin="0,8,0,0"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    Text="{Binding lang:Lang.ChallengePeakPage_NoClearanceRecords}"
                                                    IsVisible="{Binding HasChallengeRecord, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
 
@@ -467,7 +455,7 @@
                                         <StackPanel Spacing="8"
                                                     IsVisible="{Binding MobRecord.IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
                                             <!--  通关时间  -->
-                                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            <TextBlock Foreground="{DynamicResource StarTextSecondary}"
                                                        Text="{Binding MobRecord.ChallengeTime, StringFormat='{}{0:yyyy.MM.dd HH:mm}'}" />
                                             <!--  队伍  -->
                                             <ItemsControl HorizontalAlignment="Left"

@@ -36,10 +36,10 @@
                     IsVisible="False">
             <Image Width="160"
                    Height="160"
-                   Source="{DynamicResource EmojiPaimon}" />
+                   Source="avares://LunarWard/Assets/Image/UI_EmotionIcon5.png" />
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Foreground="{DynamicResource StarTextSecondary}"
                        Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
@@ -51,8 +51,7 @@
             <Button Height="36"
                     BorderThickness="0"
                     Command="{Binding InitializeDataCommand}"
-                    CornerRadius="0,18,18,0"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    CornerRadius="0,18,18,0">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -70,8 +69,7 @@
             <Button x:Name="Button_GetDetails" Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
-                    IsEnabled="{Binding GetDataDetailsCommand.IsRunning, Converter={DynamicResource BoolReversedConverter}}"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    IsEnabled="{Binding GetDataDetailsCommand.IsRunning, Converter={DynamicResource BoolReversedConverter}}">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -126,7 +124,7 @@
                                Source="ms-appx:///Assets/Image/UI_ItemIcon_201.png" />
                         <TextBlock Grid.Row="1"
                                    Margin="24,0,0,0"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Foreground="{DynamicResource StarTextSecondary}"
                                    Text="{Binding CurrentPrimogems}" />
                     </Grid>
                 </DataTemplate>
@@ -141,13 +139,10 @@
 
                 <!--  Real-Time Data  -->
                 <TextBlock FontSize="16"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Foreground="{DynamicResource StarTextSecondary}"
                            Text="{Binding lang:Lang.TravelersDiaryPage_RealTimeData}"
                            IsVisible="{Binding CurrentSummary, Converter={DynamicResource ObjectToVisibilityConverter}}" />
                 <Grid
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding CurrentSummary, Converter={DynamicResource ObjectToVisibilityConverter}}">
                     <Grid.RowDefinitions>
@@ -203,7 +198,7 @@
 
                     <TextBlock Grid.Row="2"
                                Margin="0,8,0,0"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Foreground="{DynamicResource StarTextSecondary}"
                                Text="{Binding lang:Lang.TravelersDiaryPage_PrimogemsObtained}" />
                     <sc:ColorRectChart Grid.Row="3"
                                        Grid.ColumnSpan="3"
@@ -243,16 +238,13 @@
                 <!--  Historical Data  -->
                 <TextBlock Margin="0,8,0,0"
                            FontSize="16"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Foreground="{DynamicResource StarTextSecondary}"
                            IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
                     <Run Text="{Binding lang:Lang.TravelersDiaryPage_HistoricalData}" />
                     <Run Text="" />
                     <Run Text="{Binding SelectMonthData.Year}" /><Run Text="-" /><Run Text="{Binding SelectMonthData.Month, StringFormat='{}{0:D2}'}" />
                 </TextBlock>
                 <Grid
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
                     <Grid.RowDefinitions>
@@ -289,7 +281,7 @@
 
                     <TextBlock Grid.Row="2"
                                Margin="0,8,0,0"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Foreground="{DynamicResource StarTextSecondary}"
                                Text="{Binding lang:Lang.TravelersDiaryPage_PrimogemsObtained}" />
                     <sc:ColorRectChart Grid.Row="3"
                                        Grid.ColumnSpan="3"
@@ -329,16 +321,15 @@
                 <!--  Daily Data  -->
                 <TextBlock Margin="0,8,0,0"
                            FontSize="16"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Foreground="{DynamicResource StarTextSecondary}"
                            IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
                     <Run Text="{Binding lang:Lang.HoyolabToolboxPage_DailyData}" />
                     <Run Text="" />
                     <Run Text="{Binding SelectMonthData.Year}" /><Run Text="-" /><Run Text="{Binding SelectMonthData.Month, StringFormat='{}{0:D2}'}" />
                 </TextBlock>
                 <Border Padding="12,8,12,8"
-                        Background="{DynamicResource CustomOverlayAcrylicBrush}"
+                        Background="{DynamicResource StarOverlayAcrylicBrush}"
                         CornerRadius="8"
-                        Shadow="{DynamicResource ThemeShadow}"
                         Translation="0,0,16"
                         IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
                     <ItemsControl ItemsSource="{Binding DayDataList}">
@@ -356,7 +347,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0"
                                                VerticalAlignment="Center"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Foreground="{DynamicResource StarTextSecondary}"
                                                Text="{Binding Day}" />
                                     <Image Grid.Column="1"
                                            Width="24"

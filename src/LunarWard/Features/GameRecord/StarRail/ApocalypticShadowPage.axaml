@@ -41,10 +41,10 @@
                     IsVisible="False">
             <Image Width="160"
                    Height="160"
-                   Source="{DynamicResource EmojiPom}" />
+                   Source="avares://LunarWard/Assets/Image/20008.png" />
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Foreground="{DynamicResource StarTextSecondary}"
                        Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
@@ -55,8 +55,7 @@
             <Button Height="36"
                     BorderThickness="0"
                     Command="{Binding RefreshDataCommand}"
-                    CornerRadius="0,18,18,0"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    CornerRadius="0,18,18,0">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -67,8 +66,6 @@
             <Button Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
-                    Shadow="{DynamicResource ThemeShadow}"
-                    Style="{DynamicResource AccentButtonStyle}"
                     Translation="0,0,16"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
@@ -114,13 +111,13 @@
                                    VerticalAlignment="Center"
                                    Source="{StaticResource StarIcon}" />
                             <TextBlock VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Foreground="{DynamicResource StarTextSecondary}"
                                        Text="{Binding StarNum}" />
                             <Border Width="1"
                                     Height="12"
                                     Margin="0,3,0,0"
                                     VerticalAlignment="Center"
-                                    Background="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Background="{DynamicResource StarTextSecondary}"
                                     Opacity="0.25"
                                     IsVisible="{Binding ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
                             <Image Width="20"
@@ -142,7 +139,7 @@
 
                 <Grid>
                     <!--  统计周期  -->
-                    <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    <TextBlock Foreground="{DynamicResource StarTextSecondary}">
                         <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentApocalypticShadow.BeginTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
@@ -154,10 +151,6 @@
 
                 <!--  出战统计  -->
                 <Grid Margin="0,-4,0,0"
-                     
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16">
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -186,7 +179,7 @@
                                     Height="13"
                                     Margin="0,2,0,0"
                                     VerticalAlignment="Center"
-                                    Background="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Background="{DynamicResource StarTextSecondary}"
                                     Opacity="0.25"
                                     IsVisible="{Binding CurrentApocalypticShadow.ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
                         <Image Width="24"
@@ -202,7 +195,7 @@
                                VerticalAlignment="Center"
                                IsTextTrimmedChanged="TextBlock_Deepest_IsTextTrimmedChanged"
                                TextTrimming="CharacterEllipsis">
-                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ApocalypticShadowPage_HighestDifficultyCleared}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ApocalypticShadowPage_HighestDifficultyCleared}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentApocalypticShadow.MaxFloor}" />
                     </TextBlock>
@@ -211,7 +204,7 @@
                                Grid.Column="2"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ForgottenHallPage_TimesChallenged}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ForgottenHallPage_TimesChallenged}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentApocalypticShadow.BattleNum}" />
                     </TextBlock>
@@ -238,7 +231,7 @@
                                 <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
                                 <Run Text="1" />
                                 <LineBreak />
-                                <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding CurrentApocalypticShadow.Meta.UpperBoss.Name}" />
+                                <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding CurrentApocalypticShadow.Meta.UpperBoss.Name}" />
                             </TextBlock>
 
                         </StackPanel>
@@ -255,7 +248,7 @@
                                 <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
                                 <Run Text="2" />
                                 <LineBreak />
-                                <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding CurrentApocalypticShadow.Meta.LowerBoss.Name}" />
+                                <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding CurrentApocalypticShadow.Meta.LowerBoss.Name}" />
                             </TextBlock>
 
                         </StackPanel>
@@ -287,7 +280,7 @@
                                 <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
                                 <Run Text="3" />
                                 <LineBreak />
-                                <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding CurrentApocalypticShadow.Meta.TierceBoss.Name}" />
+                                <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding CurrentApocalypticShadow.Meta.TierceBoss.Name}" />
                             </TextBlock>
                         </StackPanel>
                     </Grid>
@@ -307,9 +300,8 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="fic:ApocalypticShadowFloorDetail">
                             <StackPanel Width="388"
-                                        Background="{DynamicResource CustomOverlayAcrylicBrush}"
+                                        Background="{DynamicResource StarOverlayAcrylicBrush}"
                                         CornerRadius="8,28,8,8"
-                                        Shadow="{DynamicResource ThemeShadow}"
                                         Translation="0,0,16">
 
                                 <!--  title & Node1 & Node2  -->
@@ -331,7 +323,7 @@
 
                                     <Border Grid.ColumnSpan="3"
                                             Margin="-24,0,-24,0"
-                                            Background="{DynamicResource ControlOnImageFillColorDefaultBrush}" />
+                                            Background="{DynamicResource StarControlOnImageBrush}" />
 
                                     <!--  名称  -->
                                     <StackPanel VerticalAlignment="Center" Spacing="2">
@@ -369,7 +361,7 @@
                                                     Height="13"
                                                     Margin="0,3,0,0"
                                                     VerticalAlignment="Center"
-                                                    Background="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Background="{DynamicResource StarTextSecondary}"
                                                     Opacity="0.25"
                                                     />
                                             <!--  额外星星  -->
@@ -395,8 +387,8 @@
                                         <TextBlock HorizontalAlignment="Right"
                                                    FontSize="12"
                                                    IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
-                                            <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ApocalypticShadowPage_TotalScore}" />
-                                            <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="{Binding TotalScore}" />
+                                            <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.ApocalypticShadowPage_TotalScore}" />
+                                            <Run Foreground="{DynamicResource StarAccentForegroundBrush}" Text="{Binding TotalScore}" />
                                         </TextBlock>
                                     </StackPanel>
 
@@ -412,13 +404,13 @@
                                         <fw:FontIcon Classes="icon" Margin="12,0,0,1"
                                                   VerticalAlignment="Bottom"
                                                   FontSize="12"
-                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                  Foreground="{DynamicResource StarTextSecondary}"
                                                   Glyph="&#xEC61;"
                                                   IsVisible="{Binding Node1.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
                                         <TextBlock Margin="4,0,0,0"
                                                    VerticalAlignment="Bottom"
                                                    FontSize="12"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    Text="{Binding lang:Lang.ApocalypticShadowPage_DefeatedBoss}"
                                                    IsVisible="{Binding Node1.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
                                     </StackPanel>
@@ -426,7 +418,7 @@
                                                Grid.ColumnSpan="3"
                                                Margin="0,4,0,0"
                                                FontSize="12"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Foreground="{DynamicResource StarTextSecondary}"
                                                Text="{Binding Node1.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
                                                IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
                                     <TextBlock Grid.Row="2"
@@ -435,8 +427,8 @@
                                                HorizontalAlignment="Right"
                                                FontSize="12"
                                                IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
-                                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.PureFictionPage_Score}" />
-                                        <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="{Binding Node1.Score}" />
+                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.PureFictionPage_Score}" />
+                                        <Run Foreground="{DynamicResource StarAccentForegroundBrush}" Text="{Binding Node1.Score}" />
                                     </TextBlock>
 
                                     <ItemsControl Grid.Row="3"
@@ -465,7 +457,7 @@
                                                             IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>
@@ -496,13 +488,13 @@
                                         <fw:FontIcon Classes="icon" Margin="12,0,0,1"
                                                   VerticalAlignment="Bottom"
                                                   FontSize="12"
-                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                  Foreground="{DynamicResource StarTextSecondary}"
                                                   Glyph="&#xEC61;"
                                                   IsVisible="{Binding Node2.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
                                         <TextBlock Margin="4,0,0,0"
                                                    VerticalAlignment="Bottom"
                                                    FontSize="12"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    Text="{Binding lang:Lang.ApocalypticShadowPage_DefeatedBoss}"
                                                    IsVisible="{Binding Node2.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
                                     </StackPanel>
@@ -510,7 +502,7 @@
                                                Grid.ColumnSpan="3"
                                                Margin="0,4,0,0"
                                                FontSize="12"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Foreground="{DynamicResource StarTextSecondary}"
                                                Text="{Binding Node2.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
                                                IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
                                     <TextBlock Grid.Row="5"
@@ -519,8 +511,8 @@
                                                HorizontalAlignment="Right"
                                                FontSize="12"
                                                IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
-                                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.PureFictionPage_Score}" />
-                                        <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="{Binding Node2.Score}" />
+                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.PureFictionPage_Score}" />
+                                        <Run Foreground="{DynamicResource StarAccentForegroundBrush}" Text="{Binding Node2.Score}" />
                                     </TextBlock>
 
                                     <ItemsControl Grid.Row="6"
@@ -549,7 +541,7 @@
                                                             IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>
@@ -579,7 +571,7 @@
                                                 IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityConverter}}">
                                         <Image Width="120" Source="ms-appx:///Assets/Image/20004.png" />
                                         <TextBlock HorizontalAlignment="Center"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    Text="{Binding lang:Lang.ForgottenHallPage_QuickCleared}" />
                                     </StackPanel>
                                 </Grid>
@@ -618,13 +610,13 @@
                                         <fw:FontIcon Classes="icon" Margin="12,0,0,1"
                                                   VerticalAlignment="Bottom"
                                                   FontSize="12"
-                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                  Foreground="{DynamicResource StarTextSecondary}"
                                                   Glyph="&#xEC61;"
                                                   IsVisible="{Binding Node3.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
                                         <TextBlock Margin="4,0,0,0"
                                                    VerticalAlignment="Bottom"
                                                    FontSize="12"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                    Text="{Binding lang:Lang.ApocalypticShadowPage_DefeatedBoss}"
                                                    IsVisible="{Binding Node3.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
                                     </StackPanel>
@@ -632,15 +624,15 @@
                                                Grid.ColumnSpan="2"
                                                Margin="0,4,0,0"
                                                FontSize="12"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Foreground="{DynamicResource StarTextSecondary}"
                                                Text="{Binding Node3.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                     <TextBlock Grid.Row="1"
                                                Grid.ColumnSpan="2"
                                                Margin="0,4,0,0"
                                                HorizontalAlignment="Right"
                                                FontSize="12">
-                                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.PureFictionPage_Score}" />
-                                        <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="{Binding Node3.Score}" />
+                                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.PureFictionPage_Score}" />
+                                        <Run Foreground="{DynamicResource StarAccentForegroundBrush}" Text="{Binding Node3.Score}" />
                                     </TextBlock>
 
                                     <ItemsControl Grid.Row="2"
@@ -667,7 +659,7 @@
                                                             IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
                                                         <TextBlock Margin="4,2,4,2"
                                                                    FontSize="14"
-                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Foreground="{DynamicResource StarTextSecondary}"
                                                                    IsTextScaleFactorEnabled="False"
                                                                    Text="{Binding Rank}" />
                                                     </Border>

@@ -38,10 +38,10 @@
                     IsVisible="False">
             <Image Width="160"
                    Height="160"
-                   Source="{DynamicResource EmojiPom}" />
+                   Source="avares://LunarWard/Assets/Image/20008.png" />
             <TextBlock HorizontalAlignment="Center"
                        FontSize="16"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Foreground="{DynamicResource StarTextSecondary}"
                        Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
         </StackPanel>
 
@@ -52,8 +52,7 @@
             <Button Height="36"
                     BorderThickness="0"
                     Command="{Binding GetSimulatedUniverseDetailCommand}"
-                    CornerRadius="0,18,18,0"
-                    Style="{DynamicResource AccentButtonStyle}">
+                    CornerRadius="0,18,18,0">
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -64,8 +63,6 @@
             <Button Height="36"
                     BorderThickness="0"
                     CornerRadius="0,18,18,0"
-                    Shadow="{DynamicResource ThemeShadow}"
-                    Style="{DynamicResource AccentButtonStyle}"
                     Translation="0,0,16"
                     IsVisible="False">
                 <StackPanel Margin="4,0,4,0"
@@ -116,10 +113,6 @@
 
                 <!--  数据总览  -->
                 <Grid Margin="0,0,0,16"
-                     
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding BasicInfo, Converter={DynamicResource ObjectToVisibilityConverter}}">
                     <Grid.RowDefinitions>
@@ -135,7 +128,7 @@
                     <TextBlock Grid.Column="0"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.SimulatedUniversePage_AbilityTreeBuffsActivated}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.SimulatedUniversePage_AbilityTreeBuffsActivated}" />
                         <Run Text="" />
                         <Run Text="{Binding BasicInfo.UnlockedSkillPoints}" />
                     </TextBlock>
@@ -143,7 +136,7 @@
                     <TextBlock Grid.Column="1"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.SimulatedUniversePage_UnlockedCurios}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.SimulatedUniversePage_UnlockedCurios}" />
                         <Run Text="" />
                         <Run Text="{Binding BasicInfo.UnlockedMiracleNum}" />
                     </TextBlock>
@@ -151,7 +144,7 @@
                     <TextBlock Grid.Column="2"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.SimulatedUniversePage_UnlockedBlessings}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.SimulatedUniversePage_UnlockedBlessings}" />
                         <Run Text="" />
                         <Run Text="{Binding BasicInfo.UnlockedBuffNum}" />
                     </TextBlock>
@@ -159,16 +152,13 @@
 
 
                 <Grid
-                     
-                     
-                      Shadow="{DynamicResource ThemeShadow}"
                       Translation="0,0,16"
                       IsVisible="{Binding CurrentRecord, Converter={DynamicResource ObjectToVisibilityConverter}}">
                     <!--  本期通关次数  -->
                     <TextBlock Margin="12,0,0,0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center">
-                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.SimulatedUniversePage_NumberOfClears}" />
+                        <Run Foreground="{DynamicResource StarTextSecondary}" Text="{Binding lang:Lang.SimulatedUniversePage_NumberOfClears}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentRecord.Basic.FinishCount}" />
                     </TextBlock>
@@ -177,7 +167,7 @@
                     <TextBlock Margin="0,0,12,0"
                                HorizontalAlignment="Right"
                                VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                               Foreground="{DynamicResource StarTextSecondary}">
                         <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
                         <Run Text="" />
                         <Run Text="{Binding CurrentRecord.Basic.ScheduleBegin, StringFormat='{}{0:yyyy/MM/dd}'}" />
@@ -193,9 +183,8 @@
                     
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="su:SimulatedUniverseRecordItem">
-                            <Border Background="{DynamicResource CustomOverlayAcrylicBrush}"
+                            <Border Background="{DynamicResource StarOverlayAcrylicBrush}"
                                     CornerRadius="8"
-                                    Shadow="{DynamicResource ThemeShadow}"
                                     Translation="0,0,16">
                                 <Expander Padding="16,0,16,12"
                                           HorizontalAlignment="Stretch"
@@ -219,19 +208,19 @@
                                                     <TextBlock Margin="16,0,0,0"
                                                                VerticalAlignment="Center"
                                                                FontSize="16"
-                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               Foreground="{DynamicResource StarTextSecondary}"
                                                                Text="{Binding Name}" />
                                                     <TextBlock Margin="4,0,0,0"
                                                                VerticalAlignment="Center"
                                                                FontSize="16"
-                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               Foreground="{DynamicResource StarTextSecondary}"
                                                                Text="{Binding Difficulty, Converter={StaticResource SimulatedUniverseRomanNumberConverter}}" />
                                                 </StackPanel>
                                                 <!--  最高积分  -->
                                                 <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
                                                     <TextBlock HorizontalAlignment="Center"
                                                                FontSize="12"
-                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               Foreground="{DynamicResource StarTextSecondary}"
                                                                Text="{Binding lang:Lang.SimulatedUniversePage_HighestScore}" />
                                                     <TextBlock HorizontalAlignment="Center"
                                                                FontSize="16"
@@ -242,7 +231,7 @@
                                             <TextBlock HorizontalAlignment="Left"
                                                        VerticalAlignment="Center"
                                                        FontSize="12"
-                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                       Foreground="{DynamicResource StarTextSecondary}">
                                                 <Run Text="{Binding lang:Lang.SimulatedUniversePage_ChallengedOn}" />
                                                 <Run Text="" />
                                                 <Run Text="{Binding FinishTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
@@ -289,14 +278,14 @@
                                                               Height="48"
                                                              
                                                               ToolTip.Tip="{Binding Name}">
-                                                            <sc:CachedImage Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                                                            <sc:CachedImage Background="{DynamicResource StarControlOnImageBrush}"
                                                                             CornerRadius="24"
                                                                             Source="{Binding Id, Converter={StaticResource SimulatedUniverseBuffIconConverter}}" />
                                                             <Border Width="16"
                                                                     Height="16"
                                                                     HorizontalAlignment="Right"
                                                                     VerticalAlignment="Bottom"
-                                                                    Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                                                                    Background="{DynamicResource StarControlOnImageBrush}"
                                                                     CornerRadius="8">
                                                                 <TextBlock Margin="0,0,0,1"
                                                                            HorizontalAlignment="Center"
@@ -329,7 +318,7 @@
                                                     <DataTemplate x:DataType="su:SimulatedUniverseAvatar">
                                                         <sc:CachedImage Width="32"
                                                                         Height="32"
-                                                                        Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                                                                        Background="{DynamicResource StarControlOnImageBrush}"
                                                                         CornerRadius="16"
                                                                         Source="{Binding Icon}" />
                                                     </DataTemplate>
@@ -379,7 +368,7 @@
                                                                             <fw:FontIcon Classes="icon" Grid.Column="1"
                                                                                       Margin="4,0,0,0"
                                                                                       FontSize="12"
-                                                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                      Foreground="{DynamicResource StarTextSecondary}"
                                                                                       Glyph="&#xEB11;"
                                                                                       IsVisible="{Binding IsEvoluted}" />
                                                                         </Grid>
@@ -400,7 +389,7 @@
                                                     <DataTemplate x:DataType="su:SimulatedUniverseMiracleItem">
                                                         <sc:CachedImage Width="32"
                                                                         Height="32"
-                                                                        Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                                                                        Background="{DynamicResource StarControlOnImageBrush}"
                                                                         CornerRadius="16"
                                                                         Source="{Binding Icon}"
                                                                         ToolTip.Tip="{Binding Name}" />
