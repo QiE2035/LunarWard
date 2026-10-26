@@ -181,7 +181,7 @@ internal class StarRailGachaService : GachaLogService
             }
             var count = InsertGachaLogItems(obj.List.ToList<GachaLogItem>());
             // 成功导入跃迁记录 {count} 条
-            InAppToast.Success($"Uid {obj.Info.Uid}", string.Format(Lang.StarRailGachaService_ImportWarpRecordsSuccessfully, count));
+            InAppToast.MainWindow?.Success($"Uid {obj.Info.Uid}", string.Format(Lang.StarRailGachaService_ImportWarpRecordsSuccessfully, count), 5000);
             return obj.Info.Uid;
         }
         return 0;

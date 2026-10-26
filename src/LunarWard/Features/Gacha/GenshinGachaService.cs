@@ -189,7 +189,7 @@ internal class GenshinGachaService : GachaLogService
             }
             var count = InsertGachaLogItems(obj.List.ToList<GachaLogItem>());
             // 成功导入祈愿记录 {count} 条
-            InAppToast.Success($"Uid {obj.Info.Uid}", string.Format(Lang.GenshinGachaService_ImportWishRecordsSuccessfully, count));
+            InAppToast.MainWindow?.Success($"Uid {obj.Info.Uid}", string.Format(Lang.GenshinGachaService_ImportWishRecordsSuccessfully, count), 5000);
             return obj.Info.Uid;
         }
         return 0;

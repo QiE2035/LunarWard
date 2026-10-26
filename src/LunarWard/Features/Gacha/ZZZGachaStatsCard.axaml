@@ -1,0 +1,316 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:gacha="using:LunarWard.Features.Gacha"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:controls="using:LunarWard.Controls"
+             x:Class="LunarWard.Features.Gacha.ZZZGachaStatsCard"
+             x:DataType="gacha:GachaTypeStats"
+             DataContext="{Binding WarpTypeStats, RelativeSource={RelativeSource Self}}">
+
+  <!--
+    上游 Starward/Features/Gacha/ZZZGachaStatsCard.xaml 的逐结构移植（S/A/B 稀有度命名）。
+    行序：类型/计数 → 起止时间 → 分割线 → 5★平均 → 5★/4★/3★ 统计 → 5★/4★ 列表。
+    Avalonia 差异：Grid 无 Padding/CornerRadius/Shadow，用 Border 承担外框；
+    Pivot+Segmented → 36 高分段头 + 两个 ItemsControl；ThemeResource → Styles/Starward.axaml 的 Star* 资源。
+  -->
+
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="Rarity5ForegroundBrush">#FFA500</SolidColorBrush>
+    <SolidColorBrush x:Key="Rarity4ForegroundBrush">#C864E0</SolidColorBrush>
+    <SolidColorBrush x:Key="Rarity3ForegroundBrush">#5EAAED</SolidColorBrush>
+    <SolidColorBrush x:Key="Rarity2ForegroundBrush">#3BA272</SolidColorBrush>
+
+    <gacha:GachaPityProgressBackgroundBrushConverter x:Key="GachaPityProgressBackgroundBrushConverter" />
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <!-- 上游 GachaStatsCard.xaml:20-25：卡片内文本统一次要色、垂直居中、单行 -->
+    <Style Selector="TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextWrapping" Value="NoWrap" />
+      <Setter Property="TextTrimming" Value="None" />
+      <Setter Property="Foreground" Value="{StaticResource StarTextSecondary}" />
+    </Style>
+
+    <!-- 分段控件（上游 cwc:Segmented） -->
+    <Style Selector="Border.segmented">
+      <Setter Property="Background" Value="{StaticResource StarControlFillBrush}" />
+      <Setter Property="BorderBrush" Value="{StaticResource StarCardStrokeBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Height" Value="32" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Padding" Value="0,4" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment:checked /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+    </Style>
+
+    <Style Selector="ToggleButton.segment:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarControlFillPressedBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border Padding="12,8,12,8"
+          Background="{StaticResource StarOverlayAcrylicBrush}"
+          CornerRadius="8">
+    <Grid RowSpacing="4" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
+
+      <!-- 行 0：卡池名（16，省略号）+ 右对齐总数（16） -->
+      <Grid Grid.Row="0" ColumnSpacing="8" ColumnDefinitions="*,Auto">
+        <TextBlock Name="TextBlock_GachaTypeText"
+                   Grid.Column="0"
+                   FontSize="16"
+                   Text="{Binding GachaTypeText}"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1"
+                   FontSize="16"
+                   Text="{Binding Count}" />
+      </Grid>
+
+      <!-- 行 1：起止时间（12，"-" 连接） -->
+      <TextBlock Grid.Row="1" FontSize="12" TextTrimming="CharacterEllipsis">
+        <Run Text="{Binding StartTime, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss}'}" />
+        <Run Text="-" />
+        <Run Text="{Binding EndTime, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss}'}" />
+      </TextBlock>
+
+      <!-- 行 2：MenuFlyoutSeparator → 1px 分割线 -->
+      <Border Grid.Row="2" Height="1" Background="{StaticResource StarDividerBrush}" />
+
+      <!-- 行 3：5★ 平均（Rarity2 绿） -->
+      <TextBlock Grid.Row="3" FontSize="14" Foreground="{StaticResource Rarity2ForegroundBrush}">
+        <Run Text="S" />
+        <Run Text="{x:Static lang:Lang.GachaStatsCard_Average}" />
+        <Run Text="{Binding Avarage_5_Desc_Text}" />
+      </TextBlock>
+      <TextBlock Grid.Row="3"
+                 HorizontalAlignment="Right"
+                 FontSize="14"
+                 Foreground="{StaticResource Rarity2ForegroundBrush}">
+        <Run Text="{Binding Average_5, StringFormat='{}{0:F2}'}" />
+        <Run Text="{Binding Avarage_5_Up_Text}" />
+      </TextBlock>
+
+      <!-- 行 4：5★ 统计 -->
+      <TextBlock Grid.Row="4" FontSize="14" Foreground="{StaticResource Rarity5ForegroundBrush}">
+        <Run Text="S" />
+        <Run Text="{x:Static lang:Lang.GachaStatsCard_Stats}" />
+      </TextBlock>
+      <TextBlock Grid.Row="4"
+                 HorizontalAlignment="Right"
+                 FontSize="14"
+                 Foreground="{StaticResource Rarity5ForegroundBrush}">
+        <Run Text="{Binding Count_5}" />
+        <Run Text="[" /><Run Text="{Binding Ratio_5, StringFormat='{}{0:P2}'}" /><Run Text="]" />
+      </TextBlock>
+
+      <!-- 行 5：4★ 统计 -->
+      <TextBlock Grid.Row="5" FontSize="14" Foreground="{StaticResource Rarity4ForegroundBrush}">
+        <Run Text="A" />
+        <Run Text="{x:Static lang:Lang.GachaStatsCard_Stats}" />
+      </TextBlock>
+      <TextBlock Grid.Row="5"
+                 HorizontalAlignment="Right"
+                 FontSize="14"
+                 Foreground="{StaticResource Rarity4ForegroundBrush}">
+        <Run Text="{Binding Count_4}" />
+        <Run Text="[" /><Run Text="{Binding Ratio_4, StringFormat='{}{0:P2}'}" /><Run Text="]" />
+      </TextBlock>
+
+      <!-- 行 6：3★ 统计 -->
+      <TextBlock Grid.Row="6" FontSize="14" Foreground="{StaticResource Rarity3ForegroundBrush}">
+        <Run Text="B" />
+        <Run Text="{x:Static lang:Lang.GachaStatsCard_Stats}" />
+      </TextBlock>
+      <TextBlock Grid.Row="6"
+                 HorizontalAlignment="Right"
+                 FontSize="14"
+                 Foreground="{StaticResource Rarity3ForegroundBrush}">
+        <Run Text="{Binding Count_3}" />
+        <Run Text="[" /><Run Text="{Binding Ratio_3, StringFormat='{}{0:P2}'}" /><Run Text="]" />
+      </TextBlock>
+
+      <!-- 行 7：上游该位置的分割线是 Collapsed，保留占位不渲染 -->
+      <Border Grid.Row="7" Height="0" Visibility="Collapsed" />
+
+      <!-- 行 8：Pivot(5★/4★ 列表) + Segmented -->
+      <Grid Grid.Row="8" RowDefinitions="36,*">
+        <Border Grid.Row="0" Classes="segmented" HorizontalAlignment="Stretch">
+          <Grid ColumnDefinitions="*,*">
+            <ToggleButton Name="ToggleButton_Rarity5"
+                          Grid.Column="0"
+                          Classes="segment"
+                          IsChecked="True"
+                          Click="SegmentedItem_Rarity5_Click">
+              <TextBlock Foreground="{StaticResource Rarity5ForegroundBrush}" Text="S" />
+            </ToggleButton>
+            <ToggleButton Name="ToggleButton_Rarity4"
+                          Grid.Column="1"
+                          Classes="segment"
+                          Click="SegmentedItem_Rarity4_Click">
+              <TextBlock Foreground="{StaticResource Rarity4ForegroundBrush}" Text="4★" />
+            </ToggleButton>
+          </Grid>
+        </Border>
+
+        <TabControl Name="Segmented_GachaItemList"
+                    Grid.Row="1"
+                    Margin="0,4,0,0"
+                    SelectedIndex="0"
+                    Padding="0"
+                    SelectionChanged="Segmented_GachaItemList_SelectionChanged">
+          <TabControl.Styles>
+            <!-- 上游 Segmented 已承担页签，隐藏 TabControl 自身的条 -->
+            <Style Selector="TabControl /template/ ItemsPresenter#PART_ItemsPresenter">
+              <Setter Property="IsVisible" Value="False" />
+            </Style>
+          </TabControl.Styles>
+
+          <TabItem Header="S">
+            <ItemsControl ItemsSource="{Binding List_5}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="gacha:GachaLogItemEx">
+                  <Grid Name="Grid_Rarity5Item"
+                        Height="28"
+                        Background="Transparent"
+                        Tag="{Binding}"
+                        ToolTip.Tip="{Binding Time, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
+                        PointerEntered="Grid_Rarity5Item_PointerEntered"
+                        PointerExited="Grid_Rarity5Item_PointerExited">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="40" />
+                      <ColumnDefinition />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" MinWidth="20" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="1"
+                            Height="24"
+                            Margin="-4,0,-4,0"
+                            VerticalAlignment="Center">
+                      <Border.Background>
+                        <Binding Path="." Converter="{StaticResource GachaPityProgressBackgroundBrushConverter}" />
+                      </Border.Background>
+                    </Border>
+                    <controls:CachedImage Width="28"
+                                          Height="28"
+                                          HorizontalAlignment="Left"
+                                          Source="{Binding Icon}" />
+                    <TextBlock Grid.Column="1"
+                               VerticalAlignment="Center"
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis"
+                               IsVisible="{Binding !IsPointerIn}" />
+                    <TextBlock Grid.Column="3"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Text="{Binding Pity}"
+                               IsVisible="{Binding !IsPointerIn}" />
+                    <TextBlock Grid.Column="1"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource Rarity5ForegroundBrush}"
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis"
+                               IsVisible="{Binding IsPointerIn}" />
+                    <TextBlock Grid.Column="3"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource Rarity5ForegroundBrush}"
+                               Text="{Binding Pity}"
+                               IsVisible="{Binding IsPointerIn}" />
+                    <TextBlock Grid.Column="2"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               FontStyle="Italic"
+                               Foreground="{StaticResource Rarity5ForegroundBrush}"
+                               Opacity="{Binding UpTextOpacity}"
+                               Text="up!"
+                               IsVisible="{Binding HasUpItem}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </TabItem>
+
+          <TabItem Header="A">
+            <ItemsControl ItemsSource="{Binding List_4}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="gacha:GachaLogItemEx">
+                  <Grid Name="Grid_Rarity4Item"
+                        Height="28"
+                        Background="Transparent"
+                        ColumnSpacing="8"
+                        Tag="{Binding}"
+                        ToolTip.Tip="{Binding Time, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
+                        PointerEntered="Grid_Rarity4Item_PointerEntered"
+                        PointerExited="Grid_Rarity4Item_PointerExited">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="28" />
+                      <ColumnDefinition />
+                      <ColumnDefinition Width="24" />
+                    </Grid.ColumnDefinitions>
+                    <controls:CachedImage Width="28" Height="28" Source="{Binding Icon}" />
+                    <TextBlock Grid.Column="1"
+                               VerticalAlignment="Center"
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis"
+                               IsVisible="{Binding !IsPointerIn}" />
+                    <TextBlock Grid.Column="2"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Text="{Binding Pity}"
+                               IsVisible="{Binding !IsPointerIn}" />
+                    <TextBlock Grid.Column="1"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource Rarity4ForegroundBrush}"
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis"
+                               IsVisible="{Binding IsPointerIn}" />
+                    <TextBlock Grid.Column="2"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource Rarity4ForegroundBrush}"
+                               Text="{Binding Pity}"
+                               IsVisible="{Binding IsPointerIn}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </TabItem>
+        </TabControl>
+      </Grid>
+    </Grid>
+  </Border>
+</UserControl>
