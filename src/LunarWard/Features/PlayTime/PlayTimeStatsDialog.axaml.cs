@@ -343,7 +343,7 @@ public sealed partial class PlayTimeStatsDialog : StarwardContentDialog, INotify
     {
         get
         {
-            foreach (var child in Segmented_BarRange.Children)
+            foreach (var child in Segmented_BarRange?.Children ?? [])
             {
                 if (child is ToggleButton { IsChecked: true, Tag: string tag } && int.TryParse(tag, out int index))
                 {
@@ -439,7 +439,13 @@ public sealed partial class PlayTimeStatsDialog : StarwardContentDialog, INotify
         {
             return;
         }
-        foreach (var child in Segmented_BarRange.Children)
+        // XAML 里的 IsChecked="True" 会在 InitializeComponent 期间触发 Checked，
+        // 此时命名字段可能尚未赋值（也可能还没加载完数据），两种都直接忽略。
+        if (Segmented_BarRange is not { } panel)
+        {
+            return;
+        }
+        foreach (var child in panel.Children)
         {
             if (child is ToggleButton button && !ReferenceEquals(button, checkedButton))
             {
