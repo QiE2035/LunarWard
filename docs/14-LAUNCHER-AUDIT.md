@@ -200,17 +200,19 @@ dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj --filter "Fully
 | 上游 54 文件 → 本地落点 | 52 同名 + 1 等价声明（`NoAnimationImageExStyle.xaml`）+ 1 换手（`GameInstallService.cs` → `LunarWard.RPC`） |
 | `python3 scripts/check-alignment.py --json` 中本簇 `missing` | 仅 `NoAnimationImageExStyle.xaml`（等价声明待 Lead 写入脚本 `EQUIVALENTS`） |
 | `dotnet build src/LunarWard/LunarWard.csproj` | 我的 6 个目录 0 error / 0 AXN；整仓错误全在他人在途目录 |
-| `dotnet test --filter "FullyQualifiedName~GameLauncher"` | 已写 26 个用例，树绿后即可跑（阻塞项见 §4） |
+| `dotnet test --filter "FullyQualifiedName~GameLauncher"` | 已写 23 个 GameLauncher/Selector 用例 + 3 个 `ParseString` 用例，Rider 语义检查 0 error；执行仍被公用的他人错误挡住（见下） |
+| 当前验收阻塞（2026-10-26 17:35） | 全树约 30 error，全在他人在途文件：`Features/Setting/*`（`PageContext` 未 using、`SettingPage` 构造器变更被 `Views/Starward/StarwardShell.axaml.cs:350` 旧壳引用）、`Services/DialogService.cs`、`App.axaml.cs`（`NoPermissionWindow` ctor / `Log` 重载）、`Features/UrlProtocol/TestUrlProtocolWindow.axaml.cs(42,22)`、`Features/Update/{SetupService,UpdateWindow}`、`Features/GamepadControl/*`、`Features/Screenshot/ScreenCaptureInfoWindow`；我的 6 目录 + `WineRegistry.cs` 0 error / 0 AXN |
+| 提交 | `984f317`（审计补齐：BuildStartInfo / HYP 回退 / WineRegistry.ReadStringAsync / docs14+docs09）、`a5e9f17`（他人落地后的编译回归修复：恢复三按钮、Avalonia 12 拖放/剪贴板/Launcher/TopLevel/FontIcon、RPC GameInstallContext）、`572121a`（`InternalsVisibleTo` + 测试类型修正） |
 | 行为级差异 | 本文件 §1 矩阵逐文件登记；「上游有、本地无」2 处已补（启动环境注入、HYP 回退），其余见 §3 |
 
 ---
 
-## 6. 本轮审计改动（提交前快照）
+## 6. 本轮审计改动（已提交）
 
 | 文件 | 改动 | 理由 |
 |---|---|---|
 | `src/LunarWard/Features/GameLauncher/GameLauncherService.cs` | 重写 `BuildStartInfo`：wine 二进制取 `GamePrefixContext.CurrentWineBinary`、单字符串命令行、注入 `WINEPREFIX/WINEARCH/WINEDLLOVERRIDES`、ZZZ-DX12 追加 DXVK/VKD3D 变量；`BuildStartInfo` 改 `public static`（可测缝）；调用点补 `gameId` 参数 | 审计发现原实现只注入 `WINEPREFIX`、按空格拆参数（会破坏带空格的参数）、忽略配置的 wine 二进制 |
 | `src/LunarWard/Features/GameSelector/GameSelector.axaml.cs` | `AutoSearchInstalledGames`→`AutoSearchInstalledGamesAsync`，补 HYP 注册表回退（`ReadHypInstallPathAsync`，盘符路径换算 dosdevices）；类注释更新 | 补齐上游「上游有、本地无」的 HYP 分支 |
-| `src/LunarWard/Features/GameLauncher/GameLauncherPage.axaml.cs` | 拖放改 `DataFormats.Files`/`Data.GetFiles()`/`IStorageFile`（去 `GetDeferral`/`StorageFile`）；复制背景改 `Clipboard.SetFilesAsync`；保存背景改 `Launcher.LaunchDirectoryInfoAsync`；补 `Features.Overlay`/`Features.CloudGame` using | 文件里残留 6 处 WinUI API，导致全仓编译失败（真实移植缺口，不是格式问题） |
+| `src/LunarWard/Features/GameLauncher/GameLauncherPage.axaml(.cs)` | 恢复上游 `PlayTimeButton`/`CloudGameButton`/`DailyNoteButton` 三处控件与绑定；拖放改 `DataTransfer`/`DataFormat.File`/`TryGetFiles`；复制背景改 `DataTransfer`+`Clipboard.SetDataAsync`；保存背景改 `TopLevel.Launcher.LaunchDirectoryInfoAsync`；四处对话框统一 `DialogService.ShowAsync(dialog, this)`；滚轮改 `PointerWheelEventArgs.Delta`；`DispatcherQueue`→`Dispatcher.UIThread.Post`；补 `Services`/`BackgroundService` 别名 | 此前的 "0 error" 是 filtered build 复用旧输出的假象；全树编译暴露 58 处 WinUI 残留 |
 | `src/LunarWard/Services/WineRegistry.cs` | 新增 `ReadStringAsync`（REG_SZ）+ 纯函数 `ParseString` | Lead 批准（方案 A）：HYP `GameInstallPath` 读取需要 |
 | `tests/LunarWard.UnitTests/Features/GameLauncher/*`、`tests/LunarWard.UnitTests/WineRegistryTests.cs` | 新增/追加 26 个用例 | task-15 单测要求 |
