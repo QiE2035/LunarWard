@@ -45,6 +45,8 @@ internal class ScreenCaptureService
 
     private readonly ILogger<ScreenCaptureService> _logger;
 
+    private ScreenCaptureInfoWindow? _infoWindow;
+
     private readonly ConcurrentDictionary<nint, ScreenCaptureContext> _captureContexts = new();
 
     private static readonly SemaphoreSlim _encodeSlim = new(1);
@@ -75,9 +77,11 @@ internal class ScreenCaptureService
         {
             return;
         }
+        nint windowHandle = 0;
+        bool captureStarted = false;
         try
         {
-            nint windowHandle = runningGame.WindowHandle;
+            windowHandle = runningGame.WindowHandle;
             if (windowHandle == 0)
             {
                 // 上游从 Process.MainWindowHandle（HWND）拿窗口；Linux 上该值恒为 0，
@@ -91,17 +95,24 @@ internal class ScreenCaptureService
                 return;
             }
             using ScreenCaptureItem captureItem = await CaptureAndProceedImageAsync(runningGame, windowHandle);
+            // 上游：_infoWindow ??= new ScreenCaptureInfoWindow(); CaptureStart(...)，保存成功后 CaptureSuccess(...)。
+            _infoWindow ??= new ScreenCaptureInfoWindow();
+            _infoWindow.CaptureStart(windowHandle, captureItem.Bitmap, captureItem.MaxCLL);
+            captureStarted = true;
             string filePath = await SaveImageAsync(runningGame, captureItem);
+            _infoWindow.CaptureSuccess(windowHandle, captureItem.Bitmap, filePath, captureItem.MaxCLL);
             await CopyToClipboardAsync(filePath);
         }
         catch (PlatformNotSupportedException ex)
         {
             _logger.LogWarning(ex, "Screen capture is not available on this system.");
+            _infoWindow?.CaptureError(windowHandle, captureStarted);
             InAppToast.MainWindow?.Warning(ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while capturing the screen.");
+            _infoWindow?.CaptureError(windowHandle, captureStarted);
             InAppToast.MainWindow?.Error("截图失败，请查看日志。");
         }
     }

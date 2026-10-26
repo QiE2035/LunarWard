@@ -1,0 +1,184 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:LunarWard.Localization"
+        xmlns:local="using:LunarWard.Features.Screenshot"
+        x:Class="LunarWard.Features.Screenshot.ImageBatchConvertWindow"
+        Title="{Binding [ImageBatchConvertWindow_ImageBatchConvert], Source={x:Static loc:AppStrings.Instance}}"
+        Width="1000"
+        Height="600"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <TextBlock Margin="12,0,0,0"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource StarTextSecondaryBrush}"
+                   Text="{Binding [ImageBatchConvertWindow_ImageBatchConvert], Source={x:Static loc:AppStrings.Instance}}" />
+
+        <Grid Grid.Row="1" Margin="12,4,12,0">
+            <StackPanel VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="12">
+                <!--  导入  -->
+                <Button x:Name="Button_Import"
+                        VerticalAlignment="Center"
+                        Click="Button_Import_Click"
+                        Content="{Binding [GachaImportAndExportWindow_Import], Source={x:Static loc:AppStrings.Instance}}" />
+                <!--  输出格式  -->
+                <ComboBox x:Name="ComboBox_OutputFormat"
+                          MinWidth="100"
+                          VerticalAlignment="Center"
+                          PlaceholderText="{Binding [ImageBatchConvertWindow_SelectOutputFormat], Source={x:Static loc:AppStrings.Instance}}">
+                    <ComboBoxItem Content="JPEG" />
+                    <ComboBoxItem Content="PNG" />
+                    <ComboBoxItem Content="AVIF" />
+                    <ComboBoxItem Content="JPEG XL" />
+                </ComboBox>
+                <!--  文件已存在  -->
+                <ComboBox x:Name="ComboBox_OutputFileExists"
+                          MinWidth="120"
+                          VerticalAlignment="Center"
+                          PlaceholderText="{Binding [ImageBatchConvertWindow_IfOutputFileExists], Source={x:Static loc:AppStrings.Instance}}">
+                    <ComboBoxItem Content="{Binding [ImageBatchConvertWindow_SkipDefault], Source={x:Static loc:AppStrings.Instance}}" />
+                    <ComboBoxItem Content="{Binding [ImageBatchConvertWindow_Overwrite], Source={x:Static loc:AppStrings.Instance}}" />
+                    <ComboBoxItem Content="{Binding [ImageBatchConvertWindow_Rename], Source={x:Static loc:AppStrings.Instance}}" />
+                </ComboBox>
+                <!--  质量  -->
+                <TextBlock VerticalAlignment="Center" Text="{Binding [ImageBatchConvertWindow_Quality], Source={x:Static loc:AppStrings.Instance}}" />
+                <Slider x:Name="Slider_Quality"
+                        Width="120"
+                        VerticalAlignment="Center"
+                        Maximum="100"
+                        Minimum="0"
+                        Value="90" />
+                <TextBlock MinWidth="32"
+                           VerticalAlignment="Center"
+                           Text="{Binding #Slider_Quality.Value}" />
+                <Border Width="1"
+                        Height="24"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource StarDividerBrush}" />
+                <!--  开始转换  -->
+                <Button x:Name="Button_StartConvert"
+                        VerticalAlignment="Center"
+                        Click="Button_StartConvert_Click"
+                        Content="{Binding [ImageBatchConvertWindow_StartConvert], Source={x:Static loc:AppStrings.Instance}}" />
+                <ProgressBar Width="24"
+                             Height="4"
+                             IsIndeterminate="True"
+                             IsVisible="{Binding IsConverting}" />
+                <!--  转换信息  -->
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{DynamicResource StarTextSecondaryBrush}"
+                           IsVisible="{Binding DisplayInfo}"
+                           Text="{Binding InfoText}" />
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="12">
+                <!--  停止  -->
+                <Button x:Name="Button_Stop" Click="Button_Stop_Click" Content="{Binding [DownloadGamePage_Stop], Source={x:Static loc:AppStrings.Instance}}" />
+                <!--  清除  -->
+                <Button x:Name="Button_Clear" Click="Button_Clear_Click" Content="{Binding [Common_Clear], Source={x:Static loc:AppStrings.Instance}}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="2"
+              Margin="12,4,12,0"
+              ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button x:Name="Button_OutputFolder"
+                    Click="Button_OutputFolder_Click"
+                    Content="{Binding [ImageBatchConvertWindow_OutputFolder], Source={x:Static loc:AppStrings.Instance}}" />
+            <TextBlock Grid.Column="1"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource StarTextSecondaryBrush}"
+                       Text="{Binding OutputFolder}"
+                       TextTrimming="CharacterEllipsis" />
+        </Grid>
+
+        <ListBox x:Name="ListView_ImageConvertItems"
+                 Grid.Row="3"
+                 Margin="0,8,0,0"
+                 AllowDrop="True"
+                 DragOver="ListView_ImageConvertItems_DragOver"
+                 Drop="ListView_ImageConvertItems_Drop"
+                 ItemsSource="{Binding ImageConvertItems}"
+                 SelectionMode="Multiple,Toggle">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="local:ImageConvertItem">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <!--  原文件  -->
+                        <Border Width="300">
+                            <Button x:Name="HyperlinkButton_SourceFileName"
+                                    Classes="link"
+                                    HorizontalAlignment="Left"
+                                    Click="HyperlinkButton_SourceFileName_Click"
+                                    Content="{Binding SourceFileName}" />
+                        </Border>
+                        <Border Width="80">
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding SourceFileSizeText}" />
+                        </Border>
+
+                        <!--  进度提醒  -->
+                        <ProgressBar Width="16"
+                                     Height="4"
+                                     Margin="12,0,0,0"
+                                     VerticalAlignment="Center"
+                                     IsIndeterminate="True"
+                                     IsVisible="{Binding Converting}" />
+
+                        <TextBlock Margin="12,0,0,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   Foreground="{DynamicResource StarTextSecondaryBrush}"
+                                   IsVisible="{Binding ConvertSuccess}"
+                                   Text="&#xEBE7;" />
+
+                        <!--  输出文件  -->
+                        <Border Width="300"
+                                Margin="12,0,0,0"
+                                IsVisible="{Binding ConvertSuccess}">
+                            <Button x:Name="HyperlinkButton_OutputFileName"
+                                    Classes="link"
+                                    HorizontalAlignment="Left"
+                                    Click="HyperlinkButton_OutputFileName_Click"
+                                    Content="{Binding OutputFileName}" />
+                        </Border>
+                        <Border Width="80" IsVisible="{Binding ConvertSuccess}">
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding OutputFileSizeText}" />
+                        </Border>
+                        <Border Width="60" IsVisible="{Binding ConvertSuccess}">
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding FileDeltaTextBrush}"
+                                       Text="{Binding FileDeltaPercent}" />
+                        </Border>
+
+                        <!--  错误  -->
+                        <TextBlock Margin="64,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource StarErrorBrush}"
+                                   IsVisible="{Binding ConvertError}"
+                                   Text="{Binding ErrorMessage}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+    </Grid>
+</Window>

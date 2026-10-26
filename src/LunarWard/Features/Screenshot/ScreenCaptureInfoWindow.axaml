@@ -1,0 +1,120 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:LunarWard.Localization"
+        x:Class="LunarWard.Features.Screenshot.ScreenCaptureInfoWindow"
+        Width="320"
+        Height="100"
+        Background="Transparent"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        SystemDecorations="None"
+        Title="ScreenCaptureInfoWindow"
+        Topmost="True"
+        TransparencyLevelHint="Transparent"
+        WindowStartupLocation="Manual">
+
+    <!--  上游：<Grid x:Name="RootGrid" Padding="10" Background="#D0202020" ColumnSpacing="16" CornerRadius="8,0,0,8" Translation="320,0,0">
+          Avalonia 的 Grid 没有 CornerRadius，改由外层 Border 提供圆角；滑入/滑出动画在代码里用 TranslateTransform 实现。  -->
+    <Border Background="#D0202020"
+            ClipToBounds="True"
+            CornerRadius="8,0,0,8">
+        <Grid x:Name="RootGrid"
+              Padding="10"
+              ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!--  截图  -->
+            <Border Width="72"
+                    Height="72"
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center"
+                    CornerRadius="4"
+                    IsVisible="{Binding IsSuccess}">
+                <Image x:Name="ThumbnailImage"
+                       Width="72"
+                       Height="72"
+                       Stretch="UniformToFill" />
+            </Border>
+            <!--  已保存  -->
+            <StackPanel Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding IsSuccess}"
+                        Spacing="4">
+                <TextBlock x:Name="TextBlock_State" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ProgressBar x:Name="ProgressRing_Process"
+                                 Width="12"
+                                 Height="12"
+                                 IsIndeterminate="True"
+                                 IsVisible="False" />
+                    <TextBlock x:Name="FontIcon_Complete"
+                               FontSize="16"
+                               Foreground="{DynamicResource StarSuccessBrush}"
+                               IsVisible="False"
+                               Text="&#xE930;" />
+                    <TextBlock x:Name="TextBlock_Repeat"
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               Foreground="{DynamicResource StarTextSecondaryBrush}"
+                               IsVisible="False" />
+                </StackPanel>
+            </StackPanel>
+            <!--  打开  -->
+            <Button x:Name="Button_OpenImage"
+                    Grid.Column="2"
+                    Click="Button_OpenImage_Click"
+                    IsVisible="False">
+                <StackPanel Spacing="8">
+                    <TextBlock HorizontalAlignment="Center"
+                               Foreground="{DynamicResource StarTextSecondaryBrush}"
+                               Text="&#xE8A7;" />
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="12"
+                               Foreground="{DynamicResource StarTextSecondaryBrush}"
+                               Text="{Binding [Common_Open], Source={x:Static loc:AppStrings.Instance}}" />
+                </StackPanel>
+            </Button>
+
+            <!--  截图失败提示  -->
+            <Image Width="72"
+                   Height="72"
+                   Margin="4,0,0,0"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding IsError}"
+                   Source="avares://LunarWard/Assets/Image/UI_EmotionIcon5.png" />
+            <!--  错误提醒  -->
+            <StackPanel Grid.Column="1"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding IsError}"
+                        Spacing="2">
+                <TextBlock Foreground="{DynamicResource StarErrorBrush}"
+                           Text="{Binding [ScreenCaptureInfoWindow_ScreenshotFailed], Source={x:Static loc:AppStrings.Instance}}"
+                           TextWrapping="Wrap" />
+                <TextBlock FontSize="12"
+                           Foreground="{DynamicResource StarTextSecondaryBrush}"
+                           Text="{Binding [ScreenCaptureInfoWindow_CheckTheLogForMoreInformation], Source={x:Static loc:AppStrings.Instance}}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+            <!--  打开  -->
+            <Button x:Name="Button_OpenLog"
+                    Grid.Column="2"
+                    Click="Button_OpenLog_Click"
+                    IsVisible="{Binding IsError}">
+                <StackPanel Spacing="8">
+                    <TextBlock HorizontalAlignment="Center"
+                               Foreground="{DynamicResource StarTextSecondaryBrush}"
+                               Text="&#xE8A7;" />
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="12"
+                               Foreground="{DynamicResource StarTextSecondaryBrush}"
+                               Text="{Binding [Common_Open], Source={x:Static loc:AppStrings.Instance}}" />
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Border>
+</Window>

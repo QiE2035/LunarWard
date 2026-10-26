@@ -49,6 +49,10 @@ internal static class ScreenCaptureHelper
 
 
 
+    /// <summary>供同程序集其它模块探测外部工具（如 <c>xdotool</c>）是否存在。</summary>
+    internal static bool IsToolAvailable(string tool) => HasTool(tool);
+
+
     private static bool HasTool(string tool)
     {
         string? path = Environment.GetEnvironmentVariable("PATH");

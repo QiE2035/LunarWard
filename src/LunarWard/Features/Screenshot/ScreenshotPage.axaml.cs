@@ -383,9 +383,26 @@ public partial class ScreenshotPage : PageBase
     [RelayCommand]
     private void OpenImageBatchConvertWindow()
     {
-        // 上游：new ImageBatchConvertWindow().ShowWindow(...)。该窗口依赖 JxlSharp/ImageSharp/WIC 编码器，
-        // 尚未移植（docs/09 §8.4），此处先给出明确提示而不是静默无效。
-        InAppToast.MainWindow?.Information(Lang.ScreenshotPage_BatchConvert, "ImageBatchConvertWindow 尚未移植");
+        try
+        {
+            ImageBatchConvertWindow window = new();
+            if (TopLevel.GetTopLevel(this) is Window owner)
+            {
+                window.Show(owner);
+            }
+            else
+            {
+                window.Show();
+            }
+            // 上游把当前选中的截图（未选中时全部）交给批量转换窗口。
+            List<ScreenshotItem> items = _selectedItems.Count > 0 ? [.. _selectedItems] : [.. _screenshotItems];
+            window.Activate(items);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "OpenImageBatchConvertWindow");
+            InAppToast.MainWindow?.Error(ex);
+        }
     }
 
 
