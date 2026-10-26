@@ -981,6 +981,8 @@ P6 收尾把启动骨架重写成上游 `src/Starward/App.xaml.cs` 的结构（�
 
 **与上游的语义差异**：Windows 抓的是游戏窗口像素；Linux 在「Wayland/XWayland 且后端只能整屏」时退化为整屏（可能带进桌面其它窗口）。这是 Wayland 缺按窗口抓取协议的固有差异，无法在本层消除。
 
+**端到端 Guide 截图未验证**：需要运行中的游戏窗口（`RunningGameService.GetLatestActiveGame()` 非 `null`），本机无游戏可测。已验证的是工具链可用性与回退顺序（反射探针逐步尝试 spectacle→import 并聚合失败信息，`--page screenshot` 自检正常出图）。
+
 ## 二十七、i18n 收尾：删除 `AppStrings`（task-22，2026-10-26，settings-migrate）
 
 - `src/LunarWard/Localization/`（`AppStrings` + 两个 resx）整体删除，界面文案只剩上游 `Lang`；设置页与截图页共 193 处引用迁移完毕。
