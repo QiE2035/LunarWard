@@ -61,7 +61,7 @@ public sealed class GameRecordPortTests
 
 
     [Fact]
-    public void WebView_convenience_members_degrade_before_initialize()
+    public async Task WebView_convenience_members_degrade_before_initialize()
     {
         var webView = new WebView();
 
@@ -71,7 +71,7 @@ public sealed class GameRecordPortTests
         Assert.Equal(string.Empty, webView.DocumentTitle);
         Assert.NotNull(webView.StatusMessage);
         // Linux: 未初始化时 ExecuteScriptAsync 与 WebView2「拿不到脚本结果」一样返回 JSON 的 null。
-        Assert.Equal("null", webView.ExecuteScriptAsync("1 + 1").GetAwaiter().GetResult());
+        Assert.Equal("null", await webView.ExecuteScriptAsync("1 + 1"));
 
         // 未初始化时导航不抛异常（挂起到 _pendingSource，初始化后生效）。
         webView.Navigate("about:blank");
