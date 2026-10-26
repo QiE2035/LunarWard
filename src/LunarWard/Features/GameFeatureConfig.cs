@@ -3,6 +3,7 @@ using LunarWard.Core.HoYoPlay;
 using LunarWard.Features.Gacha;
 using LunarWard.Features.SelfQuery;
 using LunarWard.Features.GameLauncher;
+using LunarWard.Features.GameRecord;
 using LunarWard.Features.GameSetting;
 using LunarWard.Features.Screenshot;
 using System.Collections.Generic;
@@ -11,12 +12,6 @@ namespace LunarWard.Features;
 
 internal partial class GameFeatureConfig
 {
-
-
-    // TODO(port): 待 Features/GameRecord/GameRecordPage.axaml.cs 与 Features/Gacha/GachaLogPage.axaml.cs 落地后，
-    // 删除这两个同名常量、恢复 using 并改回 nameof(...)（当前上游页面尚未移植，先以字面量占位）。
-    private const string GameRecordPage = "GameRecordPage";
-    private const string GachaLogPage = "GachaLogPage";
 
 
     private GameFeatureConfig()

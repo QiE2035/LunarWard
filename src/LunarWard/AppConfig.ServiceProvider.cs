@@ -15,6 +15,7 @@ using LunarWard.Features.GameLauncher;
 using LunarWard.Features.HoYoPlay;
 using LunarWard.Features.PlayTime;
 using LunarWard.Features.RPC;
+using LunarWard.Features.Screenshot;
 using LunarWard.Features.SelfQuery;
 // 本地遗留 src/LunarWard.Core/SelfQuery/SelfQueryService.cs（上游 Core 无此文件，仅旧 MVVM 层使用）
 // 与 Features 版同名；此处显式指向移植版，旧 Core 文件待 endgame 删除。
@@ -93,7 +94,7 @@ public static partial class AppConfig
             sc.AddSingleton<GameAuthLoginService>();
             sc.AddSingleton<GameAccountService>();
 
-            // TODO(port): ScreenCaptureService
+            sc.AddSingleton<ScreenCaptureService>();
 
             sc.AddHttpClient<LogUploadClient>().ConfigLunarWardHttpClient();
 

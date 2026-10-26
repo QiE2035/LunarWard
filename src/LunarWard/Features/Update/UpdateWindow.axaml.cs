@@ -4,6 +4,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using LunarWard.Features.RPC;
 using LunarWard.Features.Setting;
 using LunarWard.Frameworks;
 using LunarWard.Helpers;
@@ -442,8 +443,7 @@ public sealed partial class UpdateWindow : WindowEx, INotifyPropertyChanged
         AppConfig.IgnoreVersion = null;
         Button_UpdateNow.IsVisible = false;
         Button_Restart.IsVisible = true;
-        // TODO(port): 上游此处调用 RpcService.KeepRunningOnExited(false, noLongerChange: true)，
-        // 让 Discord RPC 在本次退出后不再重启；本仓库 Features/RPC 尚未移植（docs/09）。
+        AppConfig.GetService<RpcService>().KeepRunningOnExited(false, noLongerChange: true);
         if (AutoRestartWhenUpdateFinished && !skipRestart)
         {
             Restart();

@@ -1,3 +1,4 @@
+using LunarWard.Features.Screenshot;
 using LunarWard.Frameworks;
 using System;
 using System.Collections.Generic;
@@ -624,8 +625,7 @@ internal static class GamepadController
             case 1:
                 Dispatcher.UIThread.Post(() =>
                 {
-                    // TODO(port): 上游是 ScreenCaptureService.Capture()（Features/Screenshot 由另一移植任务负责）。
-                    Serilog.Log.Warning("GamepadController: Guide 截图模式需要 ScreenCaptureService，当前尚未移植（docs/09）。");
+                    ScreenCaptureService.Capture();
                 });
                 break;
             case 2:
@@ -674,8 +674,7 @@ internal static class GamepadController
             case 1:
                 Dispatcher.UIThread.Post(() =>
                 {
-                    // TODO(port): 上游是 ScreenCaptureService.Capture()（Features/Screenshot 由另一移植任务负责）。
-                    Serilog.Log.Warning("GamepadController: Share 截图模式需要 ScreenCaptureService，当前尚未移植（docs/09）。");
+                    ScreenCaptureService.Capture();
                 });
                 break;
             case 2:
