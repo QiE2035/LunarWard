@@ -39,6 +39,13 @@ public sealed class SystemTrayWindow : WindowEx, IDisposable
     {
         _mainWindow = mainWindow;
 
+        // 与上游 InitializeWindow 一致：先装 Acrylic 材质（上游同样在这里 call TrySetAcrylic(true)）
+        new Helpers.SystemBackdropHelper(this, Helpers.SystemBackdropProperty.AcrylicDefault with
+        {
+            TintColorLight = 0xFFE7E7E7,
+            TintColorDark = 0xFF404040,
+        }).TrySetAcrylic(true);
+
         // 与上游 InitializeWindow 一致：托盘宿主窗口本身永不显示
         ShowInTaskbar = false;
         CanResize = false;
