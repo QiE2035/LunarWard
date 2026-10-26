@@ -203,3 +203,47 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 - `src/LunarWard/LunarWard.csproj` 开启 `AllowUnsafeBlocks`（上游同款，`AccentColorHelper` 用指针取像素）。
 - 成员名与上游保持一致（含 `AppConfig.StarwardExecutePath` 这类带产品名的成员）；**命名空间/程序集/用户可见字符串**才改名为 LunarWard。
+
+## 七、Features/Game*（launcher 系）移植（2026-10-26，launcher-port）
+
+上游 `src/Starward/Features/{GameLauncher,GameAccount,GameSelector,GameSetting,GameInstall}/`
+共 53 个文件。落点规则与 `docs/12-XAML-PORT-GUIDE.md` 一致：一上游文件=一本仓库文件，
+类名/成员名/事件名不改，仅 `Starward.*`→`LunarWard.*`。**下列逐条为本节新增的平台替换点**，
+每条都给出「位置 / 上游行为 / 本仓库行为 / 原因 / 待办」。
+
+### 7.1 服务层（Wine prefix 取代「当前游戏注册表」）
+
+| # | 位置 | 上游行为 | 本仓库行为 | 原因 | 待办 |
+|---|---|---|---|---|---|
+| 1 | `Features/GameLauncher/GamePrefixContext.cs`（**新增文件，上游无**） | 注册表 `HKEY_CURRENT_USER\Software\miHoYo\*` 天然按游戏全局唯一 | 用 `GamePrefixContext.CurrentPrefix` / `CurrentWineBinary` 两个静态字段表示「当前游戏所在 prefix」，服务层读写注册表都经它 | Linux 下每个游戏实例是独立 Wine prefix，没有全局注册表；本文件是全集群唯一新增的跨文件状态 | 待 Lead 的导航外壳在切换游戏时赋值；后续可考虑改为随页面上下文传递 |
+| 2 | `Features/GameAccount/GameAccountService.cs` | ctor(ILogger)，注册表直读 | ctor(ILogger, string? prefix = null) + `WineAccountService(prefix ?? GamePrefixContext.CurrentPrefix)`；SQL 逐字保留（`GameAccount` 表、INSERT OR REPLACE、DELETE WHERE SHA256） | 无 DI 注册时可无参构造；注册表访问必须带 prefix | DI 侧由 `AppConfig.ServiceProvider` 注册，prefix 运行时由 #1 提供 |
+| 3 | `Features/GameLauncher/GameNoticeService.cs` | 注册表读 `__LastUid___*` / `App_LastUserID_*` / `GENERAL_DATA_V2_LastLoginUserId_*` | `WineAccountService(prefix).Read(gameBiz.Value)?.Uid` | 同上 | 上游走 `GameRecordService.GetLastSelectGameRecordRoleOrTheFirstOne`；本地 GameRecord 未落地，暂直查 `GameRecordRole`+`Setting` 两张表（SQL 同上游），待 task-5 完成后切回服务 |
+| 4 | `Features/GameLauncher/GameAuthLoginService.cs` | `AppConfig.GetService<GameRecordService>().UpdateDeviceFpAsync(false, ct)` | 私有 static `UpdateDeviceFpAsync`：`new HyperionClient()` + `AppConfig.HyperionDeviceId/Fp/FpLastUpdateTime` 复刻「3 天过期」；其余（stoken/mid 校验、passport-api 请求、x-rpc-* 头、回写 stoken）逐字 | GameRecordService 属他不属我；HyperionClient 已在 Core | task-5 落地后改回服务调用 |
+| 5 | `Features/GameLauncher/GameLauncherService.cs` | ctor(ILogger, HoYoPlayService, PlayTimeRecordService, GameAuthLoginService) | ctor 去掉 `PlayTimeRecordService`（时长统计由本地 `Launch.PlayTimeService` 在启动外壳里记，避免重复计数） | 无 PlayTimeRecordService 等价物 | 若后续 GameRecord 提供记录接口，可恢复四参构造 |
+| 6 | 同上 `GetGameProcessAsync` | `Process.GetProcessesByName` + `SessionId==WTSGetActiveConsoleSessionId` + `IsProcessPending`（线程挂起探测） | `Process.GetProcesses()` 按 ProcessName 匹配；`IsProcessPending` 读 `/proc/<pid>/stat` 第 3 字段是否为 `T` | Linux 无 Session/WTS；挂起态在 proc 里就是 state=T | 多用户/容器场景可再细化为 `XDG_SESSION_ID` 过滤 |
+| 7 | 同上 `StartGameAsync` | `ProcessStartInfo{ UseShellExecute=true, Verb="runas" }`；`AppConfig.StartGameWithCMD` 时拼 `cmd /c start`；`-use-d3d12`/`-popupwindow`/`thirdPartyTool` | `BuildStartInfo`：`.exe` → `wine` + `ArgumentList` + `WINEPREFIX=GamePrefixContext.CurrentPrefix`；原生可执行直接起；忽略 `StartGameWithCMD`（无 `cmd /c start` 等价物）；其余参数串（runas/thirdPartyTool/popupwindow/-use-d3d12/StartArgument/profile）逐字拼 | 无 UAC/runas，启动链是 Wine；WinUI 启动参数语义保留 | `Verb=runas` 在 Linux 无对应，已静默忽略（本仓库以 prefix 归属代替提权） |
+| 8 | 同上 `GetRelativePathIfInRemovableStorage` / `GetFullPathIfRelativePath` | `DriveHelper.IsDeviceRemovableOrOnUSB` + `AppConfig.StarwardExecutePath/ConfigPath` | 逐字，仅在 `DriveHelper` 侧换成 Linux 实现（见 §六） | 上游同一 helper | — |
+| 9 | `Features/HoYoPlay/HoYoPlayService.cs`（Lead 批准移植） | `SetupAPI` 枚举显卡（`GetGPUInfos`） | 枚举 `/sys/class/drm/card[0-9]*`：`device/product_name`、`uevent` 的 `DRIVER=`、`/sys/module/<driver>/version`，驱动名兜底映射成 AMD/Intel/NVIDIA | 无 SetupAPI/注册表显卡信息 | 若拿到 DXVK/Vulkan 信息可补 `driverVersion` |
+| 10 | `Features/GameSetting/GameSettingService.cs` | 全部 static 同步方法，`Registry.GetValue/SetValue` | 同常量/同 JSON 结构/同 Clamp，方法一律 `async` + `Async` 后缀，注册表走 `WineRegistry`（`UnixProcessLauncher.Default` + `AppServices.Current.Log`，超时 20s） | Wine 注册表只能异步跑 `wine reg` 子进程 | 调用点已全部改成 `await`；后续可缓存 |
+| 11 | `Features/GameLauncher/GameConfigIni.cs` | `Features/GameLauncher/GameConfigIni.cs` | 已在 `LunarWard.Games/GameConfigIni.cs`（内容与上游一致，另有 Ini 读写器） | 该类型早先被 Games 层占用 | 待将该文件并入 `Features/GameLauncher/`（需 Lead 统一搬迁，避免双份） |
+
+### 7.2 UI 层（WinUI 控件 → Avalonia 控件）
+
+| # | 位置 | 上游 | 本仓库 | 原因/待办 |
+|---|---|---|---|---|
+| 12 | 全部 `.xaml`→`.axaml` | `ContentDialog` | `Views/Starward/Controls/StarwardContentDialog` + `DialogService.ShowAsync(dialog, host)`，结果用 `PrimaryButtonClicked` 事件 | Avalonia 无 ContentDialog |
+| 13 | 全部 | `XamlRoot`（设置 DragRect、取窗口 handle、`ShowAsync`） | 去掉；`WeakReferenceMessenger.Send(new MainWindowDragRectAdaptToGameIconMessage(...))` 保留给外壳处理 | 无 XamlRoot 概念 |
+| 14 | `GameAccountSwitcher` | `AutoSuggestBox`（`InputScope=Number` + `BeforeTextChanging`） | `AutoCompleteBox` + `GotFocus` 填 `ItemsSource`（`GetSuggestionUids`）+ `TextInput` 里拦非数字 | 无 InputScope；上游手写的 `UpdateSuggestionUids` 删除（AutoCompleteBox 自带过滤） |
+| 15 | `GameAccountSwitcher` | `FontIcon Glyph=E74E/E8FB/E70F/E74D` | `TextBlock Classes="icon" Text="&#xE74E;"` | Avalonia 无 FontIcon 控件，`Styles/Starward.axaml` 已备 `TextBlock.icon` |
+| 16 | `GameAuthLoginButton` | `ToggleSwitch.IsOn`、`ThemeResource DateTimePickerFlyoutButtonStyle` | `ToggleSwitch.IsChecked`；样式去掉 | 控件/资源名不同 |
+| 17 | `DX12IntroDialog` | `ContentDialog` + `CachedImage` | `StarwardContentDialog` + `Image`（`TODO(task-4)`：`Controls/CachedImage` 落地后换回） | `CachedImage` 归 task-4，本轮不用 Controls/ |
+| 18 | 同上 | `[RelayCommand] Close()` 调 `Hide()` | `CloseDialog()` 调 `Close()` | `Close` 与基类 `StarwardContentDialog.Close` 同名会递归（CS0108） |
+| 19 | `GameNoticeWindow` | `sf:WindowEx` + WebView2 + `ProgressRing` + `ContentDialog` 无 | `Frameworks.WindowEx` + `Frameworks.WebView`（WebKitGTK）+ `ProgressBar IsIndeterminate` | WebView2→WebKitGTK 见 §五；ProgressRing 无对应控件 |
+| 20 | 同上 | `Activate()` 按 `ParentWindowHandle` 把窗口贴到父窗口右侧并算尺寸；`User32.SetForegroundWindow` 回焦 | `Activate()` = `Show()`，尺寸由调用方给；回焦用 `Window.Activate()` | 无跨窗口 handle 映射、无 User32 |
+| 21 | 同上 | `webview.DefaultBackgroundColor = Transparent` + `BrushForThemeBackgroundColor` | 省略（WebKitGTK 透明由窗口透明级别处理） | API 缺失 |
+| 22 | `GameBannerAndPost` | `FlipView` / `Pivot` / `ItemsRepeater`+`StackLayout` / `DispatcherQueueTimer` / `Hyperlink` | `Carousel` / `TabControl`（`ItemTemplate`=页签头、`ContentTemplate`=内容）/ `ItemsControl`+`StackPanel` / `DispatcherTimer` / `TextBlock`+`PointerPressed` 调 `TopLevel.Launcher` | Avalonia 无上述 WinUI 控件；PipsPager 文案新增 `CurrentBannerIndexText` 属性 |
+| 23 | `GameSettingPage` | `NumberBox` / `InfoBar` / `DisplayArea` / `DisplayInformation`（HDR 探测） | `NumericUpDown` / `Border`+文字 / `TopLevel.Screens.Primary` / **HDR 一律「不支持」**（不显示警示条） | Linux 无 WinRT 高级颜色 API；`Button.accent` 代替 `AccentButtonStyle` |
+| 24 | 同上 | `ComboBox.Items` 里 `AddedItems.FirstOrDefault()` | `AddedItems.Cast<object>().FirstOrDefault()` | Avalonia `AddedItems` 是非泛型 `IList` |
+| 25 | `GenshinHDRLuminanceSettingDialog` | Win2D `CanvasSwapChainPanel`（R16G16B16A16Float swapchain + `LinearTransferEffect` 线性增益，`.jxr` HDR 贴图） | 摩拉预览用 `Image(Sign.png)` + `MoraPreviewOpacity`；场景区为占位 Border（`.jxr` 无法解码）；`HDREnabled` 恒 false（自动亮度按钮禁用） | Avalonia 无 Win2D/HDR swapchain，Skia 不解 `.jxr` | HDR 与 Wine/DXVK 同属本轮不做范围；后续可用 Skia 色彩矩阵近似 |
+| 26 | 全部 | `x:Bind` / `x:DefaultBindMode` / `ThemeResource` | `{Binding}`（`Mode=TwoWay` 显式）/ `DynamicResource`（`StarTextSecondary`、`StarOverlayAcrylicBrush`、`StarCardBackgroundBrush`、`StarCautionBrush`） | 语法不同；资源键见 `Styles/Starward.axaml` |
+| 27 | 全部 | `Visibility` 绑定（`ObjectToVisibilityConverter`、`BoolToVisibilityReversedConverter`） | `IsVisible` + `BoolReversed`/`ObjectToBool` 转换器，或 `{Binding !X}` | Avalonia `IsVisible` 直接吃 bool |
