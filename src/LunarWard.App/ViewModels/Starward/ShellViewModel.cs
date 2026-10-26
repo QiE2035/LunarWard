@@ -32,6 +32,15 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
     private bool _disposed;
 
+    /// <summary>
+    /// 素材加载代次。<c>GameChanged</c> 原来会被触发两次（切区服/换游戏时一次、素材加载完再一次），
+    /// 每次都会让外壳整页重建，切背景时表现为闪一下并重启视频；这里用代次把两次合并成一次。
+    /// </summary>
+    private int _artGeneration;
+
+    /// <summary>已经为哪一代触发过 <c>GameChanged</c>；-1 表示还没触发过。</summary>
+    private int _lastGameChangedGeneration = -1;
+
 
     public ShellViewModel(AppServices services, LogService log)
     {
@@ -272,8 +281,9 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         _services.Config.Launcher.LastProfileIndex = Profiles.IndexOf(profile);
         SaveConfig();
         MarkCurrentServer();
-        _ = LoadArtAsync();
-        GameChanged?.Invoke(this, EventArgs.Empty);
+        var generation = ++_artGeneration;
+        _ = LoadArtAsync(generation);
+        RaiseGameChanged(generation);
         RebuildPage();
         HideGameIcons();
     }
@@ -360,6 +370,14 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         Profile = Profile,
         Log = _log,
     });
+
+
+    /// <summary>触发一次 <c>GameChanged</c> 并记下代次，避免素材加载完成后再触发一次。</summary>
+    private void RaiseGameChanged(int generation)
+    {
+        _lastGameChangedGeneration = generation;
+        GameChanged?.Invoke(this, EventArgs.Empty);
+    }
 
 
     /// <summary>
@@ -621,8 +639,9 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         SaveConfig();
 
         MarkCurrentServer();
-        _ = LoadArtAsync();
-        GameChanged?.Invoke(this, EventArgs.Empty);
+        var generation = ++_artGeneration;
+        _ = LoadArtAsync(generation);
+        RaiseGameChanged(generation);
         RebuildPage();
     }
 
@@ -741,11 +760,11 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     {
         // 背景先用本地自定义图，再用官方素材覆盖（Starward 也是本地优先）
         ShowLocalBackground();
-        await LoadArtAsync().ConfigureAwait(true);
+        await LoadArtAsync(++_artGeneration).ConfigureAwait(true);
     }
 
 
-    private async Task LoadArtAsync()
+    private async Task LoadArtAsync(int generation)
     {
         try
         {
@@ -775,7 +794,13 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         finally
         {
             IsBackgroundLoading = false;
-            GameChanged?.Invoke(this, EventArgs.Empty);
+
+            // 切换时已经立即触发过一次就不再补发：否则外壳会把页面重建两遍（背景闪一下、视频重启）。
+            // 启动时没有立即触发，这里仍然补发一次，让图标条/素材相关绑定刷新。
+            if (generation == _artGeneration && generation != _lastGameChangedGeneration)
+            {
+                RaiseGameChanged(generation);
+            }
         }
     }
 

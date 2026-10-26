@@ -39,11 +39,14 @@ namespace LunarWard.App.Services;
 /// </remarks>
 public sealed class VideoBackgroundPlayer : IDisposable
 {
-    /// <summary>输出宽度（像素）。</summary>
-    public const int Width = 1280;
+    /// <summary>
+    /// 输出宽度（像素）。背景是带虚化的全屏底图，1280×720 与 960×540 肉眼差别很小，
+    /// 但后者每帧少传 44% 的数据、缩放与上传的 CPU 也明显更低（见 docs/09）。
+    /// </summary>
+    public const int Width = 960;
 
     /// <summary>输出高度（像素）。</summary>
-    public const int Height = 720;
+    public const int Height = 540;
 
     private const int FrameBytes = Width * Height * 4;
 

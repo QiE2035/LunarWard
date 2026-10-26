@@ -21,6 +21,8 @@ public partial class StarwardShell : UserControl
     private VideoBackgroundPlayer? _videoPlayer;
     private readonly SemaphoreSlim _videoSwitchGate = new(1, 1);
     private int _videoRequestId;
+    private Window? _window;
+    private bool _windowActive = true;
 
     public StarwardShell()
     {
@@ -46,6 +48,16 @@ public partial class StarwardShell : UserControl
     protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        if (TopLevel.GetTopLevel(this) is Window window)
+        {
+            _window = window;
+            _windowActive = window.IsActive;
+            window.Activated -= OnWindowActivated;
+            window.Activated += OnWindowActivated;
+            window.Deactivated -= OnWindowDeactivated;
+            window.Deactivated += OnWindowDeactivated;
+        }
+
         if (ViewModel is { } vm)
         {
             vm.PageChanged -= OnPageChanged;
@@ -77,6 +89,13 @@ public partial class StarwardShell : UserControl
     protected override void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        if (_window is { } window)
+        {
+            window.Activated -= OnWindowActivated;
+            window.Deactivated -= OnWindowDeactivated;
+            _window = null;
+        }
+
         if (ViewModel is { } vm)
         {
             vm.PageChanged -= OnPageChanged;
@@ -84,6 +103,42 @@ public partial class StarwardShell : UserControl
             vm.GameSelectorVisibilityChanged -= OnGameSelectorVisibilityChanged;
             vm.VideoBackgroundRequested -= OnVideoBackgroundRequested;
             vm.VideoBackgroundCleared -= OnVideoBackgroundCleared;
+        }
+    }
+
+
+    private void OnWindowActivated(object? sender, EventArgs e)
+    {
+        _windowActive = true;
+        UpdateVideoPlaybackState();
+    }
+
+
+    private void OnWindowDeactivated(object? sender, EventArgs e)
+    {
+        _windowActive = false;
+        UpdateVideoPlaybackState();
+    }
+
+
+    /// <summary>
+    /// 只有「窗口在前台 + 当前页是启动器」时才让视频背景跑：
+    /// 其它时候 SIGSTOP 冻结 ffmpeg 子进程，CPU 立刻归零（用户反馈的持续占用主要来自后台播放）。
+    /// </summary>
+    private void UpdateVideoPlaybackState()
+    {
+        if (_videoPlayer is null)
+        {
+            return;
+        }
+
+        if (_windowActive && ViewModel?.CurrentPage == ShellPage.Launcher)
+        {
+            _videoPlayer.Resume();
+        }
+        else
+        {
+            _videoPlayer.Pause();
         }
     }
 
@@ -107,6 +162,8 @@ public partial class StarwardShell : UserControl
             toolboxPage.SelectTab(context.Shell.PendingToolboxTab);
             context.Shell.PendingToolboxTab = -1;
         }
+
+        UpdateVideoPlaybackState();
     }
 
 
@@ -198,6 +255,8 @@ public partial class StarwardShell : UserControl
         {
             ViewModel?.Log.Warn($"视频背景挂载失败：{ex.Message}");
         }
+
+        UpdateVideoPlaybackState();
     }
 
 
