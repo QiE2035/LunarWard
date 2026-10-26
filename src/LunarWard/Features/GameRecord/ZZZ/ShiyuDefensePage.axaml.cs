@@ -60,7 +60,7 @@ public sealed partial class ShiyuDefensePage : PageBase
     }
 
 
-    public List<ShiyuDefenseInfo> ShiyuDefenseList { get; set => SetProperty(ref field, value); }
+    public List<ShiyuDefenseInfo> ShiyuDefenseList { get; set => SetProperty(ref field, value); } = [];
 
 
     public ShiyuDefenseInfo? CurrentShiyuDefense { get; set => SetProperty(ref field, value); }
@@ -197,7 +197,8 @@ public sealed partial class ShiyuDefensePage : PageBase
             <= 3000 => "ms-appx:///Assets/Image/rank-bg-4.1b293bb1.png",
             _ => "ms-appx:///Assets/Image/rank-bg-5.cf630a83.png",
         };
-        return GameRecordAssets.FromMsAppx(img);
+        // 上游返回非空 BitmapImage（内置素材），FromMsAppx 因缺素材时返回 null 而标了可空
+        return GameRecordAssets.FromMsAppx(img)!;
     }
 
 
