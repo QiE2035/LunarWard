@@ -175,3 +175,31 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 3. 自定义 scheme 的子资源改写（现在只重写主框架 URL）。
 4. `SetVirtualHostNameToFolderMapping` 的 `DenyCors` 只能退化成「不允许跨源」，粒度不如 WebView2。
 5. DevTools Protocol 除截图外一律不支持；上游 `BBSWebBridge` 目前只用 `Page.captureScreenshot`。
+
+## 六、Helpers 层（2026-10-26，Lead）
+
+上游 `src/Starward/Helpers/` 16 个文件，逐文件落点与替换点（`OK` = 内容一字未改，仅命名空间）：
+
+| 上游文件 | 本仓库 | 替换点 |
+|---|---|---|
+| `BindConverter.cs` | `Helpers/BindConverter.cs` | 返回 `bool` 而非 `Visibility`（Avalonia 用 `IsVisible`） |
+| `ClipboardHelper.cs` | `Helpers/ClipboardHelper.cs` | WinRT `DataPackage`/`IRandomAccessStream` → `IClipboard` + `ClipboardExtensions.SetBitmapAsync(Bitmap)`；图片以 PNG 位图写入，不再有 `SetStorageItems`（Avalonia 无文件列表剪贴板） |
+| `DriveHelper.cs` | `Helpers/DriveHelper.cs` | `DriveInfo` 取容量/文件系统；「可移动或在 USB 上」改为 `/proc/self/mountinfo` 溯源 + `/sys/block/<dev>/removable` |
+| `FileHashHelper.cs` | `Helpers/FileHashHelper.cs` | OK |
+| `FileCache.cs` | `Helpers/FileCache.cs` | OK（FusionCache） |
+| `FileDialogHelper.cs` | `Helpers/FileDialogHelper.cs` | `TopLevel.StorageProvider`（上游 `CommonFileDialog`） |
+| `FileDialogNative.cs` | — | **不移植**：Win32 `IFileOpenDialog`/`IShellItem` COM 细节，StorageProvider 已覆盖同等能力 |
+| `Enumeration/` | `Helpers/Enumeration/` | OK |
+| `InAppToast.cs` | `Helpers/InAppToast.cs` | 自绘 StackPanel 形态（上游 `InfoBar` + `TeachingTip` 的等价物），`ToastItem` 同名 |
+| `PointerCursor.cs` | `Helpers/PointerCursor.cs` | `InputSystemCursor` → `StandardCursorType`；不再需要 `UnsafeAccessor` 写受保护属性 |
+| `AccentColorHelper.cs` | `Helpers/AccentColorHelper.cs` | `WinRT Color`/`HsvColor` → `Avalonia.Media`（自实现 ToHsv/FromHsv）；删 `IBuffer` + `IBufferByteAccess` 重载，改 `Bitmap`/`Stream`/文件入口 |
+| `XamlRootExtension.cs` | `Helpers/XamlRootExtension.cs` | `AppWindow.TitleBar.SetDragRectangles` → 空实现（X11 无 drag rectangle）；`RasterizationScale` → `RenderScaling`；`GetWindowHandle` → X11 XID |
+| `TransparentBackdrop.cs` | `Helpers/TransparentBackdrop.cs` | `SystemBackdrop` + DWM blur → `WindowTransparencyLevel.Transparent` + 透明背景；合成器不支持时告警并退化不透明 |
+| `SystemUIHelper.cs` | `Helpers/SystemUIHelper.cs` | 上游已 `Obsolete(true)` 死代码；保留形状、值恒 `true` |
+| `SystemBackdropHelper.cs` | 待移植（`Features/ViewHost/SystemTrayWindow` 移植时一并落） | Mica/Acrylic → `WindowTransparencyLevel.AcrylicBlur`，X11 上退化为纯色 |
+| `WhiteSpaceStringToVisibilityConverter.cs` | `Converters/WhiteSpaceStringToVisibilityConverter.cs` | 返回 `bool` |
+
+本项目级的其它约定：
+
+- `src/LunarWard/LunarWard.csproj` 开启 `AllowUnsafeBlocks`（上游同款，`AccentColorHelper` 用指针取像素）。
+- 成员名与上游保持一致（含 `AppConfig.StarwardExecutePath` 这类带产品名的成员）；**命名空间/程序集/用户可见字符串**才改名为 LunarWard。
