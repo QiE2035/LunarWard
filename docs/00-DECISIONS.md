@@ -4,12 +4,15 @@
 
 ---
 
-## D1. 定位：Starward 的 Linux 重实现
+## D1. 定位：Starward 的 Linux 严格移植（Port）
 
-**决策**：本项目是 Starward 在 Linux 的重实现，不是 AGL 的分支或改造。
+**决策**：本项目是 **Starward 的 Linux 移植**——依赖、工程划分、源文件组织、实现方式逐项与上游对齐；现有代码若偏离上游，重构甚至推翻重做（Wine/DXVK 相关除外，本轮不做）。**不做**「看起来像 Starward 的重实现」。
 
-**理由**：需求方明确表述——"我需要的是 Starward 风格的启动器，甚至可以说是 Starward
-在 Linux 的移植/重实现"。
+**判定标准**（细则见 `docs/10-ALIGNMENT.md`）：把上游对应文件拿过来，除平台等价替换外**不需要理解性重写**。凡是"我们自己想了个做法"的地方，都算缺陷。
+
+**理由**（需求方 2026-10-26 修订，m00001）：原 D1 写"重实现"，由此衍生出一批自造实现——手写 `SqliteCommand`、自造 Views/ViewModels 分层、WebView2 能力整体缺失、i18n 形态漂移、数据库 schema 按记忆重写——偏离越滚越大且无法逐行审计。需求方原话："我要做的starward移植，而不是偏移巨大的重实现！"
+
+**与旧决策的关系**：D12（去掉 gRPC）、D16（中性语言=中文、不生成强类型类）均被本决策推翻，见各自条目的修订记录。
 
 **否决的方案**：
 - ❌ Fork AGL 并在其上做增量。AGL 是一个**差距较大的同类项目**，改造它不等于实现
@@ -325,6 +328,12 @@ wine 客户端"这条不变式**（见 D10）。在实测验证之前，`ProtonS
 去掉 gRPC/protobuf 层（改为进程内调用）与 `Vanara.PInvoke.Kernel32`
 （`DriveHelper` 换 `DriveInfo`）。
 
+> **已推翻（2026-10-26，D1 修订）**：「去掉 gRPC/protobuf 层」属于把上游架构改掉的偏移。
+> 新方向是重建 `src/LunarWard.RPC` 独立进程（`Grpc.AspNetCore` 2.83.0 + `Common.proto` +
+> `GameInstall`，与上游 `Starward.RPC.csproj` 同构），Launcher 通过 gRPC 管下载；
+> 仅 `Vanara.PInvoke.Kernel32` 换成 `DriveInfo`。本文保留旧决策记录以免重蹈，
+> 执行以 D1 与 `docs/10-ALIGNMENT.md` 为准。
+
 ---
 
 ## D13. 解决方案文件用 `.slnx`
@@ -388,34 +397,16 @@ $ dotnet sln Probe.slnx add Lib/Lib.csproj  # → <Project Path="Lib/Lib.csproj"
 
 ---
 
-## D16. UI 文案用 .resx + ResourceManager，与上游 Starward 同形态
+## D16. UI 文案改用上游 `Starward.Language` 同构工程（中性英文 + 11 卫星语言 + 强类型类）
 
-**决策**：应用自身的界面文案（`LunarWard.App`）放在
-`src/LunarWard.App/Localization/Resources.resx`（**中性语言 = 中文**）+
-`Resources.en-US.resx`（英文附属程序集），由 `AppStrings` 内部的 `ResourceManager`
-读取；**不再维护手写的 `Dictionary<string,string>`**（原先 `AppStrings.cs` 里约 2100 行）。
+**决策**：界面文案迁到新建的 `src/LunarWard.Language/`，内容与上游 `src/Starward.Language/` 逐字一致——`Lang.resx`（中性 = **英文**，883 条）+ 11 个卫星 resx（`de-DE/es-ES/it-IT/ja-JP/ko-KR/ru-RU/th-TH/vi-VN/zh-CN/zh-HK/zh-TW`）+ `Lang.Designer.cs` 强类型属性 + `Localization.cs` 语言列表。App 以项目引用使用 `LunarWard.Language.Lang`，XAML 用与上游等价的绑定取键；删除自造的 `AppStrings` 包装与 `Resources.resx` / `Resources.en-US.resx`。
 
-**上游形态（已核对源码）**：`src/Starward.Language/Lang.resx` 是中性资源（**中性 = 英文**，
-883 条）+ 11 个卫星 `de-DE/es-ES/it-IT/ja-JP/ko-KR/ru-RU/th-TH/vi-VN/zh-CN/zh-HK/zh-TW`，
-配套 `Lang.Designer.cs` 生成强类型属性，XAML 里 `{x:Bind lang:Lang.SettingPage_Language}`；
-游戏数据侧的 `Starward.Core/Localization/CoreLang.resx` 另有 13 种语言。
+**理由**（D1 修订后）：文案键名是 UI 的一部分。上游 XAML 用 `Lang.SettingPage_Language` 这类强类型属性，键集合与文案一一对应；自造中文键（`Main.Launch`）让每个页面的移植都要再做一次"键 → 文案"映射，无法与上游逐字对照，还制造了第二套键空间。
 
-**理由**（需求方本轮提出：「Starward 用 resx 做 i18n，本项目为什么不采用相同方式？」）：
-1. 上游确实是 resx 形态，本项目用两张手写字典是移植期的临时做法，属于无谓的形态漂移
-   （与 D14「先复制再改」、D15「存储与上游一致」同一取向）。
-2. resx 有现成工具链：XLIFF 交换、翻译平台、IDE 资源编辑器、缺键检查；
-   手写字典只能自己写正则解析源码查重复键（审计 CO-01 就是这么做的，现已改为解析 resx）。
-3. `LunarWard.Core` 的 `CoreLang` 本来就是 resx，App 层跟上后全仓只有一种文案存储形态。
+**推翻的旧三处刻意差异**：中性语言=中文（改为英文，与上游一致）；不生成强类型类（改为 `Lang.Designer.cs`）；查不到键返回键名（改为上游的返回 null）。
 
-**与上游的三处刻意差异**：
-- **中性语言是中文，不是英文**。本项目中文是母本、英文是翻译，缺键时回退到中文
-  （而不是回退到英文——界面主用户是中文使用者）。卫星语言目前只有 `en-US`；
-- **不生成强类型类**（`ResXFileCodeGenerator`）。键自带点号（`Main.Launch`），强类型会把
-  它拍平成 `Main_Launch`，与 XAML 里按字符串键的索引器绑定
-  `{Binding [Main.Launch], Source={x:Static loc:AppStrings.Instance}}` 及 1000+ 处
-  `AppStrings.Instance["..."]` 调用都对不上；
-- **查不到键时返回键名本身**（上游是返回 null → 显空白）。漏翻译立刻在界面上显形。
-
-**对外 API 一行没变**：`AppStrings.Instance`、索引器 `this[string]`、`SupportedLanguages`
-（`zh-CN`/`en-US`）、`Normalize`、`AllKeys`/`MissingEnglishKeys`、切语言时发的
-`PropertyChanged`（空字符串 + `Item[]`）全部保持；`LunarWard.Core` 的 `CoreLang` 不动。
+**迁移步骤**（P2，逐步可编译）：
+1. `src/LunarWard/LunarWard.csproj` 加 `<ProjectReference Include="../LunarWard.Language/LunarWard.Language.csproj" />`；
+2. 按页面分批把 `AppStrings.Instance["X"]` / `{Binding [X], Source=...AppStrings.Instance}` 换成 `Lang.<生成属性>`（缺键先按上游同名键补进 `Lang.resx`）；
+3. 全量替换完成后删除 `AppStrings`、`Resources.resx`、`Resources.en-US.resx` 与相关生成器；
+4. 语言切换沿用现有 `PropertyChanged` 广播（切 `Lang.Culture` 后通知绑定重新求值）。

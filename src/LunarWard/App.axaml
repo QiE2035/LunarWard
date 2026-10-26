@@ -1,5 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:LunarWard.Converters"
              xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
              x:Class="LunarWard.App"
              RequestedThemeVariant="Dark">
@@ -12,6 +13,26 @@
     DialogHostStyles 放在 Starward.axaml 之前：对话框的容器样式由 DialogHost 提供，
     但里面的文字/按钮仍走 Starward 覆盖层（与主界面同一套 token）。
   -->
+  <!--
+    转换器注册：键名与上游 App.xaml 一一对应（scv: 前缀 = Starward.Converters）。
+    上游返回 Visibility，这里返回 bool（Avalonia 的 IsVisible 是 bool），语义相同。
+  -->
+  <Application.Resources>
+    <conv:ObjectToBoolConverter x:Key="ObjectToBoolConverter" />
+    <conv:ObjectToVisibilityConverter x:Key="ObjectToVisibilityConverter" />
+    <conv:ObjectToVisibilityReversedConverter x:Key="ObjectToVisibilityReversedConverter" />
+    <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    <conv:BoolToVisibilityReversedConverter x:Key="BoolToVisibilityReversedConverter" />
+    <conv:ByteLengthToStringConverter x:Key="ByteLengthToStringConverter" />
+    <conv:TimeSpanToStringConverter x:Key="TimeSpanToStringConverter" />
+    <conv:BoolReversedConverter x:Key="BoolReversedConverter" />
+    <conv:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter" />
+    <conv:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter" />
+    <conv:VisibilityToBoolConverter x:Key="VisibilityToBoolConverter" />
+    <conv:WhiteSpaceStringToVisibilityConverter x:Key="WhiteSpaceStringToVisibilityConverter" />
+    <conv:Int32NotZeroToVisibilityConverter x:Key="Int32NotZeroToVisibilityConverter" />
+  </Application.Resources>
+
   <Application.Styles>
     <FluentTheme />
     <dialogHost:DialogHostStyles />

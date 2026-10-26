@@ -256,38 +256,29 @@ public partial class GameLauncherSettingDialog : StarwardContentDialog
             var client = new HoYoPlayClient();
             var language = string.IsNullOrWhiteSpace(Strings.Language) ? "zh-cn" : Strings.Language.ToLowerInvariant();
 
-            // 标签页标题固定用**游戏版本**（渠道分支里的 branch.Main.Tag，国服原神是 7.1.0）。
-            // 上游 Starward 拿包体清单的 Main.Major.Version 当 LatestVersion，在这个区服会显示
-            // 5.5.0，看起来像"版本过旧"；包体清单版本改做页内副标题，两者互不覆盖（问题 7）。
-            var branch = await client.GetGameBranchAsync(launcherId, "zh-cn", gameId);
-            LatestPackagesTab.Header = $"{Strings["LauncherSetting.LatestVersion"]} {branch?.Main?.Tag ?? "—"}";
-            PrePackagesTab.Header = $"{Strings["LauncherSetting.PreDownloadVersion"]} {branch?.PreDownload?.Tag ?? "—"}";
-
-            // 包体明细：源码 InitializeGamePackagesAsync + GetGameResourcePackageGroups
+            // 上游 InitializeGamePackagesAsync：Pivot 标题里的版本号拿的是**包体清单**
+            // （getGamePackages 的 Main.Major.Version / PreDownload.Major.Version），
+            // 不是 getGameBranches 的游戏版本（GameLauncherSettingDialog.xaml.cs:997-998、1018-1021）。
             var package = await context.Services.Installer.GetGamePackageAsync(launcherId, language, gameId);
+            LatestPackagesTab.Header = $"{Strings["LauncherSetting.LatestVersion"]} {package?.Main?.Major?.Version ?? "—"}";
+
             if (package?.Main is { } main)
             {
-                // 副标题写包体清单版本（getGamePackages 返回的那份），不写回标题。
-                LatestPackageManifestText.Text = FormatManifestSubtitle(main.Major?.Version);
                 var groups = BuildPackageGroups(main);
                 groups[0].IsExpanded = true;
                 LatestPackagesList.ItemsSource = groups;
+                await AppendChannelSdkGroupAsync(client, launcherId, language, gameId);
             }
-            else
-            {
-                LatestPackageManifestText.Text = Strings["InstallGameDialog.PackageFailed"];
-            }
-
-            await AppendChannelSdkGroupAsync(client, launcherId, language, gameId);
 
             if (package?.PreDownload is { Major: not null } pre)
             {
-                PrePackageManifestText.Text = FormatManifestSubtitle(pre.Major.Version);
+                PrePackagesTab.Header = $"{Strings["LauncherSetting.PreDownloadVersion"]} {pre.Major.Version}";
                 PrePackagesList.ItemsSource = BuildPackageGroups(pre);
                 PrePackagesTab.IsVisible = true;
             }
             else
             {
+                PrePackagesTab.Header = $"{Strings["LauncherSetting.PreDownloadVersion"]} —";
                 PrePackagesTab.IsVisible = false;
             }
         }
@@ -302,18 +293,6 @@ public partial class GameLauncherSettingDialog : StarwardContentDialog
     }
 
 
-    /// <summary>包体清单版本（<c>getGamePackages</c>）的副标题：「游戏包体 5.5.0 · getGamePackages」。</summary>
-    /// <remarks>
-    /// 这里刻意不复用 <c>LauncherSetting.LatestVersion</c>（"正式版版本"）：那一条说的是游戏版本，
-    /// 已经用在标签页标题上，重复会让人以为包体清单版本就是游戏版本。
-    /// 公开只是因为单元测试要直接校验这段文案（不构造控件）。
-    /// </remarks>
-    public static string FormatManifestSubtitle(string? version) =>
-        string.IsNullOrWhiteSpace(version)
-            ? $"{Strings["LauncherSetting.GamePackages"]} {Strings["Common.NoData"]}"
-            : $"{Strings["LauncherSetting.GamePackages"]} {version} · getGamePackages";
-
-
     /// <summary>
     /// 拿不到包体清单时的收尾：自检截图模式用样例数据把列表填满（版式核对需要），
     /// 生产路径只写失败文案，绝不塞 6.2.0 那种假版本（问题 7）。
@@ -322,15 +301,10 @@ public partial class GameLauncherSettingDialog : StarwardContentDialog
     {
         try
         {
-            if (string.Equals(LatestPackagesTab.Header as string, "—", StringComparison.Ordinal))
-            {
-                LatestPackagesTab.Header = $"{Strings["LauncherSetting.LatestVersion"]} —";
-            }
-
-            if (string.Equals(PrePackagesTab.Header as string, "—", StringComparison.Ordinal))
-            {
-                PrePackagesTab.Header = $"{Strings["LauncherSetting.PreDownloadVersion"]} —";
-            }
+            // 上游异常分支只记日志，标题停留在空状态；这里同时把列表清空，
+            // 避免上一次成功的包体残留在界面上（截图自检仍用样例数据填满）。
+            LatestPackagesTab.Header = $"{Strings["LauncherSetting.LatestVersion"]} —";
+            PrePackagesTab.Header = $"{Strings["LauncherSetting.PreDownloadVersion"]} —";
 
             if (CaptureMode.Enabled)
             {
@@ -338,9 +312,6 @@ public partial class GameLauncherSettingDialog : StarwardContentDialog
                 return;
             }
 
-            var failed = Strings["InstallGameDialog.PackageFailed"];
-            LatestPackageManifestText.Text = failed;
-            PrePackageManifestText.Text = failed;
             LatestPackagesList.ItemsSource = null;
             PrePackagesList.ItemsSource = null;
             PrePackagesTab.IsVisible = false;
@@ -684,9 +655,9 @@ public partial class GameLauncherSettingDialog : StarwardContentDialog
             return;
         }
 
-        // 标签页标题保持游戏版本不动，样例只写副标题（包体清单版本）。
-        LatestPackageManifestText.Text = FormatManifestSubtitle("6.2.0");
-        PrePackageManifestText.Text = FormatManifestSubtitle("6.3.0");
+        // 标题版本 = 包体清单版本（与上游同口径），样例数据用 6.2.0 / 6.3.0。
+        LatestPackagesTab.Header = $"{Strings["LauncherSetting.LatestVersion"]} 6.2.0";
+        PrePackagesTab.Header = $"{Strings["LauncherSetting.PreDownloadVersion"]} 6.3.0";
         PrePackagesTab.IsVisible = true;
 
         var full = new PackageGroup(Strings["LauncherSetting.FullPackages"]);
