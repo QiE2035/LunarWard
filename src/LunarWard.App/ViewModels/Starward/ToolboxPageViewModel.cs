@@ -457,27 +457,62 @@ public sealed partial class ToolboxPageViewModel : StarwardPageViewModel
     {
         MenuItems.Clear();
 
-        if (string.Equals(_gameKind, "genshin", StringComparison.OrdinalIgnoreCase))
+        var entries = GetMenuEntries(_gameKind);
+        foreach (var (tag, icon, titleKey) in entries)
         {
-            Add("BattleChronicle", "\uE9D9", "Toolbox.BattleChronicle");
-            Add("TravelersDiary", "\uE787", "Toolbox.TravelersDiary");
-            Add("SpiralAbyss", "\uE8A1", "Toolbox.SpiralAbyss");
-            Add("ImaginariumTheater", "\uE7FC", "Toolbox.ImaginariumTheater");
-            Add("StygianOnslaught", "\uE9D2", "Toolbox.StygianOnslaught");
+            Add(tag, icon, titleKey);
         }
-        else
+
+        if (entries.Count == 0 && !_unknownGameWarned)
         {
-            Add("TrailblazeCalendar", "\uE787", "Toolbox.TrailblazeCalendar");
-            Add("SimulatedUniverse", "\uE9D9", "Toolbox.SimulatedUniverse");
-            Add("ForgottenHall", "\uE8A1", "Toolbox.ForgottenHall");
-            Add("PureFiction", "\uE7C1", "Toolbox.PureFiction");
-            Add("ApocalypticShadow", "\uE7C3", "Toolbox.ApocalypticShadow");
-            Add("ChallengePeak", "\uE9D9", "Toolbox.ChallengePeak");
-            Add("InterKnotMonthlyReport", "\uE9D2", "Toolbox.InterKnotMonthly");
-            Add("ShiyuDefense", "\uE8A1", "Toolbox.ShiyuDefense");
-            Add("DeadlyAssault", "\uE7FC", "Toolbox.DeadlyAssault");
+            _unknownGameWarned = true;
+            Log.Warn($"工具箱：未知游戏 \"{_gameKind}\"，战绩菜单留空。");
         }
     }
+
+
+    private bool _unknownGameWarned;
+
+
+    /// <summary>
+    /// 战绩菜单的（Tag, 图标, 文案索引）映射，按游戏分组。
+    /// 可见性规则照抄 Starward <c>Features/GameRecord/GameRecordPage.xaml.cs</c> 的
+    /// <c>InitializeNavigationViewItemVisibility</c>：hk4e / hkrpg / nap 各自只显示本游戏
+    /// 拥有的子页；未知游戏返回空集合（不猜，交给调用方告警）。
+    /// </summary>
+    /// <remarks>public 以便单测直接断言三个游戏的 Tag 集合与顺序。</remarks>
+    public static IReadOnlyList<(string Tag, string Icon, string TitleKey)> GetMenuEntries(string? gameKind)
+        => gameKind?.ToLowerInvariant() switch
+        {
+            // 原神：战绩、旅行者札记、深境螺旋、幻想真境剧诗、幽境危战
+            "genshin" =>
+            [
+                ("BattleChronicle", "\uE9D9", "Toolbox.BattleChronicle"),
+                ("TravelersDiary", "\uE787", "Toolbox.TravelersDiary"),
+                ("SpiralAbyss", "\uE8A1", "Toolbox.SpiralAbyss"),
+                ("ImaginariumTheater", "\uE7FC", "Toolbox.ImaginariumTheater"),
+                ("StygianOnslaught", "\uE9D2", "Toolbox.StygianOnslaught"),
+            ],
+            // 崩坏：星穹铁道（菜单里没有战绩项，沿用本仓库既有组合）
+            "starrail" =>
+            [
+                ("TrailblazeCalendar", "\uE787", "Toolbox.TrailblazeCalendar"),
+                ("SimulatedUniverse", "\uE9D9", "Toolbox.SimulatedUniverse"),
+                ("ForgottenHall", "\uE8A1", "Toolbox.ForgottenHall"),
+                ("PureFiction", "\uE7C1", "Toolbox.PureFiction"),
+                ("ApocalypticShadow", "\uE7C3", "Toolbox.ApocalypticShadow"),
+                ("ChallengePeak", "\uE9D9", "Toolbox.ChallengePeak"),
+            ],
+            // 绝区零：战绩、绳网月报、式舆防卫战、危局强袭战
+            "zzz" =>
+            [
+                ("BattleChronicle", "\uE9D9", "Toolbox.BattleChronicle"),
+                ("InterKnotMonthlyReport", "\uE9D2", "Toolbox.InterKnotMonthly"),
+                ("ShiyuDefense", "\uE8A1", "Toolbox.ShiyuDefense"),
+                ("DeadlyAssault", "\uE7FC", "Toolbox.DeadlyAssault"),
+            ],
+            _ => [],
+        };
 
 
     private void Add(string tag, string icon, string titleKey)
