@@ -21,7 +21,7 @@
     入口，沿用 Starward 的卡片版式，没有替换 Starward 设置页里的任何条目。
   -->
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <ItemsControl ItemsSource="{Binding Items}" Padding="0,0,0,4">
+    <ItemsControl ItemsSource="{Binding ToolboxItems}" Padding="0,0,0,4">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
           <WrapPanel Orientation="Horizontal" />
@@ -36,8 +36,7 @@
                   Padding="12"
                   HorizontalContentAlignment="Stretch"
                   VerticalContentAlignment="Stretch"
-                  Command="{Binding $parent[UserControl].((local:ToolboxSetting)DataContext).InvokeCommand}"
-                  CommandParameter="{Binding}">
+                  Click="Button_Click">
             <!-- ToolboxSetting.xaml:23-54 -->
             <Grid RowDefinitions="100,Auto,*" RowSpacing="8">
               <!-- 图标：FontIcon 40，居中（Starward 也有 CachedImage 48 的可选分支，LunarWard 无素材） -->

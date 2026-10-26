@@ -297,13 +297,21 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | 13 | `Features/Screenshot/ImageViewWindow.axaml(.cs)` | `WindowEx` + `AppWindow.TitleBar`（拖动区域/按钮颜色）+ `CenterInScreen` + `SW_SHOWMAXIMIZED` + `ScrollViewer.ZoomMode/ZoomFactor/ChangeView` + `CachedImage.Rotation` + 亚克力背景/`ThemeShadow` + `GWX UIScale` | `Window`（`ExtendClientAreaToDecorationsHint`，打开即 `WindowState.Maximized`）+ 可变换图片宿主（`ScaleTransform`/`RotateTransform`/`TranslateTransform`，自维护缩放与平移、按视口中心缩放）+ `RotateTransform` 旋转 + 半透明 `Border`；提示文案走 `AppStrings` | Avalonia 无 WinUI 内置缩放/亚克力/阴影；缩放率文本不再乘 `UIScale`（按 1.0 计）；`Ctrl+滚轮` 缩放改为显式实现 |
 | 14 | `Features/Screenshot/*.axaml(.cs)`（Avalonia 12 API 适配，跨 4 个页面/窗口 + `ScreenCaptureService`） | 上游页面靠 `PageBase` 的 `[INotifyPropertyChanged]` 提供 `SetProperty`；`DataPackage`/`DataFormats.Files`/`DataObject`/`DragDrop.DoDragDrop`；`Window.Clipboard` 的 `SetStorageItems`；`InAppToast.Show("LangKey", text)` 式调用 | ①每个页面在类内实现 `public new event PropertyChangedEventHandler? PropertyChanged` + `protected bool SetProperty<T>(...)`（形状与上游一致，因为 Avalonia 的 `PageBase : UserControl` 不能再挂源生成特性）；②拖拽改 `DataTransfer` + `DataTransferItem.CreateFile(...)` + `DragDrop.DoDragDropAsync(PointerPressedEventArgs, ...)`（需保存按下事件的 `PointerPressedEventArgs`）；③复制文件走 `using Avalonia.Input.Platform;` 下的 `ClipboardExtensions.SetFilesAsync`；④`IStorageProvider.TryGetFileFromPathAsync` 在 12 里只接受 `System.Uri`（字符串重载是扩展方法，会被实例方法遮蔽），统一 `new Uri(path)`；⑤提示统一 `InAppToast.MainWindow?.Information/Success/Warning/Error(Lang.Xxx, msg)`（硬编码 Key 字符串改为 `Lang.*` 强类型成员） | 全是 Avalonia 12 的 API 形状差异，行为不变 |
 | 15 | `Controls/ColorfulTextBlock`、`Features/Screenshot/*` 中的 `x:Name` 变换 | 上游把 `x:Name` 挂在 `<TransformGroup>` 内的 `<ScaleTransform>`/`<RotateTransform>`/`<TranslateTransform>` 上直接引用 | XAML 原样保留，但 Avalonia 12 的 XAML 生成器**不为 `TransformGroup` 子项生成字段**；改为代码侧取值属性：`private TransformGroup? _TransformGroup_Image => (TransformGroup?)_Image.RenderTransform;` 再按 `Children[0..2]` 取 Scale/Rotate/Translate | Avalonia 12 生成器限制（`x:Name` 不生效时不报错，只报字段缺失），XAML 结构不变 |
+| 16 | `Features/Screenshot/ScreenCaptureInfoWindow.axaml(.cs)` | WinUI 无边框浮窗：`AppWindow.MoveAndResize` + `AppWindow.Show(false)`（不激活显示）、`CanvasImageSource` 缩略图（`CropEffect`/`ScaleEffect`，HDR 走 `HdrToneMapEffect`+`WhiteLevelAdjustmentEffect`+`GammaTransferEffect`）、合成器 `Vector3KeyFrameAnimation` 滑入/滑出、`GetClientRect`/`ClientToScreen`/`MonitorFromWindow` 定位、`FolderLauncherOptions.ItemsToSelect` 打开日志 | Avalonia `Window`（`SystemDecorations=None`、`Topmost`、`ShowInTaskbar=false`、`ShowActivated=false`、`Background=Transparent`）+ `Position` 定位（游戏客户区用 `xdotool getwindowgeometry --shell` 查询，Wayland 退回屏幕工作区右缘 + 25% 高，越界同样回退）+ `CroppedBitmap`+`RenderTargetBitmap` 画 72×72 缩略图（HDR 侧在解码阶段已转 SDR）+ `TranslateTransform`+`Transitions(DoubleTransition X, 0.6s, CubicEaseOut)` 做滑入/滑出（0.6s 节流照上游）+ 打开图片用本地 `ImageViewWindow2`、打开日志用 `xdg-open <目录>`（无选中文件等价物） | Avalonia 无 `AppWindow`/合成器动画/Win2D；`CaptureStart(hwnd, Bitmap, maxCLL)` 等公开签名保持上游形状（仅像素容器改 `Bitmap`），`DisplayId` 重载未移植（本仓库抓屏按窗口，不按显示器）；`SystemDecorations` 枚举在 Avalonia 12 为 `WindowDecorations` |
+| 17 | `Features/Screenshot/ImageBatchConvertWindow.axaml(.cs)` | WIC `BitmapDecoder`/`BitmapEncoder`（JPEG/PNG 编码、`ImageQuality`/`JpegYCrCbSubsampling` 选项）、Starward.Codec 的 AVIF/JXL 编解码器、`avifenc/avifdec/cjxl/djxl` 走 `AppContext.BaseDirectory` 的 exe、`StorageFile`/`FolderLauncherOptions`/`DragEventArgs.DataView`、`HyperlinkButton` | 统一走本地 `Features/Codec` 的 `ImageLoader`（Skia + 外部 `avifdec`/`djxl`）与 `ImageSaver`（PNG 自写编码器 + 外部 `avifenc`/`cjxl`，均在 PATH 上查找）；JPEG 用 Skia 编码（浮点/16bit 源先 `ToRgba8888` 画到 8bit 画布）；JXL 的 0–100 质量按 `distance=(100-quality)*0.1` 线性映射；`HyperlinkButton` 换 `Button Classes="link"`、`ListView` 换 `ListBox`、`ProgressRing` 换 `ProgressBar`、`Run` 拼接换 `InfoText` 属性；拖拽用 `e.DataTransfer.TryGetFiles()`；打开文件所在目录用 `xdg-open` | 无 WIC/JxlSharp/ImageSharp；XMP 由 `ScreenCaptureService.BuildXMPMetadata` 提供；转换失败文案、跳过/覆盖/重命名三种模式与上游一致 |
 
 ### 8.4 尚未移植（明确缺口，非「已完成」）
 
-| 上游文件 | 阻塞原因 | 计划 |
+本组（`Controls` 5 个文件 + `Features/Screenshot` 23 个文件）已全部落地，**无未移植文件**。
+
+仍然存在的**行为级**缺口（不是文件缺口，验收时按此判断）：
+
+| 项 | 现状 | 处理 |
 |---|---|---|
-| `Features/Screenshot/ScreenCaptureInfoWindow.xaml(.cs)` | 530 行；上游是 WinUI 无边框浮窗（`AppWindow` + `CanvasSwapChainPanel` 缩略图 + 显示器峰值亮度读数）。抓屏后端与 `Features/Overlay/RunningGame` 均已落地（§8.2 #14–#16、§8.5），剩余阻塞是该窗口自身的 WinUI 呈现（swapchain/HDR 读数）需要另做 Avalonia 等价实现 | 下一轮单独做：普通 `Window`（无边框 + 顶置）+ `Image` 展示截图 + 成功/失败/进度三态；HDR 读数按 SDR 显示 |
-| `Features/Screenshot/ImageBatchConvertWindow.xaml(.cs)` | 909 行；依赖 JxlSharp/ImageSharp/WIC 的批量编码器（`ScreenCaptureService.BuildXMPMetadata` 已可用，见 §8.2 #16） | 与图片编解码（task-9 `Features/Codec`）一起做：PNG 走 Avalonia 编码器，AVIF/JXL 走 `avifenc`/`cjxl` 子进程 |
+| HDR / ICC 管线 | 一律按 SDR（BT.709）采集与展示；`SaveAsSdrAsync` 恒返回 null | `docs/09` §8.2 #14–#16 已登记；`EnableScreenshotColorManagement` 开关保留但只影响 PNG iCCP/cICP 写出 |
+| 抓屏后端 | X11：`import`（ImageMagick）或 `xwd`+`convert`；Wayland：`grim`（可 `-g` 区域）；窗口定位靠 `xdotool`。三者缺任一时抛 `PlatformNotSupportedException` 并 toast 提示，不静默黑屏 | 同上；安装 `imagemagick`/`grim`/`xdotool` 即完整可用 |
+| 剪贴板图片 | `ClipboardHelper.SetBitmap` 走 Avalonia 剪贴板位图；文件形式复制走 `ClipboardExtensions.SetFilesAsync` | 同上 |
+| 「用其他应用打开」 | Linux 无 `SHOpenWithDialog` 等价物，退化为 `xdg-open` 打开默认应用并 toast 说明 | 同上（§8.3 #12） |
 
 ### 8.5 Features/Overlay（`RunningGame` / `RunningGameService`）
 
@@ -358,11 +366,18 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | `LanguageChangedMessage.cs` | `Features/Setting/LanguageChangedMessage.cs` | `WeakReferenceMessenger` 消息（空类型），与上游同名同命名空间 |
 | `ToolboxItem.cs` | `Features/Setting/ToolboxItem.cs` | 图库条目模型（`Icon`/`Image`/`Name`/`Description`/`Tag`/资源键 + `UpdateLanguage`） |
 
-**多出的 4 个文件（为什么不是偏移）**：
-- `SettingPageBase.cs`：上游 `PageBase` 自带 `SetProperty`/`PropertyChanged`，本仓库 `Frameworks/PageBase` 移植成 Avalonia 后只保留 `DirectProperty`（`CurrentGameId`/`CurrentGameBiz`），**没有** INPC 成员。设置页是纯 INPC 页面，故加一层 `SettingPageBase : StarwardPage, INotifyPropertyChanged`（`new PropertyChanged` + `SetProperty` + `Services/Strings/Log` + `Status`），等价上游 `PageBase` 在这批页面上用到的能力，不引入新概念。
+**多出的文件（为什么不是偏移）**：
+- `SettingLocalization.cs`：把配置语言同步到上游 `Lang.Culture`（`AppConfig.SetLanguage` + `Lang.Culture`），等价上游启动时的 `AppConfig.SetLanguage`；只在页面构造时调用一次，不是基类。
+- `SettingPageBase.cs` **已删除**（2026-10-26 第二轮）：设置页现在与上游一样直接继承 `Frameworks.PageBase`，无参构造，`DataContext=this`；服务用 `AppServices.Current` / `AppConfig.GetService<T>()`，不再有自造的页面基类与 `PageContext` 注入。
 - `SettingShellActions.cs`：上游直接调 Win32/注册表/WinUI API 的三处设置动作（URL 协议注册探测、打开目录、桌面项定位）在本仓库抽成静态门面，供 Advanced/Hotkey 页复用同一份 Linux 实现，避免每页各写一遍。
 - `SettingLanguageOption.cs`：语言下拉项（`Code`/`Display`），上游内联在 `GeneralSetting` 的 `x:Bind` 数据模板里；Avalonia 模板需要具名类型 + `x:DataType`。
 - `HotkeyInput` 配套的 `HotkeyManager.cs`（见 #1）和 `LanguageChangedMessage.cs` 与上游一一对应，不是额外文件。
+
+**第二轮基类/取服务对齐（2026-10-26）**：10 个页面全部改为 `: Frameworks.PageBase` + 无参构造函数，`SettingPageBase` 与 `PageContext` 注入移除。取服务改为上游口径：`AppServices.Current`（`Paths`/`Config`/`Log`/`LauncherService`…）、`AppConfig.GetService<T>()`、`AppConfig.GetLogger<T>()`；游戏上下文只认 `PageBase.CurrentGameId`/`CurrentGameBiz`（由 `Frameworks.Frame.Navigate(page, param)` 传入）。
+具体三处：
+- `ScreenshotSetting`：改为上游全局 `AppConfig.ScreenshotFolder`（默认 `Path.Join(AppConfig.UserDataFolder, "Screenshots")`），不再按档案推导游戏内截图目录；新增 `AppConfig.ScreenshotFolder` 属性（`AppConfig.Setting.cs`，另一 agent 已落地）。
+- `AdvancedSetting`：删除本地旧壳独有的「环境变量基线（`LauncherService.BuildPlan`）」区块，上游 `AdvancedSetting` 没有这段；只保留 URL 协议探测 + 自检命令。
+- `ToolboxSetting`：与上游一致改成三个窗口入口（`UIGF4GachaWindow`、`ZZZGachaInfoWindow`、`ImageViewWindow2`），`ToolboxItem` 也恢复上游形状（`Icon/Image/Tag/NameResourceKey/DescriptionResourceKey` + `UpdateLanguage`）；删除原先经 `Shell.Navigate` 的「游戏设置/诊断/环境 shell/截图」入口。
 
 | # | 差异 | 上游 | 本仓库 | 原因 |
 |---|---|---|---|---|

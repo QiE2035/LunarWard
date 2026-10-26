@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Input;
-using LunarWard.Views.Starward;
+using LunarWard.Frameworks;
 
 namespace LunarWard.Features.Setting;
 
@@ -12,11 +12,50 @@ namespace LunarWard.Features.Setting;
 /// Linux 没有跨桌面等价 API：LunarWard 的 <see cref="HotkeyManager"/> 只保存组合键、不注册，
 /// 触发方式是在合成器里绑定（说明与桌面入口位置见下方 LunarWard 追加的段落）。
 /// </remarks>
-public sealed partial class HotkeySetting : SettingPageBase
+public sealed partial class HotkeySetting : PageBase
 {
-    public HotkeySetting(PageContext context)
-        : base(context)
+
+    public new event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+
+    protected bool SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
     {
+        if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+        field = value;
+        OnPropertyChanged(name);
+        return true;
+    }
+
+    private static AppServices Services => AppServices.Current;
+
+    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
+
+    /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
+    public string? Status
+    {
+        get => _status;
+        set
+        {
+            if (SetProperty(ref _status, value))
+            {
+                OnPropertyChanged(nameof(HasStatus));
+            }
+        }
+    }
+
+    public bool HasStatus => !string.IsNullOrWhiteSpace(Status);
+
+    private string? _status;
+
+    private static Services.LogService Log => AppServices.Current.Log;
+    public HotkeySetting()
+    {
+        SettingLocalization.EnsureConfigured();
         InitializeComponent();
 
         WindowHandle = 0;

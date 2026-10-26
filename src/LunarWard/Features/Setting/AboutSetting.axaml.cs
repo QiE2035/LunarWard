@@ -3,7 +3,7 @@ using System.Reflection;
 using LunarWard.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LunarWard.Views.Starward;
+using LunarWard.Frameworks;
 using LunarWard.Platform;
 
 namespace LunarWard.Features.Setting;
@@ -24,11 +24,50 @@ namespace LunarWard.Features.Setting;
 /// 复刻声明 / 许可 / 致谢排在全部 Starward 条目之后。
 /// </para>
 /// </remarks>
-public sealed partial class AboutSetting : SettingPageBase
+public sealed partial class AboutSetting : PageBase
 {
-    public AboutSetting(PageContext context)
-        : base(context)
+
+    public new event global::System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([global::System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new global::System.ComponentModel.PropertyChangedEventArgs(name));
+
+    protected bool SetProperty<T>(ref T field, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string? name = null)
     {
+        if (global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+        field = value;
+        OnPropertyChanged(name);
+        return true;
+    }
+
+    private static AppServices Services => AppServices.Current;
+
+    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
+
+    /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
+    public string? Status
+    {
+        get => _status;
+        set
+        {
+            if (SetProperty(ref _status, value))
+            {
+                OnPropertyChanged(nameof(HasStatus));
+            }
+        }
+    }
+
+    public bool HasStatus => !string.IsNullOrWhiteSpace(Status);
+
+    private string? _status;
+
+    private static Services.LogService Log => AppServices.Current.Log;
+    public AboutSetting()
+    {
+        SettingLocalization.EnsureConfigured();
         InitializeComponent();
         Version = AppVersion.Display;
 
@@ -165,8 +204,9 @@ public sealed partial class AboutSetting : SettingPageBase
     }
 
 
-    protected override void DisposeViewModel(PageContext context)
+    protected override void OnUnloaded()
     {
+        base.OnUnloaded();
         Links.Clear();
     }
 

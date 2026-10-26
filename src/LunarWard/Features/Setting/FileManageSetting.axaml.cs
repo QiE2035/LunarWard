@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
-using LunarWard.Views.Starward;
+using LunarWard.Frameworks;
 using LunarWard.Launch.Database;
 
 namespace LunarWard.Features.Setting;
@@ -30,8 +30,47 @@ namespace LunarWard.Features.Setting;
 /// 与 config.json（Linux 上改目录要改 <c>XDG_*</c> 环境变量，不是界面）。
 /// </para>
 /// </remarks>
-public sealed partial class FileManageSetting : SettingPageBase
+public sealed partial class FileManageSetting : PageBase
 {
+
+    public new event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+
+    protected bool SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+    {
+        if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+        field = value;
+        OnPropertyChanged(name);
+        return true;
+    }
+
+    private static AppServices Services => AppServices.Current;
+
+    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
+
+    /// <summary>错误/状态行（上游各设置页末尾的 InfoBar 文本）。</summary>
+    public string? Status
+    {
+        get => _status;
+        set
+        {
+            if (SetProperty(ref _status, value))
+            {
+                OnPropertyChanged(nameof(HasStatus));
+            }
+        }
+    }
+
+    public bool HasStatus => !string.IsNullOrWhiteSpace(Status);
+
+    private string? _status;
+
+    private static Services.LogService Log => AppServices.Current.Log;
     /// <summary>「清理启动器背景文件」的持久化键（配置 <c>launcher</c> 段的未知字段区）。</summary>
     /// <remarks>
     /// Starward 把它存在 <c>AppConfig.ClearLauncherBackground</c>；LunarWard 的
@@ -42,10 +81,9 @@ public sealed partial class FileManageSetting : SettingPageBase
     private readonly Func<string, string, Task<bool>> _confirm;
 
 
-    public FileManageSetting(PageContext context,
-        Func<string, string, Task<bool>> confirm)
-        : base(context)
+    public FileManageSetting(Func<string, string, Task<bool>> confirm)
     {
+        SettingLocalization.EnsureConfigured();
         InitializeComponent();
         _confirm = confirm;
 

@@ -6,7 +6,7 @@ using Avalonia.Threading;
 using LunarWard.Language;
 using LunarWard.Localization;
 using LunarWard.Services;
-using LunarWard.Views.Starward;
+using LunarWard.Frameworks;
 
 namespace LunarWard.Features.Setting;
 
@@ -28,22 +28,41 @@ namespace LunarWard.Features.Setting;
 /// （上游是页面里的 <c>ContentDialog</c>），不再经过 <c>SettingPageViewModel</c>。
 /// </para>
 /// </remarks>
-public partial class SettingPage : SettingPageBase
+public partial class SettingPage : PageBase
 {
-    private readonly Dictionary<SettingSectionKind, SettingPageBase> _sections = [];
+
+    public new event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+
+    protected bool SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+    {
+        if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+        field = value;
+        OnPropertyChanged(name);
+        return true;
+    }
+
+    private static Localization.AppStrings Strings => Localization.AppStrings.Instance;
+    private readonly Dictionary<SettingSectionKind, PageBase> _sections = [];
 
     private SettingSectionKind _currentSection;
 
     private bool _syncingSelection;
 
 
-    public SettingPage(PageContext context)
-        : base(context)
+    public SettingPage()
     {
+        SettingLocalization.EnsureConfigured();
         InitializeComponent();
         DataContext = this;
 
         // 语言切换：设置页已迁到上游 Lang 资源，静态绑定不会自更新，宿主负责重建文案与子页。
+        WeakReferenceMessenger.Default.UnregisterAll(this);
         WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (_, _) => OnLanguageChanged());
 
         _currentSection = ResolveInitialSection();
@@ -54,9 +73,9 @@ public partial class SettingPage : SettingPageBase
     /// <summary>
     /// 目录/自检根：从别页回来时重建右侧子页（等价上游重新 <c>Navigate</c> 到默认页）。
     /// </summary>
-    public override void OnNavigatedTo()
+    public override void OnNavigatedTo(object? parameter)
     {
-        base.OnNavigatedTo();
+        base.OnNavigatedTo(parameter);
         if (SectionHost.Content is null)
         {
             SelectSection(_currentSection);
@@ -79,13 +98,9 @@ public partial class SettingPage : SettingPageBase
     }
 
 
-    protected override void DisposeViewModel(PageContext context)
+    protected override void OnUnloaded()
     {
-        foreach (var section in _sections.Values)
-        {
-            section.OnNavigatedFrom();
-        }
-
+        base.OnUnloaded();
         _sections.Clear();
         SectionHost.Content = null;
     }
@@ -202,17 +217,17 @@ public partial class SettingPage : SettingPageBase
 
 
     /// <summary>子页工厂：与上游 <c>NavigationView_ItemInvoked</c> 的 switch 一一对应。</summary>
-    private SettingPageBase CreateSection(SettingSectionKind kind) => kind switch
+    private PageBase CreateSection(SettingSectionKind kind) => kind switch
     {
-        SettingSectionKind.About => new AboutSetting(Context),
-        SettingSectionKind.General => new GeneralSetting(Context),
-        SettingSectionKind.Download => new DownloadSetting(Context),
-        SettingSectionKind.FileManage => new FileManageSetting(Context, ConfirmAsync),
-        SettingSectionKind.Screenshot => new ScreenshotSetting(Context),
-        SettingSectionKind.Hotkey => new HotkeySetting(Context),
-        SettingSectionKind.Gamepad => new GamepadControlSetting(Context),
-        SettingSectionKind.Advanced => new AdvancedSetting(Context),
-        SettingSectionKind.Toolbox => new ToolboxSetting(Context),
+        SettingSectionKind.About => new AboutSetting(),
+        SettingSectionKind.General => new GeneralSetting(),
+        SettingSectionKind.Download => new DownloadSetting(),
+        SettingSectionKind.FileManage => new FileManageSetting(ConfirmAsync),
+        SettingSectionKind.Screenshot => new ScreenshotSetting(),
+        SettingSectionKind.Hotkey => new HotkeySetting(),
+        SettingSectionKind.Gamepad => new GamepadControlSetting(),
+        SettingSectionKind.Advanced => new AdvancedSetting(),
+        SettingSectionKind.Toolbox => new ToolboxSetting(),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 

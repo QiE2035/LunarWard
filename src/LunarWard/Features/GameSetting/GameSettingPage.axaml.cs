@@ -15,7 +15,6 @@ using LunarWard.Core.HoYoPlay;
 using LunarWard.Features.GameLauncher;
 using LunarWard.Features.GameSelector;
 using LunarWard.Language;
-using LunarWard.Views.Starward;
 using LunarWard.Services;
 using Microsoft.Extensions.Logging;
 
@@ -34,8 +33,10 @@ namespace LunarWard.Features.GameSetting;
 /// 语义与上游 PageBase 一致（见 docs/09-LINUX-DIVERGENCES.md §十一）。
 /// </para>
 /// </summary>
-public sealed partial class GameSettingPage : StarwardPage, INotifyPropertyChanged
+public sealed partial class GameSettingPage : Frameworks.PageBase, INotifyPropertyChanged
 {
+
+    private bool _initialized;
 
     private readonly ILogger<GameSettingPage> _logger = AppConfig.GetLogger<GameSettingPage>();
 
@@ -61,7 +62,7 @@ public sealed partial class GameSettingPage : StarwardPage, INotifyPropertyChang
 
 
 
-    public GameSettingPage(PageContext context) : base(context)
+    public GameSettingPage()
     {
         this.InitializeComponent();
         DataContext = this;
@@ -70,34 +71,13 @@ public sealed partial class GameSettingPage : StarwardPage, INotifyPropertyChang
 
 
 
-    private GameId _currentGameId = null!;
-
-    private GameBiz _currentGameBiz;
-
-    private bool _initialized;
-
-
-    /// <summary>等价上游 <c>PageBase.CurrentGameId</c>：当前 profile 的游戏 ID。</summary>
-    private GameId CurrentGameId => _currentGameId;
-
-
-    /// <summary>等价上游 <c>PageBase.CurrentGameBiz</c>：当前 profile 的游戏区服。</summary>
-    private GameBiz CurrentGameBiz
+    public override void OnNavigatedTo(object? parameter)
     {
-        get => _currentGameBiz;
-        set => _currentGameBiz = value;
-    }
-
-
-
-
-    public override void OnNavigatedTo()
-    {
-        if (_currentGameId is null)
+        base.OnNavigatedTo(parameter);
+        if (CurrentGameId is null)
         {
-            var launchInfo = LauncherService.BuildGameInfo(Context.Profile.Profile);
-            _currentGameBiz = new GameBiz(launchInfo.GameBiz);
-            _currentGameId = new GameId { Id = Context.Profile.Id, GameBiz = _currentGameBiz };
+            // 没有导航参数（设计器/单测直接构造）时不初始化游戏相关状态。
+            return;
         }
 
         Image_Emoji.Source = CurrentGameBiz.ToGame().Value switch
@@ -132,12 +112,6 @@ public sealed partial class GameSettingPage : StarwardPage, INotifyPropertyChang
     {
         InitializeResolutionItem();
         await InitializeGameSettingAsync();
-    }
-
-
-    public override void OnNavigatedFrom()
-    {
-        base.OnNavigatedFrom();
     }
 
 
