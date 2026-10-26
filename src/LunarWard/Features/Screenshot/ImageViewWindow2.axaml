@@ -1,0 +1,95 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LunarWard.Features.Screenshot.ImageViewWindow2"
+        Title="ImageViewWindow2"
+        Width="1200"
+        Height="800"
+        Background="#1F1F1F"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="48"
+        TransparencyLevelHint="None">
+
+  <!--
+    上游 Features/Screenshot/ImageViewWindow2.xaml（731 行）的 Avalonia 版：
+      顶栏（文件名 + 复制/保存/删除/在文件夹中显示）→ 图片区（缩放拖动、左右翻页箭头）→ 底栏（缩放控制）。
+    裁掉的 Windows 专有部分（docs/09 已登记）：CanvasSwapChainPanel + Win2D HDR/SDR 渲染、
+    视频/GIF 播放、HDR 亮度滑杆、显示器 ICC 信息。
+  -->
+
+  <Grid RowDefinitions="48,*">
+    <!--  顶栏  -->
+    <Border Grid.Row="0" Background="#33000000">
+      <Grid ColumnDefinitions="Auto,*,Auto" Margin="12,0">
+        <TextBlock x:Name="TextBlock_FileName"
+                   VerticalAlignment="Center"
+                   FontSize="13"
+                   Foreground="#F3F3F3"
+                   TextTrimming="CharacterEllipsis" />
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+          <Button x:Name="Button_Copy" Width="36" Height="32" Background="Transparent" Click="Button_Copy_Click">
+            <TextBlock Classes="icon" FontSize="16" Foreground="#F3F3F3" Text="&#xE8C8;" />
+          </Button>
+          <Button x:Name="Button_SaveAs" Width="36" Height="32" Background="Transparent" Click="Button_SaveAs_Click">
+            <TextBlock Classes="icon" FontSize="16" Foreground="#F3F3F3" Text="&#xE74E;" />
+          </Button>
+          <Button x:Name="Button_OpenFolder" Width="36" Height="32" Background="Transparent" Click="Button_OpenFolder_Click">
+            <TextBlock Classes="icon" FontSize="16" Foreground="#F3F3F3" Text="&#xE8A7;" />
+          </Button>
+          <Button x:Name="Button_Delete" Width="36" Height="32" Background="Transparent" Click="Button_Delete_Click">
+            <TextBlock Classes="icon" FontSize="16" Foreground="#F3F3F3" Text="&#xE74D;" />
+          </Button>
+          <Button x:Name="Button_Info" Width="36" Height="32" Background="Transparent" Click="Button_Info_Click">
+            <TextBlock Classes="icon" FontSize="16" Foreground="#F3F3F3" Text="&#xE946;" />
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!--  图片区  -->
+    <Grid Grid.Row="1"
+          Name="Grid_ImageHost"
+          Background="#1F1F1F"
+          PointerWheelChanged="Grid_ImageHost_PointerWheelChanged"
+          PointerPressed="Grid_ImageHost_PointerPressed"
+          PointerMoved="Grid_ImageHost_PointerMoved"
+          PointerReleased="Grid_ImageHost_PointerReleased"
+          DoubleTapped="Grid_ImageHost_DoubleTapped">
+      <Image Name="Image_Main"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center"
+             RenderTransformOrigin="0.5,0.5"
+             Stretch="None">
+        <Image.RenderTransform>
+          <TransformGroup>
+            <ScaleTransform x:Name="ScaleTransform_Image" />
+            <TranslateTransform x:Name="TranslateTransform_Image" />
+          </TransformGroup>
+        </Image.RenderTransform>
+      </Image>
+
+      <Button Name="Button_Previous"
+              Width="48"
+              Height="96"
+              Margin="8,0,0,0"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Center"
+              Background="#40000000"
+              Click="Button_Previous_Click">
+        <TextBlock Classes="icon" FontSize="20" Foreground="#F3F3F3" Text="&#xE76B;" />
+      </Button>
+      <Button Name="Button_Next"
+              Width="48"
+              Height="96"
+              Margin="0,0,8,0"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Center"
+              Background="#40000000"
+              Click="Button_Next_Click">
+        <TextBlock Classes="icon" FontSize="20" Foreground="#F3F3F3" Text="&#xE76C;" />
+      </Button>
+    </Grid>
+  </Grid>
+
+</Window>

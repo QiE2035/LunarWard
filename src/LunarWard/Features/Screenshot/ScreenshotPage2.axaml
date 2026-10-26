@@ -1,0 +1,154 @@
+<sf:PageBase xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:LunarWard.Features.Screenshot"
+             xmlns:sc="using:LunarWard.Controls"
+             xmlns:sf="using:LunarWard.Frameworks"
+             x:Class="LunarWard.Features.Screenshot.ScreenshotPage2">
+
+  <!--
+    复刻 Starward Features/Screenshot/ScreenshotPage2.xaml（319 行）：
+      标题行 + 管理文件夹按钮 → 空态表情 → 204×115 网格缩略图墙 → 右侧 AnnotatedScrollBar 年月标签。
+    WinUI → Avalonia 差异（均登记 docs/09）：
+      ItemsView/ItemContainer/UniformGridLayout → ItemsControl + WrapPanel + 固定 204×115 条目；
+      Storyboard + mxi:Interaction.Behaviors → Style 的 :pointerover 选择器 + Transitions；
+      AnnotatedScrollBar（WinUI 社区控件）→ 原生 ScrollBar（标签轨道与拖动 ScrollController 见 code-behind 注释）；
+      CachedImage.Source 用 IsThumbnail 语义保留；x:Bind → Binding；ThemeResource → DynamicResource。
+  -->
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="44" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+
+    <Grid.Styles>
+      <!--  条目底衬：圆角裁剪 + 悬停动画（对应上游 Grid_ImageItem + 两个 Storyboard）  -->
+      <Style Selector="Border.tile">
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="Background" Value="{DynamicResource StarCardBackgroundBrush}" />
+      </Style>
+      <Style Selector="Border.tile Image.thumb">
+        <Setter Property="Transitions">
+          <Transitions>
+            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.6" Easing="CubicEaseOut" />
+          </Transitions>
+        </Setter>
+      </Style>
+      <Style Selector="Border.tile:pointerover Image.thumb">
+        <Setter Property="RenderTransform" Value="scale(1.2)" />
+      </Style>
+      <Style Selector="Border.tile Grid.info">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="Transitions">
+          <Transitions>
+            <DoubleTransition Property="Opacity" Duration="0:0:0.6" Easing="CubicEaseOut" />
+          </Transitions>
+        </Setter>
+      </Style>
+      <Style Selector="Border.tile:pointerover Grid.info">
+        <Setter Property="Opacity" Value="1" />
+      </Style>
+    </Grid.Styles>
+
+    <TextBlock Margin="24,0,0,0"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Center"
+               FontSize="20"
+               FontWeight="Bold"
+               Text="{Binding Strings[ScreenshotPage_GameScreenshot]}" />
+
+    <StackPanel Margin="0,0,38,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="16">
+      <Button Command="{Binding ManageScreenshotFolderCommand}"
+              Content="{Binding Strings[ScreenshotPage_ManageScreenshotFolders]}" />
+    </StackPanel>
+
+    <StackPanel Name="StackPanel_Emoji"
+                Grid.RowSpan="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16"
+                IsVisible="False">
+      <Image Name="Image_Emoji" Width="160" Height="160" />
+      <TextBlock HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{DynamicResource StarTextSecondary}"
+                 Text="{Binding Strings[ScreenshotPage_ScreenshotFolderDoesNotExist]}" />
+    </StackPanel>
+
+    <ScrollViewer Name="ScrollViewer_Images"
+                  Grid.Row="1"
+                  Padding="24,0,0,12"
+                  HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+      <ItemsControl Name="ItemsView_Images" ItemsSource="{Binding Screenshots}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="local:ScreenshotItem">
+            <Border Classes="tile"
+                    Width="204"
+                    Height="115"
+                    Margin="0,0,12,12"
+                    Tapped="Grid_ImageItem_Tapped"
+                    PointerPressed="Grid_ImageItem_PointerPressed"
+                    PointerMoved="Grid_ImageItem_PointerMoved">
+              <Grid>
+                <sc:CachedImage Name="Image_Thumb"
+                                Classes="thumb"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource StarCardBackgroundBrush}"
+                                IsThumbnail="True"
+                                RenderTransformOrigin="0.5,0.5"
+                                Source="{Binding FilePath}"
+                                Stretch="UniformToFill" />
+                <Grid Name="Grid_ImageInfo" Classes="info" Background="#60000000">
+                  <Button Name="Button_CopyImage"
+                          Height="28"
+                          MinWidth="32"
+                          Padding="0"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Top"
+                          Background="Transparent"
+                          Foreground="{DynamicResource StarTextSecondary}"
+                          Tapped="Button_CopyImage_Tapped">
+                    <TextBlock Classes="icon" FontSize="16" Text="&#xE8C8;" />
+                  </Button>
+                  <TextBlock Margin="8,0,8,4"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Bottom"
+                             FontSize="12"
+                             Foreground="#F3F3F3"
+                             Text="{Binding CreationTimeText}"
+                             TextTrimming="CharacterEllipsis" />
+                </Grid>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+    <!--
+      AnnotatedScrollBar 在本地的等价物：win 版会在轨道上绘制年/月标签并把拖动转换成 ScrollController。
+      Avalonia 没有对应控件，这里保留「内容超过 3 屏才显示」的显隐逻辑与年份标签，
+      滚动仍由 ScrollViewer 原生滚动条完成（见 code-behind UpdateLabels）。
+    -->
+    <ScrollBar Name="ScrollBar_Images"
+               Grid.Row="1"
+               Width="12"
+               Margin="0,0,4,0"
+               HorizontalAlignment="Right"
+               IsVisible="False"
+               Orientation="Vertical" />
+
+  </Grid>
+
+</sf:PageBase>

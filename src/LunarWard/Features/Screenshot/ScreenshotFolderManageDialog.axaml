@@ -1,0 +1,119 @@
+<controls:StarwardContentDialog xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                xmlns:controls="using:LunarWard.Views.Starward.Controls"
+                                xmlns:local="using:LunarWard.Features.Screenshot"
+                                x:Class="LunarWard.Features.Screenshot.ScreenshotFolderManageDialog"
+                                MaxWidth="600">
+  <!--
+    复刻 Starward Features/Screenshot/ScreenshotFolderManageDialog.xaml：
+      提示行 → 分隔线 → 文件夹列表（打开/移除/备份）→ 备份中/备份结果 → 添加文件夹 + 保存/取消
+    上游 ContentDialog 外观与按钮栏由 StarwardContentDialog 主题提供（见该控件注释）。
+    WinUI 差异：MenuFlyoutSeparator→Border、FontIcon→TextBlock(Classes="icon")、
+    ThemeResource→DynamicResource、x:Bind→Binding + DataContext=this。
+  -->
+  <Grid Width="600" MinHeight="240" MaxHeight="400" RowDefinitions="Auto,Auto,*,Auto,Auto">
+
+    <TextBlock x:Name="TextBlock_Hint"
+               Margin="24,24,0,12"
+               Foreground="{DynamicResource StarTextSecondary}"
+               TextWrapping="Wrap" />
+
+    <Border Grid.Row="1" Margin="24,0" Height="1" Background="{DynamicResource StarCardStrokeBrush}" />
+
+    <ListBox x:Name="ListBox_ScreenshotFolders"
+             Grid.Row="2"
+             Padding="12,0"
+             Background="Transparent">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="local:ScreenshotFolder">
+          <Grid ColumnDefinitions="*,32,32" ColumnSpacing="4" Background="Transparent">
+            <TextBlock VerticalAlignment="Center"
+                       Foreground="{DynamicResource StarTextSecondary}"
+                       Text="{Binding Folder}"
+                       TextWrapping="Wrap" />
+            <Button x:Name="Button_OpenFolder"
+                    Grid.Column="1"
+                    Width="32"
+                    Height="32"
+                    Padding="0"
+                    Background="Transparent"
+                    Click="Button_OpenFolder_Click">
+              <TextBlock Classes="icon"
+                         FontSize="16"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="&#xE8A7;" />
+            </Button>
+            <!--  移除文件夹  -->
+            <Button x:Name="Button_RemoveFolder"
+                    Grid.Column="2"
+                    Width="32"
+                    Height="32"
+                    Padding="0"
+                    Background="Transparent"
+                    Click="Button_RemoveFolder_Click"
+                    IsVisible="{Binding CanRemove}">
+              <TextBlock Classes="icon"
+                         FontSize="16"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="&#xE711;" />
+            </Button>
+            <!--  备份文件夹  -->
+            <Button x:Name="Button_BackupFolder"
+                    Grid.Column="2"
+                    Width="32"
+                    Height="32"
+                    Padding="0"
+                    Background="Transparent"
+                    Click="Button_BackupFolder_Click"
+                    IsVisible="{Binding InGame}">
+              <TextBlock Classes="icon"
+                         FontSize="16"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="&#xF413;" />
+            </Button>
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <!--  备份中  -->
+    <StackPanel x:Name="StackPanel_BackingUp"
+                Grid.Row="3"
+                Margin="24,12,24,0"
+                Orientation="Horizontal"
+                Spacing="12"
+                IsVisible="False">
+      <ProgressBar Width="16" Height="16" IsIndeterminate="True" />
+      <TextBlock x:Name="TextBlock_BackingUp"
+                 VerticalAlignment="Center"
+                 Foreground="{DynamicResource StarAccentBrush}" />
+    </StackPanel>
+
+    <!--  备份结果  -->
+    <TextBlock x:Name="TextBlock_BackupResult"
+               Grid.Row="3"
+               Margin="24,12,24,0"
+               Foreground="{DynamicResource StarTextSecondary}"
+               TextWrapping="Wrap"
+               IsVisible="False" />
+
+    <!--  添加文件夹  -->
+    <Button x:Name="Button_AddFolder"
+            Grid.Row="4"
+            Margin="24"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            Click="Button_AddFolder_Click" />
+
+    <!--  保存 / 取消  -->
+    <StackPanel Grid.Row="4"
+                Margin="24"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="12">
+      <Button x:Name="Button_Save" Click="Button_Save_Click" Classes="accent" />
+      <Button x:Name="Button_Cancel" Click="Button_Cancel_Click" />
+    </StackPanel>
+
+  </Grid>
+</controls:StarwardContentDialog>

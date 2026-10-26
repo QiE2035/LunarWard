@@ -258,3 +258,45 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | `Features/GameSelector/NoAnimationImageExStyle.xaml` | **不移植** | 目标类型 `Scighost.WinUI.ImageEx` 是 WinUI 专有控件（占位图/淡入状态机）；Avalonia 侧对应物是 `Image`/`Controls/CachedImage`（task-4） | CachedImage 落地后可用 Avalonia `Transitions` 复刻淡入效果，再决定是否提供同名样式 |
 | `Features/GameSelector/GameSelector.xaml(.cs)` | 待移植 | 37KB+28KB，含 Win32 注册表、`GetFileInformationByHandleEx` 硬链接体积统计、XamlRoot 拖拽区、`FlyoutBase` 附加弹出层 | 需先把 `AutoSearchInstalledGames` 的注册表读取换成 `WineRegistry`、硬链接识别换成 `(st_dev, st_ino)` |
 | `Features/GameLauncher/{GameLauncherPage.xaml(.cs),GameLauncherSettingDialog.xaml(.cs),CompactCheckBoxStyle.xaml}` | 待移植 | 本轮已有 `Views/Starward/` 旧实现（Lead 之后统一切壳）；`CompactCheckBoxStyle.xaml` 是 WinUI CheckBox 控件模板，需按 Avalonia 主题重画 | 切壳时逐行对齐；模板类样式单独评审 |
+
+## 八、Controls + Features/Screenshot 移植（2026-10-26，dapper-db/task-4）
+
+上游 `src/Starward/Controls/`（5 文件）与 `src/Starward/Features/Screenshot/`（23 文件）。
+落点/命名规则同 `docs/12-XAML-PORT-GUIDE.md`：`Starward.*`→`LunarWard.*`、`.xaml`→`.axaml`、类名成员名不变。
+本节逐条记录**被替换的 WinUI/Windows 专有实现**，以及**尚未落地的文件**（后者是明确缺口，不是「已完成」）。
+
+### 8.1 Controls
+
+| # | 位置 | 上游 | 本仓库 | 原因/待办 |
+|---|---|---|---|---|
+| 1 | `Controls/CachedImage.cs` | `ImageEx`（Scighost.WinUI）+ `ImageSource`/`BitmapImage`/`ImageThumbnail` 缩略图 | `public class CachedImage : Image`：`UriSource`(string) StyledProperty + `ProvideCachedResourceAsync(Uri, CancellationToken)`；`avares://`/`ms-appx:///` → `AssetLoader`；`file://` → `Bitmap`；网络图 → `Helpers/FileCache.GetFromCacheAsync` | Avalonia 无 `ImageEx`（缓存/占位/进度），无 WinRT `BitmapImage`；`IsThumbnail` 的缩略图解码待 `Features/Codec/ImageThumbnail`（task-9）落地后接回，当前直接加载原图 |
+| 2 | `Controls/ColorRectChart.xaml(.cs)` | UserControl + Composition 动画裁剪 | **保留本地等价实现** `Controls/ColorRectChart.cs`（`readonly record struct ChartLegend(string? Legend, int Percent, IBrush Color)` + `Border` + 硬边 `LinearGradientBrush`，空/零值 `#60000000`） | Avalonia 无 Composition/`Rectangle` 裁剪动画；图表语义（硬边分段渐变）逐字保留，仅渲染方式换成 `Border.Background` |
+| 3 | `Controls/ColorfulTextBlock.xaml(.cs)` | UserControl 包 `TextBlock`，`x:Bind` 透传全部文本属性 | 同名 `UserControl` + `TextBlock Name="ThisTextBlock"`，ctor 里把对齐/字体/前景/换行绑到自身；`Text` 的 `<cAARRGGBB>`/`<i>` 内联解析逐字保留 | `x:Bind` 无对应；上游 `IsTextSelectionEnabled="{x:Bind IsTextScaleFactorEnabled}"` 是上游笔误，未照抄 |
+
+### 8.2 数据/支持层
+
+| # | 位置 | 上游 | 本仓库 | 原因/待办 |
+|---|---|---|---|---|
+| 4 | `Features/Screenshot/ScreenshotItem.cs` | `BitmapImage` + `Windows.Storage` 属性 + WIC 取像素尺寸 | 保留 `TryParseCreationTime`/正则/`GetFileInfo`；`UpdatePixelSize` 改用 `Avalonia.Media.Imaging.Bitmap(stream).PixelSize` | 无 WIC/`StorageFile` |
+| 5 | `Features/Screenshot/ScreenshotHelper.cs` | `Kernel32.CreateFile2` 独占打开探测文件占用；`avifdec.exe`/`djxl.exe`（随包 exe） | 占用判定改「能读 + 大小连续两次相同」轮询 30×100ms；avif/jxl 走 PATH 上的 `avifdec`/`djxl`，再退化 `ffmpeg -q:v 2`、`magick/convert -quality 90`，全缺则 `PlatformNotSupportedException` | Linux 无 `CreateFile2`、无随包 `.exe`；转换工具由发行版提供 |
+| 6 | `Features/Screenshot/ScreenCaptureItem.cs` | Win2D `CanvasBitmap` + ICC `ColorPrimaries` + HDR 字段 | `Bitmap Bitmap` + `HDR`/`MaxCLL`/`SdrWhiteLevel`/`FrameTime` 字段（HDR 值仅承载，不做色彩管线） | Avalonia/Skia 无 Win2D swapchain 与 ICC 查询 |
+| 7 | `Features/Screenshot/ScrollViewerExtensions.cs` | `ArePointerWheelEventsIgnored` 附加属性（XAML 用法不变） | Avalonia 附加属性 + `AddHandler(PointerWheelChangedEvent, Tunnel, handledEventsToo: true)` 后 `e.Handled = true` | 事件路由机制不同 |
+| 8 | `Features/Screenshot/ZoomFactorPercentConverter.cs` | `IValueConverter` → `"P0"` | 同签名同输出（`Avalonia.Data.Converters.IValueConverter`） | 仅接口命名空间不同 |
+
+### 8.3 UI 层
+
+| # | 位置 | 上游 | 本仓库 | 原因/待办 |
+|---|---|---|---|---|
+| 9 | `Features/Screenshot/ScreenshotFolderManageDialog.axaml(.cs)` | `ContentDialog` + `ListView` + `Launcher.LaunchFolderPathAsync` + `FileOpenPicker` | `StarwardContentDialog`（`DialogService.ShowAsync`）+ `ListBox` + `xdg-open` + `FileDialogHelper.PickFolderAsync`（StorageProvider）；`MenuFlyoutSeparator`→1px `Border`，`ProgressRing`→`ProgressBar IsIndeterminate`，模板内按钮提示用 `ContainerPrepared` + `ToolTip.SetTip` | Avalonia 无 ContentDialog/ListView 模板差异/WinRT Launcher |
+| 10 | `Features/Screenshot/ScreenshotPage2.axaml(.cs)` | `ItemsView` + `UniformGridLayout` + `AnnotatedScrollBar`（含标签轨道/`ScrollController`/`PART_ToolTipRail` tooltip）+ Storyboard + `mxi:Interaction.Behaviors` | `ScrollViewer` + `ItemsControl` + `WrapPanel`（条目固定 204×115、间距 12）+ 原生 `ScrollBar`；悬停动画改 `Style :pointerover` + `Transitions`；保留「内容超过 3 屏才显示滚动条」判定；`DispatcherQueue.TryEnqueue`→`Dispatcher.UIThread.Post`；`DataPackage` 拖拽→`DataObject`+`DragDrop.DoDragDrop`；复制图片→`Clipboard.SetFilesAsync` | Avalonia 无 ItemsView/AnnotatedScrollBar/Storyboard/Behaviors；**年/月标签绘制省略**（滚动条保留），后续若要标签可自绘轨道 |
+| 11 | `Features/Screenshot/ImageViewWindow2.axaml(.cs)` | `CanvasSwapChainPanel` + Win2D（HDR→SDR、显示器峰值亮度）、视频/GIF 播放、图库条、JxlSharp 导出、裁剪/EXIF 编辑 | 保留顶栏命令（复制/另存为/文件夹/删除/信息）、滚轮锚点缩放、按住拖动、双击还原、←/→ 翻页、删除后跳转并同步集合；渲染用 `Image` + `ScaleTransform`/`TranslateTransform` | Win2D/视频/GIF/图库条/编码导出本轮未落；**这是 1572 行上游文件的子集移植**，缺口登记如下 |
+
+### 8.4 尚未移植（明确缺口，非「已完成」）
+
+| 上游文件 | 阻塞原因 | 计划 |
+|---|---|---|
+| `Features/Screenshot/ScreenCaptureHelper.cs`、`ScreenCaptureContext.cs`、`ScreenCaptureService.cs` | 依赖 `Windows.Graphics.Capture` + `Direct3D11CaptureFramePool` + Win2D + WinRT `DisplayInformation`/HDR；Linux 需外部抓屏后端（X11 `xdotool`+`import`/`xwd`，Wayland `grim`） | Lead 已定「B 后接 A」：先 UI，后抓屏后端；落地时 `BuildXMPMetadata`/`GetMaxCLL` 按上游签名给纯函数实现（HDR 元数据只写不实采），抓屏 API 不可用时 `PlatformNotSupportedException` 且 UI 显示「截图功能不可用」 |
+| `Features/Screenshot/ScreenCaptureInfoWindow.xaml(.cs)` | 同上，且依赖 `Features/Overlay/RunningGame`（由 misc-port 负责，尚未落地） | 抓屏后端完成后一并移植 |
+| `Features/Screenshot/ScreenshotPage.xaml(.cs)` | 695 行；`GridView` + 分组 `CollectionViewSource` + 多选 + 右键菜单（信息/打开/复制文件/复制为 JPG/在文件夹中/打开方式/删除）+ 调用 `ImageBatchConvertWindow` | 下一步优先（导航按 `nameof(ScreenshotPage)` 注册，是真实入口）；现有旧实现 `Views/Starward/Pages/ScreenshotPage.axaml(.cs)` 可作行为参照，但需按上游结构重排 |
+| `Features/Screenshot/ImageViewWindow.xaml(.cs)` | 上游早期单图查看器（被 `ImageViewWindow2` 取代），当前仓库无调用方 | 低优先；最后补形状 |
+| `Features/Screenshot/ImageBatchConvertWindow.xaml(.cs)` | 909 行；依赖 JxlSharp/ImageSharp/WIC 编码器与 `ScreenCaptureService.BuildXMPMetadata` | 与图片编解码（task-9 `Features/Codec`）一起做 |
