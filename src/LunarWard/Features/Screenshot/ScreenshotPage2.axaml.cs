@@ -21,6 +21,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls.Primitives;
+using Avalonia.Platform.Storage;
 
 namespace LunarWard.Features.Screenshot;
 
@@ -44,6 +46,20 @@ namespace LunarWard.Features.Screenshot;
 /// </remarks>
 public partial class ScreenshotPage2 : PageBase
 {
+
+    public new event global::System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+
+    protected bool SetProperty<T>(ref T field, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    {
+        if (global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+        field = value;
+        PropertyChanged?.Invoke(this, new global::System.ComponentModel.PropertyChangedEventArgs(propertyName));
+        return true;
+    }
 
 
     public AppStrings Strings => AppStrings.Instance;
@@ -430,7 +446,7 @@ public partial class ScreenshotPage2 : PageBase
                     if (topLevel is not null)
                     {
                         // 上游 ClipboardHelper.SetStorageItems(DataPackageOperation.Copy, file)：这里把文件放进剪贴板。
-                        var storageFile = await topLevel.StorageProvider.TryGetFileFromPathAsync(item.FilePath);
+                        var storageFile = await topLevel.StorageProvider.TryGetFileFromPathAsync(new Uri(item.FilePath));
                         if (storageFile is not null)
                         {
                             await topLevel.Clipboard!.SetFilesAsync([storageFile]);
@@ -477,6 +493,8 @@ public partial class ScreenshotPage2 : PageBase
 
     private Point _dragStartPoint;
 
+    private PointerPressedEventArgs? _dragPress;
+
     private bool _dragArmed;
 
 
@@ -488,6 +506,7 @@ public partial class ScreenshotPage2 : PageBase
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             _dragStartPoint = e.GetPosition(this);
+            _dragPress = e;
             _dragArmed = true;
         }
     }
@@ -509,12 +528,12 @@ public partial class ScreenshotPage2 : PageBase
             }
             _dragArmed = false;
             var topLevel = TopLevel.GetTopLevel(this);
-            var storageFile = topLevel is null ? null : await topLevel.StorageProvider.TryGetFileFromPathAsync(item.FilePath);
-            if (storageFile is not null)
+            var storageFile = topLevel is null ? null : await topLevel.StorageProvider.TryGetFileFromPathAsync(new Uri(item.FilePath));
+            if (storageFile is not null && _dragPress is not null)
             {
-                var data = new DataObject();
-                data.Set(DataFormats.Files, new[] { storageFile });
-                await DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
+                var transfer = new DataTransfer();
+                transfer.Add(DataTransferItem.CreateFile(storageFile));
+                await DragDrop.DoDragDropAsync(_dragPress, transfer, DragDropEffects.Copy);
             }
         }
         catch (Exception ex)

@@ -23,6 +23,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
+using LunarWard.Language;
 
 namespace LunarWard.Features.Screenshot;
 
@@ -47,6 +49,20 @@ namespace LunarWard.Features.Screenshot;
 /// </remarks>
 public partial class ScreenshotPage : PageBase
 {
+
+    public new event global::System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+
+    protected bool SetProperty<T>(ref T field, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    {
+        if (global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+        field = value;
+        PropertyChanged?.Invoke(this, new global::System.ComponentModel.PropertyChangedEventArgs(propertyName));
+        return true;
+    }
 
 
     private readonly ILogger<ScreenshotPage> _logger = AppConfig.GetLogger<ScreenshotPage>();
@@ -369,7 +385,7 @@ public partial class ScreenshotPage : PageBase
     {
         // 上游：new ImageBatchConvertWindow().ShowWindow(...)。该窗口依赖 JxlSharp/ImageSharp/WIC 编码器，
         // 尚未移植（docs/09 §8.4），此处先给出明确提示而不是静默无效。
-        InAppToast.Show("ScreenshotPage_BatchConvert", "ImageBatchConvertWindow 尚未移植");
+        InAppToast.MainWindow?.Information(Lang.ScreenshotPage_BatchConvert, "ImageBatchConvertWindow 尚未移植");
     }
 
 
@@ -504,6 +520,7 @@ public partial class ScreenshotPage : PageBase
             return;
         }
         _dragStart = e.GetPosition(this);
+        _dragPress = e;
         _dragItem = item;
         _dragArmed = true;
         if (e.ClickCount >= 2)
@@ -525,6 +542,8 @@ public partial class ScreenshotPage : PageBase
 
 
     private Point _dragStart;
+
+    private PointerPressedEventArgs? _dragPress;
 
     private ScreenshotItem? _dragItem;
 
@@ -557,18 +576,21 @@ public partial class ScreenshotPage : PageBase
             {
                 if (File.Exists(item.FilePath))
                 {
-                    var file = await topLevel.StorageProvider.TryGetFileFromPathAsync(item.FilePath);
+                    var file = await topLevel.StorageProvider.TryGetFileFromPathAsync(new Uri(item.FilePath));
                     if (file is not null)
                     {
                         files.Add(file);
                     }
                 }
             }
-            if (files.Count > 0)
+            if (files.Count > 0 && _dragPress is not null)
             {
-                var data = new DataObject();
-                data.Set(DataFormats.Files, files);
-                await DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
+                var transfer = new DataTransfer();
+                foreach (var file in files)
+                {
+                    transfer.Add(DataTransferItem.CreateFile(file));
+                }
+                await DragDrop.DoDragDropAsync(_dragPress, transfer, DragDropEffects.Copy);
             }
         }
         catch (Exception ex)
@@ -683,7 +705,7 @@ public partial class ScreenshotPage : PageBase
         // 上游行为是让用户选一个程序打开当前文件，这里退化为用默认应用打开并给出提示。
         if (sender is MenuItem { DataContext: ScreenshotItem item })
         {
-            InAppToast.Show("ImageViewWindow2_OpenWith", item.FileName);
+            InAppToast.MainWindow?.Information(Lang.ImageViewWindow2_OpenWith, item.FileName);
             MenuFlyoutItem_OpenWithDefault_Click(sender, e);
         }
     }

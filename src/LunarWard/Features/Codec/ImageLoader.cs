@@ -393,7 +393,7 @@ internal static class ImageLoader
 
     private static async Task<JxlHeader?> RunJxlinfoAsync(string filePath, CancellationToken cancellation)
     {
-        ProcessResult result;
+        ProcessRunner.Result result;
         try
         {
             result = await ProcessRunner.RunAsync("jxlinfo", [filePath], cancellation);

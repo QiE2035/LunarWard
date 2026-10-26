@@ -13,6 +13,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
+using LunarWard.Language;
+using Avalonia.Media;
 
 namespace LunarWard.Features.Screenshot;
 
@@ -35,6 +38,12 @@ namespace LunarWard.Features.Screenshot;
 /// </remarks>
 public partial class ImageViewWindow2 : Window
 {
+
+    private TransformGroup? _TransformGroup_Image => (TransformGroup?)Image_Main.RenderTransform;
+
+    private ScaleTransform ScaleTransform_Image => (ScaleTransform)_TransformGroup_Image!.Children[0];
+
+    private TranslateTransform TranslateTransform_Image => (TranslateTransform)_TransformGroup_Image!.Children[1];
 
 
     private readonly ObservableCollection<ScreenshotItem>? _collection;
@@ -227,13 +236,13 @@ public partial class ImageViewWindow2 : Window
                 if (file is not null)
                 {
                     await topLevel.Clipboard!.SetFilesAsync([file]);
-                    InAppToast.Show("ImageViewWindow_CopyImage", item.FileName);
+                    InAppToast.MainWindow?.Success(Lang.ImageViewWindow2_CopiedToClipboard, item.FileName);
                 }
             }
         }
         catch (Exception ex)
         {
-            InAppToast.Show("ImageViewWindow_CopyImage", ex.Message);
+            InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -259,7 +268,7 @@ public partial class ImageViewWindow2 : Window
         }
         catch (Exception ex)
         {
-            InAppToast.Show("Common_Error", ex.Message);
+            InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -308,7 +317,7 @@ public partial class ImageViewWindow2 : Window
         }
         catch (Exception ex)
         {
-            InAppToast.Show("Common_Error", ex.Message);
+            InAppToast.MainWindow?.Error(ex);
         }
     }
 
@@ -324,11 +333,11 @@ public partial class ImageViewWindow2 : Window
         {
             var info = new FileInfo(item.FilePath);
             string text = $"{item.FileName}\n{info.FullName}\n{info.Length / 1024.0:F1} KB\n{item.CreationTime:yyyy-MM-dd HH:mm:ss}";
-            InAppToast.Show("ImageViewWindow_ImageInfo", text);
+            InAppToast.MainWindow?.Information(Lang.ImageViewWindow2_ImageInformation, text);
         }
         catch (Exception ex)
         {
-            InAppToast.Show("Common_Error", ex.Message);
+            InAppToast.MainWindow?.Error(ex);
         }
     }
 

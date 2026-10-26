@@ -69,5 +69,8 @@
     <None Remove="Frameworks\WebView\SelfTest*\**" />
     <EmbeddedResource Remove="Frameworks\WebView\SelfTest*\**" />
     <AvaloniaResource Remove="Frameworks\WebView\SelfTest*\**" />
+    <!-- Avalonia 12 的 XAML 编译项是 AvaloniaXaml；只 Remove AvaloniaResource 仍会把 XProbe.axaml
+         带进主程序编译单元，导致整个程序集的 x:Name 字段生成失败（AXN0001 之后所有页面壳字段消失）。 -->
+    <AvaloniaXaml Remove="Frameworks\WebView\SelfTest*\**" />
   </ItemGroup>
 </Project>

@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LunarWard.Helpers;
 
 namespace LunarWard.Features.Screenshot;
 
@@ -96,12 +97,12 @@ internal class ScreenCaptureService
         catch (PlatformNotSupportedException ex)
         {
             _logger.LogWarning(ex, "Screen capture is not available on this system.");
-            InAppToast.Show(ex.Message);
+            InAppToast.MainWindow?.Warning(ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while capturing the screen.");
-            InAppToast.Show("截图失败，请查看日志。");
+            InAppToast.MainWindow?.Error("截图失败，请查看日志。");
         }
     }
 

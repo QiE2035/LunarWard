@@ -650,15 +650,16 @@ internal static class PngEncoder
     private static void WritecHRM(Stream stream, ICC.ColorPrimaries primaries)
     {
         Span<byte> data = stackalloc byte[32];
-        void W(int i, float value) => BinaryPrimitives.WriteUInt32BigEndian(data.Slice(i * 4, 4), (uint)Math.Round(value * 100000f));
-        W(0, primaries.White.X);
-        W(1, primaries.White.Y);
-        W(2, primaries.Red.X);
-        W(3, primaries.Red.Y);
-        W(4, primaries.Green.X);
-        W(5, primaries.Green.Y);
-        W(6, primaries.Blue.X);
-        W(7, primaries.Blue.Y);
+        // 上游无此函数（Win2D 直接写 cHRM）；本地 Span 不能进 lambda 捕获，改为显式传参。
+        static void W(Span<byte> target, int i, float value) => BinaryPrimitives.WriteUInt32BigEndian(target.Slice(i * 4, 4), (uint)Math.Round(value * 100000f));
+        W(data, 0, primaries.White.X);
+        W(data, 1, primaries.White.Y);
+        W(data, 2, primaries.Red.X);
+        W(data, 3, primaries.Red.Y);
+        W(data, 4, primaries.Green.X);
+        W(data, 5, primaries.Green.Y);
+        W(data, 6, primaries.Blue.X);
+        W(data, 7, primaries.Blue.Y);
         WriteChunk(stream, "cHRM", data);
     }
 

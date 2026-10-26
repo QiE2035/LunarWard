@@ -16,6 +16,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
+using Avalonia.Media;
 
 namespace LunarWard.Features.Screenshot;
 
@@ -39,6 +41,28 @@ namespace LunarWard.Features.Screenshot;
 /// </remarks>
 public partial class ImageViewWindow : Window
 {
+
+    public new event global::System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+
+    protected bool SetProperty<T>(ref T field, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    {
+        if (global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+        field = value;
+        PropertyChanged?.Invoke(this, new global::System.ComponentModel.PropertyChangedEventArgs(propertyName));
+        return true;
+    }
+
+    private TransformGroup? _TransformGroup_Image => (TransformGroup?)_Image.RenderTransform;
+
+    private ScaleTransform ScaleTransform_Image => (ScaleTransform)_TransformGroup_Image!.Children[0];
+
+    private RotateTransform RotateTransform_Image => (RotateTransform)_TransformGroup_Image!.Children[1];
+
+    private TranslateTransform TranslateTransform_Image => (TranslateTransform)_TransformGroup_Image!.Children[2];
 
 
     private readonly ILogger<ImageViewWindow> _logger = AppConfig.GetLogger<ImageViewWindow>();
