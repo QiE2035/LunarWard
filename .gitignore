@@ -7,3 +7,6 @@ artifacts/
 TestResults/
 .build.lock
 log/
+
+# agent 工作区（worktree 元数据与临时脚本）
+.agents/
