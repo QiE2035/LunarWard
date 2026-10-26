@@ -68,8 +68,7 @@ internal static class DatabaseService
 
 
     /// <summary>
-    /// LunarWard：按任意连接串创建连接。上游只有一个全局库，LunarWard 的
-    /// <see cref="LunarWard.Launch.Database.LunarWardDatabase"/> 实例封装（抓包库等）走这里。
+    /// LunarWard：按任意连接串创建连接（自检抓包库等需要独立文件时走这里）。
     /// </summary>
     internal static SqliteConnection CreateConnection(string connectionString)
     {

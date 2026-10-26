@@ -121,7 +121,7 @@ public sealed class XdgPaths : IXdgPaths
 
             // 目录里有 cookie / 抽卡 authkey / 账号快照：只允许属主进入。
             // 之前只 CreateDirectory，落到 umask 默认的 0755，同机其他用户可解目录名；
-            // WAL 侧车文件更是 0644（见 LunarWardDatabase.LimitSidecarPermissions）。
+            // WAL 侧车文件更是 0644（见 Features/Database/DatabaseService 的建库流程）。
             TrySetOwnerOnly(dir);
         }
     }

@@ -5,7 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Frameworks;
-using LunarWard.Launch.Database;
+using LunarWard.Features.Database;
 using Microsoft.Extensions.Logging;
 
 namespace LunarWard.Features.Setting;
@@ -220,10 +220,10 @@ public sealed partial class FileManageSetting : PageBase
     /// 把 <c>LunarWardDatabase.db</c> 的一致性快照写到 <paramref name="path"/>。
     /// </summary>
     /// <remarks>
-    /// 用 SQLite 的 <c>VACUUM INTO</c>（<see cref="LunarWard.Launch.Database.LunarWardDatabase.BackupTo"/>）：
-    /// 带事务、单文件、自动合并 WAL，不依赖 <c>sqlite3</c> 命令行。上游用
-    /// <c>File.Copy(StarwardDatabase.db)</c>，在 WAL 模式下可能拷到半个事务；
-    /// 这里换成官方热备份方式，语义等价且更安全（已在类注释里记录偏差）。
+    /// 走 <see cref="DatabaseService.BackupDatabase"/>（<c>VACUUM</c> + SQLite 官方
+    /// <c>BackupDatabase</c> 热备份）：带事务、单文件、自动合并 WAL，不依赖 <c>sqlite3</c>
+    /// 命令行。上游用 <c>File.Copy(StarwardDatabase.db)</c>，在 WAL 模式下可能拷到半个
+    /// 事务；这里换成官方热备份方式，语义等价且更安全（已在类注释里记录偏差）。
     /// </remarks>
     public async Task BackupToAsync(string path)
     {
@@ -236,8 +236,7 @@ public sealed partial class FileManageSetting : PageBase
         Status = Strings["Settings.Files.BackingUp"];
         try
         {
-            var database = new LunarWardDatabase(Path.Join(DataHome, LunarWardDatabase.FileName));
-            await Task.Run(() => database.BackupTo(path)).ConfigureAwait(true);
+            await Task.Run(() => DatabaseService.BackupDatabase(path)).ConfigureAwait(true);
             Status = string.Format(CultureInfo.CurrentCulture, Strings["Settings.Files.BackupDone"], path);
         }
         catch (Exception ex)

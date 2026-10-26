@@ -240,50 +240,6 @@ internal static class CaptureMode
     public static bool Enabled => Path is not null;
 
 
-    private static bool _captureDatabasePrepared;
-
-    private static string CaptureDatabaseFile
-        => System.IO.Path.Join(System.IO.Path.GetTempPath(), "lunarward-capture", "capture.db");
-
-
-    /// <summary>
-    /// 自检用的独立数据库（<c>$TMP/lunarward-capture/capture.db</c>）：首次调用时删掉上一次的文件，
-    /// 这样 <c>--gacha-seed</c> 等自检的样例记录不会写进用户的
-    /// <c>~/.local/share/lunarward/LunarWardDatabase.db</c>；之后同进程内复用同一文件。
-    /// </summary>
-    public static LunarWard.Launch.Database.LunarWardDatabase CreateDatabase()
-    {
-        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(CaptureDatabaseFile)!);
-        if (!_captureDatabasePrepared)
-        {
-            // 连接池可能还握着上一次的文件句柄：先清池再删（含 -wal / -shm），否则新库会建在已删除的 inode 上。
-            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-            foreach (string suffix in new[] { "", "-wal", "-shm" })
-            {
-                if (File.Exists(CaptureDatabaseFile + suffix))
-                {
-                    File.Delete(CaptureDatabaseFile + suffix);
-                }
-            }
-            _captureDatabasePrepared = true;
-        }
-        return new LunarWard.Launch.Database.LunarWardDatabase(CaptureDatabaseFile);
-    }
-
-
-    /// <summary>千星奇域存档（自检时同样落到临时库）。</summary>
-    public static LunarWard.Launch.Database.GenshinBeyondGachaStore CreateBeyondStore()
-        => new(CreateDatabase());
-
-
-    /// <summary>
-    /// 页面/服务应使用的数据库文件：自检时是临时库，否则是用户数据目录下的
-    /// <c>LunarWardDatabase.db</c>。
-    /// </summary>
-    public static string ResolveDatabaseFile(string dataHome)
-        => Enabled ? CaptureDatabaseFile : System.IO.Path.Join(dataHome, LunarWard.Launch.Database.LunarWardDatabase.FileName);
-
-
     /// <summary>渲染窗口到 PNG 并退出。</summary>
     public static void Capture(Window window)
     {
