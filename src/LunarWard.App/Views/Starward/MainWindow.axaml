@@ -36,7 +36,7 @@
   -->
   <Border x:Name="RootBorder" CornerRadius="8" ClipToBounds="True"
           Background="#FF1E1E1E" BorderBrush="#1AFFFFFF" BorderThickness="1">
-  <dh:DialogHost x:Name="RootDialogHost" CloseOnClickAway="False" OverlayBackground="#66000000">
+  <dh:DialogHost x:Name="RootDialogHost" CloseOnClickAway="False" OverlayBackground="Transparent">
     <Grid RowDefinitions="48,*">
 
     <!-- 内容层：从 y=0 开始，被标题栏覆盖（背景铺满整窗，和 Starward 一致） -->
@@ -58,6 +58,24 @@
         <TextBlock Classes="icon" FontSize="10" Text="&#xE8BB;" />
       </Button>
     </StackPanel>
+
+    <!--
+      对话框遮罩。DialogHost 自带的 OverlayBackground 改成透明（隐藏时不会替我们跑过渡），
+      这层由 DialogService 在打开/关闭时拨 Opacity，做 180ms 淡入淡出；
+      关掉期间不参与命中，弹窗期间吃掉点击（不让点击穿到下面的页面/标题栏拖拽）。
+    -->
+    <Border x:Name="DialogScrim"
+            Grid.Row="0" Grid.RowSpan="2"
+            Background="#66000000"
+            Opacity="0"
+            IsHitTestVisible="False"
+            PointerPressed="OnDialogScrimPointerPressed">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </Border.Transitions>
+    </Border>
     </Grid>
   </dh:DialogHost>
   </Border>

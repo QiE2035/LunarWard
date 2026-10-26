@@ -1,11 +1,15 @@
 using System;
 using System.Linq;
 using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media.Transformation;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace LunarWard.App.Views.Starward.Controls;
@@ -164,6 +168,28 @@ public class StarwardContentDialog : ContentControl
     /// <summary>右上角 X（自检/焦点归还用）。</summary>
     private Button? _closeIconButton;
 
+    /// <summary>开场动画：160ms 淡入 + 从 0.96 轻微放大，等效 WinUI ContentDialog 的弹入。</summary>
+    private static readonly Transitions EntranceTransitions = new()
+    {
+        new DoubleTransition
+        {
+            Property = OpacityProperty,
+            Duration = TimeSpan.FromMilliseconds(160),
+            Easing = new CubicEaseOut(),
+        },
+        new TransformOperationsTransition
+        {
+            Property = RenderTransformProperty,
+            Duration = TimeSpan.FromMilliseconds(160),
+            Easing = new CubicEaseOut(),
+        },
+    };
+
+    private static readonly TransformOperations EntranceFrom = TransformOperations.Parse("scale(0.96)");
+    private static readonly TransformOperations EntranceTo = TransformOperations.Parse("scale(1)");
+
+    private bool _entrancePrepared;
+
 
     /// <summary>请求关闭当前对话框（X / ESC / 底部关闭按钮都走这里）。</summary>
     public void Close() => RequestClose();
@@ -264,6 +290,38 @@ public class StarwardContentDialog : ContentControl
         _primaryButton = e.NameScope.Find<Button>("PrimaryButton");
         _closeIconButton = e.NameScope.Find<Button>("CloseIconButton");
         UpdateChromeClasses();
+        PrepareEntrance();
+    }
+
+
+    /// <summary>
+    /// 把对话框先摆到「透明 + 缩小」的起始态（此时还不跑过渡，避免第一帧闪一下完整尺寸），
+    /// 下一次布局/整帧时再放开 Transitions 收到终态，就得到淡入 + 放大。
+    /// 只做一次：同一实例再次展示时直接以终态出现。
+    /// </summary>
+    private void PrepareEntrance()
+    {
+        if (_entrancePrepared)
+        {
+            return;
+        }
+
+        _entrancePrepared = true;
+        RenderTransformOrigin = RelativePoint.Center;
+
+        var transitions = Transitions;
+        Transitions = null;
+        Opacity = 0;
+        RenderTransform = EntranceFrom;
+        Transitions = transitions ?? EntranceTransitions;
+
+        Dispatcher.UIThread.Post(
+            () =>
+            {
+                Opacity = 1;
+                RenderTransform = EntranceTo;
+            },
+            DispatcherPriority.Loaded);
     }
 
 

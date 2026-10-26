@@ -63,8 +63,20 @@
     <Border Width="56" HorizontalAlignment="Left" Background="{StaticResource StarAcrylicBrush}" />
     <local:NavigationRail HorizontalAlignment="Left" VerticalAlignment="Stretch" />
 
-    <!-- ── 页面宿主（Starward MainView_Frame，Margin="0,48,0,0"） ── -->
-    <ContentPresenter x:Name="PageHost" Margin="56,48,0,0" />
+    <!--
+      ── 页面宿主（Starward MainView_Frame，Margin="0,48,0,0"） ──
+      页面切换的淡入 + 轻微上移：上游是 Frame 的默认转场，这里用 Transitions 做 180ms ease-out。
+      起始值（Opacity 0 / translateY 12）由 code-behind 在换页时同步写入再放开过渡，
+      这样新页面一定从「透明 + 略低」进场，而不是继承上一页已经落定的状态。
+    -->
+    <ContentPresenter x:Name="PageHost" Margin="56,48,0,0">
+      <ContentPresenter.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="CubicEaseOut" />
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </ContentPresenter.Transitions>
+    </ContentPresenter>
 
 
     <!--
@@ -83,12 +95,49 @@
       全屏 #80000000，内容 Padding 68,80,0,0；每款游戏一张 192×108 卡片，
       国服/国际服/B 站是卡片内的 Servers 条目（点卡片才弹 flyout）。
     -->
-    <Grid x:Name="GameSelectorOverlayCard" IsVisible="{Binding IsGameSelectorOpen}">
+    <!--
+      选择层的显隐不再直接用 IsVisible 硬切（Avalonia 隐藏时不会跑动画）：
+      整层常驻、默认 Opacity 0 + 不参与命中；打开时淡入、内容同时从 98.5% 略微放大到位，
+      关闭时淡出并立刻关掉命中，避免留网。见 StarwardShell.axaml.cs 的 OnGameSelectorVisibilityChanged。
+    -->
+    <Grid x:Name="GameSelectorOverlayCard" Opacity="0" IsHitTestVisible="False">
+      <Grid.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </Grid.Transitions>
 
       <Grid.Styles>
         <!-- 卡片悬停：遮罩淡入（源码 0.167s 的 Logo/IconAndName 交叉淡入） -->
         <Style Selector="Border.choice:pointerover Border.choiceHover">
           <Setter Property="Opacity" Value="1" />
+        </Style>
+
+        <!-- 卡片悬停时轻微放大（源码是 0.167s 的交叉淡入，这里用 1.03 的缩放进阶代替手写动画） -->
+        <Style Selector="Border.choice">
+          <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+          <Setter Property="Transitions">
+            <Transitions>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+            </Transitions>
+          </Setter>
+        </Style>
+        <Style Selector="Border.choice:pointerover">
+          <Setter Property="RenderTransform" Value="scale(1.03)" />
+        </Style>
+
+        <!-- 选择层内容：打开时从「下移 8、缩小到 98.5%」到位 -->
+        <Style Selector="Border.selector-content">
+          <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+          <Setter Property="RenderTransform" Value="translate(0px, 8px) scale(0.985)" />
+          <Setter Property="Transitions">
+            <Transitions>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+            </Transitions>
+          </Setter>
+        </Style>
+        <Style Selector="Border.selector-content.open">
+          <Setter Property="RenderTransform" Value="translate(0px, 0px) scale(1)" />
         </Style>
       </Grid.Styles>
 
@@ -96,7 +145,7 @@
       <Border Background="{StaticResource StarScrimBrush}" PointerPressed="OnGameSelectorScrimPressed" />
 
       <!-- Starward Border_FullBackground Padding="68,80,0,0" -->
-      <Border Padding="68,80,0,0">
+      <Border x:Name="GameSelectorContent" Classes="selector-content" Padding="68,80,0,0">
         <ScrollViewer VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalContentAlignment="Top">
@@ -355,6 +404,16 @@
           <Setter Property="CornerRadius" Value="8" />
           <Setter Property="BorderThickness" Value="0" />
           <Setter Property="Background" Value="Transparent" />
+          <!-- 悬停提亮靠 server-mask 淡出，这里再补一层 1.08 的轻微放大 -->
+          <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+          <Setter Property="Transitions">
+            <Transitions>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CubicEaseOut" />
+            </Transitions>
+          </Setter>
+        </Style>
+        <Style Selector="Button.server-icon:pointerover">
+          <Setter Property="RenderTransform" Value="scale(1.08)" />
         </Style>
         <Style Selector="Button.server-icon Border.server-mask">
           <Setter Property="Opacity" Value="1" />
