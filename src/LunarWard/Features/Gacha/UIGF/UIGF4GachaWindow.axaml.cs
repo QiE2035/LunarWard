@@ -220,7 +220,17 @@ public sealed partial class UIGF4GachaWindow : WindowEx, INotifyPropertyChanged
     // INotifyPropertyChanged，无法再套 Toolkit 的源生成器，因此手写与 SettingPageBase 相同的
     // SetProperty/OnPropertyChanged（docs/09）。
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    /// <summary>
+    /// Avalonia 的 <see cref="AvaloniaObject"/> 已实现 <see cref="INotifyPropertyChanged"/>，但只对其
+    /// AvaloniaProperty 发通知；本类的 CLR 属性走这里。用 <c>new</c> 隐藏基类事件，并把接口分发显式重映射过来。
+    /// </summary>
+    public new event PropertyChangedEventHandler? PropertyChanged;
+
+    event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
+    {
+        add => PropertyChanged += value;
+        remove => PropertyChanged -= value;
+    }
 
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

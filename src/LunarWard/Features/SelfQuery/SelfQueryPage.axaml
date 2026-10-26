@@ -1,0 +1,275 @@
+<fw:PageBase x:Class="LunarWard.Features.SelfQuery.SelfQueryPage"
+            xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:controls="using:LunarWard.Controls"
+            xmlns:fw="using:LunarWard.Frameworks"
+            xmlns:lang="using:LunarWard.Language"
+            xmlns:local="using:LunarWard.Features.SelfQuery"
+            xmlns:scs="using:LunarWard.Core.SelfQuery">
+
+    <fw:PageBase.Resources>
+        <local:SelfQueryStatsNumberConverter x:Key="SelfQueryStatsNumberConverter" />
+        <local:SelfQueryStatsNumberBrushConverter x:Key="SelfQueryStatsNumberBrushConverter" />
+    </fw:PageBase.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Margin="24,0,0,0"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   FontSize="20"
+                   FontWeight="Bold"
+                   Text="{x:Static lang:Lang.SelfQueryPage_AccountRecords}" />
+
+        <StackPanel Grid.ColumnSpan="2"
+                    Margin="0,0,24,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="16">
+            <ComboBox Name="ComboBox_Uid"
+                      MinWidth="140"
+                      VerticalAlignment="Center"
+                      ItemsSource="{Binding UidList}"
+                      SelectedItem="{Binding SelectUid, Mode=TwoWay}" />
+            <Button BorderThickness="0"
+                    Classes="accent"
+                    Command="{Binding InputURLCommand}"
+                    Content="{x:Static lang:Lang.GachaLogPage_InputURL}" />
+        </StackPanel>
+
+
+        <Grid Grid.Row="1"
+              Margin="28,0,28,8"
+              Padding="8"
+              Background="{StaticResource StarOverlayAcrylicBrush}"
+              CornerRadius="4"
+              IsVisible="{Binding QueryUserInfo, Converter={StaticResource ObjectToVisibilityConverter}}">
+            <controls:CachedImage Width="40"
+                                  Height="40"
+                                  Margin="4,0,0,0"
+                                  HorizontalAlignment="Left"
+                                  CornerRadius="20"
+                                  Source="{Binding GameIcon}" />
+            <StackPanel Margin="56,0,0,0"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                <TextBlock Text="{Binding QueryUserInfo.Nickname}" />
+                <TextBlock FontSize="12"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding QueryUserInfo.Uid}" />
+            </StackPanel>
+        </Grid>
+
+
+        <ListBox Grid.Row="2"
+                 Margin="24,0,24,0"
+                 ItemsSource="{Binding TypeStatsList}"
+                 SelectedItem="{Binding SelectTypeStats, Mode=TwoWay}">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Margin" Value="0,4,0,4" />
+                    <Setter Property="Padding" Value="4,0,4,0" />
+                </Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="8"
+                          Background="{StaticResource StarOverlayAcrylicBrush}"
+                          ColumnDefinitions="Auto,*,Auto"
+                          CornerRadius="4">
+                        <controls:CachedImage Width="40"
+                                              Height="40"
+                                              Source="{Binding Icon}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock HorizontalAlignment="Left"
+                                       FontSize="14"
+                                       Foreground="{StaticResource StarSuccessBrush}"
+                                       Text="{Binding Add, Converter={StaticResource SelfQueryStatsNumberConverter}}" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       FontSize="14"
+                                       Foreground="{StaticResource StarErrorBrush}"
+                                       Text="{Binding Sub, Converter={StaticResource SelfQueryStatsNumberConverter}}" />
+                        </StackPanel>
+                        <!-- 上游是 ProgressRing；Avalonia 无环形进度，用不确定态进度条替代（docs/09） -->
+                        <ProgressBar Grid.Column="2"
+                                     Width="24"
+                                     Height="4"
+                                     VerticalAlignment="Center"
+                                     IsIndeterminate="True"
+                                     IsVisible="{Binding IsUpdating}" />
+                        <TextBlock Grid.Column="2"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="12"
+                                   Foreground="{StaticResource StarTextSecondary}"
+                                   Text="{Binding Page}"
+                                   IsVisible="{Binding IsUpdating}" />
+                        <Button Name="Button_UpdateSelfQueryItems"
+                                Grid.Column="2"
+                                Width="32"
+                                Height="32"
+                                Padding="0"
+                                Classes="icon-button"
+                                Click="Button_UpdateSelfQueryItems_Click"
+                                IsVisible="{Binding !IsUpdating}">
+                            <TextBlock Classes="icon"
+                                       FontSize="16"
+                                       Text="&#xE895;" />
+                        </Button>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+
+        <Grid Grid.Row="1"
+              Grid.RowSpan="2"
+              Grid.Column="1"
+              RowDefinitions="Auto,*"
+              RowSpacing="12"
+              IsVisible="{Binding SelectTypeStats, Converter={StaticResource ObjectToVisibilityConverter}}">
+            <StackPanel Margin="20,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="24">
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="16"
+                           Text="{Binding SelectTypeStats.Name}" />
+                <ComboBox Width="120"
+                          ItemsSource="{Binding TypeStatsMonthList}"
+                          SelectedItem="{Binding SelectTypeStatsMonth, Mode=TwoWay}" />
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource StarSuccessBrush}"
+                           Text="{Binding MonthAddNum, Converter={StaticResource SelfQueryStatsNumberConverter}}" />
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource StarErrorBrush}"
+                           Text="{Binding MonthSubNum, Converter={StaticResource SelfQueryStatsNumberConverter}}" />
+                <Button Command="{Binding DeleteCurrentMonthDataCommand}" Content="{x:Static lang:Lang.SelfQueryPage_DeleteThisMonthSData}" />
+                <Button Command="{Binding UpdateAllQueryItemsCommand}" Content="{x:Static lang:Lang.SelfQueryPage_RetrieveAllData}" />
+            </StackPanel>
+            <ListBox Name="ListView_QueryItems_Genshin"
+                     Grid.Row="1"
+                     Padding="0,0,0,12"
+                     IsVisible="False"
+                     ItemsSource="{Binding GenshinQueryItemList}"
+                     SelectionMode="Single,AlwaysSelected">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="IsHitTestVisible" Value="False" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </ListBox.Styles>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <TextBlock Width="160"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource StarTextSecondary}"
+                                       Text="{Binding DateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                            <TextBlock Width="220"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding Reason}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Width="220"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding Name}"
+                                       IsVisible="{Binding Name, Converter={StaticResource ObjectToVisibilityConverter}}" />
+                            <TextBlock VerticalAlignment="Center"
+                                       Foreground="{Binding AddNum, Converter={StaticResource SelfQueryStatsNumberBrushConverter}}"
+                                       Text="{Binding AddNum, Converter={StaticResource SelfQueryStatsNumberConverter}}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <ListBox Name="ListView_QueryItems_StarRail"
+                     Grid.Row="1"
+                     Padding="0,0,0,12"
+                     IsVisible="False"
+                     ItemsSource="{Binding StarRailQueryItemList}"
+                     SelectionMode="Single,AlwaysSelected">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="IsHitTestVisible" Value="False" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </ListBox.Styles>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <TextBlock Width="160"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource StarTextSecondary}"
+                                       Text="{Binding Time, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                            <TextBlock Width="240"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding Action}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Width="220"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding EquipmentName}"
+                                       IsVisible="{Binding EquipmentName, Converter={StaticResource ObjectToVisibilityConverter}}" />
+                            <TextBlock Width="220"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding RelicName}"
+                                       IsVisible="{Binding RelicName, Converter={StaticResource ObjectToVisibilityConverter}}" />
+                            <TextBlock VerticalAlignment="Center"
+                                       Foreground="{Binding AddNum, Converter={StaticResource SelfQueryStatsNumberBrushConverter}}"
+                                       Text="{Binding AddNum, Converter={StaticResource SelfQueryStatsNumberConverter}}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <ListBox Name="ListView_QueryItems_ZZZ"
+                     Grid.Row="1"
+                     Padding="0,0,0,12"
+                     IsVisible="False"
+                     ItemsSource="{Binding ZZZQueryItemList}"
+                     SelectionMode="Single,AlwaysSelected">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="IsHitTestVisible" Value="False" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </ListBox.Styles>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <TextBlock Width="160"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource StarTextSecondary}"
+                                       Text="{Binding DateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                            <TextBlock Width="220"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding Reason}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Width="220"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding EquipName}"
+                                       IsVisible="{Binding EquipName, Converter={StaticResource WhiteSpaceStringToVisibilityConverter}}" />
+                            <TextBlock Width="220"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding WeaponName}"
+                                       IsVisible="{Binding WeaponName, Converter={StaticResource WhiteSpaceStringToVisibilityConverter}}" />
+                            <TextBlock VerticalAlignment="Center"
+                                       Foreground="{Binding AddNum, Converter={StaticResource SelfQueryStatsNumberBrushConverter}}"
+                                       Text="{Binding AddNum, Converter={StaticResource SelfQueryStatsNumberConverter}}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </Grid>
+
+
+    </Grid>
+</fw:PageBase>

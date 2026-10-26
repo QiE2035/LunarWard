@@ -1313,7 +1313,17 @@ public sealed partial class GachaLogPage : PageBase, INotifyPropertyChanged
 
     #region INotifyPropertyChanged
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    /// <summary>
+    /// Avalonia 的 <see cref="AvaloniaObject"/> 已实现 <see cref="INotifyPropertyChanged"/>，但只对其
+    /// AvaloniaProperty 发通知；本页的 CLR 属性走这里。用 <c>new</c> 隐藏基类事件，并把接口分发显式重映射过来。
+    /// </summary>
+    public new event PropertyChangedEventHandler? PropertyChanged;
+
+    event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
+    {
+        add => PropertyChanged += value;
+        remove => PropertyChanged -= value;
+    }
 
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
