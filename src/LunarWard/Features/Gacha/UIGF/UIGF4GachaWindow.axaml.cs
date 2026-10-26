@@ -50,7 +50,7 @@ public sealed partial class UIGF4GachaWindow : WindowEx, INotifyPropertyChanged
         Title = Lang.ToolboxSetting_GachaRecordsImportExport;
         if (!ShouldAppsUseDarkMode())
         {
-            RootGrid.RequestedThemeVariant = ThemeVariant.Light;
+            this.RequestedThemeVariant = ThemeVariant.Light;
         }
         // 上游：SystemBackdrop = new DesktopAcrylicBackdrop();（Avalonia 无等价 API，docs/09）
         AdaptTitleBarButtonColorToActuallTheme();

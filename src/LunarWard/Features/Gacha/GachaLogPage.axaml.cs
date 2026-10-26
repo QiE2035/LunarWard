@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -16,7 +17,10 @@ using LunarWard.Features.Gacha.UIGF;
 using LunarWard.Features.GameLauncher;
 using LunarWard.Features.GameRecord;
 using LunarWard.Frameworks;
+using LunarWard.Features.ViewHost;
 using LunarWard.Helpers;
+using LunarWard.Services;
+using LunarWard.Views.Starward.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

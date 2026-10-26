@@ -87,7 +87,7 @@ public sealed partial class ZZZGachaInfoWindow : WindowEx, INotifyPropertyChange
     private void InitializeWindow()
     {
         Title = Lang.ToolboxSetting_ZZZGachaItemImages;
-        RootGrid.RequestedThemeVariant = ShouldAppsUseDarkMode() ? ThemeVariant.Dark : ThemeVariant.Light;
+        this.RequestedThemeVariant = ShouldAppsUseDarkMode() ? ThemeVariant.Dark : ThemeVariant.Light;
         AdaptTitleBarButtonColorToActuallTheme();
         SetIcon();
     }

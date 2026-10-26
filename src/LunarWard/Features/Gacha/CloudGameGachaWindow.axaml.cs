@@ -39,11 +39,11 @@ public sealed partial class CloudGameGachaWindow : WindowEx
         // 上游：AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;（Avalonia 由窗口管理器绘制）
         if (ShouldAppsUseDarkMode())
         {
-            RootGrid.RequestedThemeVariant = ThemeVariant.Dark;
+            this.RequestedThemeVariant = ThemeVariant.Dark;
         }
         else
         {
-            RootGrid.RequestedThemeVariant = ThemeVariant.Light;
+            this.RequestedThemeVariant = ThemeVariant.Light;
         }
         AdaptTitleBarButtonColorToActuallTheme();
     }
