@@ -120,12 +120,11 @@ src/LunarWard/
 
 | 项 | 上游 | 现状 | 差距 |
 |---|---|---|---|
-| 工程数 | 7 | 8 | Language / Setup.Core / **RPC 均已建**（RPC 见 §8.1 已作废段）；Setup 以 Installer 等价；Launcher(C++) 以 Program.cs+.desktop 等价 |
-| 主程序文件 | 314 | 202 个同名落点 | 缺 112（见 §4.5）；本地独有 263 个待并入/删除（见 §7） |
+| 工程数 | 7 | 5 src + 3 tests | **一一对应**：`Starward`→`LunarWard`、`Starward.Core`→`LunarWard.Core`、`Starward.Language`→`LunarWard.Language`、`Starward.RPC`→`LunarWard.RPC`、`Starward.Setup.Core`→`LunarWard.Setup.Core`；`Starward.Setup` 以 `Features/GameInstall/Installer`（进程内）等价、`Starward.Launcher` 以 `Program.cs` + `.desktop` 等价（§8.2/§8.3） |
+| 主程序文件 | 314 | 308 同名落点 + **6 等价** | **0 缺失**（`check-alignment.py` PASS）；本地独有 118 个文件按平台层/等价物分类登记在 `docs/17-PLATFORM-LAYER.md` |
 
-已落地工程：`LunarWard.Core`、`LunarWard.Language`、`LunarWard.Setup.Core`、`LunarWard`（=上游 Starward）、
-`LunarWard.Launch`（启动期辅助，收尾时并入 `LunarWard`）、`LunarWard.Installer`（=上游 Starward.Setup 的 Avalonia 等价）、
-`LunarWard.Games`/`LunarWard.Platform`（Linux 平台抽象，收尾时并入 `LunarWard/Frameworks` 或删除）、`LunarWard.Wine`（本 goal 不碰）。
+非上游的 5 个工程（Launch/Games/Platform/Wine/Installer）已在 P6 折叠进 `LunarWard`（提交 06c0553、8d431f4、c5d4269、4221c97），
+类型与命名空间保持不变，文件位于 `src/LunarWard/{Launch,Platform,Wine}/` 与 `src/LunarWard/Features/GameInstall/Installer/`。
 
 ### 4.2 Core
 
@@ -149,13 +148,16 @@ src/LunarWard/
 
 ### 4.5 进度看板（同名落点/上游文件）
 
-| 分组 | 进度（2026-10-26 18:30 实测，`scripts/check-alignment.py`：**603/613 已落 + 7 等价 = 610，缺 3**） |
+| 项 | 读数（2026-10-26 20:10 实测） |
 |---|---|
-| 路径全齐（0 缺失）：GameRecord 47/47、Gacha 40/40、GameLauncher 26/26、Setting 25/25、PlayTime 14/14、Background 13/13、Converters 11/11、GameInstall 9/9、Codec 8/8、Update 8/8、GameSetting 7/7、GameAccount 5/5、SelfQuery 4/4、CloudGame 3/3、GamepadControl 3/3、UrlProtocol 3/3、Database 2/2、Frameworks 2/2、ViewHost 20/20（含 2 个等价：SystemTrayWindow 用 `TrayIcon`、`AccentColorHelper` 落在 Background）、Helpers 16/16（2 等价）、Screenshot 23/23、Controls 5/5、GameSelector 5/6、Overlay 2/4、AppConfig 4/4、App.xaml(.cs)、Program.cs、GameFeatureConfig、HoYoPlay、RPC | 路径基本全齐 |
-| 仍缺 3 个文件：`Features/GameSelector/NoAnimationImageExStyle.xaml`（→ launcher-port）、`Features/Overlay/OverlayWindow.xaml(.cs)`（→ dapper-db，抓屏 UI 收尾时落） | 收尾中 |
-| 编译收口：全量重建后 `dotnet build src/LunarWard/LunarWard.csproj --no-incremental` 错误从 3454 → **156**，仅剩 GameRecord 136（webview-webkit）+ GameLauncher 20（launcher-port） | 收尾中 |
+| 文件映射 | `python3 scripts/check-alignment.py`：**613 上游 = 606 同名落点 + 7 等价，missing 0，命名空间泄漏 0，PASS** |
+| 分树 | `src/Starward` 308/314（6 等价）、`src/Starward.Core` 248/248、`src/Starward.Language` 13/13、`src/Starward.Setup.Core` 11/11、`src/Starward.RPC` 26/27（1 等价：NamedPipe→Unix socket） |
+| 分组 | 全部 0 缺失：GameRecord 47、Gacha 40、GameLauncher 26、Setting 25、Screenshot 23、ViewHost 20（2 等价）、Helpers 16（2 等价）、PlayTime 14、Background 13、Converters 11、GameInstall 9、Codec 8、Update 8、GameSetting 7、GameSelector 6、GameAccount 5、Controls 5（2 等价）、Overlay 4、SelfQuery 4、CloudGame 3、GamepadControl 3、UrlProtocol 3、Database 2、Frameworks 2、AppConfig 4、App.xaml(.cs)、Program.cs、GameFeatureConfig、HoYoPlay、RPC |
+| 编译 | `dotnet build LunarWard.slnx` **0 错误**（252 警告全部为上游原样的 nullable/CA 风格警告） |
+| 测试 | `dotnet test tests/LunarWard.UnitTests` 614 项（AppStrings 相关 6 项随 task-22 删除）；`tests/LunarWard.Installer.UnitTests` 36/36；`tests/LunarWard.IntegrationTests` 26/27（1 项 flaky） |
+| 自检 | 17 页 `--screenshot` 全过（`launcher gacha beyond selfquery screenshot toolbox settings game-setting` + 9 个设置分页） |
 
-总览随时用 `python3 scripts/port-backlog.py` 重算（`--write` 写回 `docs/11-PORT-BACKLOG.md`）。
+总览随时用 `python3 scripts/port-backlog.py` 重算（`--write` 写回 `docs/11-PORT-BACKLOG.md`；其中「缺」包含等价项，以 `check-alignment.py` 为准）。
 注意：「有文件」只代表路径对齐，内容是否按上游实现要逐节核对。
 
 ## 5. 阶段计划
@@ -190,9 +192,9 @@ src/LunarWard/
 | 3 | `src/LunarWard/ViewModels/**`（含 `StarwardPage`/`PageContext` 体系） | 49 | 逻辑已并入上游 `.axaml.cs` |
 | 4 | `src/LunarWard/Services/**`（26 个） | 26 | 上游 `Features/*Service` + `AppConfig` |
 | 5 | `src/LunarWard/Views/**`、`ViewModels/**`、`AppServices.cs`（旧 UI 层整层） | 125+ | **已完成**：`Features/ViewHost/MainWindow+MainView` 成为唯一外壳；`App.axaml.cs` 重写为上游 `App.xaml.cs` 结构（`OnFrameworkInitializationCompleted` ≡ OnLaunched / `HandleStartupAsync` / `EnsureMainWindow` / `EnsureSystemTray` / `Exit`），`AppInstance`→`Frameworks/SingleInstance`，`Timer`→`DispatcherTimer`。提交 `675af80`、`8893576`、本步多个提交 |
-| 6 | `src/LunarWard.Launch/**`（69 个，含旧 Database/启动逻辑） | 69 | 并入 `LunarWard`（Features/GameLauncher、DatabaseService）——**进行中**：task-18（fold-projects）折叠 5 个非上游工程 |
-| 7 | `src/LunarWard.{Games,Platform,Wine,Installer}` | 4 工程 | 并入 `LunarWard`（同 task-18）；终态 `LunarWard.slnx` 只剩 app/Core/Language/RPC/Setup.Core |
-| 8 | `src/LunarWard/Localization/AppStrings.cs`、`Styles/Starward.axaml` 等本地独有层 | ~10 | `LunarWard.Language` + `Features/*` 样式 |
+| 6 | `src/LunarWard.Launch/**`（69 个，含旧 Database/启动逻辑） | 69 | **已完成**：Launch 折叠进 `src/LunarWard/Launch/`，旧 `Database/**` 16 个生产文件与 13 个孤儿测试删除（f394de9、2a9c6fe），调用点迁到 `Features/Database/DatabaseService` |
+| 7 | `src/LunarWard.{Games,Platform,Wine,Installer}` | 4 工程 | **已完成**：Games/Platform/Wine/Installer 折叠进 `src/LunarWard/{Wine,Platform}/` 与 `Features/GameInstall/Installer/`（06c0553…4221c97）；`LunarWard.slnx` = 5 src + 3 tests |
+| 8 | `src/LunarWard/Localization/AppStrings.cs`、`Styles/Starward.axaml` 等本地独有层 | ~10 | `LunarWard.Language` + `Features/*` 样式；`AppStrings` 删除进行中（task-22）。其余本地独有层按 `docs/17-PLATFORM-LAYER.md` 分类保留（平台层）或删除（门面） |
 
 删除前置条件：`scripts/check-alignment.py` 报告「本地独有文件数 = 已登记白名单」（脚本已落地，见 §6）。
 
@@ -202,7 +204,11 @@ src/LunarWard/
 - **启动骨架重写**：`App.axaml.cs` 现在与上游 `App.xaml.cs` 一一对应（见 §7 第 5 行），自检工具集中到文件末尾 `RunCaptureTooling`（`--screenshot`/`--page`），不再有旧壳分支、`LUNARWARD_LEGACY_SHELL`、`--window settings|account|dailynote`。
 - **`Program.cs`** 只保留上游 `Program.cs` 的职责 + 本仓库 CLI 工具（`--version/--help/--scan-games`）+ 自检参数解析；`rpc`/`startgame`/`playtime`/`lunarward://` 四类子命令回到 `App.HandleStartupAsync`（与上游一致）。
 - **验证**：新外壳下 17 个页面/设置分页截图自检全过（命令见 `docs/12-XAML-PORT-GUIDE.md` 与 `scripts/smoke-screenshots.sh`），单测 859/859。
-- 待办：`Services/**` 剩余文件的归属（`GameScanner`/`AppVersion`/`BackgroundService`/`VideoBackgroundPlayer`/`DialogService`/`GameAssets`/`ReleaseChecker`/`CaptureMode` 等），以及 task-18 的 5 工程折叠。
+- **五个非上游工程折叠完成**（task-18）：见 §7 第 6/7 行；`check-alignment.py` 的工程表 7/7 matched。
+- **旧数据层删除完成**：`Launch/Database/**`（旧手搓 store）、`Wine/GameAccountStore`、旧 `Launch/{Gacha*,Uigf4*,PlayTime*}` 共 16 个生产文件 + 13 个孤儿测试；`DatabaseService` 成为唯一入口。
+- **Linux 数据库加固补回**（a5c04a0）：上游在 Windows 下依赖目录 ACL，Linux 无等价物 → `DatabaseFilePermissions` 在打开连接后把主库与 WAL 侧车收紧到 0600。
+- **平台层账面**：新增 `docs/17-PLATFORM-LAYER.md` 逐类登记上游没有的 118 个文件（平台层/等价物/进程内化/本地扩展），本 goal 的「偏移」以此文件为唯一索引。
+- 待办：`AppStrings` 删除（task-22）、`AboutSetting` 更新路径统一（task-23）、抓屏回退链（dapper-db）、`Services/**` 剩余文件归属登记。
 
 
 ## 8. 开放决策（需 Lead 拍板，暂记）
