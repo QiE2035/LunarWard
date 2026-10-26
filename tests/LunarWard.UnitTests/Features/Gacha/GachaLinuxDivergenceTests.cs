@@ -114,14 +114,15 @@ public class GachaLinuxDivergenceTests
     /// using 别名消歧；两份都需要存在（Core 那份由 lead 登记为 endgame 删除项）。
     /// </summary>
     [Fact]
-    public void G6_BothSelfQueryServices_ExistAndAreDistinct()
+    public void G6_SelfQueryService_LivesInFeaturesOnly()
     {
+        // refactor(core) 150f5c8 删除了 Core 里本地独有的 SelfQueryService 副本，
+        // 只保留 Features 层这一份（与上游 Features/SelfQuery 对齐）；这里守住「唯一实现」不回流。
         Type? core = typeof(LunarWard.Core.GameBiz).Assembly.GetType("LunarWard.Core.SelfQuery.SelfQueryService");
         Type? feature = AppAssembly.GetType("LunarWard.Features.SelfQuery.SelfQueryService");
 
-        Assert.NotNull(core);
+        Assert.Null(core);
         Assert.NotNull(feature);
-        Assert.NotEqual(core, feature);
         Assert.Equal("LunarWard.Features.SelfQuery", feature.Namespace);
     }
 
