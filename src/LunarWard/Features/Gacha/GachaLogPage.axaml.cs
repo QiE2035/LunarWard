@@ -611,7 +611,7 @@ public sealed partial class GachaLogPage : PageBase, INotifyPropertyChanged
         {
             var uid = await _gachaLogService.GetUidFromGachaLogUrl(url);
             var cancelSource = new CancellationTokenSource();
-            ProgressToast? toast = ShowProgressToast(cancelSource);
+            GachaProgressToast? toast = ShowProgressToast(cancelSource);
             var progress = new Progress<string>((str) =>
             {
                 if (toast is not null)
@@ -711,7 +711,7 @@ public sealed partial class GachaLogPage : PageBase, INotifyPropertyChanged
             }
             _gameRecordService.SetLastSelectGachaSyncRole(roleGameBiz, role);
             var cancelSource = new CancellationTokenSource();
-            ProgressToast? toast = ShowProgressToast(cancelSource);
+            GachaProgressToast? toast = ShowProgressToast(cancelSource);
             var progress = new Progress<string>((str) =>
             {
                 if (toast is not null)
@@ -1213,97 +1213,15 @@ public sealed partial class GachaLogPage : PageBase, INotifyPropertyChanged
     }
 
 
-    /// <summary>
-    /// 上游 <c>InfoBar</c>（进度条 + 取消按钮）的等价物：一条带标题/消息/取消按钮的轻提示。
-    /// </summary>
-    private sealed class ProgressToast : Border
+    private GachaProgressToast? ShowProgressToast(CancellationTokenSource cancelSource)
     {
-        private readonly TextBlock _title = new() { FontWeight = FontWeight.SemiBold, IsVisible = false };
-        private readonly TextBlock _message = new() { TextWrapping = TextWrapping.Wrap };
-        private readonly Button _button;
-
-        public event EventHandler? CancelClicked;
-
-        public string? Title
-        {
-            get => _title.Text;
-            set
-            {
-                _title.Text = value;
-                _title.IsVisible = !string.IsNullOrWhiteSpace(value);
-            }
-        }
-
-        public string? Message
-        {
-            get => _message.Text;
-            set => _message.Text = value;
-        }
-
-        public ProgressToast(string cancelText)
-        {
-            Padding = new Thickness(12, 8);
-            CornerRadius = new CornerRadius(4);
-            Background = new SolidColorBrush(Color.Parse("#F52C2C2C"));
-            MinWidth = 280;
-            MaxWidth = 420;
-            _button = new Button { Content = cancelText, HorizontalAlignment = HorizontalAlignment.Right };
-            _button.Click += (_, _) => CancelClicked?.Invoke(this, EventArgs.Empty);
-            Child = new StackPanel
-            {
-                Spacing = 6,
-                Children =
-                {
-                    _title,
-                    _message,
-                    _button,
-                },
-            };
-        }
-
-        public void HideCancelButton() => _button.IsVisible = false;
+        return GachaProgressToast.Show(cancelSource);
     }
 
 
-    private ProgressToast? ShowProgressToast(CancellationTokenSource cancelSource)
+    private void CloseProgressToast(GachaProgressToast? toast, string? title, InfoBarSeverity severity)
     {
-        if (InAppToast.MainWindow is not { } host)
-        {
-            return null;
-        }
-        var toast = new ProgressToast(Lang.Common_Cancel);
-        toast.CancelClicked += (_, _) =>
-        {
-            cancelSource.Cancel();
-            // 操作已取消
-            toast.Message = Lang.GachaLogPage_OperationCanceled;
-            toast.HideCancelButton();
-        };
-        host.Children.Add(toast);
-        return toast;
-    }
-
-
-    private void CloseProgressToast(ProgressToast? toast, string? title, InfoBarSeverity severity)
-    {
-        if (toast is null)
-        {
-            if (severity == InfoBarSeverity.Success)
-            {
-                InAppToast.MainWindow?.Success(title);
-            }
-            return;
-        }
-        toast.Title = title;
-        toast.Message = null;
-        toast.HideCancelButton();
-        DispatcherTimer.RunOnce(() =>
-        {
-            if (InAppToast.MainWindow is { } host && host.Children.Contains(toast))
-            {
-                host.Children.Remove(toast);
-            }
-        }, TimeSpan.FromSeconds(5));
+        GachaProgressToast.Close(toast, title, severity);
     }
 
     #endregion
