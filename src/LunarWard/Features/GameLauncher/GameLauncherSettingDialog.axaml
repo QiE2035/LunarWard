@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<controls:StarwardContentDialog xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:LunarWard.Views.Starward.Controls"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.GameLauncher"
+             xmlns:sc="using:LunarWard.Controls"
+             x:Class="LunarWard.Features.GameLauncher.GameLauncherSettingDialog"
+             x:CompileBindings="False"
+             Background="{DynamicResource StarAcrylicBrush}"
+             BorderThickness="0"
+             CornerRadius="8">
+
+
+    <Grid Width="800"
+          Height="480"
+          Padding="24,24,24,0">
+
+
+        <Grid ColumnDefinitions="200,*">
+            <StackPanel Grid.Column="0"
+                        Spacing="0">
+                <TextBlock Margin="16,0,0,8"
+                           FontSize="20"
+                           Foreground="{DynamicResource StarTextSecondary}"
+                           Text="{x:Static lang:Lang.LauncherPage_GameSetting}" />
+                <!-- NavigationView → ListBox（Avalonia 无 NavigationView） -->
+                <ListBox x:Name="ListBox_Settings"
+                         Background="Transparent"
+                         SelectionChanged="ListBox_Settings_SelectionChanged">
+                    <ListBoxItem Content="{x:Static lang:Lang.GameLauncherSettingDialog_BasicInformation}" Tag="0" IsSelected="True" />
+                    <ListBoxItem Content="{x:Static lang:Lang.GameLauncherSettingDialog_StartupArguments}" Tag="1" />
+                    <ListBoxItem Content="{x:Static lang:Lang.GameLauncherSettingDialog_CustomBackground}" Tag="2" />
+                    <ListBoxItem Content="{x:Static lang:Lang.GameLauncherSettingDialog_GamePackages}" Tag="3" />
+                </ListBox>
+            </StackPanel>
+
+<Carousel x:Name="FlipView_Settings"
+                      Grid.Column="1"
+                      Margin="24,24,0,0"
+                      Background="Transparent"
+                      Loaded="FlipView_Settings_Loaded">
+
+                <!--  基本信息  -->
+                <Border>
+                    <StackPanel Spacing="12">
+
+                        <Grid ColumnSpacing="20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <!--  游戏图标  -->
+                            <Grid Width="40"
+                                  Height="40"
+                                  CornerRadius="8">
+                                <Image Width="40"
+                                                Height="40"
+                                                Source="{Binding CurrentGameBizIcon.GameIcon, FallbackValue={x:Null}}" />
+                                <Image Width="20"
+                                                Height="20"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Bottom"
+                                                Source="{Binding CurrentGameBizIcon.ServerIcon, FallbackValue={x:Null}}" />
+                            </Grid>
+                            <!--  游戏名  -->
+                            <TextBlock Grid.Column="1"
+                                       VerticalAlignment="Center"
+                                       FontSize="16"
+                                       Text="{Binding CurrentGameBizIcon.GameName}" />
+                            <!--  定位游戏  -->
+                            <Button Grid.Column="2"
+                                    Height="36"
+                                    Command="{Binding LocateGameCommand}"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding InstallPath, Converter={StaticResource ObjectToVisibilityReversedConverter}}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Width="20"
+                                              Height="20"
+                                              Foreground="{DynamicResource StarTextSecondary}"
+                                              Classes="icon" Text="&#xE838;" />
+                                    <TextBlock Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.InstallGameDialog_LocateGame}" />
+                                </StackPanel>
+                            </Button>
+                            <!--  卸载游戏  -->
+                            <Button Grid.Column="2"
+                                    Height="36"
+                                    Command="{Binding ShowUninstallGameWarningCommand}"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding UninstallAndRepairEnabled}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Width="20"
+                                              Height="20"
+                                              Foreground="{DynamicResource StarTextSecondary}"
+                                              Classes="icon" Text="&#xE74D;" />
+                                    <TextBlock Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.LauncherPage_UninstallGame}" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <!--  网络驱动器警告  -->
+                        <TextBlock x:Name="TextBlock_NetworkDriveWarning"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource StarCautionBrush}"
+                                   Text="{x:Static lang:Lang.InstallGameDialog_MappedNetworkDrivesAreNotSupportedPleaseUseANetworkSharePathStartingWithDoubleBackslashes}"
+                                   TextWrapping="Wrap"
+                                   IsVisible="False" />
+
+                        <!--  卸载警告  -->
+                        <Grid x:Name="Grid_UninstallWarning"
+                              ColumnSpacing="12"
+                              IsVisible="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource StarCautionBrush}"
+                                       Text="{x:Static lang:Lang.GameLauncherSettingDialog_UninstallGameWarning}"
+                                       TextWrapping="Wrap" />
+                            <Button Grid.Column="1" Command="{Binding UninstallGameCommand}">
+                                <TextBlock Foreground="{DynamicResource StarErrorBrush}" Text="{x:Static lang:Lang.GameLauncherSettingDialog_ConfirmUninstall}" />
+                            </Button>
+                        </Grid>
+
+                        <!--  卸载错误  -->
+                        <TextBlock FontSize="12"
+                                   Foreground="{DynamicResource StarErrorBrush}"
+                                   Text="{Binding UninstallError}"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding UninstallError, Converter={StaticResource ObjectToVisibilityConverter}}" />
+
+
+                        <!--  游戏安装位置  -->
+                        <Grid Height="40"
+                              CornerRadius="8"
+                              IsVisible="{Binding InstallPath, Converter={StaticResource ObjectToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Height="40"
+                                    Padding="0"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    BorderThickness="0"
+                                    Command="{Binding OpenInstalGameFolderCommand}"
+                                    CornerRadius="0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Margin="16,0,16,1"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource StarTextSecondary}"
+                                               MaxLines="2"
+                                               Text="{Binding InstallPath}"
+                                               TextTrimming="CharacterEllipsis"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Grid.Column="1"
+                                              Margin="16,0,16,0"
+                                              FontSize="14"
+                                              Foreground="{DynamicResource StarTextSecondary}"
+                                              Classes="icon" Text="&#xE8A7;" />
+                                </Grid>
+                            </Button>
+                            <Button Grid.Column="1"
+                                    Width="40"
+                                    Height="40"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    Command="{Binding DeleteGameInstllPathCommand}"
+                                    CornerRadius="0">
+                                <TextBlock FontSize="14"
+                                          Foreground="{DynamicResource StarTextSecondary}"
+                                          Classes="icon" Text="&#xE711;" />
+                            </Button>
+                        </Grid>
+
+                        <!--  一些操作  -->
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <!--  游戏大小  -->
+                            <Button Height="36"
+                                    CornerRadius="8"
+                                    Foreground="{DynamicResource StarTextSecondary}"
+                                    IsEnabled="False"
+                                    IsVisible="{Binding GameSize, Converter={StaticResource ObjectToVisibilityConverter}}">
+                                <TextBlock>
+                                    <Run Text="{x:Static lang:Lang.GameLauncherSettingDialog_Size}" />
+                                    <Run Text="" />
+                                    <Run Text="{Binding GameSize}" />
+                                </TextBlock>
+                            </Button>
+                            <!--  重新定位  -->
+                            <Button Height="36"
+                                    Command="{Binding LocateGameCommand}"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding InstallPath, Converter={StaticResource ObjectToVisibilityConverter}}">
+                                <TextBlock Foreground="{DynamicResource AccentStarTextPrimary}" Text="{x:Static lang:Lang.GameLauncherSettingDialog_RelocateGame}" />
+                            </Button>
+                            <!--  修复游戏  -->
+                            <Button x:Name="Button_RepairGame"
+                                    Height="36"
+                                    Command="{Binding RepairGameCommand}"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding UninstallAndRepairEnabled}">
+                                <TextBlock Foreground="{DynamicResource AccentStarTextPrimary}" Text="{x:Static lang:Lang.LauncherPage_RepairGame}" />
+                            </Button>
+                            <!--  开始修复  -->
+                            <Button x:Name="Button_StartRepairing"
+                                    BorderThickness="0"
+                                    Command="{Binding RepairGameCommand}"
+                                    Content="{x:Static lang:Lang.GameLauncherSettingDialog_StartRepairing}"
+                                    IsEnabled="{Binding CanRepairGame}"
+                                    IsVisible="False" />
+                        </StackPanel>
+
+                        <!--  选择语音包  -->
+                        <StackPanel x:Name="Segmented_SelectLanguage"
+                                    Orientation="Horizontal"
+                                    Spacing="8"
+                                    IsVisible="False">
+                            <ToggleButton x:Name="SegmentedItem_Chinese"
+                                                   Content="{x:Static lang:Lang.Language_Chinese}"
+                                                   Tag="zh-cn"
+                                                   IsCheckedChanged="Segmented_SelectLanguage_SelectionChanged" />
+                            <ToggleButton x:Name="SegmentedItem_English"
+                                                   Content="{x:Static lang:Lang.Language_English}"
+                                                   Tag="en-us"
+                                                   IsCheckedChanged="Segmented_SelectLanguage_SelectionChanged" />
+                            <ToggleButton x:Name="SegmentedItem_Japanese"
+                                                   Content="{x:Static lang:Lang.Language_Japanese}"
+                                                   Tag="ja-jp"
+                                                   IsCheckedChanged="Segmented_SelectLanguage_SelectionChanged" />
+                            <ToggleButton x:Name="SegmentedItem_Korean"
+                                                   Content="{x:Static lang:Lang.Language_Korean}"
+                                                   Tag="ko-kr"
+                                                   IsCheckedChanged="Segmented_SelectLanguage_SelectionChanged" />
+                        </StackPanel>
+
+
+                        <!--  显示游戏通知  -->
+                        <ToggleSwitch IsOn="{Binding EnableBannerAndPost, Mode=TwoWay}"
+                                      OffContent="{x:Static lang:Lang.LauncherPage_ShowGameAnnouncement}"
+                                      OnContent="{x:Static lang:Lang.LauncherPage_ShowGameAnnouncement}" />
+
+                        <!--  禁用通知红点提醒  -->
+                        <ToggleSwitch Margin="0,-12,0,0"
+                                      IsEnabled="{Binding EnableBannerAndPost}"
+                                      IsOn="{Binding DisableGameNoticeRedHot, Mode=TwoWay}"
+                                      OffContent="{x:Static lang:Lang.ExperienceSettingPage_DisableRedDotReminderForGameNotices}"
+                                      OnContent="{x:Static lang:Lang.ExperienceSettingPage_DisableRedDotReminderForGameNotices}" />
+
+                        <!--  使用 CMD 启动游戏  -->
+                        <StackPanel Margin="0,-12,0,0"
+                                    Orientation="Horizontal"
+                                    Spacing="8">
+                            <ToggleSwitch IsOn="{Binding StartGameWithCMD, Mode=TwoWay}"
+                                          OffContent="{x:Static lang:Lang.GameLauncherSettingDialog_LaunchGameUsingCMD}"
+                                          OnContent="{x:Static lang:Lang.GameLauncherSettingDialog_LaunchGameUsingCMD}" />
+                            <Button Margin="0,2,0,0"
+                                    Padding="4"
+                                    VerticalAlignment="Center">
+                                <TextBlock FontSize="16"
+                                          Foreground="{DynamicResource StarTextSecondary}"
+                                          Classes="icon" Text="&#xE9CE;" />
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <StackPanel MaxWidth="380" Spacing="4">
+                                            <TextBlock TextWrapping="Wrap" Text="{x:Static lang:Lang.GameLauncherSettingDialog_AvoidShowingAlertsAboutDetectingIllegalToolInTheGame}" />
+                                            <Button Classes="link" Padding="0" FontSize="12" Tag="https://github.com/Scighost/Starward/issues/1634" Click="Hyperlink_Navigate_Click" Content="#1634" />
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Border>
+
+                <!--  启动参数  -->
+                <Border>
+                    <StackPanel Spacing="12">
+
+                        <TextBlock Text="{x:Static lang:Lang.GameLauncherSettingDialog_CommandLineArgument}" />
+
+                        <!--  命令行参数  -->
+                        <TextBox MinWidth="320"
+                                 HorizontalAlignment="Left"
+                                 IsSpellCheckEnabled="False"
+                                 Text="{Binding StartGameArgument, Mode=TwoWay}"
+                                 TextWrapping="Wrap" />
+                        <Button Classes="link" Padding="0" FontSize="12" Tag="https://docs.unity3d.com/Manual/PlayerCommandLineArguments.html" Click="Hyperlink_Navigate_Click" Content="{x:Static lang:Lang.GameLauncherSettingDialog_SeeMoreInformationAboutCommandLineArgument}" />
+
+                        <!--  游戏启动后  -->
+                        <TextBlock Margin="0,12,0,0" Text="{x:Static lang:Lang.ExperienceSettingPage_AfterStartingGame}" />
+                        <ComboBox Name="ComboBox_AfterStartGameAction"
+                                  Height="36"
+                                  MinWidth="280"
+                                  Padding="18.5,0,0,0"
+                                  BorderThickness="0"
+                                  CornerRadius="8"
+                                  SelectedIndex="{Binding StartGameAction, Mode=TwoWay}">
+                            <ComboBoxItem Content="{x:Static lang:Lang.ExperienceSettingPage_DoNothing}" Tag="{Binding local:StartGameAction.DoNothing}" />
+                            <ComboBoxItem Content="{x:Static lang:Lang.ExperienceSettingPage_MinimizeToTaskbar}" Tag="{Binding local:StartGameAction.Minimize}" />
+                            <ComboBoxItem Content="{x:Static lang:Lang.ExperienceSettingPage_MinimizeToSystemTray}" Tag="{Binding local:StartGameAction.Hide}" />
+                        </ComboBox>
+
+                        <!--  自定义启动程序  -->
+                        <ToggleSwitch Margin="0,4,0,-4"
+                                      FontSize="14"
+                                      IsOn="{Binding EnableThirdPartyTool, Mode=TwoWay}"
+                                      OffContent="{x:Static lang:Lang.LauncherPage_CustomStartExecutable}"
+                                      OnContent="{x:Static lang:Lang.LauncherPage_CustomStartExecutable}" />
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Button Height="36"
+                                    BorderThickness="0"
+                                    Command="{Binding ChangeThirdPartyPathCommand}"
+                                    CornerRadius="8"
+                                    IsEnabled="{Binding EnableThirdPartyTool}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Classes="icon" Text="&#xE7FC;" />
+                                    <TextBlock Text="{x:Static lang:Lang.Common_Select}" />
+                                </StackPanel>
+                            </Button>
+                            <Grid Grid.Column="1"
+                                  Height="36"
+                                  HorizontalAlignment="Left"
+                                  CornerRadius="8"
+                                  IsVisible="{Binding ThirdPartyToolPath, Converter={StaticResource ObjectToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <!--  打开自定义启动程序路径  -->
+                                <Button Height="36"
+                                        Padding="16,0,8,1"
+                                        BorderThickness="0"
+                                        Command="{Binding OpenThirdPartyToolFolderCommand}"
+                                        CornerRadius="0">
+                                    <TextBlock VerticalAlignment="Center"
+                                               Foreground="{DynamicResource StarTextSecondary}"
+                                               MaxLines="2"
+                                               Text="{Binding ThirdPartyToolPath}"
+                                               TextTrimming="CharacterEllipsis"
+                                               TextWrapping="Wrap" />
+                                </Button>
+                                <!--  删除自定义启动程序设置  -->
+                                <Button Grid.Column="1"
+                                        Height="36"
+                                        BorderThickness="0"
+                                        Command="{Binding DeleteThirdPartyToolPathCommand}"
+                                        CornerRadius="0">
+                                    <TextBlock Margin="0,2,2,0"
+                                              FontSize="16"
+                                              Foreground="{DynamicResource StarTextSecondary}"
+                                              Classes="icon" Text="&#xE711;" />
+                                </Button>
+                            </Grid>
+                        </Grid>
+
+                    </StackPanel>
+                </Border>
+
+                <!--  自定义背景  -->
+                <Border>
+                    <StackPanel Spacing="12">
+                        <!--  自定义背景  -->
+                        <ToggleSwitch Margin="0,0,0,-8"
+                                      IsOn="{Binding EnableCustomBg, Mode=TwoWay}"
+                                      OffContent="{x:Static lang:Lang.SettingPage_CustomBackgroundSupportVideo}"
+                                      OnContent="{x:Static lang:Lang.SettingPage_CustomBackgroundSupportVideo}" />
+                        <!--  请选择像素大小与应用窗口相匹配的图片，较大的图片会降低性能。  -->
+                        <TextBlock FontSize="12"
+                                   Foreground="{DynamicResource StarTextSecondary}"
+                                   Text="{x:Static lang:Lang.SettingPage_BgSizeTip}"
+                                   TextWrapping="Wrap" />
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <!--  选择  -->
+                            <Button Height="36"
+                                    BorderThickness="0"
+                                    Command="{Binding ChangeCustomBgCommand}"
+                                    CornerRadius="8"
+                                    IsEnabled="{Binding EnableCustomBg}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Classes="icon" Text="&#xE91B;" />
+                                    <TextBlock Text="{x:Static lang:Lang.Common_Select}" />
+                                </StackPanel>
+                            </Button>
+                            <Grid Grid.Column="1"
+                                  Height="36"
+                                  HorizontalAlignment="Left"
+                                  CornerRadius="8"
+                                  IsVisible="{Binding CustomBg, Converter={StaticResource ObjectToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button Height="36"
+                                        BorderThickness="0"
+                                        Command="{Binding OpenCustomBgCommand}"
+                                        CornerRadius="0">
+                                    <TextBlock VerticalAlignment="Center"
+                                               Foreground="{DynamicResource StarTextSecondary}"
+                                               MaxLines="2"
+                                               Text="{Binding CustomBg}"
+                                               TextTrimming="CharacterEllipsis"
+                                               TextWrapping="Wrap" />
+                                </Button>
+                                <Button Grid.Column="1"
+                                        Height="36"
+                                        BorderThickness="0"
+                                        Command="{Binding DeleteCustomBgCommand}"
+                                        CornerRadius="0">
+                                    <TextBlock Margin="0,2,2,0"
+                                              FontSize="16"
+                                              Foreground="{DynamicResource StarTextSecondary}"
+                                              Classes="icon" Text="&#xE711;" />
+                                </Button>
+                            </Grid>
+                        </Grid>
+
+                        <!--  音量  -->
+                        <Grid Margin="0,-4,0,-8"
+                              ColumnSpacing="12"
+                              IsVisible="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Button Width="32"
+                                    Height="32"
+                                    Padding="0"
+                                    Command="{Binding MuteCommand}">
+                                <Grid>
+                                    <TextBlock FontSize="16"
+                                              Foreground="{DynamicResource ButtonPointerOverBackgroundThemeBrush}"
+                                              Classes="icon" Text="&#xE767;" />
+                                    <FontIcon FontSize="16" Glyph="{Binding VideoBgVolumeButtonIcon}" />
+                                </Grid>
+                            </Button>
+                            <Slider Grid.Column="1"
+                                    Width="200"
+                                    HorizontalAlignment="Left"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding VideoBgVolume, Mode=TwoWay}" />
+                        </Grid>
+
+                        <!--  错误提示  -->
+                        <TextBlock Margin="0,0,0,-12"
+                                   Foreground="{DynamicResource StarErrorBrush}"
+                                   Text="{Binding ChangeBgError}"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding ChangeBgError, Converter={StaticResource ObjectToVisibilityConverter}}" />
+
+                        <!--  拖放区域  -->
+                        <Grid x:Name="Grid_BackgroundDragIn"
+                              Height="140"
+                              Margin="0,12,0,0"
+                              AllowDrop="True"
+                              Background="Transparent"
+                              DragOver="Grid_BackgroundDragIn_DragOver"
+                              Drop="Grid_BackgroundDragIn_Drop">
+                            <Rectangle HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Stretch"
+                                       RadiusX="8"
+                                       RadiusY="8"
+                                       Stroke="{DynamicResource TextFillColorTertiaryBrush}"
+                                       StrokeDashArray="4,2"
+                                       StrokeThickness="2" />
+
+                            <StackPanel HorizontalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="12">
+                                <TextBlock FontSize="24"
+                                          Foreground="{DynamicResource StarTextSecondary}"
+                                          Classes="icon" Text="&#xE91B;" />
+                                <TextBlock VerticalAlignment="Center"
+                                           FontSize="16"
+                                           Foreground="{DynamicResource StarTextSecondary}"
+                                           Text="{x:Static lang:Lang.GameLauncherSettingDialog_DragAndDropImageOrVideoFiles}" />
+                            </StackPanel>
+                        </Grid>
+
+                    </StackPanel>
+                </Border>
+
+                <!--  游戏包体  -->
+                <Border>
+                    <Pivot>
+
+                        <Pivot.Resources>
+                            <Thickness x:Key="PivotItemMargin">0,8,0,0</Thickness>
+                            <Thickness x:Key="PivotHeaderItemMargin">0,0,24,0</Thickness>
+                            <Style BasedOn="{StaticResource DefaultPivotHeaderItemStyle}" TargetType="PivotHeaderItem">
+                                <Setter Property="Height" Value="28" />
+                                <Setter Property="FontSize" Value="16" />
+                                <Setter Property="VerticalContentAlignment" Value="Top" />
+                            </Style>
+                        </Pivot.Resources>
+
+                        <!--  正式版  -->
+                        <PivotItem Margin="0,-8,0,0">
+                            <PivotItem.Header>
+                                <TextBlock>
+                                    <Run Text="{x:Static lang:Lang.GameResourcePage_LatestVersion}" />
+                                    <Run Text="" />
+                                    <Run Text="{Binding LatestVersion}" />
+                                </TextBlock>
+                            </PivotItem.Header>
+                            <ScrollViewer>
+                                <ItemsControl Margin="0,0,8,0"
+                                              ItemTemplate="{StaticResource PackageGroupsDataTemplate}"
+                                              ItemsSource="{Binding LatestPackageGroups}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Spacing="8" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </PivotItem>
+
+                        <!--  预下载  -->
+                        <PivotItem Margin="0,-8,0,0">
+                            <PivotItem.Header>
+                                <TextBlock>
+                                    <Run Text="{x:Static lang:Lang.LauncherPage_PreInstall}" />
+                                    <Run Text="" />
+                                    <Run Text="{Binding PreInstallVersion}" />
+                                </TextBlock>
+                            </PivotItem.Header>
+                            <ScrollViewer>
+                                <ItemsControl Margin="0,0,8,0"
+                                              ItemTemplate="{StaticResource PackageGroupsDataTemplate}"
+                                              ItemsSource="{Binding PreInstallPackageGroups}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Spacing="8" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </PivotItem>
+
+                    </Pivot>
+                </Border>
+
+            </Carousel>
+
+
+
+
+
+
+
+
+
+        </Grid>
+
+
+
+
+
+
+        <!--  Close Button  -->
+        <Button Width="32"
+                Height="32"
+                Margin="-20"
+                Padding="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                BorderThickness="0"
+                Command="{Binding CloseCommand}"
+                CornerRadius="8">
+            <TextBlock FontSize="16"
+                      Foreground="{DynamicResource StarTextSecondary}"
+                      Classes="icon" Text="&#xE711;"
+                       />
+        </Button>
+
+
+    </Grid>
+
+</controls:StarwardContentDialog>
