@@ -1,7 +1,7 @@
 using System.Text.Json;
 using LunarWard.Launch.Database;
 
-namespace LunarWard.Games;
+namespace LunarWard.Wine;
 
 /// <summary>
 /// 已保存游戏账号的 SQLite 存储（对应上游 <c>GameAccount</c> 表 +

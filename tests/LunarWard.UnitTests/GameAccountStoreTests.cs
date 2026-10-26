@@ -1,4 +1,4 @@
-using LunarWard.Games;
+using LunarWard.Wine;
 using LunarWard.Launch.Database;
 using LunarWard.Platform;
 using Xunit;

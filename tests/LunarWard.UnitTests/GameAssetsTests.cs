@@ -1,5 +1,5 @@
 using LunarWard.Services;
-using LunarWard.Games;
+using LunarWard.Features.GameLauncher;
 using Xunit;
 
 namespace LunarWard.UnitTests;

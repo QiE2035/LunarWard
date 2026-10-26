@@ -2,7 +2,6 @@
   <Folder Name="/src/">
     <Project Path="src/LunarWard/LunarWard.csproj" />
     <Project Path="src/LunarWard.Core/LunarWard.Core.csproj" />
-    <Project Path="src/LunarWard.Games/LunarWard.Games.csproj" />
     <Project Path="src/LunarWard.Language/LunarWard.Language.csproj" />
     <Project Path="src/LunarWard.Installer/LunarWard.Installer.csproj" />
     <Project Path="src/LunarWard.Launch/LunarWard.Launch.csproj" />

@@ -1,4 +1,4 @@
-namespace LunarWard.Games;
+namespace LunarWard.Features.GameLauncher;
 
 /// <summary>
 /// 渠道前置条件校验结果。

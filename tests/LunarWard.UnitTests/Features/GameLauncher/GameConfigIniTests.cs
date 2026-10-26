@@ -1,5 +1,5 @@
 using LunarWard.Features.GameLauncher;
-using LunarWard.Games;
+using LunarWard.Features.GameLauncher;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 

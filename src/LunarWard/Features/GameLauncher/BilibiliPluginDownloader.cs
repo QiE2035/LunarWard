@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using LunarWard.Platform;
 
-namespace LunarWard.Games;
+namespace LunarWard.Features.GameLauncher;
 
 /// <summary>
 /// 下载并安装 B 站渠道的 <c>PCGameSDK.dll</c>。

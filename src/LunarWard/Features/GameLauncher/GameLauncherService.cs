@@ -4,6 +4,7 @@ using LunarWard.Features.GameSetting;
 using LunarWard.Features.HoYoPlay;
 using LunarWard.Helpers;
 using LunarWard.Platform;
+using LunarWard.Wine;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
@@ -408,7 +409,7 @@ internal partial class GameLauncherService
     /// <remarks>
     /// 环境注入与 <see cref="LunarWard.Launch.LaunchPlanFactory"/> 的 Baseline 层保持一致
     /// （<c>WINEPREFIX</c>/<c>WINEARCH</c>/<c>WINEDLLOVERRIDES</c>），并补上游在 Windows 上由系统承担、
-    /// 在 Linux 上必须由 DXVK/VKD3D 承担的 DX12 变量（仅 ZZZ，见 <see cref="LunarWard.Games.GameAdapter.BuildEnv"/>）。
+    /// 在 Linux 上必须由 DXVK/VKD3D 承担的 DX12 变量（仅 ZZZ，见 <see cref="GameAdapter.BuildEnv"/>）。
     /// </remarks>
     /// <remarks>
     /// 声明为 <c>public</c> 是本移植的可测缝：单测直接断言 wine 路径、命令行字符串与环境注入，
@@ -444,11 +445,11 @@ internal partial class GameLauncherService
                 // GameBiz.Game 用上游的 hk4e/nap 口径，GameAdapter 用 GameCatalog 的 genshin/zzz 口径。
                 string gameKind = gameId.GameBiz.Game switch
                 {
-                    "hk4e" => LunarWard.Games.GameCatalog.Genshin,
-                    "nap" => LunarWard.Games.GameCatalog.Zzz,
+                    "hk4e" => GameCatalog.Genshin,
+                    "nap" => GameCatalog.Zzz,
                     var other => other,
                 };
-                var adapter = LunarWard.Games.GameAdapter.BuildEnv(
+                var adapter = GameAdapter.BuildEnv(
                     gameKind: gameKind,
                     wineWayland: false,
                     timeoutFix: false,

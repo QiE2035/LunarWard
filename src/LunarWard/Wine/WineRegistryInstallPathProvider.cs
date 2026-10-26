@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using LunarWard.Core;
 
-namespace LunarWard.Games;
+namespace LunarWard.Wine;
 
 /// <summary>
 /// Linux 侧的 <see cref="IGameInstallPathProvider"/>：从 Wine prefix 的

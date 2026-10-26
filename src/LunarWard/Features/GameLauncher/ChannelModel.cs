@@ -1,4 +1,4 @@
-namespace LunarWard.Games;
+namespace LunarWard.Features.GameLauncher;
 
 /// <summary>
 /// 渠道（区服）。本项目只暴露官方国服与 Bilibili；

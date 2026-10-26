@@ -1,6 +1,7 @@
-using LunarWard.Wine;
 
-namespace LunarWard.Games;
+using LunarWard.Features.GameLauncher;
+
+namespace LunarWard.Wine;
 
 /// <summary>
 /// 游戏适配器（层 8）的输出：游戏特化的环境变量与启动参数。

@@ -1,6 +1,6 @@
 using Dapper;
 using LunarWard.Core;
-using LunarWard.Games;
+using LunarWard.Wine;
 using LunarWard.Features.Database;
 using Microsoft.Extensions.Logging;
 

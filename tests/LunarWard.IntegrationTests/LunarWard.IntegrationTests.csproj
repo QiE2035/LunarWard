@@ -12,7 +12,6 @@
     <ProjectReference Include="..\..\src\LunarWard.Platform\LunarWard.Platform.csproj" />
     <ProjectReference Include="..\..\src\LunarWard.Wine\LunarWard.Wine.csproj" />
     <ProjectReference Include="..\..\src\LunarWard.Launch\LunarWard.Launch.csproj" />
-    <ProjectReference Include="..\..\src\LunarWard.Games\LunarWard.Games.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="native\fakeproc.c" CopyToOutputDirectory="PreserveNewest" />

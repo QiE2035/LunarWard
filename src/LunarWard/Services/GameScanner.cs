@@ -1,5 +1,5 @@
 using System.Text.Json;
-using LunarWard.Games;
+using LunarWard.Features.GameLauncher;
 using LunarWard.Platform;
 
 namespace LunarWard.Services;

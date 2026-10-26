@@ -1,4 +1,4 @@
-using LunarWard.Games;
+using LunarWard.Features.GameLauncher;
 
 namespace LunarWard.Services;
 

@@ -1,6 +1,6 @@
 using LunarWard.ViewModels;
 using LunarWard.ViewModels.Starward;
-using LunarWard.Games;
+using LunarWard.Features.GameLauncher;
 using LunarWard.Launch;
 using Xunit;
 

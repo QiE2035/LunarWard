@@ -3,7 +3,7 @@ using System.Text;
 using LunarWard.Core;
 using LunarWard.Platform;
 
-namespace LunarWard.Games;
+namespace LunarWard.Wine;
 
 /// <summary>
 /// 一个已保存的账号快照。

@@ -1,7 +1,7 @@
 using Dapper;
 using LunarWard.Core;
 using LunarWard.Core.GameNotice;
-using LunarWard.Games;
+using LunarWard.Wine;
 using LunarWard.Features.Database;
 using Microsoft.Extensions.Logging;
 using System.Globalization;

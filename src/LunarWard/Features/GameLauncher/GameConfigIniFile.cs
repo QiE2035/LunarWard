@@ -4,65 +4,7 @@ using LunarWard.Core;
 using LunarWard.Platform;
 using Microsoft.Extensions.Configuration;
 
-namespace LunarWard.Games;
-
-/// <summary>
-/// 游戏目录下 <c>config.ini</c> 的 <c>[General]</c> 段。
-/// </summary>
-/// <remarks>
-/// <para><b>原样搬自</b> <c>Starward/src/Starward/Features/GameLauncher/GameConfigIni.cs</c>。</para>
-/// <para>
-/// 序列化/反序列化一律走 <c>Microsoft.Extensions.Configuration.Ini</c>，
-/// 不硬拼字符串、不手写解析。见 <c>docs/00-DECISIONS.md</c> D8。
-/// </para>
-/// </remarks>
-public class GameConfigIni
-{
-    [ConfigurationKeyName("channel")]
-    public int Channel { get; set; }
-
-
-    [ConfigurationKeyName("sub_channel")]
-    public int SubChannel { get; set; }
-
-
-    [ConfigurationKeyName("cps")]
-    public string Cps { get; set; } = default!;
-
-
-    [ConfigurationKeyName("game_version")]
-    public Version? GameVersion { get; set; }
-
-
-    [ConfigurationKeyName("sdk_version")]
-    public Version? SdkVersion { get; set; }
-
-
-    [ConfigurationKeyName("game_biz")]
-    public GameBiz GameBiz { get; set; }
-
-
-    [ConfigurationKeyName("uapc")]
-    public string Uapc { get; set; } = default!;
-
-
-    [ConfigurationKeyName("downloading_mode")]
-    public string DownloadingMode { get; set; } = default!;
-
-
-    /// <summary>浅拷贝。</summary>
-    public GameConfigIni Clone() => new()
-    {
-        Channel = Channel,
-        SubChannel = SubChannel,
-        Cps = Cps,
-        GameVersion = GameVersion,
-        SdkVersion = SdkVersion,
-        GameBiz = GameBiz,
-        Uapc = Uapc,
-        DownloadingMode = DownloadingMode,
-    };
-}
+namespace LunarWard.Features.GameLauncher;
 
 
 /// <summary>
@@ -560,7 +502,19 @@ public sealed class GameConfigIniFile
     /// </summary>
     public GameConfigIniFile WithChannel(ChannelProfile profile, string? gameVersion = null)
     {
-        var copy = new GameConfigIniFile(General.Clone());
+        // 上游 GameConfigIni 没有 Clone()（它只被 Ini 配置绑定使用）；
+        // 这里为「读→改→写」显式做一次浅拷贝，字段集合与上游一致。
+        var copy = new GameConfigIniFile(new GameConfigIni
+        {
+            Channel = General.Channel,
+            SubChannel = General.SubChannel,
+            Cps = General.Cps,
+            GameVersion = General.GameVersion,
+            SdkVersion = General.SdkVersion,
+            GameBiz = General.GameBiz,
+            Uapc = General.Uapc,
+            DownloadingMode = General.DownloadingMode,
+        });
         copy._present.AddRange(_present);
         copy._extraKeys.AddRange(_extraKeys);
         copy._otherSections.AddRange(_otherSections);

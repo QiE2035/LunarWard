@@ -17,6 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- 上游 src/Starward/Starward.csproj 直接引用：Dapper 数据访问、Microsoft.Data.Sqlite。
+         endgame 折叠 LunarWard.Games/Launch 后必须显式声明，不能靠项目引用传递。 -->
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
@@ -49,7 +53,6 @@
     <ProjectReference Include="..\LunarWard.Platform\LunarWard.Platform.csproj" />
     <ProjectReference Include="..\LunarWard.Wine\LunarWard.Wine.csproj" />
     <ProjectReference Include="..\LunarWard.Launch\LunarWard.Launch.csproj" />
-    <ProjectReference Include="..\LunarWard.Games\LunarWard.Games.csproj" />
     <ProjectReference Include="..\LunarWard.Installer\LunarWard.Installer.csproj" />
     <ProjectReference Include="..\LunarWard.RPC\LunarWard.RPC.csproj" />
     <ProjectReference Include="..\LunarWard.Setup.Core\LunarWard.Setup.Core.csproj" />

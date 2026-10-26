@@ -1,4 +1,4 @@
-namespace LunarWard.Games;
+namespace LunarWard.Features.GameLauncher;
 
 /// <summary>游戏版本（国服 / 国际服）。</summary>
 public enum GameEdition
