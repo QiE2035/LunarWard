@@ -2,6 +2,7 @@
 <controls:StarwardContentDialog xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:LunarWard.Views.Starward.Controls"
+             xmlns:fw="using:LunarWard.Frameworks"
              xmlns:lang="using:LunarWard.Language"
              xmlns:local="using:LunarWard.Features.GameLauncher"
              xmlns:sc="using:LunarWard.Controls"
@@ -499,27 +500,26 @@
 
                 <!--  游戏包体  -->
                 <Border>
-                    <Pivot>
+                    <fw:Pivot>
 
-                        <Pivot.Resources>
-                            <Thickness x:Key="PivotItemMargin">0,8,0,0</Thickness>
-                            <Thickness x:Key="PivotHeaderItemMargin">0,0,24,0</Thickness>
-                            <Style BasedOn="{StaticResource DefaultPivotHeaderItemStyle}" TargetType="PivotHeaderItem">
-                                <Setter Property="Height" Value="28" />
+                        <fw:Pivot.Resources>
+                            <!-- 上游用 DefaultPivotHeaderItemStyle 调 header 高度/字号；Avalonia 的 TabItem
+                                 由主题模板决定，这里改成对 TabItem 的样式（等价视觉效果），不引用不存在的资源键。 -->
+                            <Style Selector="TabItem">
+                                <Setter Property="MinHeight" Value="28" />
                                 <Setter Property="FontSize" Value="16" />
-                                <Setter Property="VerticalContentAlignment" Value="Top" />
                             </Style>
-                        </Pivot.Resources>
+                        </fw:Pivot.Resources>
 
                         <!--  正式版  -->
-                        <PivotItem Margin="0,-8,0,0">
-                            <PivotItem.Header>
+                        <fw:PivotItem Margin="0,-8,0,0">
+                            <fw:PivotItem.Header>
                                 <TextBlock>
                                     <Run Text="{x:Static lang:Lang.GameResourcePage_LatestVersion}" />
                                     <Run Text="" />
                                     <Run Text="{Binding LatestVersion}" />
                                 </TextBlock>
-                            </PivotItem.Header>
+                            </fw:PivotItem.Header>
                             <ScrollViewer>
                                 <ItemsControl Margin="0,0,8,0"
                                               ItemTemplate="{StaticResource PackageGroupsDataTemplate}"
@@ -531,17 +531,17 @@
                                     </ItemsControl.ItemsPanel>
                                 </ItemsControl>
                             </ScrollViewer>
-                        </PivotItem>
+                        </fw:PivotItem>
 
                         <!--  预下载  -->
-                        <PivotItem Margin="0,-8,0,0">
-                            <PivotItem.Header>
+                        <fw:PivotItem Margin="0,-8,0,0">
+                            <fw:PivotItem.Header>
                                 <TextBlock>
                                     <Run Text="{x:Static lang:Lang.LauncherPage_PreInstall}" />
                                     <Run Text="" />
                                     <Run Text="{Binding PreInstallVersion}" />
                                 </TextBlock>
-                            </PivotItem.Header>
+                            </fw:PivotItem.Header>
                             <ScrollViewer>
                                 <ItemsControl Margin="0,0,8,0"
                                               ItemTemplate="{StaticResource PackageGroupsDataTemplate}"
@@ -553,9 +553,9 @@
                                     </ItemsControl.ItemsPanel>
                                 </ItemsControl>
                             </ScrollViewer>
-                        </PivotItem>
+                        </fw:PivotItem>
 
-                    </Pivot>
+                    </fw:Pivot>
                 </Border>
 
             </Carousel>

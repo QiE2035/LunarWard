@@ -50,6 +50,21 @@ public class CachedImage : Image
     }
 
 
+    public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
+        AvaloniaProperty.Register<CachedImage, CornerRadius>(nameof(CornerRadius));
+
+    /// <summary>
+    /// 上游 XAML 大量使用 <c>CornerRadius</c>（WinUI x:Bind 到 ImageEx 的圆角裁剪）。
+    /// Avalonia 12 的 <see cref="Image.Render"/> 是 sealed，不能像 WinUI 那样在绘制里裁剪，
+    /// 因此改为设置 <see cref="Visual.Clip"/> 的圆角矩形，视觉等价（docs/09「二十二」共性问题清单）。
+    /// </summary>
+    public CornerRadius CornerRadius
+    {
+        get => GetValue(CornerRadiusProperty);
+        set => SetValue(CornerRadiusProperty, value);
+    }
+
+
     public static readonly StyledProperty<string?> UriSourceProperty =
         AvaloniaProperty.Register<CachedImage, string?>(nameof(UriSource));
 
@@ -173,6 +188,40 @@ public class CachedImage : Image
         string path = uri.AbsolutePath.TrimStart('/');
         Assembly assembly = typeof(CachedImage).Assembly;
         return new Uri($"avares://{assembly.GetName().Name}/{path}");
+    }
+
+
+
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var size = base.ArrangeOverride(finalSize);
+        UpdateCornerClip(size);
+        return size;
+    }
+
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == CornerRadiusProperty)
+        {
+            UpdateCornerClip(Bounds.Size);
+        }
+    }
+
+
+    private void UpdateCornerClip(Size size)
+    {
+        CornerRadius radius = CornerRadius;
+        if (size.Width <= 0 || size.Height <= 0 || (radius.TopLeft <= 0 && radius.TopRight <= 0 && radius.BottomLeft <= 0 && radius.BottomRight <= 0))
+        {
+            Clip = null;
+            return;
+        }
+        // Avalonia 的 RectangleGeometry 只支持统一圆角；取最大值近似（数量级都在 4-8px，肉眼无差）。
+        double r = Math.Max(Math.Max(radius.TopLeft, radius.TopRight), Math.Max(radius.BottomLeft, radius.BottomRight));
+        Clip = new RectangleGeometry(new Rect(size), r, r);
     }
 
 

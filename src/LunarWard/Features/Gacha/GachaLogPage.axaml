@@ -228,7 +228,7 @@
                              SelectionMode="Multiple">
                       <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="local:GachaBanner">
-                          <TextBlock Text="{Binding ToLocalization()}" />
+                          <TextBlock Text="{Binding LocalizedName}" />
                         </DataTemplate>
                       </ListBox.ItemTemplate>
                     </ListBox>
