@@ -1,0 +1,180 @@
+<sf:PageBase xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:LunarWard.Features.Screenshot"
+             xmlns:loc="using:LunarWard.Localization"
+             xmlns:sc="using:LunarWard.Controls"
+             xmlns:sf="using:LunarWard.Frameworks"
+             x:Class="LunarWard.Features.Screenshot.ScreenshotPage">
+
+  <!--
+    复刻 Starward Features/Screenshot/ScreenshotPage.xaml（274 行）：
+      分组 GridView（按「月-日」分组头，条目 218×128，图像 206×116）→ 右键菜单（信息/打开/复制文件/
+      复制为 JPG/在文件夹中显示/用默认应用打开/打开方式/删除）→ 右上工具条（选择计数、多选开关、
+      批量转换、管理文件夹）→ 空态表情。
+    WinUI → Avalonia 差异（docs/09 §8.3）：
+      GridView + GroupStyle + ItemsWrapGrid（sticky headers）→ ScrollViewer + 双层 ItemsControl + WrapPanel，
+      分组头由外层模板绘制；Storyboard 悬停缩放 → Style :pointerover + Transitions；
+      MenuFlyout → ContextFlyout + MenuFlyoutItem；x:Bind → Binding；ThemeResource → DynamicResource。
+  -->
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="44" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+
+    <Grid.Styles>
+      <!--  条目悬停缩放（上游 GridZoomIn/OutStoryboard，1.15 倍 / 0.3~0.6s）  -->
+      <Style Selector="Border.thumb-host">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="Margin" Value="0,0,12,12" />
+        <Setter Property="Width" Value="218" />
+        <Setter Property="Height" Value="128" />
+      </Style>
+      <Style Selector="Border.thumb-host Image.thumb">
+        <Setter Property="Transitions">
+          <Transitions>
+            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.6" Easing="CubicEaseOut" />
+          </Transitions>
+        </Setter>
+      </Style>
+      <Style Selector="Border.thumb-host:pointerover Image.thumb">
+        <Setter Property="RenderTransform" Value="scale(1.15)" />
+      </Style>
+      <Style Selector="Border.thumb-host.selected">
+        <Setter Property="BorderBrush" Value="{DynamicResource StarAccentBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+      </Style>
+    </Grid.Styles>
+
+    <StackPanel Name="StackPanel_Emoji"
+                Grid.RowSpan="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16"
+                IsVisible="False">
+      <Image Name="Image_Emoji" Width="160" Height="160" />
+      <TextBlock HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{DynamicResource StarTextSecondary}"
+                 Text="{Binding [ScreenshotPage_ScreenshotFolderDoesNotExist], Source={x:Static loc:AppStrings.Instance}}" />
+    </StackPanel>
+
+    <ScrollViewer Name="ScrollViewer_Images"
+                  Grid.Row="0"
+                  Grid.RowSpan="2"
+                  Padding="24,0,12,12"
+                  HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+      <ItemsControl Name="ItemsControl_Groups" ItemsSource="{Binding ScreenshotGroups}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="local:ScreenshotItemGroup">
+            <StackPanel>
+              <!--  分组头：上游 GroupStyle.HeaderTemplate（14px 次要色）  -->
+              <TextBlock Margin="0,8,0,8"
+                         FontSize="14"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="{Binding Header}" />
+              <ItemsControl ItemsSource="{Binding}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="local:ScreenshotItem">
+                    <Border Classes="thumb-host"
+                            ContextRequested="Grid_ImageItem_ContextRequested"
+                            DoubleTapped="Grid_ImageItem_DoubleTapped"
+                            PointerPressed="Grid_ImageItem_PointerPressed"
+                            PointerMoved="Grid_ImageItem_PointerMoved">
+                      <Border.ContextFlyout>
+                        <MenuFlyout>
+                          <MenuItem x:Name="MenuFlyoutItem_ScreenshotInfo"
+                                    MinWidth="208"
+                                    FontSize="12"
+                                    Header="{Binding FileInfo}"
+                                    IsEnabled="False" />
+                          <Separator />
+                          <MenuItem Click="MenuFlyoutItem_Open_Click" Header="{Binding [Common_Open], Source={x:Static loc:AppStrings.Instance}}">
+                            <MenuItem.Icon>
+                              <TextBlock Classes="icon" Text="&#xE8A7;" />
+                            </MenuItem.Icon>
+                          </MenuItem>
+                          <MenuItem Click="MenuFlyoutItem_CopyFile_Click" Header="{Binding [ImageViewWindow2_CopyFile], Source={x:Static loc:AppStrings.Instance}}">
+                            <MenuItem.Icon>
+                              <TextBlock Classes="icon" Text="&#xE8C8;" />
+                            </MenuItem.Icon>
+                          </MenuItem>
+                          <MenuItem Click="MenuFlyoutItem_CopyAsJPG_Click" Header="{Binding [ImageViewWindow2_CopyAsJPG], Source={x:Static loc:AppStrings.Instance}}">
+                            <MenuItem.Icon>
+                              <TextBlock Classes="icon" Text="&#xF413;" />
+                            </MenuItem.Icon>
+                          </MenuItem>
+                          <Separator />
+                          <MenuItem Click="MenuFlyoutItem_OpenInExplorer_Click" Header="{Binding [ImageViewWindow2_OpenInExplorer], Source={x:Static loc:AppStrings.Instance}}">
+                            <MenuItem.Icon>
+                              <TextBlock Classes="icon" Text="&#xEC50;" />
+                            </MenuItem.Icon>
+                          </MenuItem>
+                          <MenuItem Click="MenuFlyoutItem_OpenWithDefault_Click" Header="{Binding [ImageViewWindow2_OpenWithDefaultApp], Source={x:Static loc:AppStrings.Instance}}">
+                            <MenuItem.Icon>
+                              <TextBlock Classes="icon" Text="&#xE91B;" />
+                            </MenuItem.Icon>
+                          </MenuItem>
+                          <MenuItem Click="MenuFlyoutItem_OpenWith_Click" Header="{Binding [ImageViewWindow2_OpenWith], Source={x:Static loc:AppStrings.Instance}}">
+                            <MenuItem.Icon>
+                              <TextBlock Classes="icon" Text="&#xE7AC;" />
+                            </MenuItem.Icon>
+                          </MenuItem>
+                          <Separator />
+                          <MenuItem Click="MenuFlyoutItem_Delete_Click" Header="{Binding [Common_Delete], Source={x:Static loc:AppStrings.Instance}}">
+                            <MenuItem.Icon>
+                              <TextBlock Classes="icon" Text="&#xE74D;" />
+                            </MenuItem.Icon>
+                          </MenuItem>
+                        </MenuFlyout>
+                      </Border.ContextFlyout>
+                      <sc:CachedImage Name="Image_Thumb"
+                                      Classes="thumb"
+                                      Width="206"
+                                      Height="116"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Background="{DynamicResource StarCardBackgroundBrush}"
+                                      IsThumbnail="True"
+                                      RenderTransformOrigin="0.5,0.5"
+                                      Source="{Binding FilePath}"
+                                      Stretch="UniformToFill" />
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+    <StackPanel Margin="0,0,28,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Orientation="Horizontal"
+                Spacing="12">
+      <TextBlock Name="TextBlock_SelectCount"
+                 VerticalAlignment="Center"
+                 Foreground="{DynamicResource StarTextSecondary}" />
+      <ToggleButton Name="ToggleButton_MultiSelect"
+                    Content="{Binding [ScreenshotPage_MultiSelect], Source={x:Static loc:AppStrings.Instance}}"
+                    IsChecked="{Binding MutliSelect, Mode=TwoWay}" />
+      <Button Name="Button_BatchConvert"
+              Command="{Binding OpenImageBatchConvertWindowCommand}"
+              Content="{Binding [ScreenshotPage_BatchConvert], Source={x:Static loc:AppStrings.Instance}}" />
+      <Button Command="{Binding ManageScreenshotFolderCommand}" Content="{Binding [ScreenshotPage_ManageScreenshotFolders], Source={x:Static loc:AppStrings.Instance}}" />
+    </StackPanel>
+
+  </Grid>
+
+</sf:PageBase>

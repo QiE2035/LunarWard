@@ -291,13 +291,14 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | 10 | `Features/Screenshot/ScreenshotPage2.axaml(.cs)` | `ItemsView` + `UniformGridLayout` + `AnnotatedScrollBar`（含标签轨道/`ScrollController`/`PART_ToolTipRail` tooltip）+ Storyboard + `mxi:Interaction.Behaviors` | `ScrollViewer` + `ItemsControl` + `WrapPanel`（条目固定 204×115、间距 12）+ 原生 `ScrollBar`；悬停动画改 `Style :pointerover` + `Transitions`；保留「内容超过 3 屏才显示滚动条」判定；`DispatcherQueue.TryEnqueue`→`Dispatcher.UIThread.Post`；`DataPackage` 拖拽→`DataObject`+`DragDrop.DoDragDrop`；复制图片→`Clipboard.SetFilesAsync` | Avalonia 无 ItemsView/AnnotatedScrollBar/Storyboard/Behaviors；**年/月标签绘制省略**（滚动条保留），后续若要标签可自绘轨道 |
 | 11 | `Features/Screenshot/ImageViewWindow2.axaml(.cs)` | `CanvasSwapChainPanel` + Win2D（HDR→SDR、显示器峰值亮度）、视频/GIF 播放、图库条、JxlSharp 导出、裁剪/EXIF 编辑 | 保留顶栏命令（复制/另存为/文件夹/删除/信息）、滚轮锚点缩放、按住拖动、双击还原、←/→ 翻页、删除后跳转并同步集合；渲染用 `Image` + `ScaleTransform`/`TranslateTransform` | Win2D/视频/GIF/图库条/编码导出本轮未落；**这是 1572 行上游文件的子集移植**，缺口登记如下 |
 
+| 12 | `Features/Screenshot/ScreenshotPage.axaml(.cs)` | 分组 `GridView` + `GroupStyle`（sticky headers）+ `GridView.SelectionMode` None/Multiple 切换 + `DragItemsStarting` + `MenuFlyout` + `StorageFile`/`DataPackage` + `ClipboardHelper.SetStorageItems`/`SetBitmap` | 双层 `ItemsControl`（外层分组配 `WrapPanel`，条目 218×128 / 图 206×116，无吸顶）+ 自维护选中集合（条目 `selected` 类）+ `PointerPressed/Moved` 起拖 + `ContextFlyout`+`MenuItem` + `StorageProvider`/`DataObject(DataFormats.Files)` + `Clipboard.SetFilesAsync`/`ClipboardHelper.SetBitmap`；「打开方式」退化为默认应用打开 + 提示 | Avalonia 无 GridView/GroupStyle/ListViewSelectionMode/Behaviors；`ImageBatchConvertWindow` 未移植（§8.4），批量转换按钮先给提示 |
+
 ### 8.4 尚未移植（明确缺口，非「已完成」）
 
 | 上游文件 | 阻塞原因 | 计划 |
 |---|---|---|
 | `Features/Screenshot/ScreenCaptureHelper.cs`、`ScreenCaptureContext.cs`、`ScreenCaptureService.cs` | 依赖 `Windows.Graphics.Capture` + `Direct3D11CaptureFramePool` + Win2D + WinRT `DisplayInformation`/HDR；Linux 需外部抓屏后端（X11 `xdotool`+`import`/`xwd`，Wayland `grim`） | Lead 已定「B 后接 A」：先 UI，后抓屏后端；落地时 `BuildXMPMetadata`/`GetMaxCLL` 按上游签名给纯函数实现（HDR 元数据只写不实采），抓屏 API 不可用时 `PlatformNotSupportedException` 且 UI 显示「截图功能不可用」 |
 | `Features/Screenshot/ScreenCaptureInfoWindow.xaml(.cs)` | 同上，且依赖 `Features/Overlay/RunningGame`（由 misc-port 负责，尚未落地） | 抓屏后端完成后一并移植 |
-| `Features/Screenshot/ScreenshotPage.xaml(.cs)` | 695 行；`GridView` + 分组 `CollectionViewSource` + 多选 + 右键菜单（信息/打开/复制文件/复制为 JPG/在文件夹中/打开方式/删除）+ 调用 `ImageBatchConvertWindow` | 下一步优先（导航按 `nameof(ScreenshotPage)` 注册，是真实入口）；现有旧实现 `Views/Starward/Pages/ScreenshotPage.axaml(.cs)` 可作行为参照，但需按上游结构重排 |
 | `Features/Screenshot/ImageViewWindow.xaml(.cs)` | 上游早期单图查看器（被 `ImageViewWindow2` 取代），当前仓库无调用方 | 低优先；最后补形状 |
 | `Features/Screenshot/ImageBatchConvertWindow.xaml(.cs)` | 909 行；依赖 JxlSharp/ImageSharp/WIC 编码器与 `ScreenCaptureService.BuildXMPMetadata` | 与图片编解码（task-9 `Features/Codec`）一起做 |
 
