@@ -2,6 +2,7 @@
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.StarRail.ApocalypticShadowPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:fic="clr-namespace:LunarWard.Core.GameRecord.StarRail.ApocalypticShadow"
              xmlns:lang="clr-namespace:LunarWard.Language"
              xmlns:linq="clr-namespace:System.Linq"
@@ -59,7 +60,7 @@
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
-                    <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                    <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
                     <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
@@ -73,7 +74,7 @@
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
-                    <TextBlock Classes="icon" FontSize="16" Text="&#xE9D9;" />
+                    <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE9D9;" />
                     <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
                 </StackPanel>
             </Button>
@@ -408,11 +409,11 @@
                                             <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
                                             <Run Text="1" />
                                         </TextBlock>
-                                        <TextBlock Classes="icon" Margin="12,0,0,1"
+                                        <fw:FontIcon Classes="icon" Margin="12,0,0,1"
                                                   VerticalAlignment="Bottom"
                                                   FontSize="12"
                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                  Text="&#xEC61;"
+                                                  Glyph="&#xEC61;"
                                                   IsVisible="{Binding Node1.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
                                         <TextBlock Margin="4,0,0,0"
                                                    VerticalAlignment="Bottom"
@@ -492,11 +493,11 @@
                                             <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
                                             <Run Text="2" />
                                         </TextBlock>
-                                        <TextBlock Classes="icon" Margin="12,0,0,1"
+                                        <fw:FontIcon Classes="icon" Margin="12,0,0,1"
                                                   VerticalAlignment="Bottom"
                                                   FontSize="12"
                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                  Text="&#xEC61;"
+                                                  Glyph="&#xEC61;"
                                                   IsVisible="{Binding Node2.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
                                         <TextBlock Margin="4,0,0,0"
                                                    VerticalAlignment="Bottom"
@@ -614,11 +615,11 @@
                                             <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
                                             <Run Text="3" />
                                         </TextBlock>
-                                        <TextBlock Classes="icon" Margin="12,0,0,1"
+                                        <fw:FontIcon Classes="icon" Margin="12,0,0,1"
                                                   VerticalAlignment="Bottom"
                                                   FontSize="12"
                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                  Text="&#xEC61;"
+                                                  Glyph="&#xEC61;"
                                                   IsVisible="{Binding Node3.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
                                         <TextBlock Margin="4,0,0,0"
                                                    VerticalAlignment="Bottom"

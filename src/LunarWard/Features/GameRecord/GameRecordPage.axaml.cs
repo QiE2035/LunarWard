@@ -466,26 +466,14 @@ public sealed partial class GameRecordPage : PageBase
     private Type? _currentPageType;
 
 
-    /// <summary>
-    /// 上游 <c>Frame.Navigate(pageType, parameter)</c> 的 Avalonia 等价物。
-    /// </summary>
-    /// <remarks>
-    /// Linux: Avalonia 没有 Frame/Page 导航栈，这里手工实例化页面、塞进 <c>Frame_Content</c>，
-    /// 并调用 <see cref="PageBase.OnNavigatedTo(object?)"/> 传参（与上游 Frame 的行为一致）。
-    /// </remarks>
+    /// <summary>上游 <c>Frame.Navigate(pageType, parameter)</c>：走 <see cref="LunarWard.Frameworks.Frame"/>。</summary>
     private void NavigateToPage(Type pageType, object? parameter)
     {
-        if (Activator.CreateInstance(pageType) is not Control page)
-        {
-            return;
-        }
-        _currentPage = page;
+        // Linux: 上游 <c>frame.Navigate(Type, object)</c>；本仓库 Frameworks/Frame.cs 是等价实现
+        // （实例化页面 + 设置 Content + 调 PageBase.OnNavigatedTo），不再在页面里自管导航。
+        Frame_Content.Navigate(pageType, parameter);
+        _currentPage = Frame_Content.Content as Control;
         _currentPageType = pageType;
-        Frame_Content.Content = page;
-        if (page is PageBase pageBase)
-        {
-            pageBase.OnNavigatedTo(parameter);
-        }
     }
 
 

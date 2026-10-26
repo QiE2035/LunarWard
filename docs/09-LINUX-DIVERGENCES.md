@@ -524,6 +524,7 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 ### 待办
 
+- **运行验收未完成（等树绿）**：`GameRecordPage` / `LoginPage` 的可实例化 + 截图验收要等 `LunarWard.csproj` 全树编译通过（当前红在 `Features/Screenshot`、`Features/GameLauncher`、`Features/GamepadControl` 等他人目录），届时用 `dotnet run --project src/LunarWard -- --screenshot <png> --page toolbox` 走新外壳 `Features/ViewHost/MainView` 验证。
 - 旧架构 `src/LunarWard/Views/Starward/Pages/Record/*` + `ViewModels/Starward/*` 暂留（导航仍指向旧页），由 lead 在外壳收口时删除。
 - `GameRecordService` 里若有需要 `AppConfig` 新配置项的路径，随 `AppConfig` 落地回填。
 

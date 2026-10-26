@@ -2,6 +2,7 @@
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.GameRecordPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:lang="clr-namespace:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord"
              xmlns:sc="clr-namespace:LunarWard.Controls"
@@ -95,12 +96,12 @@
                             <MenuFlyout x:Name="Flyout_LoginMenu_1" Placement="BottomEdgeAlignedLeft">
                                 <MenuFlyoutItem Command="{Binding WebLoginCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_WebLogin}">
                                     <MenuFlyoutItem.Icon>
-                                        <TextBlock Classes="icon" Text="&#xE774;" />
+                                        <fw:FontIcon Classes="icon" Glyph="&#xE774;" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem Command="{Binding InputCookieCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_InputCookie}">
                                     <MenuFlyoutItem.Icon>
-                                        <TextBlock Classes="icon" Text="&#xE70F;" />
+                                        <fw:FontIcon Classes="icon" Glyph="&#xE70F;" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
                             </MenuFlyout>
@@ -116,12 +117,12 @@
                             Style="{DynamicResource DateTimePickerFlyoutButtonStyle}"
                             IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityConverter}}">
                         <StackPanel Spacing="-6">
-                            <TextBlock Classes="icon" FontSize="16"
+                            <fw:FontIcon Classes="icon" FontSize="16"
                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                      Text="&#xE70E;" />
-                            <TextBlock Classes="icon" FontSize="16"
+                                      Glyph="&#xE70E;" />
+                            <fw:FontIcon Classes="icon" FontSize="16"
                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                      Text="&#xE70D;" />
+                                      Glyph="&#xE70D;" />
                         </StackPanel>
                         <Button.Flyout>
                             <Flyout x:Name="Flyout_GameRoles" Placement="BottomEdgeAlignedRight">
@@ -153,7 +154,7 @@
                                             Command="{Binding RefreshGameRoleInfoCommand}"
                                             Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
                                         <StackPanel Orientation="Horizontal" Spacing="12">
-                                            <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                                            <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
                                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.HoyolabToolboxPage_RefreshInfo}" />
                                         </StackPanel>
                                     </Button>
@@ -165,19 +166,19 @@
                                             HorizontalContentAlignment="Left"
                                             Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
                                         <StackPanel Orientation="Horizontal" Spacing="12">
-                                            <TextBlock Classes="icon" FontSize="16" Text="&#xE710;" />
+                                            <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE710;" />
                                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.HoyolabToolboxPage_LogIn}" />
                                         </StackPanel>
                                         <Button.Flyout>
                                             <MenuFlyout x:Name="Flyout_LoginMenu_2" Placement="RightEdgeAlignedTop">
                                                 <MenuFlyoutItem Command="{Binding WebLoginCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_WebLogin}">
                                                     <MenuFlyoutItem.Icon>
-                                                        <TextBlock Classes="icon" Text="&#xE774;" />
+                                                        <fw:FontIcon Classes="icon" Glyph="&#xE774;" />
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
                                                 <MenuFlyoutItem Command="{Binding InputCookieCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_InputCookie}">
                                                     <MenuFlyoutItem.Icon>
-                                                        <TextBlock Classes="icon" Text="&#xE70F;" />
+                                                        <fw:FontIcon Classes="icon" Glyph="&#xE70F;" />
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
                                             </MenuFlyout>
@@ -224,7 +225,7 @@
                                                                                 Tag="{x:Bind}"
                                                                                 Text="{Binding lang:Lang.HoyolabToolboxPage_CopyCookie}">
                                                                     <MenuFlyoutItem.Icon>
-                                                                        <TextBlock Classes="icon" Text="&#xE8C8;" />
+                                                                        <fw:FontIcon Classes="icon" Glyph="&#xE8C8;" />
                                                                     </MenuFlyoutItem.Icon>
                                                                 </MenuFlyoutItem>
                                                                 <MenuFlyoutItem  x:Name="MenuFlyoutItem_DeleteGameRole"
@@ -232,7 +233,7 @@
                                                                                 Tag="{x:Bind}"
                                                                                 Text="{Binding lang:Lang.HoyolabToolboxPage_DeleteGameRole}">
                                                                     <MenuFlyoutItem.Icon>
-                                                                        <TextBlock Classes="icon" Text="&#xE74D;" />
+                                                                        <fw:FontIcon Classes="icon" Glyph="&#xE74D;" />
                                                                     </MenuFlyoutItem.Icon>
                                                                 </MenuFlyoutItem>
                                                             </MenuFlyout>
@@ -512,7 +513,7 @@
                         Margin="-2,0,0,-4"
                         Click="NavigationViewItem_UpdateDeviceInfo_Click">
                     <StackPanel Orientation="Horizontal" Spacing="12">
-                        <TextBlock Classes="icon" Text="&#xE928;" />
+                        <fw:FontIcon Classes="icon" Glyph="&#xE928;" />
                         <TextBlock Text="{Binding lang:Lang.HoyolabToolboxPage_UpdateDeviceFingerprint}"
                                    TextTrimming="CharacterEllipsis" />
                     </StackPanel>
@@ -522,7 +523,7 @@
             </SplitView.Pane>
 
             <!--  Linux: 上游 Frame（导航栈）；Avalonia 用 ContentControl，页面实例由 code-behind 换。  -->
-            <ContentControl x:Name="Frame_Content" />
+            <fw:Frame x:Name="Frame_Content" />
 
 
         </SplitView>

@@ -2,6 +2,7 @@
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.Genshin.TravelersDiaryPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:diary="clr-namespace:LunarWard.Core.GameRecord.Genshin.TravelersDiary"
              xmlns:lang="clr-namespace:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.Genshin"
@@ -59,8 +60,8 @@
                         <ProgressBar IsIndeterminate="True" Width="16"
                                       Height="16"
                                       />
-                        <TextBlock Classes="icon" FontSize="16"
-                                  Text="&#xE72C;"
+                        <fw:FontIcon Classes="icon" FontSize="16"
+                                  Glyph="&#xE72C;"
                                   IsVisible="{Binding InitializeDataCommand.IsRunning, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
                     </Grid>
                     <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
@@ -78,8 +79,8 @@
                         <ProgressBar IsIndeterminate="True" Width="16"
                                       Height="16"
                                       />
-                        <TextBlock Classes="icon" FontSize="16"
-                                  Text="&#xEA37;"
+                        <fw:FontIcon Classes="icon" FontSize="16"
+                                  Glyph="&#xEA37;"
                                   IsVisible="{Binding GetDataDetailsCommand.IsRunning, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
                     </Grid>
                     <TextBlock Text="{Binding lang:Lang.TravelersDiaryPage_GetDetails}" />

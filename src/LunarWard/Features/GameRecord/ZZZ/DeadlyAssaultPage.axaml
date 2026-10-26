@@ -2,6 +2,7 @@
 <sf:PageBase x:Class="LunarWard.Features.GameRecord.ZZZ.DeadlyAssaultPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:cw="clr-namespace:CommunityToolkit.WinUI"
              xmlns:fic="clr-namespace:LunarWard.Core.GameRecord.ZZZ.DeadlyAssault"
              xmlns:lang="clr-namespace:LunarWard.Language"
@@ -58,7 +59,7 @@
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
-                    <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                    <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE72C;" />
                     <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
                 </StackPanel>
             </Button>
@@ -72,7 +73,7 @@
                 <StackPanel Margin="4,0,4,0"
                             Orientation="Horizontal"
                             Spacing="8">
-                    <TextBlock Classes="icon" FontSize="16" Text="&#xE9D9;" />
+                    <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE9D9;" />
                     <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
                 </StackPanel>
             </Button>

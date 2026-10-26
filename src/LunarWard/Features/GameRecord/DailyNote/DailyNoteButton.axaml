@@ -2,6 +2,7 @@
 <UserControl x:Class="LunarWard.Features.GameRecord.DailyNote.DailyNoteButton"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:lang="clr-namespace:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.DailyNote"
              xmlns:sc="clr-namespace:LunarWard.Controls"
@@ -53,9 +54,9 @@
                             Command="{Binding RefreshDailyNoteCommand}"
                             CornerRadius="4"
                             Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
-                        <TextBlock Classes="icon" FontSize="14"
+                        <fw:FontIcon Classes="icon" FontSize="14"
                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                  Text="&#xE72C;" />
+                                  Glyph="&#xE72C;" />
                     </Button>
 
                     <!--  角色信息  -->
@@ -181,12 +182,12 @@
                                    VerticalAlignment="Center"
                                    FontSize="12"
                                    Text="{Binding lang:Lang.DailyNoteButton_Genshin_DailyCommissionRewards}" />
-                        <TextBlock Classes="icon" Grid.Column="2"
+                        <fw:FontIcon Classes="icon" Grid.Column="2"
                                   HorizontalAlignment="Right"
                                   VerticalAlignment="Center"
                                   FontSize="14"
                                   Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                  Text="&#xE930;"
+                                  Glyph="&#xE930;"
                                   IsVisible="{Binding GenshinDailyNote.DailyTask.IsExtraTaskRewardReceived}" />
                         <TextBlock Grid.Column="2"
                                    HorizontalAlignment="Right"
@@ -237,15 +238,15 @@
                                                    Opacity="0.6"
                                                    Source="ms-appx:///Assets/Image/UI_NPCTopIcon_QuestEvent_64.png"
                                                    IsVisible="{Binding IsUnfinished}" />
-                                            <TextBlock Classes="icon" FontSize="12"
+                                            <fw:FontIcon Classes="icon" FontSize="12"
                                                       FontWeight="Bold"
                                                       Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                                      Text="&#xE8FB;"
+                                                      Glyph="&#xE8FB;"
                                                       IsVisible="{Binding IsTakenAward}" />
-                                            <TextBlock Classes="icon" FontSize="12"
+                                            <fw:FontIcon Classes="icon" FontSize="12"
                                                       FontWeight="Bold"
                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                      Text="&#xE8FB;"
+                                                      Glyph="&#xE8FB;"
                                                       IsVisible="{Binding IsFinished}" />
                                         </Grid>
                                     </DataTemplate>
@@ -291,18 +292,18 @@
                                                         ShowAsMonochrome="True"
                                                         Source="ms-appx:///Assets/Image/UI_Icon_Gift.png"
                                                         IsVisible="{Binding IsWaitTaken}" />
-                                            <TextBlock Classes="icon" HorizontalAlignment="Center"
+                                            <fw:FontIcon Classes="icon" HorizontalAlignment="Center"
                                                       VerticalAlignment="Center"
                                                       FontSize="10"
                                                       FontWeight="Bold"
                                                       Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                                      Text="&#xE8FB;"
+                                                      Glyph="&#xE8FB;"
                                                       IsVisible="{Binding IsTakenAward}" />
-                                            <TextBlock Classes="icon" HorizontalAlignment="Center"
+                                            <fw:FontIcon Classes="icon" HorizontalAlignment="Center"
                                                       VerticalAlignment="Center"
                                                       FontSize="12"
                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                      Text="&#xE733;"
+                                                      Glyph="&#xE733;"
                                                       IsVisible="{Binding IsForbid}" />
                                             <ProgressBar Width="20"
                                                           Height="20"
@@ -560,11 +561,11 @@
 
                             <!--  每日任务  -->
                             <TextBlock Text="{Binding lang:Lang.DailyNoteButton_ZZZ_DailyMissions}" />
-                            <TextBlock Classes="icon" Grid.Column="1"
+                            <fw:FontIcon Classes="icon" Grid.Column="1"
                                       HorizontalAlignment="Right"
                                       FontSize="14"
                                       Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                      Text="&#xE930;"
+                                      Glyph="&#xE930;"
                                       IsVisible="{Binding ZZZDailyNote.IsDailyMissionComplete}" />
 
                             <!--  今日活跃度  -->

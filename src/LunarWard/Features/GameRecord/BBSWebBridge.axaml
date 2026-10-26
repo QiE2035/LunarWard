@@ -2,6 +2,7 @@
 <UserControl x:Class="LunarWard.Features.GameRecord.BBSWebBridge"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:webview="clr-namespace:LunarWard.Frameworks.WebView"
              xmlns:lang="clr-namespace:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord">
@@ -25,14 +26,14 @@
                     <!--  保存  -->
                     <Button Command="{Binding SaveScreenshotCommand}" Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Classes="icon" FontSize="16" Text="&#xE74E;" />
+                            <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE74E;" />
                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.Common_Save}" />
                         </StackPanel>
                     </Button>
                     <!--  复制  -->
                     <Button Command="{Binding CopyScreenshotCommand}" Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Classes="icon" FontSize="16" Text="&#xE8C8;" />
+                            <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE8C8;" />
                             <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.Common_Copy}" />
                         </StackPanel>
                     </Button>
@@ -41,7 +42,7 @@
                 <Button HorizontalAlignment="Right"
                         Command="{Binding CloseScreenshotGridCommand}"
                         Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
-                    <TextBlock Classes="icon" FontSize="16" Text="&#xE711;" />
+                    <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE711;" />
                 </Button>
             </Grid>
         </Grid>

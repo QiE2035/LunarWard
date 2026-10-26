@@ -95,7 +95,7 @@ public sealed partial class LoginPage : PageBase
     {
         try
         {
-            FontIcon_RefreshOrCancel.Text = CancelIcon;
+            FontIcon_RefreshOrCancel.Glyph = CancelIcon;
         }
         catch { }
     }
@@ -104,7 +104,7 @@ public sealed partial class LoginPage : PageBase
     {
         try
         {
-            FontIcon_RefreshOrCancel.Text = RefreshIcon;
+            FontIcon_RefreshOrCancel.Glyph = RefreshIcon;
             if (args.IsSuccess)
             {
                 await (sender as CoreWebView2)!.ExecuteScriptAsync("""
@@ -206,7 +206,7 @@ public sealed partial class LoginPage : PageBase
     {
         try
         {
-            if (FontIcon_RefreshOrCancel.Text is RefreshIcon)
+            if (FontIcon_RefreshOrCancel.Glyph is RefreshIcon)
             {
                 webview.CoreWebView2?.Reload();
             }
