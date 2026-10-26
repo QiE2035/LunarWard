@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sf:PageBase x:Class="LunarWard.Features.GameRecord.GameRecordPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:local="clr-namespace:LunarWard.Features.GameRecord"
+             xmlns:sc="clr-namespace:LunarWard.Controls"
+             xmlns:scg="clr-namespace:LunarWard.Core.GameRecord"
+             xmlns:sf="clr-namespace:LunarWard.Frameworks"
+             xmlns:sh="clr-namespace:LunarWard.Helpers">
+
+    <Grid>
+
+        <!--  Linux: 上游用 WinUI NavigationView（PaneDisplayMode=Left、ItemInvoked）；
+              Avalonia 没有 NavigationView，等价物是 SplitView（左侧 Pane）+ ListBox（导航项）
+              + ContentControl（内容页，替代 Frame）。  -->
+        <SplitView x:Name="NavigationView_Toolbox"
+                   DisplayMode="Inline"
+                   IsPaneOpen="True"
+                   OpenPaneLength="248"
+                   PanePlacement="Left">
+            <SplitView.Resources>
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+            </SplitView.Resources>
+
+            <SplitView.Pane>
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <ContentControl Grid.Row="0">
+                <Grid Height="56"
+                      HorizontalAlignment="Stretch"
+                      ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64" />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--  头像  -->
+                    <Grid  x:Name="Grid_Avatar_1"
+                          Width="56"
+                          Height="56"
+                          Margin="8,0,0,0"
+                         
+                          Tapped="Grid_Avatar_1_Tapped">
+                        <sc:CachedImage  x:Name="Image_Avatar_1"
+                                        Margin="6"
+                                        sh:PointerCursor.CursorShape="Hand"
+                                        Background="Transparent"
+                                        CornerRadius="100"
+                                        Source="{Binding AvatarUrl}" />
+                    </Grid>
+
+                    <!--  窄边框头像  -->
+                    <Border  x:Name="Border_Avatar_2"
+                            Width="48"
+                            Height="48"
+                            Margin="0,4,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Background="Transparent"
+                            Tapped="Border_Avatar_2_Tapped"
+                            IsVisible="False">
+                        <sc:CachedImage  x:Name="Image_Avatar_2"
+                                        Width="40"
+                                        Height="40"
+                                        Margin="2,0,0,0"
+                                        sh:PointerCursor.CursorShape="Hand"
+                                        Background="Transparent"
+                                        CornerRadius="100"
+                                        Source="{Binding AvatarUrl}" />
+                    </Border>
+
+                    <!--  角色信息  -->
+                    <StackPanel Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Spacing="2"
+                                IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                        <TextBlock Text="{Binding CurrentRole.Nickname}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                            <Run Text="{Binding CurrentRole.RegionName}" />
+                            <Run Text="" />
+                            <Run Text="Lv." /><Run Text="{Binding CurrentRole.Level}" />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!--  登录  -->
+                    <Button Grid.Column="1"
+                            Grid.ColumnSpan="2"
+                            Margin="0,0,12,0"
+                            BorderThickness="0"
+                            Content="{Binding lang:Lang.HoyolabToolboxPage_LogIn}"
+                            Style="{DynamicResource AccentButtonStyle}"
+                            IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityReversedConverter}}">
+                        <Button.Flyout>
+                            <MenuFlyout x:Name="Flyout_LoginMenu_1" Placement="BottomEdgeAlignedLeft">
+                                <MenuFlyoutItem Command="{Binding WebLoginCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_WebLogin}">
+                                    <MenuFlyoutItem.Icon>
+                                        <TextBlock Classes="icon" Text="&#xE774;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Command="{Binding InputCookieCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_InputCookie}">
+                                    <MenuFlyoutItem.Icon>
+                                        <TextBlock Classes="icon" Text="&#xE70F;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+
+                    <!--  角色列表  -->
+                    <Button Grid.Column="2"
+                            Width="28"
+                            Height="44"
+                            Margin="0,0,12,0"
+                            Padding="0"
+                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}"
+                            IsVisible="{Binding CurrentRole, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                        <StackPanel Spacing="-6">
+                            <TextBlock Classes="icon" FontSize="16"
+                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                      Text="&#xE70E;" />
+                            <TextBlock Classes="icon" FontSize="16"
+                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                      Text="&#xE70D;" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <Flyout x:Name="Flyout_GameRoles" Placement="BottomEdgeAlignedRight">
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style BasedOn="{DynamicResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                                        <Setter Property="Background" Value="{DynamicResource CustomAcrylicBrush}" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Padding" Value="4" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
+                                <Grid MinWidth="240"
+                                     
+                                      RowSpacing="4">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!--  刷新信息  -->
+                                    <Button Grid.Column="0"
+                                            Margin="4,0,4,0"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Command="{Binding RefreshGameRoleInfoCommand}"
+                                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.HoyolabToolboxPage_RefreshInfo}" />
+                                        </StackPanel>
+                                    </Button>
+
+                                    <!--  添加账号  -->
+                                    <Button Grid.Column="1"
+                                            Margin="4,0,4,0"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <TextBlock Classes="icon" FontSize="16" Text="&#xE710;" />
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding lang:Lang.HoyolabToolboxPage_LogIn}" />
+                                        </StackPanel>
+                                        <Button.Flyout>
+                                            <MenuFlyout x:Name="Flyout_LoginMenu_2" Placement="RightEdgeAlignedTop">
+                                                <MenuFlyoutItem Command="{Binding WebLoginCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_WebLogin}">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <TextBlock Classes="icon" Text="&#xE774;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem Command="{Binding InputCookieCommand}" Text="{Binding lang:Lang.HoyolabToolboxPage_InputCookie}">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <TextBlock Classes="icon" Text="&#xE70F;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                            </MenuFlyout>
+                                        </Button.Flyout>
+                                    </Button>
+
+
+                                    <MenuFlyoutSeparator Grid.Row="1" Grid.ColumnSpan="2" />
+
+                                    <ListView  x:Name="ListView_GameRoles"
+                                              Grid.Row="2"
+                                              Grid.ColumnSpan="2"
+                                              ItemsSource="{Binding GameRoleList}"
+                                              SelectionChanged="ListView_GameRoles_SelectionChanged"
+                                              SelectionMode="Single">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="scg:GameRecordRole">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                                                        <TextBlock Text="{Binding Nickname}" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                            <Run Text="{Binding RegionName}" />
+                                                            <Run Text="" />
+                                                            <Run Text="Lv." /><Run Text="{Binding Level}" />
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1"
+                                                            Width="36"
+                                                            Height="28"
+                                                            Padding="0"
+                                                            VerticalAlignment="Stretch"
+                                                            Content="&#xE712;"
+                                                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                                                        <Button.Flyout>
+                                                            <MenuFlyout Placement="RightEdgeAlignedTop">
+                                                                <MenuFlyoutItem  x:Name="MenuFlyoutItem_CopyCookie"
+                                                                                Click="MenuFlyoutItem_CopyCookie_Click"
+                                                                                Tag="{x:Bind}"
+                                                                                Text="{Binding lang:Lang.HoyolabToolboxPage_CopyCookie}">
+                                                                    <MenuFlyoutItem.Icon>
+                                                                        <TextBlock Classes="icon" Text="&#xE8C8;" />
+                                                                    </MenuFlyoutItem.Icon>
+                                                                </MenuFlyoutItem>
+                                                                <MenuFlyoutItem  x:Name="MenuFlyoutItem_DeleteGameRole"
+                                                                                Click="MenuFlyoutItem_DeleteGameRole_Click"
+                                                                                Tag="{x:Bind}"
+                                                                                Text="{Binding lang:Lang.HoyolabToolboxPage_DeleteGameRole}">
+                                                                    <MenuFlyoutItem.Icon>
+                                                                        <TextBlock Classes="icon" Text="&#xE74D;" />
+                                                                    </MenuFlyoutItem.Icon>
+                                                                </MenuFlyoutItem>
+                                                            </MenuFlyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Grid>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+
+                </Grid>
+                    </ContentControl>
+
+                    <!--  导航项列表（ListBox 替代 NavigationView.MenuItems）  -->
+                    <ListBox x:Name="ListBox_Toolbox"
+                             Grid.Row="1"
+                             Background="Transparent"
+                             SelectionChanged="ListBox_Toolbox_SelectionChanged">
+
+                        <!--  分割线  -->
+                        <Border Height="1" Margin="0,8" Background="{DynamicResource StarDividerBrush}" />
+                <!--  战绩  -->
+                <!--  使用 Tapped 事件，防止新窗口打开后此窗口重新获得焦点  -->
+                <!--  https://github.com/microsoft/microsoft-ui-xaml/issues/10272  -->
+                <Button x:Name="NavigationViewItem_BattleChronicle"
+                                    Tag="BattleChronicle"
+                                    Click="NavigationViewItem_BattleChronicle_Click"
+                                    IsVisible="False">
+                    <Button.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image x:Name="Image_BattleChronicle"
+                                   Width="20"
+                                   Source="avares://LunarWard/Assets/Image/ced4deac2162690105bbc8baad2b51a3_4109616186965788891.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_BattleChronicle}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <!--  旅行者札记  -->
+                <ListBoxItem  x:Name="NavigationViewItem_TravelersDiary"
+                                    Tag="TravelersDiaryPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/4bb2f9e21b6c64201692c4ea76a2faca_7020708978085976578.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_TravelersDiary}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  深境螺旋  -->
+                <ListBoxItem  x:Name="NavigationViewItem_SpiralAbyss"
+                                    Tag="SpiralAbyssPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/UI_MapIcon_Abyss.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_SpiralAbyss}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  幻想真境剧诗  -->
+                <ListBoxItem  x:Name="NavigationViewItem_ImaginariumTheater"
+                                    Tag="ImaginariumTheaterPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/UI_MapIcon_RoleCombat.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_ImaginariumTheater}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  幽境危战  -->
+                <ListBoxItem  x:Name="NavigationViewItem_StygianOnslaught"
+                                    Tag="StygianOnslaughtPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/UI_MapIcon_HardChallenge.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_StygianOnslaught}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+
+                <!--  开拓月历  -->
+                <ListBoxItem  x:Name="NavigationViewItem_TrailblazeMonthlyCalendar"
+                                    Tag="TrailblazeCalendarPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/097aa51ae0b4bc0c9c9e6aca6dab0744_10826781894277788.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_TrailblazeMonthlyCalendar}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  模拟宇宙  -->
+                <ListBoxItem  x:Name="NavigationViewItem_SimulatedUniverse"
+                                    Tag="SimulatedUniversePage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/RougeAchievementIcon_s.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_SimulatedUniverse}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  忘却之庭  -->
+                <ListBoxItem  x:Name="NavigationViewItem_ForgottenHall"
+                                    Tag="ForgottenHallPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/AbyssIcon01.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_ForgottenHall}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  虚构叙事  -->
+                <ListBoxItem  x:Name="NavigationViewItem_PureFiction"
+                                    Tag="PureFictionPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/ChallengeStory.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_PureFiction}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  末日幻影  -->
+                <ListBoxItem  x:Name="NavigationViewItem_ApocalypticShadow"
+                                    Tag="ApocalypticShadowPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/ApocalypticShadow.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_ApocalypticShadow}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  异相仲裁  -->
+                <ListBoxItem  x:Name="NavigationViewItem_ChallengePeak"
+                                    Tag="ChallengePeakPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/ChallengePeak.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.GameRecordPage_AnomalyArbitration}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+
+                <!--  绳网月报  -->
+                <ListBoxItem  x:Name="NavigationViewItem_InterKnotMonthlyReport"
+                                    Tag="InterKnotMonthlyReportPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/54085a560686bda74c3025944b65260e_8414768992789038554.gif" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_InterKnotMonthlyReport}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  式舆防卫战  -->
+                <ListBoxItem  x:Name="NavigationViewItem_ShiyuDefense"
+                                    Tag="ShiyuDefensePage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/d123daeb4a7960524371e769944555f1.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_ShiyuDefense}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+                <!--  危局强袭战  -->
+                <ListBoxItem  x:Name="NavigationViewItem_DeadlyAssault"
+                                    Tag="DeadlyAssaultPage"
+                                    IsVisible="False">
+                    <ListBoxItem.Content>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image Width="20" Source="avares://LunarWard/Assets/Image/286c59f117e997c10676888648b6e1b4.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding lang:Lang.HoyolabToolboxPage_DeadlyAssault}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </ListBoxItem.Content>
+                </ListBoxItem>
+
+                    </ListBox>
+
+                    <StackPanel Grid.Row="2">
+                <!--  更新设备指纹  -->
+                <Button x:Name="NavigationViewItem_UpdateDeviceInfo"
+                        Margin="-2,0,0,-4"
+                        Click="NavigationViewItem_UpdateDeviceInfo_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock Classes="icon" Text="&#xE928;" />
+                        <TextBlock Text="{Binding lang:Lang.HoyolabToolboxPage_UpdateDeviceFingerprint}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Button>
+                    </StackPanel>
+                </Grid>
+            </SplitView.Pane>
+
+            <!--  Linux: 上游 Frame（导航栈）；Avalonia 用 ContentControl，页面实例由 code-behind 换。  -->
+            <ContentControl x:Name="Frame_Content" />
+
+
+        </SplitView>
+
+
+    </Grid>
+
+</sf:PageBase>

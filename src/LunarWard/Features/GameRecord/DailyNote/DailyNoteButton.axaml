@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl x:Class="LunarWard.Features.GameRecord.DailyNote.DailyNoteButton"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:local="clr-namespace:LunarWard.Features.GameRecord.DailyNote"
+             xmlns:sc="clr-namespace:LunarWard.Controls"
+             xmlns:scggd="clr-namespace:LunarWard.Core.GameRecord.Genshin.DailyNote">
+
+    <Button x:Name="Button_DailyNote"
+            Padding="0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            BorderThickness="0"
+            CornerRadius="8"
+            Loaded="Button_DailyNote_Loaded"
+            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}"
+            Unloaded="Button_DailyNote_Unloaded">
+
+        <Grid>
+            <Image x:Name="Image_BH3"
+                  
+                   Source="ms-appx:///Assets/Image/power_bg.e4424ff8.png" />
+            <Image x:Name="Image_Genshin"
+                  
+                   Source="ms-appx:///Assets/Image/UI_ItemIcon_210.png" />
+            <Image x:Name="Image_StarRail"
+                   Margin="4"
+                  
+                   Source="ms-appx:///Assets/Image/11.png" />
+            <Image x:Name="Image_ZZZ"
+                   Margin="5"
+                  
+                   Source="ms-appx:///Assets/Image/IconStamina.png" />
+        </Grid>
+
+
+        <Button.Flyout>
+            <Flyout Placement="LeftEdgeAlignedTop">
+                <Grid MinWidth="160">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <!--  刷新  -->
+                    <Button Margin="-8"
+                            Padding="4"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            BorderThickness="0"
+                            Command="{Binding RefreshDailyNoteCommand}"
+                            CornerRadius="4"
+                            Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                        <TextBlock Classes="icon" FontSize="14"
+                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                  Text="&#xE72C;" />
+                    </Button>
+
+                    <!--  角色信息  -->
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <sc:CachedImage Width="40"
+                                        Height="40"
+                                        CornerRadius="40"
+                                        Source="{Binding GameRecordRole.HeadIcon}" />
+                        <StackPanel Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Spacing="2">
+                            <TextBlock Text="{Binding GameRecordRole.Nickname}" TextTrimming="CharacterEllipsis" />
+                            <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                <Run Text="{Binding GameRecordRole.RegionName}" />
+                                <Run Text="" />
+                                <Run Text="Lv." /><Run Text="{Binding GameRecordRole.Level}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+
+
+                    <MenuFlyoutSeparator Grid.Row="1" Margin="0,8,0,8" />
+
+
+                    <!--  错误信息  -->
+                    <TextBlock Grid.Row="2"
+                               HorizontalAlignment="Center"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Text="{Binding ErrorMessage}"
+                               TextWrapping="Wrap" />
+
+
+                    <!--  崩坏3  -->
+                    <Grid x:Name="Grid_BH3"
+                          Grid.Row="2"
+                         
+                          ColumnSpacing="24"
+                          IsVisible="{Binding BH3DailyNote, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  体力  -->
+                        <StackPanel>
+                            <Image Width="60"
+                                   Height="60"
+                                   Source="ms-appx:///Assets/Image/power_bg.e4424ff8.png" />
+                            <TextBlock HorizontalAlignment="Center"
+                                       FontSize="16"
+                                       FontWeight="SemiBold">
+                                <Run Text="{Binding BH3DailyNote.CurrentStamina}" />
+                                <Run Text="/" />
+                                <Run Text="{Binding BH3DailyNote.MaxStamina}" />
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+
+                            <!--  体力恢复时间  -->
+                            <TextBlock FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_BH3_TimeNeededForRecovery}" />
+                            <TextBlock>
+                                <Run Text="{Binding BH3DailyNote.StaminaRecoverTime.Hours}" /><Run Text="h" />
+                                <Run Text="{Binding BH3DailyNote.StaminaRecoverTime.Minutes}" /><Run Text="m" />
+                            </TextBlock>
+
+                            <!--  历练点  -->
+                            <TextBlock Margin="0,8,0,0"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_BH3_DailyBP}" />
+                            <TextBlock>
+                                <Run Text="{Binding BH3DailyNote.CurrentTrainScore}" /><Run Text="/" /><Run Text="{Binding BH3DailyNote.MaxTrainScore}" />
+                            </TextBlock>
+                        </StackPanel>
+
+
+
+                    </Grid>
+
+
+                    <!--  原神  -->
+                    <Grid x:Name="Grid_Genshin"
+                          Grid.Row="2"
+                         
+                          ColumnSpacing="12"
+                          IsVisible="{Binding GenshinDailyNote, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" MinHeight="28" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" MinHeight="28" />
+                            <RowDefinition Height="Auto" MinHeight="28" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  体力  -->
+                        <StackPanel Grid.RowSpan="20">
+                            <Image Width="60" Source="ms-appx:///Assets/Image/UI_ItemIcon_210.png" />
+                            <TextBlock HorizontalAlignment="Center"
+                                       FontSize="16"
+                                       FontWeight="SemiBold">
+                                <Run Text="{Binding GenshinDailyNote.CurrentResin}" />
+                                <Run Text="/" />
+                                <Run Text="{Binding GenshinDailyNote.MaxResin}" />
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!--  每日委托奖励  -->
+                        <Image Grid.Column="1"
+                               Width="20"
+                               Height="20"
+                               HorizontalAlignment="Left"
+                               Source="ms-appx:///Assets/Image/UI_NPCTopIcon_QuestEvent_64.png" />
+                        <TextBlock Grid.Column="1"
+                                   Margin="24,0,0,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="12"
+                                   Text="{Binding lang:Lang.DailyNoteButton_Genshin_DailyCommissionRewards}" />
+                        <TextBlock Classes="icon" Grid.Column="2"
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Center"
+                                  FontSize="14"
+                                  Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                  Text="&#xE930;"
+                                  IsVisible="{Binding GenshinDailyNote.DailyTask.IsExtraTaskRewardReceived}" />
+                        <TextBlock Grid.Column="2"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding GenshinDailyNote.DailyTask.IsExtraTaskRewardReceived, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                            <Run Text="{Binding GenshinDailyNote.FinishedTaskNum}" /><Run Text="/" /><Run Text="{Binding GenshinDailyNote.TotalTaskNum}" />
+                        </TextBlock>
+
+
+                        <!--  每日委托 & 历练点  -->
+                        <Grid Grid.Row="1"
+                              Grid.Column="1"
+                              Grid.ColumnSpan="2"
+                              Margin="24,0,0,0"
+                              ColumnSpacing="12"
+                              RowSpacing="4"
+                              IsVisible="{Binding GenshinDailyNote.IsExtraTaskRewardReceived, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  每日委托  -->
+                            <TextBlock VerticalAlignment="Center"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_Genshin_DailyCommission}" />
+                            <ItemsControl Grid.Column="1"
+                                          VerticalAlignment="Center"
+                                          ItemsSource="{Binding GenshinDailyNote.DailyTask.TaskRewards}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="scggd:TaskRewardStatus">
+                                        <Grid Width="20"
+                                              Height="20"
+                                             
+                                             >
+                                            <Image Width="16"
+                                                   Height="16"
+                                                   Opacity="0.6"
+                                                   Source="ms-appx:///Assets/Image/UI_NPCTopIcon_QuestEvent_64.png"
+                                                   IsVisible="{Binding IsUnfinished}" />
+                                            <TextBlock Classes="icon" FontSize="12"
+                                                      FontWeight="Bold"
+                                                      Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                                      Text="&#xE8FB;"
+                                                      IsVisible="{Binding IsTakenAward}" />
+                                            <TextBlock Classes="icon" FontSize="12"
+                                                      FontWeight="Bold"
+                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                      Text="&#xE8FB;"
+                                                      IsVisible="{Binding IsFinished}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!--  历练点  -->
+                            <TextBlock Grid.Row="1"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_Genshin_EncounterPoints}"
+                                       IsVisible="{Binding GenshinDailyNote.DailyTask.AttendanceVisible}" />
+                            <ItemsControl Grid.Row="1"
+                                          Grid.Column="1"
+                                          VerticalAlignment="Center"
+                                          ItemsSource="{Binding GenshinDailyNote.DailyTask.AttendanceRewards}"
+                                          IsVisible="{Binding GenshinDailyNote.DailyTask.AttendanceVisible}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="scggd:AttendanceRewardStatus">
+                                        <Grid Width="20"
+                                              Height="20"
+                                             
+                                             >
+                                            <Image Width="16"
+                                                        Height="16"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="#C1B09F"
+                                                        ShowAsMonochrome="True"
+                                                        Source="ms-appx:///Assets/Image/UI_Icon_Gift.png"
+                                                        IsVisible="{Binding IsUnfinished}" />
+                                            <Image Width="16"
+                                                        Height="16"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Foreground="#FF8066"
+                                                        ShowAsMonochrome="True"
+                                                        Source="ms-appx:///Assets/Image/UI_Icon_Gift.png"
+                                                        IsVisible="{Binding IsWaitTaken}" />
+                                            <TextBlock Classes="icon" HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      FontSize="10"
+                                                      FontWeight="Bold"
+                                                      Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                                      Text="&#xE8FB;"
+                                                      IsVisible="{Binding IsTakenAward}" />
+                                            <TextBlock Classes="icon" HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      FontSize="12"
+                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                      Text="&#xE733;"
+                                                      IsVisible="{Binding IsForbid}" />
+                                            <ProgressBar Width="20"
+                                                          Height="20"
+                                                          IsIndeterminate="False"
+                                                          Maximum="2000"
+                                                          IsVisible="{Binding IsUnfinishedOrWaitTaken}"
+                                                          Value="{Binding Progress}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                        </Grid>
+
+
+
+                        <!--  洞天宝钱  -->
+                        <Image Grid.Row="2"
+                               Grid.Column="1"
+                               Width="20"
+                               Height="20"
+                               HorizontalAlignment="Left"
+                               Source="ms-appx:///Assets/Image/UI_ItemIcon_204.png" />
+                        <TextBlock Grid.Row="2"
+                                   Grid.Column="1"
+                                   Margin="24,0,0,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="12"
+                                   Text="{Binding lang:Lang.DailyNoteButton_Genshin_RealmCurrency}" />
+                        <TextBlock Grid.Row="2"
+                                   Grid.Column="2"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   FontSize="12">
+                            <Run Text="{Binding GenshinDailyNote.CurrentHomeCoin}" /><Run Text="/" /><Run Text="{Binding GenshinDailyNote.MaxHomeCoin}" />
+                        </TextBlock>
+
+
+                        <!--  探索派遣  -->
+                        <Image Grid.Row="3"
+                               Grid.Column="1"
+                               Width="20"
+                               Height="20"
+                               HorizontalAlignment="Left"
+                               Source="ms-appx:///Assets/Image/UI_TouchIcon_Map.png" />
+                        <TextBlock Grid.Row="3"
+                                   Grid.Column="1"
+                                   Margin="24,0,0,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="12"
+                                   Text="{Binding lang:Lang.DailyNoteButton_Genshin_Expedition}" />
+                        <TextBlock Grid.Row="3"
+                                   Grid.Column="2"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   FontSize="12">
+                            <Run Text="{Binding GenshinDailyNote.CurrentExpeditionNum}" /><Run Text="/" /><Run Text="{Binding GenshinDailyNote.MaxExpeditionNum}" />
+                        </TextBlock>
+
+
+
+
+                    </Grid>
+
+
+                    <!--  星穹铁道  -->
+                    <Grid x:Name="Grid_StarRail"
+                          Grid.Row="2"
+                         
+                          ColumnSpacing="12"
+                          RowSpacing="12"
+                          IsVisible="{Binding StarRailDailyNote, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  开拓力  -->
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Image Width="40"
+                                   Height="40"
+                                   Source="ms-appx:///Assets/Image/11.png" />
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock FontSize="15">
+                                    <Run Text="{Binding StarRailDailyNote.CurrentStamina}" /><Run Text="/" /><Run Text="{Binding StarRailDailyNote.MaxStamina}" />
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="1"
+                                            IsVisible="{Binding StarRailDailyNote.IsStaminaFull, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                        <Run Text="{Binding lang:Lang.DailyNoteButton_StarRail_FullTime}" />
+                                        <Run Text="{Binding StarRailDailyNote.StaminaFullTime.LocalDateTime, StringFormat='{}{0:HH:mm}'}" />
+                                    </TextBlock>
+                                    <TextBlock FontSize="12"
+                                               Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                               Text="{Binding StarRailDailyNote.StaminaRecoveryDaysRemaining}"
+                                               IsVisible="{Binding StarRailDailyNote.StaminaRecoveryBeyondTomorrow}" />
+                                </StackPanel>
+                                <TextBlock FontSize="12"
+                                           Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                           Text="{Binding lang:Lang.DailyNoteButton_StarRail_FullyRecovered}"
+                                           IsVisible="{Binding StarRailDailyNote.IsStaminaFull}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  后备开拓力  -->
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Spacing="4">
+                            <Image Width="40"
+                                   Height="40"
+                                   Source="ms-appx:///Assets/Image/12.png" />
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding StarRailDailyNote.CurrentReserveStamina}" />
+                                <TextBlock FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Text="{Binding lang:Lang.DailyNoteButton_StarRail_ReservedTrailblazePower}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  周期任务  -->
+                        <StackPanel Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Orientation="Horizontal"
+                                    Spacing="20">
+
+                            <!--  每日实训  -->
+                            <StackPanel>
+                                <TextBlock FontSize="12"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding lang:Lang.DailyNoteButton_StarRail_DailyTraining}" />
+                                <TextBlock>
+                                    <Run Text="{Binding StarRailDailyNote.CurrentTrainScore}" /><Run Text="/" /><Run Text="{Binding StarRailDailyNote.MaxTrainScore}" />
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!--  历战余响剩余  -->
+                            <StackPanel>
+                                <TextBlock FontSize="12"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding lang:Lang.DailyNoteButton_StarRail_EchoOfWar}" />
+                                <TextBlock>
+                                    <Run Text="{Binding StarRailDailyNote.WeeklyCocoonCnt}" /><Run Text="/" /><Run Text="{Binding StarRailDailyNote.WeeklyCocoonLimit}" />
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!--  周期积分  -->
+                            <StackPanel>
+                                <TextBlock FontSize="12"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Text="{Binding lang:Lang.DailyNoteButton_StarRail_AccumulatedPoints}" />
+                                <TextBlock>
+                                        <Run Text="{Binding StarRailDailyNote.PeriodScore}" /><Run Text="/" /><Run Text="{Binding StarRailDailyNote.PeriodMaxScore}" />
+                                </TextBlock>
+                            </StackPanel>
+
+                        </StackPanel>
+
+                    </Grid>
+
+
+                    <!--  绝区零  -->
+                    <Grid x:Name="Grid_ZZZ"
+                          Grid.Row="2"
+                         
+                          RowSpacing="8"
+                          IsVisible="{Binding ZZZDailyNote, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--  电量  -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Image Width="40"
+                                   Height="40"
+                                   Source="ms-appx:///Assets/Image/IconStamina.png" />
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock FontSize="15">
+                                    <Run Text="{Binding ZZZDailyNote.Energy.Progress.Current}" /><Run Text="/" /><Run Text="{Binding ZZZDailyNote.Energy.Progress.Max}" />
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="1"
+                                            IsVisible="{Binding ZZZDailyNote.Energy.IsFull, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                        <Run Text="{Binding lang:Lang.DailyNoteButton_StarRail_FullTime}" />
+                                        <Run Text="{Binding ZZZDailyNote.Energy.Hour, StringFormat='{}{0:D2}'}" /><Run Text=":" /><Run Text="{Binding ZZZDailyNote.Energy.Minute, StringFormat='{}{0:D2}'}" />
+                                    </TextBlock>
+                                    <TextBlock FontSize="12"
+                                               Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                               Text="+1"
+                                               IsVisible="{Binding ZZZDailyNote.Energy.TomorrowRecovery}" />
+                                </StackPanel>
+                                <TextBlock FontSize="12"
+                                           Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                           Text="{Binding lang:Lang.DailyNoteButton_StarRail_FullyRecovered}"
+                                           IsVisible="{Binding ZZZDailyNote.Energy.IsFull}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  绳网会员  -->
+                        <Grid Grid.Row="1"
+                              ColumnSpacing="24"
+                              IsVisible="{Binding ZZZDailyNote.MemberCard.IsOpen}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding lang:Lang.DailyNoteButton_InterKnotMembership}" />
+                            <TextBlock Grid.Row="1"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding local:DailyNoteButton.ZZZMemberCardRemainingDaysToString(ZZZDailyNote.MemberCard.RemainingDays)}" />
+                            <TextBlock Grid.RowSpan="2"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_PolychromesUnclaimed}"
+                                       IsVisible="{Binding ZZZDailyNote.MemberCard.PolychromesClaimed, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
+                            <TextBlock Grid.RowSpan="2"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_PolychromesClaimed}"
+                                       IsVisible="{Binding ZZZDailyNote.MemberCard.PolychromesClaimed}" />
+                        </Grid>
+
+                        <!--  每日任务  -->
+                        <Grid Grid.Row="2"
+                              ColumnSpacing="24"
+                              RowSpacing="4">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  每日任务  -->
+                            <TextBlock Text="{Binding lang:Lang.DailyNoteButton_ZZZ_DailyMissions}" />
+                            <TextBlock Classes="icon" Grid.Column="1"
+                                      HorizontalAlignment="Right"
+                                      FontSize="14"
+                                      Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                      Text="&#xE930;"
+                                      IsVisible="{Binding ZZZDailyNote.IsDailyMissionComplete}" />
+
+                            <!--  今日活跃度  -->
+                            <TextBlock Grid.Row="1"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_ZZZ_EngagementToday}" />
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                <Run Text="{Binding ZZZDailyNote.Vitality.Current}" /><Run Text="/" /><Run Text="{Binding ZZZDailyNote.Vitality.Max}" />
+                            </TextBlock>
+
+                            <!--  刮刮卡  -->
+                            <TextBlock Grid.Row="2"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_ZZZ_ScratchCardMania}" />
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_ZZZ_Complete}"
+                                       IsVisible="{Binding ZZZDailyNote.IsCardSignDone}" />
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_ZZZ_Incomplete}"
+                                       IsVisible="{Binding ZZZDailyNote.IsCardSignNo}" />
+
+                            <!--  录像店经营  -->
+                            <TextBlock Grid.Row="3"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_ZZZ_VideoStoreManagement}" />
+                            <TextBlock Grid.Row="3"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_ZZZ_WaitingToOpen}"
+                                       IsVisible="{Binding ZZZDailyNote.VhsSale.IsSaleStateNo}" />
+                            <TextBlock Grid.Row="3"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_ZZZ_CurrentlyOpen}"
+                                       IsVisible="{Binding ZZZDailyNote.VhsSale.IsSaleStateDoing}" />
+                            <TextBlock Grid.Row="3"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                       Text="{Binding lang:Lang.DailyNoteButton_ZZZ_RevenueAvailable}"
+                                       IsVisible="{Binding ZZZDailyNote.VhsSale.IsSaleStateDone}" />
+
+                        </Grid>
+
+                        <!--  周期任务  -->
+                        <Grid Grid.Row="3"
+                              ColumnSpacing="24"
+                              RowSpacing="4">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  周期任务  -->
+                            <TextBlock Text="{Binding lang:Lang.DailyNoteButton_ZZZ_SeasonMissions}" />
+
+                            <!--  悬赏委托进度  -->
+                            <StackPanel Grid.Row="1">
+                                <TextBlock FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Text="{Binding lang:Lang.DailyNoteButton_ZZZ_BountyCommissionProgress}" />
+                                <TextBlock FontSize="10"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           Text="-"
+                                           IsVisible="{Binding ZZZDailyNote.BountyCommission, Converter={DynamicResource ObjectToVisibilityReversedConverter}}" />
+                                <TextBlock FontSize="10"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           IsVisible="{Binding ZZZDailyNote.BountyCommission, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                                    <Run Text="{Binding lang:Lang.DailyNoteButton_ZZZ_RemainingRefreshTime}" />
+                                    <Run Text="" />
+                                    <Run Text="{Binding ZZZDailyNote.BountyCommission.RefreshTime.Days, StringFormat='{}{0:D2}'}" /><Run Text="d" />
+                                    <Run Text="{Binding ZZZDailyNote.BountyCommission.RefreshTime.Hours, StringFormat='{}{0:D2}'}" /><Run Text="h" />
+                                </TextBlock>
+                            </StackPanel>
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       IsVisible="{Binding ZZZDailyNote.BountyCommission, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                                <Run Text="{Binding ZZZDailyNote.BountyCommission.Num}" /><Run Text="/" /><Run Text="{Binding ZZZDailyNote.BountyCommission.Total}" />
+                            </TextBlock>
+
+                            <!--  丽都周纪积分  -->
+                            <StackPanel Grid.Row="2">
+                                <TextBlock FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Text="{Binding lang:Lang.DailyNoteButton_ZZZ_RiduWeeklyPoints}" />
+                                <TextBlock FontSize="10"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           Text="-"
+                                           IsVisible="{Binding ZZZDailyNote.WeeklyTask, Converter={DynamicResource ObjectToVisibilityReversedConverter}}" />
+                                <TextBlock FontSize="10"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           IsVisible="{Binding ZZZDailyNote.WeeklyTask, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                                    <Run Text="{Binding lang:Lang.DailyNoteButton_ZZZ_RemainingRefreshTime}" />
+                                    <Run Text="" />
+                                    <Run Text="{Binding ZZZDailyNote.WeeklyTask.RefreshTime.Days, StringFormat='{}{0:D2}'}" /><Run Text="d" />
+                                    <Run Text="{Binding ZZZDailyNote.WeeklyTask.RefreshTime.Hours, StringFormat='{}{0:D2}'}" /><Run Text="h" />
+                                </TextBlock>
+                            </StackPanel>
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="1"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       IsVisible="{Binding ZZZDailyNote.WeeklyTask, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                                <Run Text="{Binding ZZZDailyNote.WeeklyTask.CurPoint}" /><Run Text="/" /><Run Text="{Binding ZZZDailyNote.WeeklyTask.MaxPoint}" />
+                            </TextBlock>
+
+                        </Grid>
+
+                    </Grid>
+
+
+                </Grid>
+            </Flyout>
+        </Button.Flyout>
+
+
+    </Button>
+
+</UserControl>

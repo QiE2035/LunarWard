@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sf:PageBase x:Class="LunarWard.Features.GameRecord.StarRail.ApocalypticShadowPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fic="clr-namespace:LunarWard.Core.GameRecord.StarRail.ApocalypticShadow"
+             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:linq="clr-namespace:System.Linq"
+             xmlns:local="clr-namespace:LunarWard.Features.GameRecord.StarRail"
+             xmlns:sc="clr-namespace:LunarWard.Controls"
+             xmlns:sf="clr-namespace:LunarWard.Frameworks"
+             xmlns:sfg="clr-namespace:LunarWard.Features.Gacha"
+             xmlns:sfgr="clr-namespace:LunarWard.Features.GameRecord">
+
+    <UserControl.Resources>
+        <BitmapImage x:Key="StarIcon" Source="ms-appx:///Assets/Image/IconChallengeStarYellow.png" />
+        <BitmapImage x:Key="StarwardModeStarIcon" Source="ms-appx:///Assets/Image/IconChallengeStarStarward.png" />
+        <BitmapImage x:Key="StarwardModeBossBg" Source="ms-appx:///Assets/Image/StarwardModeBossBg.png" />
+        <BitmapImage x:Key="StarwardModeNodeBg" Source="ms-appx:///Assets/Image/StarwardModeNodeBg.png" />
+        <BitmapImage x:Key="StarwardModeCrown" Source="ms-appx:///Assets/Image/StarwardModeCrown.png" />
+        <sfg:RarityToSRBgConverter x:Key="RarityToSRBgConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+
+        <StackPanel  x:Name="Image_Emoji"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="16"
+                    IsVisible="False">
+            <Image Width="160"
+                   Height="160"
+                   Source="{DynamicResource EmojiPom}" />
+            <TextBlock HorizontalAlignment="Center"
+                       FontSize="16"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+        </StackPanel>
+
+        <StackPanel Margin="0,24,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Spacing="12">
+            <Button Height="36"
+                    BorderThickness="0"
+                    Command="{Binding RefreshDataCommand}"
+                    CornerRadius="0,18,18,0"
+                    Style="{DynamicResource AccentButtonStyle}">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                </StackPanel>
+            </Button>
+            <Button Height="36"
+                    BorderThickness="0"
+                    CornerRadius="0,18,18,0"
+                    Shadow="{DynamicResource ThemeShadow}"
+                    Style="{DynamicResource AccentButtonStyle}"
+                    Translation="0,0,16"
+                    IsVisible="False">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <TextBlock Classes="icon" FontSize="16" Text="&#xE9D9;" />
+                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+
+        <ListView  x:Name="ListView_ForgottenHall"
+                  Grid.Row="1"
+                  Padding="12,0,12,0"
+                  ItemsSource="{Binding ApocalypticShadowList}"
+                  SelectionChanged="ListView_ForgottenHall_SelectionChanged"
+                  SelectionMode="Single"
+                  IsVisible="{Binding ApocalypticShadowList, Converter={DynamicResource ObjectToVisibilityConverter}}">
+            <ListView.ItemContainerStyle>
+                <Style BasedOn="{DynamicResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0,4,0,4" />
+                    <Setter Property="Padding" Value="4,0,4,0" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="fic:ApocalypticShadowInfo">
+                    <Grid
+                         
+                         
+                          RowSpacing="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding BeginTime, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                        <StackPanel Grid.Row="1"
+                                    Orientation="Horizontal"
+                                    Spacing="4">
+                            <Image Width="20"
+                                   Height="20"
+                                   VerticalAlignment="Center"
+                                   Source="{StaticResource StarIcon}" />
+                            <TextBlock VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Text="{Binding StarNum}" />
+                            <Border Width="1"
+                                    Height="12"
+                                    Margin="0,3,0,0"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Opacity="0.25"
+                                    IsVisible="{Binding ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
+                            <Image Width="20"
+                                   Height="20"
+                                   VerticalAlignment="Center"
+                                   Source="{StaticResource StarwardModeStarIcon}"
+                                   IsVisible="{Binding ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+
+        <ScrollViewer Grid.RowSpan="2"
+                      Grid.Column="1"
+                      IsVisible="{Binding CurrentApocalypticShadow, Converter={DynamicResource ObjectToVisibilityConverter}}">
+            <StackPanel Margin="24" Spacing="8">
+
+                <Grid>
+                    <!--  统计周期  -->
+                    <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="" />
+                        <Run Text="{Binding CurrentApocalypticShadow.BeginTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
+                        <Run Text=" - " />
+                        <Run Text="{Binding CurrentApocalypticShadow.EndTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
+                    </TextBlock>
+                    <TextBlock HorizontalAlignment="Right" Text="{Binding CurrentApocalypticShadow.Meta.Name}" />
+                </Grid>
+
+                <!--  出战统计  -->
+                <Grid Margin="0,-4,0,0"
+                     
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <!--  Total Star  -->
+                    <StackPanel Grid.RowSpan="2"
+                                HorizontalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                        <Image Width="24"
+                               Height="24"
+                               VerticalAlignment="Center"
+                               Source="{StaticResource StarIcon}" />
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="16"
+                                   Text="{Binding CurrentApocalypticShadow.StarNum}" />
+                        <Border Width="1"
+                                    Height="13"
+                                    Margin="0,2,0,0"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Opacity="0.25"
+                                    IsVisible="{Binding CurrentApocalypticShadow.ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
+                        <Image Width="24"
+                                   Height="24"
+                                   VerticalAlignment="Center"
+                                   Source="{StaticResource StarwardModeStarIcon}"
+                                   IsVisible="{Binding CurrentApocalypticShadow.ExtraStarNum, Converter={DynamicResource Int32NotZeroToVisibilityConverter}}" />
+                    </StackPanel>
+                    <!--  最高难度  -->
+                    <TextBlock  x:Name="TextBlock_Deepest"
+                               Grid.Column="1"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               IsTextTrimmedChanged="TextBlock_Deepest_IsTextTrimmedChanged"
+                               TextTrimming="CharacterEllipsis">
+                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ApocalypticShadowPage_HighestDifficultyCleared}" />
+                        <Run Text="" />
+                        <Run Text="{Binding CurrentApocalypticShadow.MaxFloor}" />
+                    </TextBlock>
+                    <!--  挑战次数  -->
+                    <TextBlock  x:Name="TextBlock_Battles"
+                               Grid.Column="2"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center">
+                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ForgottenHallPage_TimesChallenged}" />
+                        <Run Text="" />
+                        <Run Text="{Binding CurrentApocalypticShadow.BattleNum}" />
+                    </TextBlock>
+                    <!--  BOSS  -->
+                    <MenuFlyoutSeparator Grid.Row="2"
+                                         Grid.ColumnSpan="3"
+                                         Margin="4" />
+                    <Grid x:Name="BossPanelGrid" Grid.Row="3" Grid.ColumnSpan="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0"
+                                    HorizontalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="12">
+                            <sc:CachedImage Width="40"
+                                            Height="40"
+                                            VerticalAlignment="Center"
+                                            CornerRadius="20"
+                                            Source="{Binding CurrentApocalypticShadow.Meta.UpperBoss.Icon}" />
+                            <TextBlock VerticalAlignment="Center" FontSize="12">
+                                <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
+                                <Run Text="1" />
+                                <LineBreak />
+                                <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding CurrentApocalypticShadow.Meta.UpperBoss.Name}" />
+                            </TextBlock>
+
+                        </StackPanel>
+                        <StackPanel Grid.Column="1"
+                                    HorizontalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="12">
+                            <sc:CachedImage Width="40"
+                                            Height="40"
+                                            VerticalAlignment="Center"
+                                            CornerRadius="20"
+                                            Source="{Binding CurrentApocalypticShadow.Meta.LowerBoss.Icon}" />
+                            <TextBlock VerticalAlignment="Center" FontSize="12">
+                                <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
+                                <Run Text="2" />
+                                <LineBreak />
+                                <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding CurrentApocalypticShadow.Meta.LowerBoss.Name}" />
+                            </TextBlock>
+
+                        </StackPanel>
+                        <Image Grid.Column="2"
+                               MaxHeight="44"
+                               Margin="40,-2,0,-2"
+                               Stretch="Fill"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom"
+                               RenderTransformOrigin="0.5,0.5"
+                               Source="{StaticResource StarwardModeBossBg}"
+                               IsVisible="{Binding CurrentApocalypticShadow.Meta.TierceBoss, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                            <Image.RenderTransform>
+                                <ScaleTransform ScaleX="-1" />
+                            </Image.RenderTransform>
+                        </Image>
+                        <StackPanel Grid.Column="2"
+                                    HorizontalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="12"
+                                    x:Name="TierceBossRoot"
+                                   >
+                            <sc:CachedImage Width="40"
+                                            Height="40"
+                                            VerticalAlignment="Center"
+                                            CornerRadius="20"
+                                            Source="{Binding CurrentApocalypticShadow.Meta.TierceBoss.Icon}" />
+                            <TextBlock VerticalAlignment="Center" FontSize="12">
+                                <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
+                                <Run Text="3" />
+                                <LineBreak />
+                                <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding CurrentApocalypticShadow.Meta.TierceBoss.Name}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+
+
+                <!--  卡片  -->
+                <ItemsControl Margin="0,12,0,0"
+                              HorizontalAlignment="Center"
+                              ItemsSource="{Binding CurrentApocalypticShadow.AllFloorDetail}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel HorizontalSpacing="12"
+                                          VerticalSpacing="12" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="fic:ApocalypticShadowFloorDetail">
+                            <StackPanel Width="388"
+                                        Background="{DynamicResource CustomOverlayAcrylicBrush}"
+                                        CornerRadius="8,28,8,8"
+                                        Shadow="{DynamicResource ThemeShadow}"
+                                        Translation="0,0,16">
+
+                                <!--  title & Node1 & Node2  -->
+                                <Grid Height="360">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="56" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.ColumnSpan="3"
+                                            Margin="-24,0,-24,0"
+                                            Background="{DynamicResource ControlOnImageFillColorDefaultBrush}" />
+
+                                    <!--  名称  -->
+                                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock FontSize="18"
+                                                   FontWeight="Bold"
+                                                   Text="{Binding Name}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+
+                                    <!--  星星图标  -->
+                                    <StackPanel Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Spacing="2">
+                                        <StackPanel HorizontalAlignment="Right"
+                                                    Orientation="Horizontal"
+                                                    Spacing="2">
+                                            <ItemsControl ItemsSource="{Binding linq:Enumerable.Range(0, NormalStarNum)}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Image Width="24"
+                                                               Height="24"
+                                                               VerticalAlignment="Center"
+                                                               Source="{StaticResource StarIcon}" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <!--  分割线  -->
+                                            <Border x:Name="ExtraStarDivider"
+                                                    Width="1"
+                                                    Height="13"
+                                                    Margin="0,3,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Background="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Opacity="0.25"
+                                                    />
+                                            <!--  额外星星  -->
+                                            <ItemsControl x:Name="ExtraStarsControl"
+                                                          ItemsSource="{Binding linq:Enumerable.Range(0, ExtraStarNum)}"
+                                                         >
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Image Width="24"
+                                                               Height="24"
+                                                               VerticalAlignment="Center"
+                                                               Source="{StaticResource StarwardModeStarIcon}" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                        <!--  总分  -->
+                                        <TextBlock HorizontalAlignment="Right"
+                                                   FontSize="12"
+                                                   IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                            <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.ApocalypticShadowPage_TotalScore}" />
+                                            <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="{Binding TotalScore}" />
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!--  节点1  -->
+                                    <StackPanel Grid.Row="1"
+                                                Margin="0,8,0,0"
+                                                Orientation="Horizontal"
+                                                IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                        <TextBlock>
+                                            <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
+                                            <Run Text="1" />
+                                        </TextBlock>
+                                        <TextBlock Classes="icon" Margin="12,0,0,1"
+                                                  VerticalAlignment="Bottom"
+                                                  FontSize="12"
+                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                  Text="&#xEC61;"
+                                                  IsVisible="{Binding Node1.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
+                                        <TextBlock Margin="4,0,0,0"
+                                                   VerticalAlignment="Bottom"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Text="{Binding lang:Lang.ApocalypticShadowPage_DefeatedBoss}"
+                                                   IsVisible="{Binding Node1.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="2"
+                                               Grid.ColumnSpan="3"
+                                               Margin="0,4,0,0"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Text="{Binding Node1.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
+                                               IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
+                                    <TextBlock Grid.Row="2"
+                                               Grid.ColumnSpan="3"
+                                               Margin="0,4,0,0"
+                                               HorizontalAlignment="Right"
+                                               FontSize="12"
+                                               IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.PureFictionPage_Score}" />
+                                        <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="{Binding Node1.Score}" />
+                                    </TextBlock>
+
+                                    <ItemsControl Grid.Row="3"
+                                                  Grid.ColumnSpan="3"
+                                                  Margin="0,4,0,4"
+                                                  HorizontalAlignment="Center"
+                                                  ItemsSource="{Binding Node1.Avatars}"
+                                                  IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="12" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="fic:ApocalypticShadowAvatar">
+                                                <Grid Width="72" Height="84">
+                                                    <sc:CachedImage Source="{Binding Rarity, Converter={StaticResource RarityToSRBgConverter}}" />
+                                                    <sc:CachedImage VerticalAlignment="Top"
+                                                                    CornerRadius="0,12,0,0"
+                                                                    Source="{Binding Icon}"
+                                                                    Stretch="UniformToFill" />
+                                                    <Border HorizontalAlignment="Right"
+                                                            VerticalAlignment="Top"
+                                                            Background="#A0000000"
+                                                            CornerRadius="0,12,0,8"
+                                                            IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                        <TextBlock Margin="4,2,4,2"
+                                                                   FontSize="14"
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   IsTextScaleFactorEnabled="False"
+                                                                   Text="{Binding Rank}" />
+                                                    </Border>
+                                                    <Border Height="16"
+                                                            Margin="0,0,0,1.5"
+                                                            VerticalAlignment="Bottom"
+                                                            Background="#A0000000">
+                                                        <TextBlock Margin="0,0,0,1"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center">
+                                                            <Run Text="Lv." />
+                                                            <Run Text="{Binding Level}" />
+                                                        </TextBlock>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!--  节点2  -->
+                                    <StackPanel Grid.Row="4"
+                                                Orientation="Horizontal"
+                                                IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                        <TextBlock>
+                                            <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
+                                            <Run Text="2" />
+                                        </TextBlock>
+                                        <TextBlock Classes="icon" Margin="12,0,0,1"
+                                                  VerticalAlignment="Bottom"
+                                                  FontSize="12"
+                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                  Text="&#xEC61;"
+                                                  IsVisible="{Binding Node2.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
+                                        <TextBlock Margin="4,0,0,0"
+                                                   VerticalAlignment="Bottom"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Text="{Binding lang:Lang.ApocalypticShadowPage_DefeatedBoss}"
+                                                   IsVisible="{Binding Node2.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="5"
+                                               Grid.ColumnSpan="3"
+                                               Margin="0,4,0,0"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Text="{Binding Node2.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
+                                               IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
+                                    <TextBlock Grid.Row="5"
+                                               Grid.ColumnSpan="3"
+                                               Margin="0,4,0,0"
+                                               HorizontalAlignment="Right"
+                                               FontSize="12"
+                                               IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.PureFictionPage_Score}" />
+                                        <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="{Binding Node2.Score}" />
+                                    </TextBlock>
+
+                                    <ItemsControl Grid.Row="6"
+                                                  Grid.ColumnSpan="3"
+                                                  Margin="0,4,0,4"
+                                                  HorizontalAlignment="Center"
+                                                  ItemsSource="{Binding Node2.Avatars}"
+                                                  IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityReversedConverter}}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="12" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="fic:ApocalypticShadowAvatar">
+                                                <Grid Width="72" Height="84">
+                                                    <sc:CachedImage Source="{Binding Rarity, Converter={StaticResource RarityToSRBgConverter}}" />
+                                                    <sc:CachedImage VerticalAlignment="Top"
+                                                                    CornerRadius="0,12,0,0"
+                                                                    Source="{Binding Icon}"
+                                                                    Stretch="UniformToFill" />
+                                                    <Border HorizontalAlignment="Right"
+                                                            VerticalAlignment="Top"
+                                                            Background="#A0000000"
+                                                            CornerRadius="0,12,0,8"
+                                                            IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                        <TextBlock Margin="4,2,4,2"
+                                                                   FontSize="14"
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   IsTextScaleFactorEnabled="False"
+                                                                   Text="{Binding Rank}" />
+                                                    </Border>
+                                                    <Border Height="16"
+                                                            Margin="0,0,0,1.5"
+                                                            VerticalAlignment="Bottom"
+                                                            Background="#A0000000">
+                                                        <TextBlock Margin="0,0,0,1"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center">
+                                                            <Run Text="Lv." />
+                                                            <Run Text="{Binding Level}" />
+                                                        </TextBlock>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!--  快速通关  -->
+                                    <StackPanel Grid.Row="1"
+                                                Grid.RowSpan="6"
+                                                Grid.ColumnSpan="3"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Spacing="8"
+                                                IsVisible="{Binding IsFast, Converter={DynamicResource BoolToVisibilityConverter}}">
+                                        <Image Width="120" Source="ms-appx:///Assets/Image/20004.png" />
+                                        <TextBlock HorizontalAlignment="Center"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Text="{Binding lang:Lang.ForgottenHallPage_QuickCleared}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!--  节点3  -->
+                                <Grid Height="144"
+                                      x:Name="Node3Root"
+                                     
+                                      VerticalAlignment="Top"
+                                      >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Image Grid.Row="0"
+                                           MaxHeight="18"
+                                           Margin="0,1.5,0,-1"
+                                           Stretch="Fill"
+                                           VerticalAlignment="Top"
+                                           Source="{StaticResource StarwardModeNodeBg}" />
+                                    <StackPanel Grid.Row="0"
+                                                Orientation="Horizontal">
+                                        <Image MaxHeight="14"
+                                           Margin="4,2,0,0"
+                                           Source="{StaticResource StarwardModeCrown}" />
+                                        <TextBlock Margin="6,0,0,0">
+                                            <Run Text="{Binding lang:Lang.ForgottenHallPage_TeamSetup}" />
+                                            <Run Text="3" />
+                                        </TextBlock>
+                                        <TextBlock Classes="icon" Margin="12,0,0,1"
+                                                  VerticalAlignment="Bottom"
+                                                  FontSize="12"
+                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                  Text="&#xEC61;"
+                                                  IsVisible="{Binding Node3.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
+                                        <TextBlock Margin="4,0,0,0"
+                                                   VerticalAlignment="Bottom"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Text="{Binding lang:Lang.ApocalypticShadowPage_DefeatedBoss}"
+                                                   IsVisible="{Binding Node3.BossDefeated, Converter={DynamicResource BoolToVisibilityConverter}}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="1"
+                                               Grid.ColumnSpan="2"
+                                               Margin="0,4,0,0"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Text="{Binding Node3.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                                    <TextBlock Grid.Row="1"
+                                               Grid.ColumnSpan="2"
+                                               Margin="0,4,0,0"
+                                               HorizontalAlignment="Right"
+                                               FontSize="12">
+                                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.PureFictionPage_Score}" />
+                                        <Run Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="{Binding Node3.Score}" />
+                                    </TextBlock>
+
+                                    <ItemsControl Grid.Row="2"
+                                                  Grid.ColumnSpan="2"
+                                                  HorizontalAlignment="Center"
+                                                  ItemsSource="{Binding Node3.Avatars}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="12" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="fic:ApocalypticShadowAvatar">
+                                                <Grid Width="72" Height="84">
+                                                    <sc:CachedImage Source="{Binding Rarity, Converter={StaticResource RarityToSRBgConverter}}" />
+                                                    <sc:CachedImage VerticalAlignment="Top"
+                                                                    CornerRadius="0,12,0,0"
+                                                                    Source="{Binding Icon}"
+                                                                    Stretch="UniformToFill" />
+                                                    <Border HorizontalAlignment="Right"
+                                                            VerticalAlignment="Top"
+                                                            Background="#A0000000"
+                                                            CornerRadius="0,12,0,8"
+                                                            IsVisible="{Binding sfgr:AvatarRankHelper.RankToVisibility(Rank)}">
+                                                        <TextBlock Margin="4,2,4,2"
+                                                                   FontSize="14"
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   IsTextScaleFactorEnabled="False"
+                                                                   Text="{Binding Rank}" />
+                                                    </Border>
+                                                    <Border Height="16"
+                                                            Margin="0,0,0,1.5"
+                                                            VerticalAlignment="Bottom"
+                                                            Background="#A0000000">
+                                                        <TextBlock Margin="0,0,0,1"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center">
+                                                            <Run Text="Lv." />
+                                                            <Run Text="{Binding Level}" />
+                                                        </TextBlock>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+
+            </StackPanel>
+        </ScrollViewer>
+
+
+    </Grid>
+</sf:PageBase>

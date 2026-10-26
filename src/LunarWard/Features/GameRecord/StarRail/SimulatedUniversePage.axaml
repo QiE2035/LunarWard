@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sf:PageBase x:Class="LunarWard.Features.GameRecord.StarRail.SimulatedUniversePage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:local="clr-namespace:LunarWard.Features.GameRecord.StarRail"
+             xmlns:sc="clr-namespace:LunarWard.Controls"
+             xmlns:sf="clr-namespace:LunarWard.Frameworks"
+             xmlns:sfg="clr-namespace:LunarWard.Features.Gacha"
+             xmlns:su="clr-namespace:LunarWard.Core.GameRecord.StarRail.SimulatedUniverse">
+
+    <UserControl.Resources>
+        <local:SimulatedUniverseWorldIconConverter x:Key="SimulatedUniverseWorldIconConverter" />
+        <local:SimulatedUniverseBuffIconConverter x:Key="SimulatedUniverseBuffIconConverter" />
+        <local:SimulatedUniverseBuffBgConverter x:Key="SimulatedUniverseBuffBgConverter" />
+        <local:SimulatedUniverseRomanNumberConverter x:Key="SimulatedUniverseRomanNumberConverter" />
+        <sfg:RarityToSRBgConverter x:Key="RarityToSRBgConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+
+        <StackPanel  x:Name="Image_Emoji"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="16"
+                    IsVisible="False">
+            <Image Width="160"
+                   Height="160"
+                   Source="{DynamicResource EmojiPom}" />
+            <TextBlock HorizontalAlignment="Center"
+                       FontSize="16"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+        </StackPanel>
+
+        <StackPanel Margin="0,24,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Spacing="12">
+            <Button Height="36"
+                    BorderThickness="0"
+                    Command="{Binding GetSimulatedUniverseDetailCommand}"
+                    CornerRadius="0,18,18,0"
+                    Style="{DynamicResource AccentButtonStyle}">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                </StackPanel>
+            </Button>
+            <Button Height="36"
+                    BorderThickness="0"
+                    CornerRadius="0,18,18,0"
+                    Shadow="{DynamicResource ThemeShadow}"
+                    Style="{DynamicResource AccentButtonStyle}"
+                    Translation="0,0,16"
+                    IsVisible="False">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <TextBlock Classes="icon" FontSize="16" Text="&#xE9D9;" />
+                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+
+        <ListView  x:Name="ListView_SimulatedUniverse"
+                  Grid.Row="1"
+                  Padding="12,0,12,0"
+                  ItemsSource="{Binding RecordBasicList}"
+                  SelectionChanged="ListView_SimulatedUniverse_SelectionChanged"
+                  SelectionMode="Single"
+                  IsVisible="{Binding RecordBasicList, Converter={DynamicResource ObjectToVisibilityConverter}}">
+            <ListView.ItemContainerStyle>
+                <Style BasedOn="{DynamicResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0,4,0,4" />
+                    <Setter Property="Padding" Value="4,0,4,0" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="su:SimulatedUniverseRecordBasic">
+                    <Grid
+                         
+                         
+                          RowSpacing="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding ScheduleBegin, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+
+
+        <ScrollViewer Grid.RowSpan="2" Grid.Column="1">
+            <StackPanel Margin="24">
+
+
+                <!--  数据总览  -->
+                <Grid Margin="0,0,0,16"
+                     
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16"
+                      IsVisible="{Binding BasicInfo, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <!--  技能树已激活  -->
+                    <TextBlock Grid.Column="0"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center">
+                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.SimulatedUniversePage_AbilityTreeBuffsActivated}" />
+                        <Run Text="" />
+                        <Run Text="{Binding BasicInfo.UnlockedSkillPoints}" />
+                    </TextBlock>
+                    <!--  已解锁奇物  -->
+                    <TextBlock Grid.Column="1"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center">
+                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.SimulatedUniversePage_UnlockedCurios}" />
+                        <Run Text="" />
+                        <Run Text="{Binding BasicInfo.UnlockedMiracleNum}" />
+                    </TextBlock>
+                    <!--  已解锁祝福  -->
+                    <TextBlock Grid.Column="2"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center">
+                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.SimulatedUniversePage_UnlockedBlessings}" />
+                        <Run Text="" />
+                        <Run Text="{Binding BasicInfo.UnlockedBuffNum}" />
+                    </TextBlock>
+                </Grid>
+
+
+                <Grid
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16"
+                      IsVisible="{Binding CurrentRecord, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                    <!--  本期通关次数  -->
+                    <TextBlock Margin="12,0,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center">
+                        <Run Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding lang:Lang.SimulatedUniversePage_NumberOfClears}" />
+                        <Run Text="" />
+                        <Run Text="{Binding CurrentRecord.Basic.FinishCount}" />
+                    </TextBlock>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <!--  统计周期  -->
+                    <TextBlock Margin="0,0,12,0"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="" />
+                        <Run Text="{Binding CurrentRecord.Basic.ScheduleBegin, StringFormat='{}{0:yyyy/MM/dd}'}" />
+                        <Run Text=" - " />
+                        <Run Text="{Binding CurrentRecord.Basic.ScheduleEnd, StringFormat='{}{0:yyyy/MM/dd}'}" />
+                    </TextBlock>
+                </Grid>
+
+
+                <ItemsControl Margin="0,16,0,0"
+                               ItemsSource="{Binding CurrentRecord.Records}"
+                               IsVisible="{Binding CurrentRecord, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                    
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="su:SimulatedUniverseRecordItem">
+                            <Border Background="{DynamicResource CustomOverlayAcrylicBrush}"
+                                    CornerRadius="8"
+                                    Shadow="{DynamicResource ThemeShadow}"
+                                    Translation="0,0,16">
+                                <Expander Padding="16,0,16,12"
+                                          HorizontalAlignment="Stretch"
+                                          Background="Transparent"
+                                          BorderThickness="0">
+                                    <Expander.Resources>
+                                        <x:Double x:Key="ExpanderHeaderBorderThickness">0</x:Double>
+                                        <x:Double x:Key="ExpanderContentDownBorderThickness">0</x:Double>
+                                        <x:Double x:Key="ExpanderContentUpBorderThickness">0</x:Double>
+                                        <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="ControlFillColorTransparentBrush" />
+                                        <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="ControlFillColorTransparentBrush" />
+                                    </Expander.Resources>
+                                    <Expander.Header>
+                                        <StackPanel Padding="0,12,0,12" Spacing="8">
+                                            <Grid>
+                                                <!--  第几世界  -->
+                                                <StackPanel Orientation="Horizontal">
+                                                    <sc:CachedImage Width="48"
+                                                                    Height="48"
+                                                                    Source="{Binding Progress, Converter={StaticResource SimulatedUniverseWorldIconConverter}}" />
+                                                    <TextBlock Margin="16,0,0,0"
+                                                               VerticalAlignment="Center"
+                                                               FontSize="16"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               Text="{Binding Name}" />
+                                                    <TextBlock Margin="4,0,0,0"
+                                                               VerticalAlignment="Center"
+                                                               FontSize="16"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               Text="{Binding Difficulty, Converter={StaticResource SimulatedUniverseRomanNumberConverter}}" />
+                                                </StackPanel>
+                                                <!--  最高积分  -->
+                                                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               Text="{Binding lang:Lang.SimulatedUniversePage_HighestScore}" />
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               FontSize="16"
+                                                               Text="{Binding Score}" />
+                                                </StackPanel>
+                                            </Grid>
+                                            <!--  挑战时间  -->
+                                            <TextBlock HorizontalAlignment="Left"
+                                                       VerticalAlignment="Center"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                <Run Text="{Binding lang:Lang.SimulatedUniversePage_ChallengedOn}" />
+                                                <Run Text="" />
+                                                <Run Text="{Binding FinishTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                                            </TextBlock>
+                                            <MenuFlyoutSeparator />
+
+                                            <!--  通关角色  -->
+                                            <TextBlock Text="{Binding lang:Lang.SimulatedUniversePage_CharactersUsed}" />
+                                            <ItemsControl ItemsSource="{Binding FinalLineup}">
+                                                
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="su:SimulatedUniverseAvatar">
+                                                        <Grid Width="72" Height="84">
+                                                            <sc:CachedImage Source="{Binding Rarity, Converter={StaticResource RarityToSRBgConverter}}" />
+                                                            <sc:CachedImage VerticalAlignment="Top"
+                                                                            CornerRadius="0,12,0,0"
+                                                                            Source="{Binding Icon}"
+                                                                            Stretch="UniformToFill" />
+                                                            <Border Height="16"
+                                                                    Margin="0,0,0,1.5"
+                                                                    VerticalAlignment="Bottom"
+                                                                    Background="#A0000000">
+                                                                <TextBlock Margin="0,0,0,1"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center">
+                                                                    <Run Text="Lv." /><Run Text="{Binding Level}" />
+                                                                </TextBlock>
+                                                            </Border>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!--  buff  -->
+                                            <ItemsControl ItemsSource="{Binding BuffTypeList}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="su:SimulatedUniverseBuffType">
+                                                        <Grid Width="48"
+                                                              Height="48"
+                                                             
+                                                              ToolTip.Tip="{Binding Name}">
+                                                            <sc:CachedImage Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                                                                            CornerRadius="24"
+                                                                            Source="{Binding Id, Converter={StaticResource SimulatedUniverseBuffIconConverter}}" />
+                                                            <Border Width="16"
+                                                                    Height="16"
+                                                                    HorizontalAlignment="Right"
+                                                                    VerticalAlignment="Bottom"
+                                                                    Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                                                                    CornerRadius="8">
+                                                                <TextBlock Margin="0,0,0,1"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           FontSize="12"
+                                                                           Text="{Binding Cnt}" />
+                                                            </Border>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                        </StackPanel>
+                                    </Expander.Header>
+                                    <Expander.Content>
+                                        <StackPanel HorizontalAlignment="Stretch">
+                                            <!--  缓存的角色  -->
+                                            <TextBlock HorizontalAlignment="Left"
+                                                       Text="{Binding lang:Lang.SimulatedUniversePage_CachedCharacters}"
+                                                       IsVisible="{Binding CachedAvatars, Converter={DynamicResource CollectionToVisibilityConverter}}" />
+                                            <ItemsControl Margin="0,8,0,0"
+                                                          ItemsSource="{Binding CachedAvatars}"
+                                                          IsVisible="{Binding CachedAvatars, Converter={DynamicResource CollectionToVisibilityConverter}}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="su:SimulatedUniverseAvatar">
+                                                        <sc:CachedImage Width="32"
+                                                                        Height="32"
+                                                                        Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                                                                        CornerRadius="16"
+                                                                        Source="{Binding Icon}" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <!--  获得祝福  -->
+                                            <TextBlock Margin="0,12,0,0"
+                                                       HorizontalAlignment="Left"
+                                                       Text="{Binding lang:Lang.SimulatedUniversePage_BlessingsObtained}" />
+                                            <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding Buffs}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="8" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="su:SimulatedUniverseBuff" x:DefaultBindMode="OneWay">
+                                                        <Grid RowSpacing="4">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition />
+                                                            </Grid.RowDefinitions>
+                                                            <sc:CachedImage Width="24"
+                                                                            Height="24"
+                                                                            HorizontalAlignment="Left"
+                                                                            Source="{Binding BuffType.Id, Converter={StaticResource SimulatedUniverseBuffIconConverter}}" />
+                                                            <TextBlock Grid.Column="1"
+                                                                       Margin="32,0,0,0"
+                                                                       VerticalAlignment="Center"
+                                                                       Text="{Binding BuffType.Name}" />
+                                                            <ItemsControl Grid.Row="1"
+                                                                           Margin="32,0,0,0"
+                                                                           ItemsSource="{Binding Items}">
+                                                                
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate x:DataType="su:SimulatedUniverseBuffItem" x:DefaultBindMode="OneWay">
+                                                                        <Grid
+                                                                             
+                                                                             >
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition />
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock VerticalAlignment="Center"
+                                                                                       FontSize="12"
+                                                                                       Text="{Binding Name}" />
+                                                                            <TextBlock Classes="icon" Grid.Column="1"
+                                                                                      Margin="4,0,0,0"
+                                                                                      FontSize="12"
+                                                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                      Text="&#xEB11;"
+                                                                                      IsVisible="{Binding IsEvoluted}" />
+                                                                        </Grid>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <!--  获得奇物  -->
+                                            <TextBlock Margin="0,12,0,0"
+                                                       HorizontalAlignment="Left"
+                                                       Text="{Binding lang:Lang.SimulatedUniversePage_CuriosObtained}" />
+                                            <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding Miracles}">
+                                                
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="su:SimulatedUniverseMiracleItem">
+                                                        <sc:CachedImage Width="32"
+                                                                        Height="32"
+                                                                        Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
+                                                                        CornerRadius="16"
+                                                                        Source="{Binding Icon}"
+                                                                        ToolTip.Tip="{Binding Name}" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Expander.Content>
+                                </Expander>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+
+
+            </StackPanel>
+        </ScrollViewer>
+
+
+
+    </Grid>
+</sf:PageBase>

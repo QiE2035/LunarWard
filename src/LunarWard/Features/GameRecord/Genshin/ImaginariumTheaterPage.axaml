@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sf:PageBase x:Class="LunarWard.Features.GameRecord.Genshin.ImaginariumTheaterPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:local="clr-namespace:LunarWard.Features.GameRecord.Genshin"
+             xmlns:sc="clr-namespace:LunarWard.Controls"
+             xmlns:scggi="clr-namespace:LunarWard.Core.GameRecord.Genshin.ImaginariumTheater"
+             xmlns:scv="clr-namespace:LunarWard.Converters"
+             xmlns:sf="clr-namespace:LunarWard.Frameworks"
+             xmlns:sfg="clr-namespace:LunarWard.Features.Gacha">
+
+    <UserControl.Resources>
+        <BitmapImage x:Key="MedalIcon_0" Source="ms-appx:///Assets/Image/UI_RoleCombat_Medal_0.png" />
+        <BitmapImage x:Key="MedalIcon_1" Source="ms-appx:///Assets/Image/UI_RoleCombat_Medal_1.png" />
+        <BitmapImage x:Key="MedalIcon_2" Source="ms-appx:///Assets/Image/UI_RoleCombat_Medal_2.png" />
+        <BitmapImage x:Key="MedalIcon_3" Source="ms-appx:///Assets/Image/UI_RoleCombat_Medal_3.png" />
+        <BitmapImage x:Key="StarIcon_1" Source="ms-appx:///Assets/Image/UI_Icon_Tower_Star1.png" />
+        <BitmapImage x:Key="StarIcon_2" Source="ms-appx:///Assets/Image/UI_Icon_Tower_Star2.png" />
+        <BitmapImage x:Key="FlowerIcon" Source="ms-appx:///Assets/Image/UI_DisplayItemIcon_410016.png" />
+        <local:TheaterStarIconVisibilityConverter x:Key="TheaterStarIconVisibilityConverter" />
+        <sfg:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />
+    </UserControl.Resources>
+
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+
+        <StackPanel  x:Name="Image_Emoji"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="16"
+                    IsVisible="False">
+            <Image Width="160"
+                   Height="160"
+                   Source="{DynamicResource EmojiPaimon}" />
+            <TextBlock HorizontalAlignment="Center"
+                       FontSize="16"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+        </StackPanel>
+
+        <StackPanel Margin="0,24,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Spacing="12">
+            <Button Height="36"
+                    BorderThickness="0"
+                    Command="{Binding RefreshDataCommand}"
+                    CornerRadius="0,18,18,0"
+                    Style="{DynamicResource AccentButtonStyle}">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                </StackPanel>
+            </Button>
+            <Button Height="36"
+                    BorderThickness="0"
+                    CornerRadius="0,18,18,0"
+                    Shadow="{DynamicResource ThemeShadow}"
+                    Style="{DynamicResource AccentButtonStyle}"
+                    Translation="0,0,16"
+                    IsVisible="False">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <TextBlock Classes="icon" FontSize="16" Text="&#xE9D9;" />
+                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <ListView  x:Name="ListView_TheaterList"
+                  Grid.Row="1"
+                  Padding="12,0,12,0"
+                  ItemsSource="{Binding TheaterList}"
+                  SelectionChanged="ListView_TheaterList_SelectionChanged"
+                  SelectionMode="Single">
+            <ListView.ItemContainerStyle>
+                <Style BasedOn="{DynamicResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0,4,0,4" />
+                    <Setter Property="Padding" Value="4,0,4,0" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="scggi:ImaginariumTheaterInfo">
+                    <Grid
+                         
+                         
+                          RowSpacing="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding StartTime, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                        <Image Grid.Row="1"
+                               Width="20"
+                               Height="20"
+                               HorizontalAlignment="Left"
+                               Source="{Binding local:ImaginariumTheaterPage.HeraldryImage(Heraldry)}" />
+                        <TextBlock Grid.Row="1"
+                                   Margin="24,0,0,2"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   IsTextScaleFactorEnabled="False">
+                            <Run Text="{Binding MaxRoundId}" /><Run Text="/" /><Run Text="{Binding local:ImaginariumTheaterPage.DifficultyIdToMaxRound(DifficultyId)}" />
+                        </TextBlock>
+                        <Image Grid.Row="1"
+                               Width="20"
+                               Height="20"
+                               Margin="64,0,0,0"
+                               HorizontalAlignment="Left"
+                               Source="{StaticResource StarIcon_1}" />
+                        <TextBlock Grid.Row="1"
+                                   Margin="88,0,0,2"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   IsTextScaleFactorEnabled="False">
+                            <Run Text="{Binding MedalNum}" /><Run Text="/" /><Run Text="{Binding local:ImaginariumTheaterPage.DifficultyIdToMaxRound(DifficultyId)}" />
+                        </TextBlock>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <ScrollViewer Grid.RowSpan="2"
+                      Grid.Column="1"
+                      IsVisible="{Binding CurrentTheater, Converter={DynamicResource ObjectToVisibilityConverter}}">
+            <StackPanel Margin="12,24,24,24" Spacing="8">
+                <Grid>
+                    <!--  统计周期  -->
+                    <TextBlock HorizontalAlignment="Right" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="" />
+                        <Run Text="{Binding CurrentTheater.StartTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
+                        <Run Text=" - " />
+                        <Run Text="{Binding CurrentTheater.EndTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
+                    </TextBlock>
+                    <!--  演出回顾  -->
+                    <TextBlock FontSize="16"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_PastPerformances}"
+                               IsVisible="{Binding HasData}" />
+                </Grid>
+
+                <!--  演出回顾  -->
+                <Grid
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16"
+                      IsVisible="{Binding HasData}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition MinHeight="32" />
+                        <RowDefinition MinHeight="32" />
+                        <RowDefinition MinHeight="32" />
+                        <RowDefinition MinHeight="32" />
+                        <RowDefinition MinHeight="32" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            Margin="-24,0,-24,0"
+                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                    <Border Grid.Row="3"
+                            Grid.ColumnSpan="3"
+                            Margin="-24,0,-24,0"
+                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                    <!--  最佳纪录  -->
+                    <TextBlock Grid.Row="0"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_BestRecord}" />
+                    <!--  明星挑战星章  -->
+                    <TextBlock Grid.Row="1"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_StarChallengeStellas}" />
+                    <!--  消耗幻剧之花  -->
+                    <TextBlock Grid.Row="2"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_FantasiaFlowersUsed}" />
+                    <!--  触发场外观众声援  -->
+                    <TextBlock Grid.Row="3"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_TriggeredExternalAudienceSupport}" />
+                    <!--  助演角色支援其他玩家  -->
+                    <TextBlock Grid.Row="4"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_SupportingCastCharactersAssistOtherPlayers}" />
+
+
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="1"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                        <Image Grid.Row="1"
+                               Grid.Column="1"
+                               Width="28"
+                               Height="28"
+                               Source="{Binding local:ImaginariumTheaterPage.HeraldryImage(CurrentTheater.Stat.Heraldry)}" />
+                        <TextBlock VerticalAlignment="Center">
+                            <Run Text="{Binding local:ImaginariumTheaterPage.DifficultyMode(CurrentTheater.Stat.DifficultyId)}" />
+                            <Run Text="" />
+                            <Run Text="{Binding local:ImaginariumTheaterPage.ActX(CurrentTheater.Stat.MaxRoundId)}" />
+                        </TextBlock>
+                        <TextBlock VerticalAlignment="Center" IsVisible="{Binding local:ImaginariumTheaterPage.LunarModeVisibility(CurrentTheater.Stat.DifficultyId)}">
+                            <Run Text="{Binding lang:Lang.ImaginariumTheaterPage_Arcana}" />
+                            <Run Text="{Binding CurrentTheater.Stat.TarotFinishedCnt}" />
+                        </TextBlock>
+                    </StackPanel>
+
+
+                    <ItemsControl Grid.Row="1"
+                                  Grid.Column="1"
+                                  ItemsSource="{Binding CurrentTheater.Stat.GetMedalRoundList}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:Int32">
+                                <Grid>
+                                    <Image Width="20"
+                                           Height="20"
+                                           Opacity="0.6"
+                                           Source="{StaticResource StarIcon_2}" />
+                                    <Image Width="20"
+                                           Height="20"
+                                           Source="{StaticResource StarIcon_1}"
+                                           IsVisible="{Binding Converter={StaticResource TheaterStarIconVisibilityConverter}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <StackPanel Grid.Row="2"
+                                Grid.Column="1"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                        <Image Width="24"
+                               Height="24"
+                               Source="{StaticResource FlowerIcon}" />
+                        <TextBlock VerticalAlignment="Center" Text="{Binding CurrentTheater.Stat.CoinNum}" />
+                    </StackPanel>
+                    <TextBlock Grid.Row="3"
+                               Grid.Column="1"
+                               Margin="4,0,0,0"
+                               VerticalAlignment="Center">
+                        <Run Text="{Binding CurrentTheater.Stat.AvatarBonusNum}" />
+                        <Run Text="" />
+                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_Times}" />
+                    </TextBlock>
+                    <TextBlock Grid.Row="4"
+                               Grid.Column="1"
+                               Margin="4,0,0,0"
+                               VerticalAlignment="Center">
+                        <Run Text="{Binding CurrentTheater.Stat.RentCnt}" />
+                        <Run Text="" />
+                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_Times}" />
+                    </TextBlock>
+
+                </Grid>
+
+
+                <!--  战斗统计  -->
+                <Grid Margin="0,8,0,0"
+                     
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16"
+                      IsVisible="{Binding local:ImaginariumTheaterPage.FightStatisicVisibility(CurrentTheater.Detail.FightStatisic.TotalUseTime)}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition MinHeight="32" />
+                        <RowDefinition MinHeight="32" />
+                        <RowDefinition MinHeight="32" />
+                        <RowDefinition MinHeight="32" />
+                        <RowDefinition MinHeight="32" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            Margin="-24,0,-24,0"
+                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                    <Border Grid.Row="3"
+                            Grid.ColumnSpan="3"
+                            Margin="-24,0,-24,0"
+                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+
+                    <!--  演出总时长  -->
+                    <TextBlock Grid.Row="0"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_TotalPerformanceDuration}" />
+                    <!--  最高伤害输出  -->
+                    <TextBlock Grid.Row="1"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_HighestDamageDealt}" />
+                    <!--  击败最多敌人  -->
+                    <TextBlock Grid.Row="2"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_MostOpponentsDefeated}" />
+                    <!--  最高承受伤害  -->
+                    <TextBlock Grid.Row="3"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.SpiralAbyssPage_MostDamageTaken}" />
+                    <!--  最快完成演出队伍  -->
+                    <TextBlock Grid.Row="4"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.ImaginariumTheaterPage_TeamThatCompletedThePerformanceFastest}" />
+
+                    <TextBlock Grid.Row="0"
+                               Grid.Column="1"
+                               Margin="4,0,0,0"
+                               VerticalAlignment="Center">
+                        <Run Text="{Binding local:ImaginariumTheaterPage.PerformancesTime(CurrentTheater.Detail.FightStatisic.TotalUseTime)}" />
+                    </TextBlock>
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="1"
+                                Orientation="Horizontal">
+                        <sc:CachedImage Width="44"
+                                        Height="36"
+                                        Margin="-12,-4,0,4"
+                                        Source="{Binding CurrentTheater.Detail.FightStatisic.MaxDamageAvatar.AvatarIcon}" />
+                        <TextBlock VerticalAlignment="Center" Text="{Binding CurrentTheater.Detail.FightStatisic.MaxDamageAvatar.Value}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="2"
+                                Grid.Column="1"
+                                Orientation="Horizontal">
+                        <sc:CachedImage Width="44"
+                                        Height="36"
+                                        Margin="-12,-4,0,4"
+                                        Source="{Binding CurrentTheater.Detail.FightStatisic.MaxDefeatAvatar.AvatarIcon}" />
+                        <TextBlock VerticalAlignment="Center" Text="{Binding CurrentTheater.Detail.FightStatisic.MaxDefeatAvatar.Value}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="3"
+                                Grid.Column="1"
+                                Orientation="Horizontal">
+                        <sc:CachedImage Width="44"
+                                        Height="36"
+                                        Margin="-12,-4,0,4"
+                                        Source="{Binding CurrentTheater.Detail.FightStatisic.MaxTakeDamageAvatar.AvatarIcon}" />
+                        <TextBlock VerticalAlignment="Center" Text="{Binding CurrentTheater.Detail.FightStatisic.MaxTakeDamageAvatar.Value}" />
+                    </StackPanel>
+                    <ItemsControl Grid.Row="4"
+                                  Grid.Column="1"
+                                  ItemsSource="{Binding CurrentTheater.Detail.FightStatisic.ShortestAvatarList}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="scggi:ImaginariumTheaterFightStatisicAvatar">
+                                <sc:CachedImage Width="44"
+                                                Height="36"
+                                                Margin="-12,-4,0,4"
+                                                Source="{Binding AvatarIcon}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </Grid>
+
+
+                <!--  参演名单  -->
+                <Grid Margin="0,8,0,0"
+                     
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16"
+                      IsVisible="{Binding CurrentTheater.Detail.RoundsData, Converter={DynamicResource CollectionToVisibilityConverter}}">
+                    <ItemsControl ItemsSource="{Binding CurrentTheater.Detail.RoundsData}">
+                        
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="scggi:ImaginariumTheaterRoundsData">
+                                <Grid ColumnSpacing="24" RowSpacing="4">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="28" />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <!--  第几幕  -->
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Grid>
+                                            <Image Width="24"
+                                                   Height="24"
+                                                   Opacity="0.6"
+                                                   Source="{StaticResource StarIcon_2}" />
+                                            <Image Width="24"
+                                                   Height="24"
+                                                   Source="{StaticResource StarIcon_1}"
+                                                   IsVisible="{Binding IsGetMedal, Converter={DynamicResource BoolToVisibilityConverter}}" />
+                                        </Grid>
+                                        <TextBlock VerticalAlignment="Center"
+                                                   FontSize="16"
+                                                   Text="{Binding local:ImaginariumTheaterPage.ActX(RoundId)}"
+                                                   IsVisible="{Binding IsTarot, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
+                                        <TextBlock VerticalAlignment="Center"
+                                                   FontSize="16"
+                                                   Text="{Binding local:ImaginariumTheaterPage.ArcanaChallengeX(TarotSerialNo)}"
+                                                   IsVisible="{Binding IsTarot}" />
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Text="{Binding FinishDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                                    </StackPanel>
+                                    <!--  阵容  -->
+                                    <ItemsControl Grid.Row="1"
+                                                  HorizontalAlignment="Left"
+                                                  VerticalAlignment="Top"
+                                                  ItemsSource="{Binding Avatars}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="12" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="scggi:ImaginariumTheaterAvatar">
+                                                <Grid Width="80" Height="97">
+                                                    <sc:CachedImage Source="{Binding Rarity, Converter={StaticResource RarityToGIBgConverter}}" />
+                                                    <sc:CachedImage VerticalAlignment="Top"
+                                                                    CornerRadius="0,0,12,0"
+                                                                    Source="{Binding Image}" />
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               VerticalAlignment="Bottom"
+                                                               FontSize="14"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#84603D"
+                                                               IsTextScaleFactorEnabled="False">
+                                                        <Run Text="Lv." /><Run Text="{Binding Level}" />
+                                                    </TextBlock>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <!--  Buff  -->
+                                    <StackPanel Grid.Row="1"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Top"
+                                                Spacing="8">
+                                        <!--  辉彩祝福  -->
+                                        <Grid RowSpacing="4" IsVisible="{Binding local:ImaginariumTheaterPage.IsBrilliantBlessingVisibility(SplendourBuff.Summary.TotalLevel)}">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Text="{Binding lang:Lang.ImaginariumTheaterPage_BrilliantBlessing}" />
+                                            <sc:ColorfulTextBlock Grid.Row="1"
+                                                                  FontSize="12"
+                                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                  Text="{Binding SplendourBuff.Summary.Desc}"
+                                                                  TextWrapping="Wrap" />
+                                            <StackPanel Grid.Row="2"
+                                                        Orientation="Horizontal"
+                                                        Spacing="16">
+                                                <StackPanel>
+                                                    <Image Width="32"
+                                                           Height="32"
+                                                           Source="ms-appx:///Assets/Image/UI_Icon_RoleCombat_Buff_Blessing_LevelUp.png" />
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                        <Run Text="Lv." /><Run Text="{Binding SplendourBuff.Summary.TotalLevel}" />
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <ItemsControl ItemsSource="{Binding SplendourBuff.Buffs}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="16" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="scggi:ImaginariumTheaterSplendourBuffItem">
+                                                            <StackPanel>
+                                                                <sc:CachedImage Width="32"
+                                                                                Height="32"
+                                                                                Opacity="{Binding local:ImaginariumTheaterPage.BrilliantBlessingBuffOpacity(Level)}"
+                                                                                Source="{Binding Icon}">
+                                                                    <ToolTip.Tip>
+                                                                        <ToolTip>
+                                                                            <StackPanel Margin="8" Spacing="12">
+                                                                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                                                                    <sc:CachedImage Width="32"
+                                                                                                    Height="32"
+                                                                                                    Source="{Binding Icon}" />
+                                                                                    <TextBlock HorizontalAlignment="Center"
+                                                                                               VerticalAlignment="Center"
+                                                                                               FontSize="14"
+                                                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                                                        <Run Text="Lv." /><Run Text="{Binding Level}" />
+                                                                                    </TextBlock>
+                                                                                    <TextBlock VerticalAlignment="Center"
+                                                                                               FontSize="14"
+                                                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                               Text="{Binding Name}" />
+                                                                                </StackPanel>
+                                                                                <ItemsControl ItemsSource="{Binding LevelEffect}">
+                                                                                    <ItemsControl.ItemsPanel>
+                                                                                        <ItemsPanelTemplate>
+                                                                                            <StackPanel Spacing="12" />
+                                                                                        </ItemsPanelTemplate>
+                                                                                    </ItemsControl.ItemsPanel>
+                                                                                    <ItemsControl.ItemTemplate>
+                                                                                        <DataTemplate x:DataType="scggi:ImaginariumTheaterSplendourBuffEffect">
+                                                                                            <Grid ColumnSpacing="8">
+                                                                                                <Grid.ColumnDefinitions>
+                                                                                                    <ColumnDefinition Width="Auto" />
+                                                                                                    <ColumnDefinition />
+                                                                                                </Grid.ColumnDefinitions>
+                                                                                                <TextBlock FontSize="12"
+                                                                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                                           Text="●" />
+                                                                                                <sc:ColorfulTextBlock Grid.Column="1"
+                                                                                                                      FontSize="12"
+                                                                                                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                                                      Text="{Binding Desc}"
+                                                                                                                      TextWrapping="Wrap" />
+                                                                                            </Grid>
+                                                                                        </DataTemplate>
+                                                                                    </ItemsControl.ItemTemplate>
+                                                                                </ItemsControl>
+                                                                            </StackPanel>
+                                                                        </ToolTip>
+                                                                    </ToolTip.Tip>
+                                                                </sc:CachedImage>
+                                                                <TextBlock HorizontalAlignment="Center"
+                                                                           FontSize="12"
+                                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                                    <Run Text="Lv." /><Run Text="{Binding Level}" />
+                                                                </TextBlock>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
+                                        <!--  奇妙助益  -->
+                                        <Grid RowSpacing="4" IsVisible="{Binding Buffs, Converter={DynamicResource CollectionToVisibilityConverter}}">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                <Run Text="{Binding lang:Lang.ImaginariumTheaterPage_WondrousBoon}" />
+                                                <Run Text="" />
+                                                <Run Text="x" />
+                                                <Run Text="{Binding Buffs.Count}" />
+                                            </TextBlock>
+                                            <ItemsControl Grid.Row="1" ItemsSource="{Binding Buffs}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="scggi:ImaginariumTheaterBuff">
+                                                        <sc:CachedImage Width="32"
+                                                                        Height="32"
+                                                                        Source="{Binding Icon}">
+                                                            <ToolTip.Tip>
+                                                                <StackPanel MaxWidth="220" Margin="8">
+                                                                    <sc:CachedImage Width="60"
+                                                                                    Height="60"
+                                                                                    Source="{Binding Icon}" />
+                                                                    <TextBlock Margin="0,8,0,0"
+                                                                               HorizontalAlignment="Center"
+                                                                               FontSize="16"
+                                                                               Text="{Binding Name}" />
+                                                                    <sc:ColorfulTextBlock Margin="0,12,0,0"
+                                                                                          FontSize="14"
+                                                                                          Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                          Text="{Binding Desc}"
+                                                                                          TextWrapping="Wrap" />
+                                                                </StackPanel>
+                                                            </ToolTip.Tip>
+                                                        </sc:CachedImage>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                        <!--  神秘收获  -->
+                                        <Grid RowSpacing="4" IsVisible="{Binding ChoiceCards, Converter={DynamicResource CollectionToVisibilityConverter}}">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                <Run Text="{Binding lang:Lang.ImaginariumTheaterPage_MysteryCache}" />
+                                                <Run Text="" />
+                                                <Run Text="x" />
+                                                <Run Text="{Binding ChoiceCards.Count}" />
+                                            </TextBlock>
+                                            <ItemsControl Grid.Row="1"
+                                                          HorizontalAlignment="Left"
+                                                          ItemsSource="{Binding ChoiceCards}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="scggi:ImaginariumTheaterBuff">
+                                                        <sc:CachedImage Width="32"
+                                                                        Height="32"
+                                                                        Source="{Binding Icon}">
+                                                            <ToolTip.Tip>
+                                                                <StackPanel MaxWidth="220" Margin="8">
+                                                                    <sc:CachedImage Width="60"
+                                                                                    Height="60"
+                                                                                    Source="{Binding Icon}" />
+                                                                    <TextBlock Margin="0,8,0,0"
+                                                                               HorizontalAlignment="Center"
+                                                                               FontSize="16"
+                                                                               Text="{Binding Name}" />
+                                                                    <sc:ColorfulTextBlock Margin="0,12,0,0"
+                                                                                          FontSize="14"
+                                                                                          Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                          Text="{Binding Desc}"
+                                                                                          TextWrapping="Wrap" />
+                                                                </StackPanel>
+                                                            </ToolTip.Tip>
+                                                        </sc:CachedImage>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+
+</sf:PageBase>

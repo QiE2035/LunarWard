@@ -1,0 +1,102 @@
+<sf:PageBase x:Class="LunarWard.Features.GameRecord.LoginPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:local="clr-namespace:LunarWard.Features.GameRecord"
+             xmlns:sf="clr-namespace:LunarWard.Frameworks">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid
+             
+              ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <Button  x:Name="Button_GoBack"
+                        Width="36"
+                        Height="32"
+                        Padding="0"
+                        Click="Button_GoBack_Click"
+                        Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                    <TextBlock Classes="icon" FontSize="16"
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                              Text="&#xEC52;" />
+                </Button>
+                <Button  x:Name="Button_GoForward"
+                        Width="36"
+                        Height="32"
+                        Padding="0"
+                        Click="Button_GoForward_Click"
+                        Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                    <TextBlock Classes="icon" FontSize="16"
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                              Text="&#xEBE7;" />
+                </Button>
+                <Button  x:Name="Button_RefreshOrCancel"
+                        Width="36"
+                        Height="32"
+                        Padding="0"
+                        Click="Button_RefreshOrCancel_Click"
+                        Style="{DynamicResource DateTimePickerFlyoutButtonStyle}">
+                    <TextBlock Classes="icon"  x:Name="FontIcon_RefreshOrCancel"
+                              FontSize="16"
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                              Text="&#xE72C;" />
+                </Button>
+            </StackPanel>
+            <TextBox  x:Name="TextBox_Uri"
+                     Grid.Column="1"
+                     VerticalAlignment="Center"
+                     IsSpellCheckEnabled="False"
+                     KeyDown="TextBox_Uri_KeyDown" />
+            <Button  x:Name="Button_Finish"
+                    Grid.Column="2"
+                    Width="48"
+                    Height="32"
+                    Margin="4,0,4,0"
+                    Padding="0"
+                    BorderThickness="0"
+                    Click="Button_Finish_Click"
+                    CornerRadius="16"
+                    Style="{DynamicResource AccentButtonStyle}">
+                <TextBlock Classes="icon" FontSize="16" Text="&#xE8FB;" />
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout Placement="BottomEdgeAlignedLeft">
+                        <Flyout.FlyoutPresenterStyle>
+                            <Style BasedOn="{DynamicResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                                <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                                <Setter Property="Padding" Value="16,12,16,12" />
+                                <Setter Property="BorderThickness" Value="0" />
+                            </Style>
+                        </Flyout.FlyoutPresenterStyle>
+                        <TextBlock  x:Name="TextBlock_Tip"
+                                   MaxWidth="360"
+                                   Foreground="{DynamicResource TextOnAccentAAFillColorPrimaryBrush}"
+                                   Text="{Binding lang:Lang.LoginPage_ClickThisButtonAfterLoggingIn}"
+                                   TextWrapping="Wrap" />
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+
+        </Grid>
+
+        <Border Grid.Row="1">
+            <WebView2  x:Name="webview" DefaultBackgroundColor="#303030">
+                <WebView2.Resources>
+                    <SolidColorBrush x:Key="BrushForThemeBackgroundColor" Color="#303030" />
+                </WebView2.Resources>
+            </WebView2>
+        </Border>
+
+
+    </Grid>
+</sf:PageBase>

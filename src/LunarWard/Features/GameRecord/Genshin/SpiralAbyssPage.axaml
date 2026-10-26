@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sf:PageBase x:Class="LunarWard.Features.GameRecord.Genshin.SpiralAbyssPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:abyss="clr-namespace:LunarWard.Core.GameRecord.Genshin.SpiralAbyss"
+             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:linq="clr-namespace:System.Linq"
+             xmlns:local="clr-namespace:LunarWard.Features.GameRecord.Genshin"
+             xmlns:sc="clr-namespace:LunarWard.Controls"
+             xmlns:sf="clr-namespace:LunarWard.Frameworks"
+             xmlns:sfg="clr-namespace:LunarWard.Features.Gacha">
+
+    <UserControl.Resources>
+        <BitmapImage x:Key="AbyssIcon" Source="ms-appx:///Assets/Image/UI_Icon_Tower_Star.png" />
+        <local:SpiralAbyssBattleAvatarsSelectConverter x:Key="SpiralAbyssBattleAvatarsSelectConverter" />
+        <sfg:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+
+        <StackPanel  x:Name="Image_Emoji"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="16"
+                    IsVisible="False">
+            <Image Width="160"
+                   Height="160"
+                   Source="{DynamicResource EmojiPaimon}" />
+            <TextBlock HorizontalAlignment="Center"
+                       FontSize="16"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+        </StackPanel>
+
+        <StackPanel Margin="0,24,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Spacing="12">
+            <Button Height="36"
+                    BorderThickness="0"
+                    Command="{Binding RefreshDataCommand}"
+                    CornerRadius="0,18,18,0"
+                    Style="{DynamicResource AccentButtonStyle}">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                </StackPanel>
+            </Button>
+            <Button Height="36"
+                    BorderThickness="0"
+                    CornerRadius="0,18,18,0"
+                    Shadow="{DynamicResource ThemeShadow}"
+                    Style="{DynamicResource AccentButtonStyle}"
+                    Translation="0,0,16"
+                    IsVisible="False">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <TextBlock Classes="icon" FontSize="16" Text="&#xE9D9;" />
+                    <TextBlock Text="{Binding lang:Lang.Common_Summary}" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <ListView  x:Name="ListView_AbyssList"
+                  Grid.Row="1"
+                  Padding="12,0,12,0"
+                  ItemsSource="{Binding AbyssList}"
+                  SelectionChanged="ListView_AbyssList_SelectionChanged"
+                  SelectionMode="Single">
+            <ListView.ItemContainerStyle>
+                <Style BasedOn="{DynamicResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0,4,0,4" />
+                    <Setter Property="Padding" Value="4,0,4,0" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="abyss:SpiralAbyssInfo">
+                    <Grid
+                         
+                         
+                          RowSpacing="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding StartTime.LocalDateTime, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                        <Image Grid.Row="1"
+                               Width="20"
+                               Height="20"
+                               HorizontalAlignment="Left"
+                               Source="{StaticResource AbyssIcon}" />
+                        <TextBlock Grid.Row="1"
+                                   Margin="24,0,0,2"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Text="{Binding TotalStar}" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+
+
+        <ScrollViewer Grid.RowSpan="2"
+                      Grid.Column="1"
+                      IsVisible="{Binding CurrentAbyss, Converter={DynamicResource ObjectToVisibilityConverter}}">
+            <StackPanel Margin="24" Spacing="8">
+                <Grid>
+                    <!--  统计周期  -->
+                    <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                        <Run Text="{Binding lang:Lang.ForgottenHallPage_Period}" />
+                        <Run Text="" />
+                        <Run Text="{Binding CurrentAbyss.StartTime.LocalDateTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
+                        <Run Text=" - " />
+                        <Run Text="{Binding CurrentAbyss.EndTime.LocalDateTime, StringFormat='{}{0:yyyy/MM/dd}'}" />
+                    </TextBlock>
+                </Grid>
+                <!--  出战统计  -->
+                <Grid Margin="0,-4,0,0"
+                     
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <!--  Total Star  -->
+                    <StackPanel HorizontalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                        <Image Width="24"
+                               Height="24"
+                               VerticalAlignment="Center"
+                               Source="{StaticResource AbyssIcon}" />
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="16"
+                                   Text="{Binding CurrentAbyss.TotalStar}" />
+                    </StackPanel>
+                    <!--  最深抵达  -->
+                    <TextBlock Grid.Column="1"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="16">
+                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_DeepestDescent}" />
+                        <Run Text="" />
+                        <Run Text="{Binding CurrentAbyss.MaxFloor}" />
+                    </TextBlock>
+                    <!--  战斗次数  -->
+                    <TextBlock Grid.Column="2"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="16">
+                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_BattlesFought}" />
+                        <Run Text="" />
+                        <Run Text="{Binding CurrentAbyss.TotalBattleCount}" />
+                    </TextBlock>
+                </Grid>
+
+                <!--  出战次数  -->
+                <TextBlock Margin="0,8,0,0"
+                           FontSize="16"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Text="{Binding lang:Lang.SpiralAbyssPage_Picked}"
+                           IsVisible="{Binding HasData}" />
+                <Grid
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16"
+                      IsVisible="{Binding HasData}">
+                    <ItemsControl HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  ItemsSource="{Binding RevealRankInternalStar}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel VerticalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="104" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Path Width="12"
+                                      Height="12"
+                                      Data="M512 1024A723.431253 723.431253 0 0 0 0 512 723.431253 723.431253 0 0 0 512 0a723.431253 723.431253 0 0 0 512 512 723.431253 723.431253 0 0 0-512 512z"
+                                      Fill="#E4C891"
+                                      Stretch="Uniform" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding CurrentAbyss.RevealRank}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel VerticalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="36" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="abyss:SpiralAbyssRank">
+                                <Grid Width="80" Height="97">
+                                    <sc:CachedImage Source="{Binding Rarity, Converter={StaticResource RarityToGIBgConverter}}" />
+                                    <sc:CachedImage Height="80"
+                                                    VerticalAlignment="Top"
+                                                    CornerRadius="0,0,16,0"
+                                                    Source="{Binding AvatarIcon}" />
+                                    <TextBlock Margin="0,0,0,1"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Bottom"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Foreground="#84603D">
+                                        <Run Text="{Binding Value}" />
+                                        <Run Text="{Binding lang:Lang.SpiralAbyssPage_Times}" />
+                                    </TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+                <!--  战斗数据榜  -->
+                <TextBlock Margin="0,8,0,0"
+                           FontSize="16"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Text="{Binding lang:Lang.SpiralAbyssPage_CombatStats}"
+                           IsVisible="{Binding HasData}" />
+                <Grid
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16"
+                      IsVisible="{Binding HasData}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            Margin="-24,0,-24,0"
+                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                    <Border Grid.Row="3"
+                            Grid.ColumnSpan="3"
+                            Margin="-24,0,-24,0"
+                            Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}" />
+                    <!--  最多击破数  -->
+                    <TextBlock Grid.Row="0"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.SpiralAbyssPage_MostDefeats}" />
+                    <!--  最强一击  -->
+                    <TextBlock Grid.Row="1"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.SpiralAbyssPage_StrongestSingleStrike}" />
+                    <!--  承受最多伤害  -->
+                    <TextBlock Grid.Row="2"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.SpiralAbyssPage_MostDamageTaken}" />
+                    <!--  元素战技施放数  -->
+                    <TextBlock Grid.Row="3"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.SpiralAbyssPage_ElementalSkillsUnleashed}" />
+                    <!--  元素爆发次数  -->
+                    <TextBlock Grid.Row="4"
+                               VerticalAlignment="Center"
+                               Text="{Binding lang:Lang.SpiralAbyssPage_ElementalBrustsUnleashed}" />
+
+                    <sc:CachedImage Grid.Row="0"
+                                    Grid.Column="1"
+                                    Width="44"
+                                    Height="36"
+                                    Margin="0,-2,0,2"
+                                    VerticalAlignment="Bottom"
+                                    Source="{Binding CurrentAbyss.FirstDefeatRank.AvatarIcon, FallbackValue={x:Null}}"
+                                    Stretch="UniformToFill" />
+                    <sc:CachedImage Grid.Row="1"
+                                    Grid.Column="1"
+                                    Width="44"
+                                    Height="36"
+                                    Margin="0,-2,0,2"
+                                    VerticalAlignment="Bottom"
+                                    Source="{Binding CurrentAbyss.FirstDamageRank.AvatarIcon, FallbackValue={x:Null}}"
+                                    Stretch="UniformToFill" />
+                    <sc:CachedImage Grid.Row="2"
+                                    Grid.Column="1"
+                                    Width="44"
+                                    Height="36"
+                                    Margin="0,-2,0,2"
+                                    VerticalAlignment="Bottom"
+                                    Source="{Binding CurrentAbyss.FirstTakeDamageRank.AvatarIcon, FallbackValue={x:Null}}"
+                                    Stretch="UniformToFill" />
+                    <sc:CachedImage Grid.Row="3"
+                                    Grid.Column="1"
+                                    Width="44"
+                                    Height="36"
+                                    Margin="0,-2,0,2"
+                                    VerticalAlignment="Bottom"
+                                    Source="{Binding CurrentAbyss.FirstNormalSkillRank.AvatarIcon, FallbackValue={x:Null}}"
+                                    Stretch="UniformToFill" />
+                    <sc:CachedImage Grid.Row="4"
+                                    Grid.Column="1"
+                                    Width="44"
+                                    Height="36"
+                                    Margin="0,-2,0,2"
+                                    VerticalAlignment="Bottom"
+                                    Source="{Binding CurrentAbyss.FirstEnergySkillRank.AvatarIcon, FallbackValue={x:Null}}"
+                                    Stretch="UniformToFill" />
+                    <TextBlock Grid.Row="0"
+                               Grid.Column="2"
+                               VerticalAlignment="Center"
+                               Text="{Binding CurrentAbyss.FirstDefeatRank.Value, FallbackValue={x:Null}}" />
+                    <TextBlock Grid.Row="1"
+                               Grid.Column="2"
+                               VerticalAlignment="Center"
+                               Text="{Binding CurrentAbyss.FirstDamageRank.Value, FallbackValue={x:Null}}" />
+                    <TextBlock Grid.Row="2"
+                               Grid.Column="2"
+                               VerticalAlignment="Center"
+                               Text="{Binding CurrentAbyss.FirstTakeDamageRank.Value, FallbackValue={x:Null}}" />
+                    <TextBlock Grid.Row="3"
+                               Grid.Column="2"
+                               VerticalAlignment="Center"
+                               Text="{Binding CurrentAbyss.FirstNormalSkillRank.Value, FallbackValue={x:Null}}" />
+                    <TextBlock Grid.Row="4"
+                               Grid.Column="2"
+                               VerticalAlignment="Center"
+                               Text="{Binding CurrentAbyss.FirstEnergySkillRank.Value, FallbackValue={x:Null}}" />
+                </Grid>
+
+                <!--  战斗记录  -->
+                <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding CurrentAbyss.Floors}">
+                    
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="abyss:SpiralAbyssFloor">
+                            <Grid
+                                 
+                                 
+                                  Shadow="{DynamicResource ThemeShadow}"
+                                  Translation="0,0,16">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="28" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <!--  第几层  -->
+                                <TextBlock VerticalAlignment="Center"
+                                           FontSize="16"
+                                           Text="{Binding local:SpiralAbyssPage.FloorX(Index)}" />
+                                <StackPanel HorizontalAlignment="Right"
+                                            Orientation="Horizontal"
+                                            Spacing="8">
+                                    <Image Width="24"
+                                           Height="24"
+                                           Source="{StaticResource AbyssIcon}" />
+                                    <TextBlock Margin="0,0,0,2"
+                                               VerticalAlignment="Center"
+                                               FontSize="16">
+                                        <Run Text="{Binding Star}" /><Run Text="/" /><Run Text="{Binding MaxStar}" />
+                                    </TextBlock>
+                                </StackPanel>
+                                <!--  每间  -->
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding Levels}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="abyss:SpiralAbyssLevel">
+                                            <UserControl  x:Name="UserControl_AbyssLevel" SizeChanged="UserControl_AbyssLevel_SizeChanged">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition />
+                                                        <RowDefinition />
+                                                        <RowDefinition />
+                                                    </Grid.RowDefinitions>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+                                                    <MenuFlyoutSeparator Grid.ColumnSpan="3" Margin="0,8,0,8" />
+                                                    <!--  顶部  -->
+                                                    <Grid  x:Name="Grid_LevelTimeAndStar"
+                                                          Grid.Row="1"
+                                                          Grid.ColumnSpan="3"
+                                                          Margin="0,-6,0,2">
+                                                        <!--  时间  -->
+                                                        <StackPanel VerticalAlignment="Center"
+                                                                    Orientation="Horizontal"
+                                                                    Spacing="8">
+                                                            <TextBlock FontSize="12"
+                                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                       Text="{Binding local:SpiralAbyssPage.LevelX(Index)}" />
+                                                            <TextBlock FontSize="12"
+                                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                       Text="{Binding FirstBattleTime.LocalDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                                                        </StackPanel>
+                                                        <!--  星星  -->
+                                                        <ItemsControl HorizontalAlignment="Right" ItemsSource="{Binding linq:Enumerable.Range(0, Star)}">
+                                                            
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Image Width="20"
+                                                                           Height="20"
+                                                                           Source="{StaticResource AbyssIcon}" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Grid>
+                                                    <!--  中部  -->
+                                                    <StackPanel  x:Name="StackPanel_LevelTimeAndStar"
+                                                                Grid.Row="2"
+                                                                Grid.Column="1"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
+                                                                Spacing="4">
+                                                        <TextBlock HorizontalAlignment="Center"
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Text="{Binding local:SpiralAbyssPage.LevelX(Index)}" />
+                                                        <TextBlock HorizontalAlignment="Center"
+                                                                   FontSize="12"
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Text="{Binding FirstBattleTime.LocalDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                                                        <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding linq:Enumerable.Range(0, Star)}">
+                                                            
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Image Width="20"
+                                                                           Height="20"
+                                                                           Source="{StaticResource AbyssIcon}" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                    <!--  上半阵容  -->
+                                                    <ItemsControl Grid.Row="2"
+                                                                  Grid.Column="0"
+                                                                  MinHeight="73"
+                                                                  HorizontalAlignment="Left"
+                                                                  ItemsSource="{Binding Battles, Converter={StaticResource SpiralAbyssBattleAvatarsSelectConverter}}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal" Spacing="8" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="abyss:SpiralAbyssAvatar">
+                                                                <Grid Width="60">
+                                                                    <sc:CachedImage Source="{Binding Rarity, Converter={StaticResource RarityToGIBgConverter}}" />
+                                                                    <sc:CachedImage VerticalAlignment="Top"
+                                                                                    CornerRadius="0,0,12,0"
+                                                                                    Source="{Binding Icon}" />
+                                                                    <TextBlock Margin="0,0,0,-1"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Bottom"
+                                                                               FontSize="12"
+                                                                               Foreground="#84603D">
+                                                                        <Run Text="Lv." /><Run Text="{Binding Level}" />
+                                                                    </TextBlock>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                    <!--  下半阵容  -->
+                                                    <ItemsControl Grid.Row="2"
+                                                                  Grid.Column="2"
+                                                                  MinHeight="73"
+                                                                  HorizontalAlignment="Right"
+                                                                  ItemsSource="{Binding Battles, Converter={StaticResource SpiralAbyssBattleAvatarsSelectConverter}, ConverterParameter=1}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal" Spacing="8" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="abyss:SpiralAbyssAvatar">
+                                                                <Grid Width="60">
+                                                                    <sc:CachedImage Source="{Binding Rarity, Converter={StaticResource RarityToGIBgConverter}}" />
+                                                                    <sc:CachedImage VerticalAlignment="Top"
+                                                                                    CornerRadius="0,0,12,0"
+                                                                                    Source="{Binding Icon}" />
+                                                                    <TextBlock Margin="0,0,0,-1"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Bottom"
+                                                                               FontSize="12"
+                                                                               Foreground="#84603D">
+                                                                        <Run Text="Lv." /><Run Text="{Binding Level}" />
+                                                                    </TextBlock>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Grid>
+                                            </UserControl>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </ScrollViewer>
+
+
+    </Grid>
+
+</sf:PageBase>

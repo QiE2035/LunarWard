@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sf:PageBase x:Class="LunarWard.Features.GameRecord.ZZZ.InterKnotMonthlyReportPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:local="clr-namespace:LunarWard.Features.GameRecord.ZZZ"
+             xmlns:report="clr-namespace:LunarWard.Core.GameRecord.ZZZ.InterKnotReport"
+             xmlns:sc="clr-namespace:LunarWard.Controls"
+             xmlns:sf="clr-namespace:LunarWard.Frameworks"
+             xmlns:sfg="clr-namespace:LunarWard.Features.GameRecord"
+             xmlns:sp="clr-namespace:LunarWard.Pages">
+
+    <UserControl.Resources>
+        <sfg:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+
+
+        <StackPanel  x:Name="Image_Emoji"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="16"
+                    IsVisible="False">
+            <Image Width="160"
+                   Height="160"
+                   Source="{DynamicResource EmojiBangboo}" />
+            <TextBlock HorizontalAlignment="Center"
+                       FontSize="16"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Text="{Binding lang:Lang.HoyolabToolboxPage_NoData}" />
+        </StackPanel>
+
+        <StackPanel Margin="0,24,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Spacing="12">
+            <Button Height="36"
+                    BorderThickness="0"
+                    Command="{Binding InitializeDataCommand}"
+                    CornerRadius="0,18,18,0"
+                    Style="{DynamicResource AccentButtonStyle}">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <Grid>
+                        <ProgressBar IsIndeterminate="True" Width="16"
+                                      Height="16"
+                                      />
+                        <TextBlock Classes="icon" FontSize="16"
+                                  Text="&#xE72C;"
+                                  IsVisible="{Binding InitializeDataCommand.IsRunning, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
+                    </Grid>
+                    <TextBlock Text="{Binding lang:Lang.Common_Refresh}" />
+                </StackPanel>
+            </Button>
+            <Button Height="36"
+                    BorderThickness="0"
+                    CornerRadius="0,18,18,0"
+                    IsEnabled="{Binding GetDataDetailsCommand.IsRunning, Converter={DynamicResource BoolReversedConverter}}"
+                    Style="{DynamicResource AccentButtonStyle}">
+                <StackPanel Margin="4,0,4,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <Grid>
+                        <ProgressBar IsIndeterminate="True" Width="16"
+                                      Height="16"
+                                      />
+                        <TextBlock Classes="icon" FontSize="16"
+                                  Text="&#xEA37;"
+                                  IsVisible="{Binding GetDataDetailsCommand.IsRunning, Converter={DynamicResource BoolToVisibilityReversedConverter}}" />
+                    </Grid>
+                    <TextBlock Text="{Binding lang:Lang.TravelersDiaryPage_GetDetails}" />
+                </StackPanel>
+                <Button.Flyout>
+                    <MenuFlyout x:Name="MenuFlyout_GetDetails" Placement="RightEdgeAlignedTop" />
+                </Button.Flyout>
+            </Button>
+        </StackPanel>
+
+
+        <ListView  x:Name="ListView_MonthDataList"
+                  Grid.Row="1"
+                  Margin="0,12,0,0"
+                  Padding="12,0,12,0"
+                  ItemsSource="{Binding MonthDataList}"
+                  SelectionChanged="ListView_MonthDataList_SelectionChanged"
+                  SelectionMode="Single">
+            <ListView.ItemContainerStyle>
+                <Style BasedOn="{DynamicResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0,4,0,4" />
+                    <Setter Property="Padding" Value="4,0,4,0" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="report:InterKnotReportSummary">
+                    <Grid
+                         
+                         
+                          RowSpacing="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="16" Text="{Binding DataMonth}" />
+                        <Image Grid.Row="1"
+                               Width="20"
+                               Height="20"
+                               HorizontalAlignment="Left"
+                               Source="ms-appx:///Assets/Image/IconCurrency.png" />
+                        <TextBlock Grid.Row="1"
+                                   Margin="24,0,0,0"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Text="{Binding local:InterKnotMonthlyReportPage.GetPolychromeCount(MonthData)}" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+
+
+
+        <ScrollViewer Grid.RowSpan="2" Grid.Column="1">
+            <StackPanel Margin="24" Spacing="8">
+
+                <!--  Real-Time Data  -->
+                <TextBlock FontSize="16"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Text="{Binding lang:Lang.TravelersDiaryPage_RealTimeData}"
+                           IsVisible="{Binding CurrentSummary, Converter={DynamicResource ObjectToVisibilityConverter}}" />
+                <Grid
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16"
+                      IsVisible="{Binding CurrentSummary, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ItemsControl ItemsSource="{Binding CurrentSummary.MonthData.List}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="24" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="report:InterKnotReportSummaryAward">
+                                <StackPanel Spacing="4">
+                                    <Image Width="32"
+                                           Height="32"
+                                           Source="{Binding local:InterKnotMonthlyReportPage.DataTypeToImage(DataType)}" />
+                                    <TextBlock HorizontalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               HorizontalTextAlignment="Center"
+                                               Text="{Binding DataName}" />
+                                    <TextBlock HorizontalAlignment="Center"
+                                               HorizontalTextAlignment="Center"
+                                               Text="{Binding Count}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <MenuFlyoutSeparator Grid.Row="1" Margin="0,8,0,8" />
+
+                    <TextBlock Grid.Row="2"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Text="{Binding lang:Lang.InterKnotMonthlyReportPage_PolychromeRevenueStreams}" />
+                    <sc:ColorRectChart Grid.Row="3"
+                                       Grid.ColumnSpan="3"
+                                       Height="20"
+                                       Margin="0,8,0,0"
+                                       HorizontalAlignment="Stretch"
+                                       CornerRadius="4"
+                                       Series="{Binding CurrentSeries}" />
+                    <ItemsControl Grid.Row="4"
+                                  Grid.ColumnSpan="3"
+                                  Margin="0,8,-4,0"
+                                  ItemsSource="{Binding CurrentSeries}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel HorizontalSpacing="12"
+                                              Orientation="Horizontal"
+                                              VerticalSpacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <Border Width="16"
+                                            Height="16"
+                                            Background="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                            CornerRadius="4" />
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding Legend}" />
+                                    <TextBlock VerticalAlignment="Center">
+                                        <Run Text="{Binding Percent}" /><Run Text="%" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+                <!--  Historical Data  -->
+                <TextBlock Margin="0,8,0,0"
+                           FontSize="16"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                    <Run Text="{Binding lang:Lang.TravelersDiaryPage_HistoricalData}" />
+                    <Run Text="" />
+                    <Run Text="{Binding SelectMonthData.DataMonth}" />
+                </TextBlock>
+                <Grid
+                     
+                     
+                      Shadow="{DynamicResource ThemeShadow}"
+                      Translation="0,0,16"
+                      IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ItemsControl ItemsSource="{Binding SelectMonthData.MonthData.List}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="24" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="report:InterKnotReportSummaryAward">
+                                <StackPanel Spacing="4">
+                                    <Image Width="32"
+                                           Height="32"
+                                           Source="{Binding local:InterKnotMonthlyReportPage.DataTypeToImage(DataType)}" />
+                                    <TextBlock HorizontalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               HorizontalTextAlignment="Center"
+                                               Text="{Binding DataName}" />
+                                    <TextBlock HorizontalAlignment="Center"
+                                               HorizontalTextAlignment="Center"
+                                               Text="{Binding Count}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <MenuFlyoutSeparator Grid.Row="1" Margin="0,8,0,8" />
+
+                    <TextBlock Grid.Row="2"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Text="{Binding lang:Lang.InterKnotMonthlyReportPage_PolychromeRevenueStreams}" />
+                    <sc:ColorRectChart Grid.Row="3"
+                                       Grid.ColumnSpan="3"
+                                       Height="20"
+                                       Margin="0,8,0,0"
+                                       HorizontalAlignment="Stretch"
+                                       CornerRadius="4"
+                                       Series="{Binding SelectSeries}" />
+                    <ItemsControl Grid.Row="4"
+                                  Grid.ColumnSpan="3"
+                                  Margin="0,8,-4,0"
+                                  ItemsSource="{Binding SelectSeries}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel HorizontalSpacing="12"
+                                              Orientation="Horizontal"
+                                              VerticalSpacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <Border Width="16"
+                                            Height="16"
+                                            Background="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                            CornerRadius="4" />
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding Legend}" />
+                                    <TextBlock VerticalAlignment="Center">
+                                        <Run Text="{Binding Percent}" /><Run Text="%" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+                <!--  Daily Data  -->
+                <TextBlock Margin="0,8,0,0"
+                           FontSize="16"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                    <Run Text="{Binding lang:Lang.HoyolabToolboxPage_DailyData}" />
+                    <Run Text="" />
+                    <Run Text="{Binding SelectMonthData.DataMonth}" />
+                </TextBlock>
+                <Border Padding="12,8,12,8"
+                        Background="{DynamicResource CustomOverlayAcrylicBrush}"
+                        CornerRadius="8"
+                        Shadow="{DynamicResource ThemeShadow}"
+                        Translation="0,0,16"
+                        IsVisible="{Binding SelectMonthData, Converter={DynamicResource ObjectToVisibilityConverter}}">
+                    <ItemsControl ItemsSource="{Binding DayDataList}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="60" />
+                                        <ColumnDefinition Width="24" />
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="24" />
+                                        <ColumnDefinition Width="28" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="24" />
+                                        <ColumnDefinition Width="28" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Text="{Binding Day}" />
+                                    <Image Grid.Column="1"
+                                           Width="24"
+                                           Height="24"
+                                           Source="ms-appx:///Assets/Image/IconCurrency.png" />
+                                    <TextBlock Grid.Column="2"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Poly}" />
+                                    <ProgressBar Grid.Column="3"
+                                                 MinHeight="20"
+                                                 HorizontalAlignment="Stretch"
+                                                 Background="Transparent"
+                                                 Foreground="#A0FF53B2"
+                                                 Maximum="1"
+                                                 Value="{Binding PolyProgress}" />
+                                    <Image Grid.Column="4"
+                                           Width="24"
+                                           Height="24"
+                                           Source="ms-appx:///Assets/Image/GachaTicket2Big.png" />
+                                    <TextBlock Grid.Column="5"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Tape}" />
+                                    <ProgressBar Grid.Column="6"
+                                                 MinHeight="20"
+                                                 HorizontalAlignment="Stretch"
+                                                 Background="Transparent"
+                                                 Foreground="#A066BCF2"
+                                                 Maximum="1"
+                                                 Value="{Binding TapeProgress}" />
+                                    <Image Grid.Column="7"
+                                           Width="24"
+                                           Height="24"
+                                           Source="ms-appx:///Assets/Image/GachaTicket3Big.png" />
+                                    <TextBlock Grid.Column="8"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Boopon}" />
+                                    <ProgressBar Grid.Column="9"
+                                                 MinHeight="20"
+                                                 HorizontalAlignment="Stretch"
+                                                 Background="Transparent"
+                                                 Foreground="#A0F2DE77"
+                                                 Maximum="1"
+                                                 Value="{Binding BooponProgress}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+
+
+            </StackPanel>
+        </ScrollViewer>
+
+
+    </Grid>
+
+
+</sf:PageBase>

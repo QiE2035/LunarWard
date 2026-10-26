@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sf:WindowEx x:Class="LunarWard.Features.GameRecord.BattleChronicleWindow"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:LunarWard.Features.GameRecord"
+             xmlns:sf="clr-namespace:LunarWard.Frameworks"
+             Title="{Binding bbsWebBridge.DocumentTitle}">
+
+    <Grid x:Name="RootGrid"
+         
+          Loaded="RootGrid_Loaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <TextBlock Margin="24,0,144,0"
+                   VerticalAlignment="Center"
+                   FontSize="14"
+                   IsTextScaleFactorEnabled="False"
+                   Text="{Binding bbsWebBridge.DocumentTitle}"
+                   TextTrimming="CharacterEllipsis" />
+
+        <local:BBSWebBridge x:Name="bbsWebBridge"
+                            Grid.Row="1"
+                            CurrentGameBiz="{Binding CurrentRole.GameBiz}"
+                            GameRecordRole="{Binding CurrentRole}" />
+
+    </Grid>
+
+</sf:WindowEx>
