@@ -5,7 +5,8 @@
             xmlns:fw="using:LunarWard.Frameworks"
             xmlns:lang="using:LunarWard.Language"
             xmlns:local="using:LunarWard.Features.SelfQuery"
-            xmlns:scs="using:LunarWard.Core.SelfQuery">
+            xmlns:scs="using:LunarWard.Core.SelfQuery"
+            x:DataType="local:SelfQueryPage">
 
     <fw:PageBase.Resources>
         <local:SelfQueryStatsNumberConverter x:Key="SelfQueryStatsNumberConverter" />
@@ -81,7 +82,7 @@
                 </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:SelfQueryPage.TypeStats">
                     <Grid Padding="8"
                           Background="{StaticResource StarOverlayAcrylicBrush}"
                           ColumnDefinitions="Auto,*,Auto"
@@ -170,7 +171,7 @@
                     </Style>
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="scs:GenshinQueryItem">
                         <StackPanel Orientation="Horizontal" Spacing="16">
                             <TextBlock Width="160"
                                        VerticalAlignment="Center"
@@ -204,7 +205,7 @@
                     </Style>
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="scs:StarRailQueryItem">
                         <StackPanel Orientation="Horizontal" Spacing="16">
                             <TextBlock Width="160"
                                        VerticalAlignment="Center"
@@ -242,7 +243,7 @@
                     </Style>
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="scs:ZZZQueryItem">
                         <StackPanel Orientation="Horizontal" Spacing="16">
                             <TextBlock Width="160"
                                        VerticalAlignment="Center"
