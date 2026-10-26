@@ -25,7 +25,7 @@ namespace LunarWard.Features.Screenshot;
 /// 由 <c>DialogService.ShowAsync</c> 关闭。</item>
 /// <item><c>Launcher.LaunchFolderPathAsync</c>（WinRT）→ <c>xdg-open &lt;folder&gt;</c>，与本地其它页面一致。</item>
 /// <item><c>FileDialogHelper.PickFolderAsync(XamlRoot)</c> → <see cref="FileDialogHelper.PickFolderAsync(TopLevel?)"/>（StorageProvider）。</item>
-/// <item><c>Visibility</c> → <c>IsVisible</c>；<c>Lang.Xxx</c> 静态属性 → <c>AppStrings</c> 索引器（资源键同名）。</item>
+/// <item><c>Visibility</c> → <c>IsVisible</c>；字符串仍用上游 <c>Lang.Xxx</c>（<c>{x:Static lang:Lang.Xxx}</c>），与全仓一致。</item>
 /// <item>上游 <c>Button_BackupFolder</c> 里判断 <c>ScreenshotFolders.FirstOrDefault(x =&gt; x.Default)</c> 后写
 /// <c>Lang.ScreenshotPage_BackedUpNewScreenshots</c>；找不到默认文件夹时记 warning，
 /// 日志文本按上游语义保留。</item>
