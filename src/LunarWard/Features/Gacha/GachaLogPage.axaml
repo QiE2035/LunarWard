@@ -1,0 +1,472 @@
+<sf:PageBase xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:LunarWard.Controls"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.Gacha"
+             xmlns:sf="using:LunarWard.Frameworks"
+             x:Class="LunarWard.Features.Gacha.GachaLogPage"
+             x:DataType="local:GachaLogPage">
+
+  <!--
+    上游 Starward/Features/Gacha/GachaLogPage.xaml（475 行）的逐结构移植。
+      22      Grid 两行：44 标题行 + 内容
+      27-33   标题 GachaTypeText
+      36-265  右上工具条：Uid 下拉 / 更新记录 SplitButton（含卡池、米游社、HoYoLAB、输入 URL、云游戏）/
+              设置 Flyout（复制 URL、Authkey 提示、删除缓存、语言、导入导出、隐藏卡池、删除记录）/ 材料 Pane 按钮
+      267-277 空态表情 + 「暂无抽卡记录」
+      280-470 SplitView（Overlay、Pane 在右、OpenPaneLength 508）：卡池统计卡 + 材料网格
+
+    平台差异（docs/09）：
+      x:Bind -> {Binding}（Avalonia 无编译期 x:Bind）；FontIcon -> TextBlock Classes="icon"；
+      GridView -> ScrollViewer + ItemsControl(WrapPanel)；x:Load -> IsVisible；
+      ThemeResource -> StaticResource。
+  -->
+
+  <sf:PageBase.Resources>
+    <local:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />
+    <local:RarityToSRBgConverter x:Key="RarityToSRBgConverter" />
+    <local:RarityToZZZIconConverter x:Key="RarityToZZZIconConverter" />
+  </sf:PageBase.Resources>
+
+  <Grid RowDefinitions="44,*">
+
+    <TextBlock Margin="24,0,0,0"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Center"
+               FontSize="20"
+               FontWeight="Bold"
+               Text="{Binding GachaTypeText}" />
+
+    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="16">
+
+      <!--  Uid List  -->
+      <ComboBox Name="ComboBox_Uid"
+                MinWidth="140"
+                VerticalAlignment="Center"
+                ItemsSource="{Binding UidList}"
+                SelectedItem="{Binding SelectUid, Mode=TwoWay}" />
+
+      <!--  Update  -->
+      <SplitButton Height="32" Command="{Binding UpdateGachaLogCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" Margin="0,2,0,0" FontSize="14" Text="&#xE72C;" />
+          <!--  更新记录  -->
+          <TextBlock Text="{x:Static lang:Lang.GachaLogPage_UpdateRecords}" />
+        </StackPanel>
+        <SplitButton.Flyout>
+          <MenuFlyout>
+            <!--  更新 保存的 URL  -->
+            <MenuItem Command="{Binding UpdateGachaLogCommand}"
+                      CommandParameter="cache"
+                      Header="{x:Static lang:Lang.GachaLogPage_UpdateSavedURL}" />
+            <!--  更新 全部  -->
+            <MenuItem Command="{Binding UpdateGachaLogCommand}"
+                      CommandParameter="all"
+                      Header="{x:Static lang:Lang.GachaLogPage_UpdateAll}" />
+            <!--  从 米游社 同步  -->
+            <MenuItem Name="MenuFlyoutItem_SyncFromMiyoushe"
+                      Command="{Binding SyncFromMiyousheCommand}"
+                      Header="{x:Static lang:Lang.GachaLogPage_SyncFromMiyoushe}"
+                      IsVisible="False" />
+            <MenuItem Name="MenuFlyoutItem_SyncFromMiyousheAll"
+                      Command="{Binding SyncFromMiyousheCommand}"
+                      CommandParameter="all"
+                      Header="{x:Static lang:Lang.GachaLogPage_SyncFromMiyousheAll}"
+                      IsVisible="False" />
+            <!--  从 HoYoLAB 同步  -->
+            <MenuItem Name="MenuFlyoutItem_SyncFromHoYoLAB"
+                      Command="{Binding SyncFromMiyousheCommand}"
+                      Header="{x:Static lang:Lang.GachaLogPage_SyncFromHoYoLAB}"
+                      IsVisible="False" />
+            <MenuItem Name="MenuFlyoutItem_SyncFromHoYoLABAll"
+                      Command="{Binding SyncFromMiyousheCommand}"
+                      CommandParameter="all"
+                      Header="{x:Static lang:Lang.GachaLogPage_SyncAllFromHoYoLAB}"
+                      IsVisible="False" />
+            <!--  输入 URL  -->
+            <MenuItem Command="{Binding InputUrlCommand}" Header="{x:Static lang:Lang.GachaLogPage_InputURL}" />
+            <MenuItem Name="MenuFlyoutItem_CloudGame"
+                      Command="{Binding OpenCloudGameWindowCommand}"
+                      Header="{x:Static lang:Lang.GachaLogPage_ViaCloudGame}" />
+          </MenuFlyout>
+        </SplitButton.Flyout>
+      </SplitButton>
+
+      <!--  Setting  -->
+      <Button>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" Margin="0,2,0,0" FontSize="14" Text="&#xE713;" />
+          <!--  设置  -->
+          <TextBlock Text="{x:Static lang:Lang.Common_Setting}" />
+        </StackPanel>
+        <Button.Flyout>
+          <Flyout>
+            <StackPanel MinWidth="200" Spacing="8">
+              <!--  其他设置  -->
+              <TextBlock FontSize="16" Text="{x:Static lang:Lang.GachaLogPage_OtherSettings}" />
+
+              <!--  复制 URL  -->
+              <Button Margin="0,8,0,0" Command="{Binding CopyUrlCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Name="TextBlock_CopyUrl"
+                             Classes="icon"
+                             FontSize="16"
+                             Text="&#xE8C8;" />
+                  <TextBlock Text="{x:Static lang:Lang.GachaLogPage_CopyURL}" />
+                </StackPanel>
+              </Button>
+
+              <!--  总是出现 Authkey Timeout  -->
+              <TextBlock Margin="0,8,0,0"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         Text="{x:Static lang:Lang.GachaLogPage_AuthkeyTimeoutAlwaysOccurs}" />
+              <TextBlock Margin="0,-4,0,0"
+                         FontSize="12"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         Text="{x:Static lang:Lang.GachaLogPage_RestartGameAfterDeletingTheCacheFolder}"
+                         TextWrapping="Wrap" />
+              <Button Command="{Binding DeleteGachaCacheFolderCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Classes="icon" FontSize="16" Text="&#xEA99;" />
+                  <!--  删除缓存文件夹  -->
+                  <TextBlock Text="{x:Static lang:Lang.GachaLogPage_DeleteCacheFolder}" />
+                </StackPanel>
+              </Button>
+
+              <!--  语言  -->
+              <StackPanel Margin="0,4,0,0" Orientation="Horizontal" Spacing="8">
+                <TextBlock Foreground="{StaticResource StarTextSecondary}" Text="{x:Static lang:Lang.GachaLogPage_Language}" />
+                <Button Padding="1"
+                        Classes="icon-button"
+                        VerticalAlignment="Bottom">
+                  <TextBlock Classes="icon" FontSize="12" Text="&#xE9CE;" />
+                  <Button.Flyout>
+                    <Flyout>
+                      <TextBlock Text="{x:Static lang:Lang.GachaLogPage_GachaLanguageDesc}" />
+                    </Flyout>
+                  </Button.Flyout>
+                </Button>
+              </StackPanel>
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBox MinWidth="100" Text="{Binding GachaLanguage, Mode=TwoWay}" />
+                <Button Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding ChangeGachaItemNameCommand}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Classes="icon" Margin="0,2,0,0" FontSize="16" Text="&#xE8FB;" />
+                    <TextBlock Text="{x:Static lang:Lang.Common_Apply}" />
+                  </StackPanel>
+                </Button>
+              </Grid>
+
+              <!--  分割线  -->
+              <Separator />
+
+              <!--  导入导出  -->
+              <Button HorizontalAlignment="Stretch" Content="{x:Static lang:Lang.GachaLogPage_ImportAndExport}">
+                <Button.Flyout>
+                  <Flyout>
+                    <StackPanel MinWidth="200" Spacing="8">
+                      <!--  导出为  -->
+                      <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Foreground="{StaticResource StarTextSecondary}" Text="{x:Static lang:Lang.GachaLogPage_ExportAs}" />
+                        <Button Padding="1"
+                                Classes="icon-button"
+                                VerticalAlignment="Bottom">
+                          <TextBlock Classes="icon" FontSize="12" Text="&#xE9CE;" />
+                          <Button.Flyout>
+                            <Flyout>
+                              <HyperlinkButton Content="UIGF/SRGF" NavigateUri="https://uigf.org/" />
+                            </Flyout>
+                          </Button.Flyout>
+                        </Button>
+                      </StackPanel>
+                      <!--  Excel Json  -->
+                      <Grid ColumnDefinitions="*,*">
+                        <Button Name="Button_Export_Excel"
+                                HorizontalAlignment="Stretch"
+                                Classes="split-left"
+                                Command="{Binding ExportGachaLogCommand}"
+                                CommandParameter="excel"
+                                Content="Excel" />
+                        <Button Name="Button_Export_JSON"
+                                Grid.Column="1"
+                                HorizontalAlignment="Stretch"
+                                Classes="split-right"
+                                Command="{Binding ExportGachaLogCommand}"
+                                CommandParameter="json"
+                                Content="{Binding LegacyFormatName}" />
+                      </Grid>
+                      <!--  从 UIGF v3.0 / SRGF v1.0 / JSON 导入  -->
+                      <Button Name="Button_Import"
+                              HorizontalAlignment="Stretch"
+                              Command="{Binding ImportGachaLogCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <TextBlock Classes="icon" Margin="0,2,0,0" FontSize="16" Text="&#xEA52;" />
+                          <TextBlock Text="{Binding LegacyImportText}" />
+                        </StackPanel>
+                      </Button>
+                      <!--  分割线  -->
+                      <Separator />
+                      <!--  UIGF v4.2  -->
+                      <Button Name="Button_UIGF4"
+                              HorizontalAlignment="Stretch"
+                              Command="{Binding OpenUIGF4WindowCommand}"
+                              Content="UIGF v4.2" />
+                    </StackPanel>
+                  </Flyout>
+                </Button.Flyout>
+              </Button>
+
+              <!--  隐藏卡池  -->
+              <Button HorizontalAlignment="Stretch" Content="{x:Static lang:Lang.GachaLogPage_HideGachaBanners}">
+                <Button.Flyout>
+                  <Flyout>
+                    <ListBox Name="ListView_GachaBanners"
+                             MinWidth="200"
+                             ItemsSource="{Binding GachaBanners}"
+                             SelectionMode="Multiple">
+                      <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="local:GachaBanner">
+                          <TextBlock Text="{Binding ToLocalization()}" />
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
+                  </Flyout>
+                </Button.Flyout>
+              </Button>
+
+              <!--  删除记录  -->
+              <Button HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Classes="icon"
+                             FontSize="14"
+                             Foreground="{StaticResource StarErrorBrush}"
+                             Text="&#xE74D;" />
+                  <TextBlock Foreground="{StaticResource StarErrorBrush}" Text="{x:Static lang:Lang.GachaLogPage_DeleteRecords}" />
+                </StackPanel>
+                <Button.Flyout>
+                  <MenuFlyout>
+                    <MenuItem Command="{Binding DeleteUidCommand}"
+                              FontSize="14"
+                              Header="{x:Static lang:Lang.GachaLogPage_DeleteAll}" />
+                    <MenuItem Command="{Binding DeleteUidByTimeCommand}"
+                              FontSize="14"
+                              Header="{x:Static lang:Lang.GachaLogPage_SpecificTimePeriod}" />
+                  </MenuFlyout>
+                </Button.Flyout>
+              </Button>
+            </StackPanel>
+          </Flyout>
+        </Button.Flyout>
+      </Button>
+
+      <!--  Pane  -->
+      <Button Height="32"
+              Padding="0"
+              BorderThickness="0"
+              Classes="accent"
+              Command="{Binding OpenItemStatsPaneCommand}"
+              CornerRadius="14,0,0,14"
+              IsEnabled="{Binding GachaItemStats, Converter={StaticResource ObjectToBoolConverter}}">
+        <TextBlock Classes="icon" Margin="6,2,4,0" FontSize="18" Text="&#xE8A0;" />
+      </Button>
+
+    </StackPanel>
+
+    <StackPanel Name="StackPanel_Emoji"
+                Grid.RowSpan="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16"
+                IsVisible="False">
+      <Image Name="Image_Emoji" Width="160" Height="160" />
+      <TextBlock HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{x:Static lang:Lang.GachaLogPage_NoGachaRecords}" />
+    </StackPanel>
+
+    <SplitView Name="SplitView_Content"
+               Grid.Row="1"
+               BorderThickness="0"
+               CornerRadius="12,0,0,12"
+               DisplayMode="Overlay"
+               OpenPaneLength="508"
+               PaneBackground="{StaticResource StarOverlayAcrylicBrush}"
+               PanePlacement="Right">
+
+      <ScrollViewer Name="ScrollViewer_GachaStats"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled">
+        <Grid Name="Grid_GachaStats" Margin="20,0,20,16" Background="Transparent">
+
+          <ItemsControl Name="ItemsControl_GachaStats"
+                        IsVisible="{Binding IsZZZGachaStatsCardVisible, Converter={StaticResource BoolReversedConverter}}"
+                        ItemsSource="{Binding DisplayGachaTypeStatsCollection}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="12" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="local:GachaTypeStats">
+                <local:GachaStatsCard Loaded="GachaStatsCard_Loaded"
+                                      Unloaded="GachaStatsCard_Unloaded"
+                                      WarpTypeStats="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <ItemsControl Name="ItemsControl_ZZZGachaStats"
+                        IsVisible="{Binding IsZZZGachaStatsCardVisible}"
+                        ItemsSource="{Binding DisplayGachaTypeStatsCollection}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="12" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="local:GachaTypeStats">
+                <local:ZZZGachaStatsCard Loaded="GachaStatsCard_Loaded"
+                                         Unloaded="GachaStatsCard_Unloaded"
+                                         WarpTypeStats="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+        </Grid>
+      </ScrollViewer>
+
+      <SplitView.Pane>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <Panel>
+
+            <ItemsControl Name="GridView_GachaItemStats_Genshin"
+                          IsVisible="{Binding EnableGenshinGachaItemStats}"
+                          ItemsSource="{Binding GachaItemStats}"
+                          Margin="24,12,24,12">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="local:GachaLogItemEx">
+                  <Grid Width="80"
+                        Height="97"
+                        Margin="4,2,4,2">
+                    <controls:CachedImage Source="{Binding RankType, Converter={StaticResource RarityToGIBgConverter}}" />
+                    <controls:CachedImage Height="80"
+                                          VerticalAlignment="Top"
+                                          CornerRadius="0,0,16,0"
+                                          Source="{Binding Icon}" />
+                    <TextBlock Margin="0,0,0,1"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom"
+                               FontSize="12"
+                               Foreground="#84603D">
+                      <Run Text="{Binding ItemCount}" />
+                      <Run Text="{x:Static lang:Lang.SpiralAbyssPage_Times}" />
+                    </TextBlock>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ItemsControl Name="GridView_GachaItemStats_StarRail"
+                          IsVisible="{Binding EnableStarRailGachaItemStats}"
+                          ItemsSource="{Binding GachaItemStats}"
+                          HorizontalAlignment="Center"
+                          Margin="24,12,24,12">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="local:GachaLogItemEx">
+                  <Grid Width="80"
+                        Height="93"
+                        Margin="4,2,4,2">
+                    <controls:CachedImage Source="{Binding RankType, Converter={StaticResource RarityToSRBgConverter}}" />
+                    <controls:CachedImage Width="80"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Top"
+                                          CornerRadius="0,12,0,0"
+                                          Source="{Binding Icon}"
+                                          Stretch="Uniform" />
+                    <Border Height="16"
+                            Margin="0,0,0,2"
+                            VerticalAlignment="Bottom"
+                            Background="#A0000000">
+                      <TextBlock Margin="0,0,0,1"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center"
+                                 FontSize="12">
+                        <Run Text="{Binding ItemCount}" />
+                        <Run Text="{x:Static lang:Lang.SpiralAbyssPage_Times}" />
+                      </TextBlock>
+                    </Border>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ItemsControl Name="GridView_GachaItemStats_ZZZ"
+                          IsVisible="{Binding EnableZZZGachaItemStats}"
+                          ItemsSource="{Binding GachaItemStats}"
+                          Margin="24,12,24,12">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="local:GachaLogItemEx">
+                  <Grid Width="80"
+                        Height="98"
+                        Margin="4,2,4,2"
+                        Background="Black"
+                        CornerRadius="8">
+                    <controls:CachedImage Width="80"
+                                          Height="80"
+                                          VerticalAlignment="Top"
+                                          Source="ms-appx:///Assets/Image/ZZZ_AvatarCard_Background.png" />
+                    <controls:CachedImage Width="80"
+                                          Height="80"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Top"
+                                          Source="{Binding Icon}"
+                                          Stretch="UniformToFill" />
+                    <Border HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Background="#0A0A0A"
+                            CornerRadius="0,0,4,0">
+                      <controls:CachedImage Width="20"
+                                            Height="20"
+                                            Margin="2"
+                                            Source="{Binding RankType, Converter={StaticResource RarityToZZZIconConverter}}" />
+                    </Border>
+                    <TextBlock Margin="0,0,0,1"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom"
+                               FontSize="12"
+                               Foreground="{StaticResource StarTextSecondary}">
+                      <Run Text="{Binding ItemCount}" />
+                      <Run Text="{x:Static lang:Lang.SpiralAbyssPage_Times}" />
+                    </TextBlock>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+          </Panel>
+        </ScrollViewer>
+      </SplitView.Pane>
+
+    </SplitView>
+
+  </Grid>
+
+</sf:PageBase>
