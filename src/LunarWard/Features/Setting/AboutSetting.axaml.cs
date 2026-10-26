@@ -1,5 +1,8 @@
+using LunarWard.Features.Update;
 using LunarWard.Language;
 using LunarWard.Services;
+using Microsoft.Extensions.Logging;
+using NuGet.Versioning;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -15,8 +18,8 @@ namespace LunarWard.Features.Setting;
 /// 预览版渠道 → 检查更新 → 「相关链接」+ 5 条粗体链接。
 /// </para>
 /// <para>
-/// Starward 有「检查更新 / 预览版通道」；LunarWard 走发行包升级，不内置更新器，
-/// 因此这两个控件保留位置但禁用（<c>AboutSetting.xaml:43-85</c>），旁边写清原因。
+/// 「检查更新 / 预览版通道」与上游一致：<see cref="UpdateService"/> 取 GitHub Release，
+/// 有新版弹 <see cref="UpdateWindow"/>。
 /// 相关链接里的「隐私策略 / 赞助开发者」在 LunarWard 没有对应页面，同样保留位置并禁用。
 /// </para>
 /// <para>
@@ -102,87 +105,73 @@ public sealed partial class AboutSetting : PageBase
     public List<SettingLinkViewModel> Links { get; }
 
 
-    /// <summary>检查更新进行中（对应上游 <c>ProgressRing</c> 的位置）。</summary>
-    private bool _isCheckingUpdate;
+    private readonly ILogger<AboutSetting> _logger = AppConfig.GetLogger<AboutSetting>();
 
-    public bool IsCheckingUpdate
+
+    /// <summary>预览版更新渠道（AboutSetting.xaml.cs:29-42 同名属性）。</summary>
+    private bool _enablePreviewRelease = AppConfig.EnablePreviewRelease;
+
+    public bool EnablePreviewRelease
     {
-        get => _isCheckingUpdate;
-        set => SetProperty(ref _isCheckingUpdate, value);
+        get => _enablePreviewRelease;
+        set
+        {
+            if (SetProperty(ref _enablePreviewRelease, value))
+            {
+                AppConfig.EnablePreviewRelease = value;
+            }
+        }
     }
 
 
-    /// <summary>检查结果文案（已是最新 / 有新版本 / 失败原因）。</summary>
-    private string? _updateMessage;
+    /// <summary>已是最新版本（AboutSetting.xaml.cs:47-51）。</summary>
+    private string? _latestVersion;
 
-    public string? UpdateMessage
+    public string? LatestVersion
     {
-        get => _updateMessage;
-        set => SetProperty(ref _updateMessage, value);
+        get => _latestVersion;
+        set => SetProperty(ref _latestVersion, value);
     }
 
 
-    /// <summary>有新版时为 <c>true</c>，显示「打开下载页」。</summary>
-    private bool _hasUpdate;
+    /// <summary>检查更新的错误文本（AboutSetting.xaml.cs:54-58）。</summary>
+    private string? _updateErrorText;
 
-    public bool HasUpdate
+    public string? UpdateErrorText
     {
-        get => _hasUpdate;
-        set => SetProperty(ref _hasUpdate, value);
+        get => _updateErrorText;
+        set => SetProperty(ref _updateErrorText, value);
     }
-
-
-    private string? _updateUrl;
 
 
     /// <summary>
-    /// 检查更新。上游会下载安装包并替换自身；LunarWard 走发行包，只在有新版时
-    /// 给出发布页链接（见 <see cref="ReleaseChecker"/>）。
+    /// 检查更新（AboutSetting.xaml.cs:62-84 原样对齐上游）：
+    /// <c>UpdateService.GetLatestVersionAsync</c> → NuGetVersion 比较 → 有新版弹 <see cref="UpdateWindow"/>，
+    /// 否则把 <c>release.Version</c> 写进 <see cref="LatestVersion"/>；异常写 <see cref="UpdateErrorText"/> + log。
     /// </summary>
     [RelayCommand]
     private async Task CheckUpdateAsync()
     {
-        if (IsCheckingUpdate)
-        {
-            return;
-        }
-
-        IsCheckingUpdate = true;
-        HasUpdate = false;
-        UpdateMessage = "正在检查…";
         try
         {
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-            var current = typeof(AboutSetting).Assembly.GetName().Version ?? new Version(1, 0, 0);
-            var result = await ReleaseChecker.CheckAsync(http, current).ConfigureAwait(true);
-            switch (result.Status)
+            LatestVersion = null;
+            UpdateErrorText = null;
+            var release = await AppConfig.GetService<UpdateService>().GetLatestVersionAsync();
+            _ = NuGetVersion.TryParse(AppConfig.AppVersion, out var currentVersion);
+            _ = NuGetVersion.TryParse(release.Version, out var newVersion);
+            if (newVersion! > currentVersion!)
             {
-                case ReleaseCheckStatus.UpdateAvailable:
-                    HasUpdate = true;
-                    _updateUrl = result.HtmlUrl;
-                    UpdateMessage = string.Format(Lang.AboutSettingPage_CurrentVersionIsNotTheLatestVersion, result.LatestVersion ?? "");
-                    break;
-                case ReleaseCheckStatus.UpToDate:
-                    UpdateMessage = string.Format(Lang.AboutSetting_UpdatedToTheLatestVersion, result.LatestVersion ?? Version);
-                    break;
-                default:
-                    UpdateMessage = string.Format("检查更新失败：{0}", result.Error ?? "");
-                    break;
+                new UpdateWindow { NewVersion = release }.Activate();
+            }
+            else
+            {
+                LatestVersion = release.Version;
             }
         }
-        finally
+        catch (Exception ex)
         {
-            IsCheckingUpdate = false;
-        }
-    }
-
-
-    [RelayCommand]
-    private void OpenUpdate()
-    {
-        if (_updateUrl is { Length: > 0 } url)
-        {
-            ShellHelper.OpenUri(url);
+            UpdateErrorText = ex.Message;
+            _logger.LogError(ex, "Check update");
         }
     }
 

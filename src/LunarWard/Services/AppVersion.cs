@@ -9,9 +9,8 @@ namespace LunarWard.Services;
 /// 命令行横幅），都读 <see cref="AssemblyInformationalVersionAttribute"/> 再去掉
 /// SourceLink 追加的 <c>+sha</c> 后缀。这里合并成一份，行为不变。</para>
 ///
-/// <para>注意：<see cref="ReleaseChecker"/> 里的 <c>Normalize</c>/<c>ParseVersion</c>
-/// 解析的是 **GitHub release tag**（可带 <c>v</c> 前缀、预发布后缀、<c>1.2</c> 两段式），
-/// 与应用版本号语义不同，没有合并。</para>
+/// <para>注意：<c>UpdateService</c> 解析的是 **GitHub release tag**（可带 <c>v</c> 前缀、
+/// 预发布后缀、<c>1.2</c> 两段式），与应用版本号语义不同，不在这里处理。</para>
 /// </summary>
 internal static class AppVersion
 {

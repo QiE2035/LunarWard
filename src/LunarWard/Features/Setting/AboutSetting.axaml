@@ -79,19 +79,16 @@
         </StackPanel>
       </Border>
 
-      <!-- AboutSetting.xaml:43-46 预览版更新渠道。
-           LunarWard 通过发行包（.deb / AppImage）更新，没有内置更新器：保留位置、禁用。 -->
+      <!-- AboutSetting.xaml:43-46 预览版更新渠道（写回 AppConfig.EnablePreviewRelease） -->
       <ToggleSwitch Margin="0,12,0,0"
-                    IsEnabled="False"
+                    IsChecked="{Binding EnablePreviewRelease, Mode=TwoWay}"
                     OffContent="{x:Static lang:Lang.SettingPage_JoinPreviewReleaseChannel}"
                     OnContent="{x:Static lang:Lang.SettingPage_JoinPreviewReleaseChannel}" />
 
-      <!-- AboutSetting.xaml:47-85 检查更新。
-           LunarWard 不替换自身（发行包更新），只查 GitHub 最新发布：
-           第 1 列同样是「← 检查更新」按钮 + 「已是最新版 / ProgressRing / 错误文字」。 -->
+      <!-- AboutSetting.xaml:47-85 检查更新：按钮 +「已是最新版 / 错误文字」，
+           有新版由 UpdateWindow 弹出（与上游同一路径）。 -->
       <Grid Margin="0,4,0,0" ColumnSpacing="16">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
@@ -103,30 +100,38 @@
                 BorderThickness="0"
                 CornerRadius="4,20,20,4"
                 Classes="accent"
-                IsEnabled="False">
+                Command="{Binding CheckUpdateCommand}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Classes="icon" FontSize="16" Text="&#xE752;" />
             <TextBlock Text="{x:Static lang:Lang.SettingPage_CheckForUpdate}" />
           </StackPanel>
         </Button>
 
-        <!-- AboutSetting.xaml:66-73 的「已是最新版」状态位。
-             LunarWard 没有内置更新器：检查结果（已是最新 / 有新版本 / 失败）写在这里，
-             有新版本时右侧出现「打开下载页」。 -->
+        <!-- AboutSetting.xaml:66-73 已是最新版本（TextBlock + 两个 Run） -->
+        <TextBlock Grid.Column="1"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding LatestVersion, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <Run Foreground="{StaticResource StarTextSecondary}"
+               Text="{x:Static lang:Lang.AboutSetting_UpdatedToTheLatestVersion}" />
+          <Run Foreground="{StaticResource StarSuccessBrush}" Text="{Binding LatestVersion}" />
+        </TextBlock>
+
+        <!-- Starward 的 ProgressRing；Avalonia 没有该控件，用不确定进度条（同 DownloadSetting） -->
+        <ProgressBar Grid.Column="1"
+                     Width="120"
+                     Height="3"
+                     VerticalAlignment="Center"
+                     IsIndeterminate="True"
+                     IsVisible="{Binding CheckUpdateCommand.IsRunning}" />
+
+        <!-- AboutSetting.xaml:76-82 检查失败原因 -->
         <TextBlock Grid.Column="1"
                    VerticalAlignment="Center"
                    MaxWidth="620"
                    FontSize="12"
                    Foreground="{StaticResource StarTextSecondary}"
                    TextWrapping="Wrap"
-                   Text="{Binding UpdateMessage}" />
-
-        <Button Grid.Column="2"
-                VerticalAlignment="Center"
-                Padding="8,2"
-                IsVisible="{Binding HasUpdate}"
-                Command="{Binding OpenUpdateCommand}"
-                Content="打开下载页" />
+                   Text="{Binding UpdateErrorText}" />
       </Grid>
 
       <!-- AboutSetting.xaml:89-126 相关链接 -->
