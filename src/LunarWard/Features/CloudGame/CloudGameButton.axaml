@@ -1,4 +1,5 @@
-<UserControl x:Class="LunarWard.Features.CloudGame.CloudGameButton"
+﻿<UserControl x:Class="LunarWard.Features.CloudGame.CloudGameButton"
+x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:lang="using:LunarWard.Language"

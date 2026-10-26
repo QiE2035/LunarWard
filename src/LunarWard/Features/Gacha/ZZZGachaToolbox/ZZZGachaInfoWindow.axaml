@@ -1,4 +1,5 @@
-<fw:WindowEx x:Class="LunarWard.Features.Gacha.ZZZGachaToolbox.ZZZGachaInfoWindow"
+﻿<fw:WindowEx x:Class="LunarWard.Features.Gacha.ZZZGachaToolbox.ZZZGachaInfoWindow"
+x:CompileBindings="False"
             xmlns="https://github.com/avaloniaui"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:fw="using:LunarWard.Frameworks"

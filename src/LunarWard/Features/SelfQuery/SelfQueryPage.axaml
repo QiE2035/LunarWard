@@ -1,4 +1,5 @@
-<fw:PageBase x:Class="LunarWard.Features.SelfQuery.SelfQueryPage"
+﻿<fw:PageBase x:Class="LunarWard.Features.SelfQuery.SelfQueryPage"
+x:CompileBindings="False"
             xmlns="https://github.com/avaloniaui"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:controls="using:LunarWard.Controls"
@@ -48,12 +49,13 @@
         </StackPanel>
 
 
-        <Grid Grid.Row="1"
-              Margin="28,0,28,8"
-              Padding="8"
-              Background="{StaticResource StarOverlayAcrylicBrush}"
-              CornerRadius="4"
-              IsVisible="{Binding QueryUserInfo, Converter={StaticResource ObjectToVisibilityConverter}}">
+        <Border Grid.Row="1"
+                Margin="28,0,28,8"
+                Padding="8"
+                Background="{StaticResource StarOverlayAcrylicBrush}"
+                CornerRadius="4"
+                IsVisible="{Binding QueryUserInfo, Converter={StaticResource ObjectToVisibilityConverter}}">
+        <Grid>
             <controls:CachedImage Width="40"
                                   Height="40"
                                   Margin="4,0,0,0"
@@ -69,6 +71,7 @@
                            Text="{Binding QueryUserInfo.Uid}" />
             </StackPanel>
         </Grid>
+        </Border>
 
 
         <ListBox Grid.Row="2"
@@ -82,11 +85,11 @@
                 </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="local:SelfQueryPage.TypeStats">
-                    <Grid Padding="8"
-                          Background="{StaticResource StarOverlayAcrylicBrush}"
-                          ColumnDefinitions="Auto,*,Auto"
-                          CornerRadius="4">
+                <DataTemplate>
+                    <Border Padding="8"
+                            Background="{StaticResource StarOverlayAcrylicBrush}"
+                            CornerRadius="4">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
                         <controls:CachedImage Width="40"
                                               Height="40"
                                               Source="{Binding Icon}" />
@@ -127,6 +130,7 @@
                                        Text="&#xE895;" />
                         </Button>
                     </Grid>
+                    </Border>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

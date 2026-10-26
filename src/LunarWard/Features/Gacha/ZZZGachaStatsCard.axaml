@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:gacha="using:LunarWard.Features.Gacha"
              xmlns:lang="using:LunarWard.Language"
@@ -153,7 +153,7 @@
       </TextBlock>
 
       <!-- 行 7：上游该位置的分割线是 Collapsed，保留占位不渲染 -->
-      <Border Grid.Row="7" Height="0" Visibility="Collapsed" />
+      <Border Grid.Row="7" Height="0" IsVisible="False" />
 
       <!-- 行 8：Pivot(5★/4★ 列表) + Segmented -->
       <Grid Grid.Row="8" RowDefinitions="36,*">

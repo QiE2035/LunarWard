@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:lang="using:LunarWard.Language"
         xmlns:sf="using:LunarWard.Frameworks"
@@ -13,9 +13,9 @@
     WebView2 -> Frameworks/WebView/WebView（WebKitGTK，API 与 WebView2 同形）。
   -->
 
+  <Border Padding="0,32,0,0"
+          Background="{StaticResource StarAcrylicBrush}">
   <Grid Name="RootGrid"
-        Padding="0,32,0,0"
-        Background="{StaticResource StarAcrylicBrush}"
         Loaded="RootGrid_Loaded"
         RowDefinitions="Auto,*"
         ColumnDefinitions="*,Auto">
@@ -39,4 +39,5 @@
     <wv:WebView Name="webview" Grid.Row="1" Grid.ColumnSpan="2" />
 
   </Grid>
+  </Border>
 </Window>
