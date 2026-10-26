@@ -126,6 +126,7 @@ public static class DialogService
             }
         }
 
-        return MainWindow.ContentDialogHost;
+        // 优先用新外壳（Features/ViewHost/MainWindow）的浮层；旧壳还在时回退到它。
+        return LunarWard.Features.ViewHost.MainWindow.CurrentDialogHost ?? MainWindow.ContentDialogHost;
     }
 }

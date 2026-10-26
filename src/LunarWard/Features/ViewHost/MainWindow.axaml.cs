@@ -33,13 +33,10 @@ namespace LunarWard.Features.ViewHost;
 /// <item><c>App.Current.Exit()</c> → <see cref="Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.Shutdown"/>。</item>
 /// </list>
 /// </remarks>
-public sealed partial class MainWindow : WindowEx, INotifyPropertyChanged
+public sealed partial class MainWindow : WindowEx
 {
 
-    public static new MainWindow? Current { get; private set; }
-
-
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public static MainWindow? Current { get; private set; }
 
 
     public MainWindow()
