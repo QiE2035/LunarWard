@@ -180,7 +180,10 @@ public partial class App : Application
 
 
     /// <summary>上游 <c>App.Exit</c>：先恢复手柄 Guide 键，再关窗退出。</summary>
-    public new void Exit()
+    /// <remarks>
+    /// Avalonia 的 <see cref="Application"/> 没有同名无参成员，因此不需要 <c>new</c>（CS0109）。
+    /// </remarks>
+    public void Exit()
     {
         LunarWard.Features.GamepadControl.GamepadController.RestoreGamepadGuideButtonForGameBar();
         (ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
