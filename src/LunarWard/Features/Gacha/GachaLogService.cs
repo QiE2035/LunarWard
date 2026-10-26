@@ -6,7 +6,6 @@ using LunarWard.Core.Gacha;
 using LunarWard.Core.Gacha.Genshin;
 using LunarWard.Core.Gacha.StarRail;
 using LunarWard.Features.Database;
-using LunarWard.Language;
 using System;
 using System.Collections.Generic;
 using System.Data;

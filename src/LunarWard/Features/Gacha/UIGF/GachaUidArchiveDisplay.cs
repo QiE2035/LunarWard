@@ -3,7 +3,6 @@ using LunarWard.Core;
 using LunarWard.Core.Gacha.Genshin;
 using LunarWard.Core.Gacha.StarRail;
 using LunarWard.Core.Gacha.ZZZ;
-using LunarWard.Language;
 using System;
 using System.Collections.Generic;
 

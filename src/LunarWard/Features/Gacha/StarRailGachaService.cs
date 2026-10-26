@@ -7,7 +7,6 @@ using LunarWard.Core.Gacha.StarRail;
 using LunarWard.Features.Database;
 using LunarWard.Features.Gacha.UIGF;
 using LunarWard.Helpers;
-using LunarWard.Language;
 using System;
 using System.Collections.Generic;
 using System.IO;
