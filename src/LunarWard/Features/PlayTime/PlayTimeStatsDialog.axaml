@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<controls:StarwardContentDialog x:Class="LunarWard.Features.PlayTime.PlayTimeStatsDialog"
+                             xmlns="https://github.com/avaloniaui"
+                             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                             xmlns:lang="using:LunarWard.Language"
+                             xmlns:local="using:LunarWard.Features.PlayTime"
+                             xmlns:charts="using:LunarWard.Features.PlayTime.Charts"
+                             xmlns:controls="using:LunarWard.Views.Starward.Controls"
+                             x:DataType="local:PlayTimeStatsDialog"
+                             IsCloseButtonVisible="False">
+
+    <!--
+        游戏时长统计对话框。
+        平台替换（docs/09 十六）：ContentDialog → StarwardContentDialog；ItemsRepeater + UniformGridLayout →
+        ItemsControl + UniformGrid（对话框宽度固定 1008，6 张卡片等宽铺满；上游是 MinItemWidth=156 的流式布局）；
+        CommunityToolkit Segmented → 3 个 ToggleButton + 代码里互斥；FontIcon → TextBlock + StarIconFontFamily；
+        MaxLines/TextTrimming → TextBlock.MaxLines/TextTrimming。
+    -->
+    <Grid Width="1008" Height="564">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+
+        <!--  Title  -->
+        <StackPanel Margin="24,12,0,0"
+                    Orientation="Horizontal"
+                    Spacing="8">
+            <TextBlock FontSize="20"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Text="{x:Static lang:Lang.PlayTimeStatsDialog_PlaytimeStatistics}" />
+            <Button Padding="4"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    VerticalAlignment="Top">
+                <TextBlock FontFamily="{StaticResource StarIconFontFamily}"
+                           FontSize="12"
+                           Foreground="{DynamicResource StarTextTertiary}"
+                           Text="&#xE946;" />
+                <Button.Flyout>
+                    <Flyout Placement="Bottom">
+                        <TextBlock MaxWidth="400"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource StarTextSecondary}"
+                                   Text="{x:Static lang:Lang.PlayTimeStatsDialog_StatsTip}"
+                                   TextWrapping="Wrap" />
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+        </StackPanel>
+
+        <StackPanel Margin="0,12,16,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+
+            <!--  Close Button  -->
+            <Button Width="32"
+                    Height="32"
+                    Padding="0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="CloseButton_Click"
+                    CornerRadius="8">
+                <TextBlock FontFamily="{StaticResource StarIconFontFamily}"
+                           FontSize="16"
+                           Foreground="{DynamicResource StarTextSecondary}"
+                           Text="&#xE711;" />
+            </Button>
+
+        </StackPanel>
+
+
+        <StackPanel Grid.Row="1" Margin="24,12,24,24">
+
+            <!--  Stat Cards  -->
+            <ItemsControl ItemsSource="{Binding StatCards}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <!-- 相当于上游 UniformGridLayout(MinItemWidth=156, ItemsStretch=Fill)：
+                             内容区宽 960 / 6 列 = 160 ≥ 156，6 张卡片等宽铺满一行。 -->
+                        <UniformGrid Rows="1" Columns="6" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:StatCardItem">
+                        <!-- 上游 Grid 自带 Background/BorderBrush/CornerRadius；Avalonia 的 Panel 没有这些属性，改用 Border 包一层。 -->
+                        <Border Margin="2"
+                                Padding="12,10,12,10"
+                                Background="{DynamicResource StarCardBackgroundBrush}"
+                                BorderBrush="{DynamicResource StarCardStrokeBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                            <Grid RowSpacing="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock FontSize="12"
+                                           Foreground="{DynamicResource StarTextSecondary}"
+                                           MaxLines="2"
+                                           Text="{Binding Title}"
+                                           TextTrimming="CharacterEllipsis"
+                                           TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="1"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Text="{Binding Value}" />
+                                <TextBlock Grid.Row="2"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource StarTextSecondary}"
+                                           Text="{Binding SubText}"
+                                           TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+
+
+            <!--  Play Time Bar Chart (15 days / 12 weeks / 12 months)  -->
+            <Grid x:Name="Grid_BarChartSwitcher" Margin="4,20,4,0">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <StackPanel x:Name="Segmented_BarRange" Orientation="Horizontal" Spacing="2">
+                        <ToggleButton MinWidth="60"
+                                      Padding="8,4"
+                                      Tag="0"
+                                      IsChecked="True"
+                                      Checked="BarRange_Checked"
+                                      Content="{x:Static lang:Lang.PlayTimeStatsDialog_Last15Days}" />
+                        <ToggleButton MinWidth="60"
+                                      Padding="8,4"
+                                      Tag="1"
+                                      Checked="BarRange_Checked"
+                                      Content="{x:Static lang:Lang.PlayTimeStatsDialog_Last12Weeks}" />
+                        <ToggleButton MinWidth="60"
+                                      Padding="8,4"
+                                      Tag="2"
+                                      Checked="BarRange_Checked"
+                                      Content="{x:Static lang:Lang.PlayTimeStatsDialog_Last12Months}" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="4">
+                    <TextBlock FontSize="12"
+                               Foreground="{DynamicResource StarTextSecondary}"
+                               Text="{x:Static lang:Lang.PlayTimeStatsDialog_Total}" />
+                    <TextBlock FontSize="12"
+                               Foreground="{DynamicResource StarTextSecondary}"
+                               Text="{Binding BarTotalText}" />
+                </StackPanel>
+            </Grid>
+
+            <charts:BarChart x:Name="PlayTimeBarChart"
+                             Margin="0,20,0,0"
+                             PlotHeight="132" />
+
+
+            <charts:CalendarHeatmap x:Name="PlayTimeHeatmap" Margin="0,24,0,0" />
+
+
+
+        </StackPanel>
+
+    </Grid>
+
+</controls:StarwardContentDialog>

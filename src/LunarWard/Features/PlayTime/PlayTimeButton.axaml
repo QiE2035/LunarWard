@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl x:Class="LunarWard.Features.PlayTime.PlayTimeButton"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:LunarWard.Features.PlayTime"
+             x:DataType="local:PlayTimeButton"
+             Loaded="UserControl_Loaded">
+
+    <!--
+        游戏时长悬浮按钮：亚克力底 + 圆角 22，点击打开 PlayTimeStatsDialog。
+        平台替换（docs/09 十六）：ThemeResource CustomOverlayAcrylicBrush → StarOverlayAcrylicBrush；
+        ThemeShadow + Translation="0,0,16" → Border.BoxShadow；FontIcon → TextBlock + StarIconFontFamily。
+    -->
+    <Border Name="Border_Playtime"
+            Height="44"
+            Background="{DynamicResource StarOverlayAcrylicBrush}"
+            CornerRadius="22">
+        <Border.BoxShadow>
+            <BoxShadows>
+                <BoxShadow OffsetX="0"
+                           OffsetY="4"
+                           Blur="16"
+                           Color="#40000000" />
+            </BoxShadows>
+        </Border.BoxShadow>
+        <Button HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderThickness="0"
+                Background="Transparent"
+                Click="Button_OpenStats_Click">
+            <StackPanel Margin="4,2,4,0"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                <TextBlock FontFamily="{StaticResource StarIconFontFamily}"
+                           FontSize="20"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource StarTextSecondary}"
+                           Text="&#xE823;" />
+                <TextBlock FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource StarTextSecondary}"
+                           Text="{Binding PlayTimeText}" />
+            </StackPanel>
+        </Button>
+    </Border>
+
+</UserControl>

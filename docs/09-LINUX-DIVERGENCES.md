@@ -702,3 +702,29 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 5. `Features/RPC/` 目录只落 `RpcService.cs`（与上游一致）；`RpcClientFactory` 按上游同构放在 RPC 工程内、随 ProjectReference 共享，主程序不另存一份。
 6. `GameInstallTaskStartedMessage` 现为 RPC 契约类型 `LunarWard.RPC.GameInstall.GameInstallContext`（上游原名），三个对话框直接发送，无需桥接；文件头注释仍称之为 `LunarWard.Installer.GameInstallContext`，后续清理注释即可（不影响行为）。
 7. `docs/10-ALIGNMENT.md` 中 RPC 行仍写「本轮不建」，需由 lead/settings-migrate 更新；`scripts/check-alignment.py` 的 RPC 映射同理。
+
+## 十九、Features/PlayTime（2026-10-26，misc-port / task-12）
+
+对应上游 `Features/PlayTime/`（10 文件）+ `Features/PlayTime/Charts/`（5 文件），逐文件移植：类名、成员名、SQL、状态机、统计口径、图表公开 API（`BarChart.Items`/`PlotHeight`/`MaxBarWidth`、`CalendarHeatmap.Days`/`CellSize`/`CellGap`/`ScaleMax`/`ShowMonthSplit`/`LevelBrush`、`HoverCard.Bind/Show/Hide`、`BarChartItem`/`HeatmapDayItem`/`StatCardItem`）与上游一致。
+
+> 编号说明：任务原本分配「十六」，但该号已被 `Features/GameRecord` 占用（详见 §十六），为避免改动他人小节，本节落在「十九」。
+
+| 位置 | 上游行为 | 本仓库行为 | 原因 | 待办 |
+|---|---|---|---|---|
+| `PlayTimeStatsDialog` 宿主 | `ContentDialog` + `ShowAsync()` + `XamlRoot` | `StarwardContentDialog` 子类 + `Services.DialogService.ShowAsync(dialog)`（宿主缺省回退主窗口 `ContentDialogHost`），关闭走 `Close()` | Avalonia 无 `ContentDialog` | — |
+| `PlayTimeStatsDialog` 的 `Segmented`（15 天 / 12 周 / 12 月） | `CommunityToolkit.WinUI.Controls.Segmented` + `SelectionChanged` | 3 个 `ToggleButton`（`IsChecked` 互斥）+ 同语义的 `BarRange_Checked`，读选中项得到 `BarRangeIndex`（= 上游 `SelectedIndex`） | Avalonia 无 `Segmented` | — |
+| `StatCards` 布局 | `ItemsRepeater` + `UniformGridLayout(MinItemWidth=156, ItemsStretch=Fill)` | `ItemsControl` + `UniformGrid Rows=1 Columns=6`（对话框内容区宽 960，6×160≥156，与上游同一行等宽排布）；卡片外壳由 `Grid` 改 `Border`（Avalonia 的 `Panel` 没有 `Background`/`BorderBrush`/`CornerRadius`） | Avalonia 无 `ItemsRepeater`/`UniformGridLayout` | 若日后需要自适应列数，改为代码里按实际宽度算列数 |
+| 长文案分支 `UniformGridLayout_StatCards.MinItemHeight = 98` | 抬高卡片最小高度 | **未实现**（`UniformGrid` 无该属性；卡片高度由内容自适应），仅保留 `Grid_BarChartSwitcher.Margin` 与 `PlayTimeHeatmap.Margin` 两处调整 | 控件能力缺失，不影响数据 | 无（视觉差异 0，卡片本就随两行标题变高） |
+| `BarChart` 绘制 | Win2D 无关，但用 WinUI `Grid` + 运行时构造 `Rectangle`/`TextBlock`；悬停用 `HoverCard`（WinUI `Canvas` 浮层） | 同构重建：`BarChart : Grid`（`Grid`+`Border`+`Rectangle`+`TextBlock` 运行时构造），`HoverCard : Canvas` 用 `TranslatePoint` 定位、`Measure` 量尺寸后 `SetLeft/SetTop` | 框架控件类型不同 | — |
+| `CalendarHeatmap` 布局驱动 | `LayoutUpdated` 事件里做「标签列真实宽度」校正与月份标签定位 | 重写 `ArrangeOverride(Size)`：排列完成后同一套 reconcile（`_reconcileCount` 封顶 3 次，避免死循环），月份标签/月边界折线用 `TranslatePoint` 取槽位实测坐标做线性校准 | Avalonia 无 `LayoutUpdated` 语义保障；`ArrangeOverride` 是唯一的“已排列”时机 | — |
+| `CalendarHeatmap` 尺寸与颜色 | `ActualWidth`、`Windows.UI.Color`、`Polyline.Points`（`PointCollection`）、`StrokeLineJoin`、`IsTextScaleFactorEnabled`、`Application.Current.RequestedTheme` | `Bounds.Width`、`Avalonia.Media.Color`、`IList<Point>`、`StrokeJoin`（删除文本缩放假开关）、`Application.Current.ActualThemeVariant == ThemeVariant.Dark` | API 同名不同物 | — |
+| 热力图色阶资源 | `SystemAccentColorDark3…Light3`（WinUI 强调色 8 级） | 先 `TryFindResource("SystemAccentColor…")`，缺键时用上游同款 GitHub 绿阶兜底（暗：`#0A331E/#0E4429/#125B27/#187632/#1F8B3B/#26A641/#39D353`；亮：`#0F3A20/#154F27/#1B5E32/#216E39/#30A14E/#40C463/#9BE9A8`） | 本仓库不引 WinUI 主题资源字典 | 若要跟随系统强调色，需在 `Styles/Starward.axaml` 增补 8 个 `SystemAccentColor*` 键（`EnsureLevelBrushes()` 会自动改用） |
+| Fluent 资源键 | `TextFillColorSecondaryBrush`、`DividerStrokeColorDefaultBrush`、`AccentFillColorDefaultBrush`、`CardBackgroundFillColorDefaultBrush`、`CustomOverlayAcrylicBrush`、`ControlStrongStrokeColorDefaultBrush` | `Charts/ChartHelpers.GetResource<T>` 内建别名表映射到 `StarTextSecondary`/`StarDividerBrush`/`StarAccentBrush`/`StarCardBackgroundBrush`/`StarOverlayAcrylicBrush`；映射表之外或按键缺失时抛 `KeyNotFoundException`（**不静默兜底**，便于早期发现漏配） | 资源键体系不同 | 新增图表用到新键时先补别名表 |
+| `PlayTimeButton` 外壳 | `ThemeResource CustomOverlayAcrylicBrush` + `ThemeShadow` + `Translation="0,0,16"` + `FontIcon` | `Border` + `{DynamicResource StarOverlayAcrylicBrush}` + `Border.BoxShadow`（`#40000000`，OffsetY 4、Blur 16）+ `TextBlock` + `StarIconFontFamily` | Avalonia 无 `ThemeShadow`/`FontIcon` | — |
+| 按钮时长文本 | `{x:Bind local:PlayTimeButton.TimeSpanToString(PlayTimeTotal)}`（直接绑定静态方法调用） | 新增 `PlayTimeText` 只读属性（`TimeSpanToString(PlayTimeTotal)`），`PlayTimeTotal` setter 里一并 `OnPropertyChanged(nameof(PlayTimeText))`；静态方法 `TimeSpanToString` 保留 | Avalonia 绑定不支持静态方法调用 | — |
+| `[INotifyPropertyChanged]` 源生成器 | CommunityToolkit 生成 | 手写 `SetProperty` + 显式接口 `event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged`（避免与 `AvaloniaObject.PropertyChanged` 的 CS0108 冲突） | 生成器与 Avalonia 控件基类冲突（同 §十二 的 `UpdateWindow`） | — |
+| 单实例（`PlayTimeRecordService`） | `AppInstance.FindOrRegisterForKey($"playtime_{pid}")` 判断该进程是否已有记录器 | 独占锁文件 `Path.Join(AppConfig.CacheFolder, "runtime", $"playtime-{pid}.lock")`（`FileShare.None`；拿不到即视为已有 watcher），与 `Services/StartupCommands.RunPlayTimeAsync` 同一约定 | Linux 无 `AppInstance`；锁文件是本仓库既有约定 | 若同机多用户共享缓存目录需改为 `$XDG_RUNTIME_DIR`（当前按用户隔离，风险低） |
+| 记录器子进程 | `Process.Start(StarwardExecutePath, "playtime --biz ... --pid ...")` | 原样保留（`AppConfig.StarwardExecutePath` = 当前可执行文件） | — | — |
+| 数据层 | `DatabaseService.CreateConnection()` + Dapper + `DatabaseSqls` | 完全一致（复用 `Features/Database/DatabaseService` 的 `PlayTimeItem`/`PlayTimeStats` 表与索引，`GameBizHandler` 处理 `hk4e_cn` 等字符串） | — | — |
+| `PlayTimeButton` 挂载点 | 上游嵌在 `GameLauncherPage`/`MainWindow` | 只交付控件；挂载点在 `Features/GameLauncher` 等页面落地后由 Lead 接线（旧 `Views/Starward/PlayTimeStatsDialog` 与本簇并存） | 跨作用域 | Lead 接线后删除旧 `Views/Starward/PlayTimeStatsDialog` 与 `Controls/PlayTime*Chart` |
+| DI | `AppConfig.GetService<PlayTimeStatsService>()`/`GetService<PlayTimeRecordService>()` | 同上；注册行由 Lead 加进 `AppConfig.ServiceProvider.cs`：`sc.AddSingleton<PlayTimeStatsService>();`、`sc.AddSingleton<PlayTimeRecordService>();`（构造签名 `PlayTimeRecordService(ILogger<PlayTimeRecordService>, HoYoPlayService, PlayTimeStatsService)`、`PlayTimeStatsService()` 无参） | 该文件归 Lead | 未注册时 `GetService` 会抛异常（与上游一致，不静默） |
