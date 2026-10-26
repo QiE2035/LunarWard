@@ -84,11 +84,18 @@
   `TransformOperationsTransition`；命中区仅 60px 高，修掉旧的左边缘裁切竖条。
 - **左栏排版**：`Button.rail` 的 `HorizontalContentAlignment` 改为 Stretch，
   40×40 内图标水平/垂直居中（此前贴左 8px）。
-- 验证：`dotnet build -c Debug -warnaserror` 0 警告 0 错误；单测 584 通过
+- **区服 logo 改用上游素材**：新增依赖 `Starward.Assets` 0.6.5（版本与上游
+  `src/Starward/Starward.csproj` 对齐，包内 166 个 contentFiles / 11 MB 拷进输出
+  `Assets/`）；新增 `Services/GameAssets.cs`（`GameBizToServerIcon` 同义映射 +
+  输出目录路径），`GameServerItem.BadgeImage` / `InstalledGameItem.BadgeImage` /
+  `ShellViewModel.CurrentServerBadgeImage` 承载 20×20 与 24×24 图片，XAML 里
+  图片与「国/际/B」文字角标按 `HasBadgeImage` 互斥显示。
+- 验证：`dotnet build -c Debug -warnaserror` 0 警告 0 错误；单测 592 通过
   （新增 `GameChoiceBuilderTests` 9 例：per-game 组装、中文名、角标、pin、
-  current、order 兼容、单区服、`GameIconsPinned` 往返）；自检截图
-  `/tmp/sel-launcher.png`、`/tmp/sel-selector.png`、`/tmp/sel-hover.png`、
-  `/tmp/sel-icons.png`。
+  current、order 兼容、单区服、`GameIconsPinned` 往返；`GameAssetsTests` 8 例：
+  区服/游戏图标文件名映射、输出目录路径）；自检截图
+  `/tmp/sel-launcher.png`、`/tmp/sel-selector2.png`、`/tmp/sel-installed.png`
+  （展开已安装列表看 24×24 logo）、`/tmp/sel-icons2.png`。
 
 ## 3.1 上一轮改动（2026-10-23 夜）
 

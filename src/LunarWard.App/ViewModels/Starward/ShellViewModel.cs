@@ -95,7 +95,15 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     private GameServerItem? _currentServer;
 
 
+    /// <summary>左上角 20×20 角标用的区服 logo（图标未加载完时显示文字角标）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCurrentServerBadgeImage))]
+    private Avalonia.Media.Imaging.Bitmap? _currentServerBadgeImage;
+
+
     public string CurrentServerBadgeText => CurrentServer?.BadgeText ?? "";
+
+    public bool HasCurrentServerBadgeImage => CurrentServerBadgeImage is not null;
 
     public Avalonia.Media.IBrush CurrentServerBadgeBrush
         => CurrentServer?.BadgeBrush ?? Avalonia.Media.Brushes.Transparent;
@@ -526,14 +534,21 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
                     ?? GameChoices.SelectMany(x => x.Servers)
                         .FirstOrDefault(x => string.Equals(x.ProfileId, profile.Id, StringComparison.Ordinal));
                 var card = GameChoices.FirstOrDefault(x => server is not null && x.Servers.Contains(server));
-                InstalledGameItems.Add(new InstalledGameItem(
+                var installedGame = new InstalledGameItem(
                     server?.GameName ?? profile.DisplayName,
                     server?.Name ?? "",
                     server?.BadgeText ?? "",
                     server?.BadgeBrush ?? Brushes.Transparent,
                     card?.Icon ?? server?.Icon,
                     FormatSize(bytes),
-                    ProfileConfig.ExpandPath(profile.Profile.Path)));
+                    ProfileConfig.ExpandPath(profile.Profile.Path));
+                if (server is not null
+                    && (server.BadgeImage ?? await Assets.BitmapAsync(server.BadgeImagePath).ConfigureAwait(true)) is { } badge)
+                {
+                    installedGame.BadgeImage = badge;
+                }
+
+                InstalledGameItems.Add(installedGame);
 
                 foreach (var (key, _) in files)
                 {
@@ -684,6 +699,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         CurrentServer = GameChoices.SelectMany(x => x.Servers)
             .FirstOrDefault(x => string.Equals(x.ProfileId, Profile?.Id, StringComparison.Ordinal)
                                  && x.Channel == CurrentChannel);
+        CurrentServerBadgeImage = CurrentServer?.BadgeImage;
     }
 
 
@@ -1018,6 +1034,16 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
                     if (await Assets.BitmapAsync(Assets.For(server.GameBiz)?.Icon).ConfigureAwait(true) is { } serverIcon)
                     {
                         server.Icon = serverIcon;
+                    }
+
+                    // 区服 logo 来自 Starward.Assets 内容包（Assets/Image/gameicon_*.png）。
+                    if (await Assets.BitmapAsync(server.BadgeImagePath).ConfigureAwait(true) is { } badge)
+                    {
+                        server.BadgeImage = badge;
+                        if (ReferenceEquals(server, CurrentServer))
+                        {
+                            CurrentServerBadgeImage = badge;
+                        }
                     }
                 }
 

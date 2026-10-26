@@ -26,6 +26,16 @@
     <PackageVersion Include="MiniExcel" Version="1.46.0" />
   </ItemGroup>
 
+  <ItemGroup Label="Assets">
+    <!--
+      Starward 的品牌素材（游戏图标、区服 logo、字体等）不在源码仓库里，而是打包成
+      内容包发布（package.json 的 contentFiles 全部 copyToOutput=true，还原后落到
+      输出目录 Assets/ 下）。LunarWard 引用同一个包来复刻区服 logo。
+      版本与上游 Starward HEAD 对齐：src/Starward/Starward.csproj 的 0.6.5。
+    -->
+    <PackageVersion Include="Starward.Assets" Version="0.6.5" />
+  </ItemGroup>
+
   <ItemGroup Label="Test">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />

@@ -113,6 +113,17 @@ tr -d '\r' < ~/.nuget/packages/<id>/<ver>/<id>.nuspec | grep -oiE '<license[^>]*
 > `libe_sqlite3.so`），SQLite 本体为 Public Domain，不产生额外义务；SQLitePCLRaw
 > 是 Apache-2.0，随包分发时需保留其 NOTICE/许可文本（NuGet 包内已带 `LICENSE`）。
 
+### 2.5b 品牌素材（Starward.Assets）
+
+| 包 | 版本 | 许可 |
+|---|---|---|
+| `Starward.Assets` | 0.6.5 | **MIT**（Starward 仓库） |
+
+> 纯 NuGet 内容包（`contentFiles` 全部 `copyToOutput=true`，166 个文件 / 11 MB），提供区服 logo
+> （`gameicon_hyperion/hoyolab/bilibili.png`）以及游戏方形图标、字体等品牌素材，构建时还原到输出
+> 目录的 `Assets/` 下；LunarWard 只用到区服 logo 与图标映射（`Services/GameAssets.cs`）。
+> 包内图像本身是米哈游 / HoYoLAB / bilibili 的商标素材，与 Starward 上游的分发方式一致。
+
 ### 2.6 Excel 导出（抽卡记录）
 
 | 包 | 版本 | 许可 |

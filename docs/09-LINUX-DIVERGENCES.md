@@ -29,7 +29,13 @@
 | 千星奇域远程图标 | 远程 PNG | 文字首字占位 |
 | 应用图标 | `Assets/AppIcon.ico` | 生成的 `lunarward.ico`（占位） |
 
-- **截图页月份标注（2026-10-25，`f9f5622`）**：上游用 WinUI `AnnotatedScrollBar`
+- **区服 logo 已补齐（2026-10-26）**：`gameicon_hyperion.png` / `gameicon_hoyolab.png` /
+  `gameicon_bilibili.png` 原本是「素材缺失」项，本轮改为**直接引用上游同一个 NuGet 内容包**
+  `Starward.Assets` 0.6.5（`Directory.Packages.props`，版本与上游 `Starward.csproj:54` 对齐）。
+  该包纯 `contentFiles`（166 个文件 / 11 MB，`copyToOutput=true`），restore 后落进输出目录
+  `Assets/`，路径映射复刻上游 `GameBizIcon.GameBizToServerIcon`（见 `Services/GameAssets.cs`）。
+  代价：输出目录多 11 MB，且每次上游升包版本都需要同步；图片缺失时角标退回「国/际/B」文字。
+- - **截图页月份标注（2026-10-25，`f9f5622`）**：上游用 WinUI `AnnotatedScrollBar`
   标月份分组，Avalonia 无对应控件，改为滚动时浮出的胶囊。逻辑抽成
   `ScreenshotMonthIndex`（10 个单测），并已用截图验证：种子 60 张跨 9 个月时，
   滚动 0 → 胶囊显示「2026-10」，滚动 1600 → 显示「2026-05」，1.1s 后自动隐藏。
