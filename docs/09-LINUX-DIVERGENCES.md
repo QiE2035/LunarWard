@@ -364,3 +364,69 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 **删除清单（本轮已 git rm/移动）**：`src/LunarWard/Views/Starward/Settings/` 整目录（10 个 `Setting*View.axaml(.cs)` + `SettingSectionView.cs`）、`src/LunarWard/ViewModels/Starward/Settings/` 整目录（10 个 `Setting*ViewModel.cs`）、`ViewModels/Starward/SettingPageViewModel.cs`。
 **未对齐（明确缺口）**：无（19 个上游文件全部有同名落点）。
+
+## 十一、Features/Codec（图片编解码：Win2D + Starward.Codec → SkiaSharp + 自写 PNG + 外部 CLI）
+
+上游 `Features/Codec/` 的全部能力压在三个 Windows-only 组件上：`Microsoft.Graphics.Win2D`（`CanvasBitmap`/`CanvasRenderTarget`/`CanvasEffect` 导出链）、`ComputeSharp.D2D1`（着色器）、`Starward.Codec` NuGet（AVIF/JXL/PNG/UltraHDR/ICC/VP9 解码器，源码不在仓库）。Linux 三者全不可用，本移植按「公开 API 名字/参数一字不改，只换类型」的原则重建：
+
+| 位置 | 上游行为 | 本仓库行为 | 原因 | 待办 |
+|---|---|---|---|---|
+| `ImageInfo.CanvasBitmap` | 类型 `CanvasBitmap` | 类型 `SKBitmap`（属性名不变，上层只碰像素/尺寸） | Win2D 无 Linux 版；SkiaSharp 随 Avalonia 自带 | — |
+| `DirectXPixelFormat` | Win2D 枚举 | `Codec/DirectXPixelFormat.cs` 同值枚举（全仓库只用到 5 个成员：`R8G8B8A8UIntNormalized`/`B8G8R8A8UIntNormalized`/`R16G16B16A16UIntNormalized`/`R16G16B16A16Float`/`R32G32B32A32Float`） | `ImageSaver.SaveAsPngAsync` 的公开签名要保留 | 若后续出现新成员需补映射 |
+| `ImageLoader` AVIF 解码 | `Starward.Codec.avifDecoderLite`（libavif 静态链接） | 调外部 **`avifdec`**（`-d 8/16` 出 PNG），再用自写 `PngDecoder` 读像素；容器 `colr`(nclx/prof)/`pixi`/`ispe` box 由 `AvifContainer` 手写解析 | SkiaSharp 3.119.4 的 Skia 构建不带 AVIF 解码器（实测 `SKCodec.Create` 返回 null）；libavif 未随发行版提供 | 可换成 P/Invoke libavif（速度更好、免临时文件） |
+| `ImageLoader` JXL 解码 | `Starward.Codec.JxlDecoderLite` | 调外部 **`djxl`** 解码成 PNG；色彩信息从 **`jxlinfo`** 文本解析（`Primaries`/`Transfer function`/`-bit`） | 同上，Skia 不带 JXL；libjxl 的 C API 需要绑定 | 同上 |
+| `ImageLoader` PNG 解码 | `CanvasBitmap.LoadAsync` + 手写 `PngReader` 读色彩块 | **完全自写** `PngReader`（chunk 解析）+ `PngDecoder`（8/16-bit、5 种 filter、zlib 用 `System.IO.Compression.ZLibStream`） | Skia 对 16-bit PNG 解码返回 `InvalidConversion`（实测），而 HDR10 PNG 正是 16-bit；且上游要读 cICP/iCCP/sRGB/cHRM 色彩块 | 隔行 PNG 抛 `NotSupportedException`（消息指向本文档），按需补 Adam7 |
+| `ImageLoader` JPEG 解码 | 同上 + `UhdrDecoder.GetIccData()` | Skia 解码 + `JpegMetadata.ReadIccProfile` 拼接 `ICC_PROFILE` APP2 段（14 字节头：`ICC_PROFILE\0` + seq + count） | UltraHDR 元数据读取器在 `Starward.Codec` 内 | gainmap 侧只读基图 ICC，暂不解 HDR gainmap 像素 |
+| `HDR10GammaEffect`（`ScRGBToHDR10Effect`/`HDR10ToScRGBEffect`） | D2D `CanvasEffect` 图（ColorMatrixEffect + PQ OETF/EOTF 着色器） | 同名类 + 同名属性（`Source`/`BufferPrecision`）+ `SKBitmap Apply()`；PQ 常量（`c1=107/128`、`c2=2413/128`、`c3=2392/128`、`m=2523/32`、`n=1305/8192`、`maxLevel=125`）与 BT.709↔BT.2020 / BT.2020↔BT.709 矩阵与上游**逐位一致**，循环体是 `Span<float>` CPU 实现 | 无 D2D 着色器管线 | 大图可并行化（目前单线程，1080p 级数十毫秒） |
+| `SrgbGammaEffect` | D2D 着色器 | 同名类 + 同名 `GammaMode`（EOTF/OETF）与 `Apply()`；公式（0.04045/0.0031308 阈值的 lerp）逐字一致 | 同上 | — |
+| `UhdrPixelGainEffect`/`UhdrGainmapEffect` | D2D 着色器（`OFFSET=0.015625`、log2 归一化） | 同名类 + 同名属性（`SdrSource`/`HdrSource`/`MinContentBoost`/`MaxContentBoost`，`float3`→`Vector3`）+ `Apply()`，公式逐字一致 | 同上 | — |
+| `ImageSaver.SaveAsPngAsync` | `BitmapEncoder` 编码后 `PngReader` 重写色彩 chunk | 自写 `PngEncoder`：IHDR + （cICP(9,16,0,1) / iCCP / sRGB / cHRM 择一）+ iTXt(XMP) + IDAT + IEND，CRC32 自算；8-bit→`Rgba8888`、16-bit→`Rgba16161616` | Skia 无法写 16-bit RGBA PNG（`SKImage.Encode` 返回 0 字节，实测） | — |
+| `ImageSaver.SaveAsAvifAsync` | `avifEncoderLite`（YUV444、depth 8..12、nclx/ICC） | 先写临时 PNG → **`avifenc --yuv 444 --qcolor q --depth 8\|12`**，色彩用 `--cicp 9/16/9`（HDR10）、`1/13/6`（BT.709）、`12/13/0`（P3）或 `--icc`（自定义 primaries，ICC 由 `ICCHelper.CreateIccData` 生成） | 无 libavif 绑定 | 临时文件可换成管道 |
+| `ImageSaver.SaveAsJxlAsync` | `JxlEncoder`（distance 0..25，0=lossless，HDR10 用 `JxlColorEncoding.HDR10`） | 临时 PNG → **`cjxl`**（`--lossless` 或 `-d`）；HDR10 追加 `-e 7` | 同上 | `cjxl 0.12` 没有写 CICP 的参数，**JXL 里的 PQ/BT.2020 标注暂时丢失**（解码端靠像素位深与 `jxlinfo` 兜底），需要换 libjxl API 绑定才能真正写入 |
+| `ImageSaver.SaveAsUhdrAsync` | HdrToneMap + WhiteLevelAdjustment + SrgbGamma(OETF) + UhdrPixelGain + UhdrGainmap（D2D 图），`UhdrEncoder` 写 base JPEG + gainmap JPEG + `hdrgm` 元数据 | 同一公式的 CPU 实现（tone map 用 `max(hdr,0)*80/sdrWhiteLevel` 近似上游 `WhiteLevelAdjustmentEffect{InputWhiteLevel=80}`）；base/gainmap 各出一张 JPEG（Skia，quality 90），`hdrgm` metadata 写进 XMP（APP1），两张图用 **MPF（APP2，CIPA DC-007 TIFF IFD）** 串成多图 JPEG | 无 libultrahdr | ①MP Entry 的 Individual Image Attribute 暂填 0，未与 libultrahdr 位定义逐位核对；②未实现 ISO 21496-1 GContainer box 形式（Adobe/Android 15 的 UltraHDR 主格式）。两者都需要真实 UltraHDR 读取器回归 |
+| `ImageThumbnail` 返回类型 | `BitmapSource`（WinRT） | `Avalonia.Media.Imaging.Bitmap` | Avalonia 无 WinRT 位图 | — |
+| `ImageThumbnail` 缓存/尺寸/命名 | `XxHash64+MD5` 24 字节大写 hex、412×232 目标框、`ProcessorCount/2` 信号量、`Task.Delay(300)` | 完全一致（`GetCachedThumbnailName`/`GetThumbnailSize`/`SemaphoreSlim`/`Delay` 逐字移植） | — | — |
+| `ImageThumbnail.AvifDecoderSupported`/`JxlDecoderSupported` | 用 1×1 内嵌样本试探 WIC/Skia 是否带解码器 | 探测 PATH 上是否有 `avifdec`/`djxl` | 平台解码器来自 CLI | 启动时可加一次性自检日志 |
+| `ImageThumbnail.GetVideoThumbnailAsync` | WebM→`MediaPlayer` 取首帧（3s 超时）；其它→`StorageFile.GetThumbnailAsync` | **`ffmpeg -ss 0 -frames:v 1 -q:v 4`** 抽帧，失败抛异常（消息带 exit code 与 stderr） | 无 MediaPlayer/StorageFile | 可换 GStreamer（本机 `gst-launch-1.0` 在） |
+| `VP9Helper` 的 EBML/VP9 profile 解析 | 纯托管 | **逐字一致**（`ReadSize=1<<20`、`SimpleBlock 0xA3`/`Block 0xA1`、syncCode `0x498342`、`colorSpace==7 → RGB`） | — | — |
+| `VP9Helper` 的 MFT 注册/`IsVP9DecoderInstalled` | 注册 `VP9Decoder`/`Ogg Vorbis` MFT、查注册表 | 保留全部方法签名与状态位语义；`IsVP9DecoderInstalled()` 改为探测 PATH 中的 `ffmpeg`；Register/Unregister 只置位（注明“Linux 无 MFT 概念，解码由 libdav1d/libvpx 提供”） | Linux 没有 Media Foundation | 若以后接入 GStreamer，可换成 plugin 探测 |
+| `ColorPrimaries`/`ICCHelper` | 在 `Starward.Codec` NuGet 内（`ColorPrimaries.Id/Red/Green/Blue/White/IsValid`、`GetColorTransferMatrix` 返回 `Matrix4x4`、`GetColorPrimariesFromIccData`、`CreateIccData`） | `Codec/ICC/ColorPrimaries.cs` 同名同成员自实现：ICC v2 matrix/TRC profile 生成（Bradford→D50、curv γ2.2）、rXYZ/gXYZ/bXYZ/wtpt 反解色度坐标、`GetColorTransferMatrix` 返回 `System.Numerics.Matrix4x4`（行主序，与 D2D `ColorMatrixEffect` 的转置布局一致，`Screenshot/ImageViewWindow2` 的 `ToMatrix5x4` 直接可用） | 该类在闭源 NuGet 里 | `IsValid` 故意不依赖 `Id`，否则 cHRM 自定义原色会被 `ImageLoader` 末尾的 BT.709 兜底覆盖 |
+
+**性能/精度取舍**：AVIF/JXL 走外部进程会比上游慢一个数量级（进程启动 + 磁盘往返，典型 8K JXL 200~600ms/张），但只在打开图片/保存时发生，缩略图有磁盘缓存，可接受；HDR10↔scRGB、SRGB gamma、gainmap 归一化全部是单线程 Span 循环，精度与上游着色器同为 `float`，1080p 约 15~40ms、4K 约 60~150ms。
+
+## 十二、更新与安装（Features/Update）
+
+| 位置 | 上游行为 | 本仓库行为 | 原因 | 待办 |
+|---|---|---|---|---|
+| `UpdateService.DecompressOrPatchFileAsync` 的补丁分支 | `Snap.HPatch`（`HPatch.PatchZstandard`，win-x64 原生库） | `LunarWard.Installer.HdiffPatchPatcher`：按 `Patch.Offset/Length` 用 `FileSliceStream` 切出补丁片段，再调外部 **`hpatchz`** CLI；找不到 `hpatchz` 时抛 `InstallerCapabilityException`（消息指向本文档），**不静默失败、不假装成功** | `Snap.HPatch` 只有 win-x64 二进制 | 可换 `libhdiffpatch` 的 P/Invoke；`LUNARWARD_HPATCHZ` 可指定路径 |
+| `SetupService.UpdateAsync` 启动安装器 | `Process.Start{ UseShellExecute=true, Verb="runas" }`（UAC 提权） | 去掉 `Verb="runas"`，其余参数（`update --InstallFolder ... --OldVersion ... --NewVersion ... --Preview ... --pid ...`）逐字一致 | Linux 没有 UAC；提权由包管理器/用户自己决定 | 若将来走 dnf/apt 包，改为调用包管理器 |
+| `UpdateWindow` 外观 | `DesktopAcrylicBackdrop` + `ExtendsContentIntoTitleBar` | `TransparencyLevelHint=[Transparent]` + `StarAcrylicBrush` 背景 | Avalonia 无 DWM acrylic | 可用合成器 blur（KWin/GNOME 扩展）替代 |
+| `UpdateWindow` 重启自身 | `RpcService.KeepRunningOnExited(false, noLongerChange:true)` + `StarwardPortableLauncherExecutePath` | 保留 launcher 重启逻辑；`RpcService` 调用标 `TODO(port)`（Features/RPC 尚未移植） | 该服务不在本批 | 移植 RPC 后接线 |
+| `UpdateWindow` WebView2 异常分支 | catch `COMException` | catch `InvalidOperationException`（WebKitGTK 缺失时本仓库 WebView 抛这个） | WebView 后端不同 | — |
+| 相关链接 | `https://github.com/Scighost/Starward/releases/tag/{version}` | `https://github.com/QiE2035/LunarWard/releases/tag/{version}` | 仓库地址不同 | — |
+| `LogUploadService` 的 app 名 | `Starward` / `Starward.Debug` | `LunarWard` / `LunarWard.Debug` | 品牌 | 上报服务地址与请求结构**未改** |
+| `LogUploadClient.DefaultBaseAddress` | `https://starward-log.scighost.com` | 同值（未改） | 上游日志服务仍可接收同结构请求 | 若要自建，改这一处即可 |
+
+## 十三、手柄增强（Features/GamepadControl）
+
+| 位置 | 上游行为 | 本仓库行为 | 原因 | 待办 |
+|---|---|---|---|---|
+| 输入读取 | `SharpGameInput.V0.IGameInput`（Windows GameInput）：`GetCurrentReading`、`RegisterDeviceCallback`、`RegisterSystemButtonCallback`、`SetFocusPolicy` | **SDL2**（`P/Invoke libSDL2-2.0.so.0`）：`SDL_GameControllerOpen`/`SDL_GameControllerGetButton`/`GetAxis` + `SDL_PollEvent` 翻译热插拔，Guide=`SDL_CONTROLLER_BUTTON_GUIDE`、Share=`MISC1` | 选 SDL2 而不是裸 evdev：SDL 自带覆盖绝大多数手柄的 mapping DB（与 Proton/游戏同一套）、热插拔与 Guide/Share 抽象，语义最接近 `Windows.Gaming.Input`；evdev 需要自己做 udev hwdb + 逐设备适配 | 后台焦点策略（`SetFocusPolicy`）在 SDL 下无等价：SDL 只在窗口有焦点时更新？实测 `SDL_GameControllerGetButton` 不依赖焦点，已按“始终读”实现 |
+| 输入注入 | `H.InputSimulator`（Win32 `SendInput`） | **XTest**（`libXtst.so.6` + `libX11.so.6`）：`XTestFakeKeyEvent`/`XTestFakeButtonEvent`/`XTestFakeRelativeMotionEvent`；Win32 VK → X11 keysym 名映射表在 `X11Input.KeysymName` | XTest 是 X11/XWayland 的标准假输入通道，效果最接近 `SendInput` | 原生 Wayland 无全局注入；`libei` 需要合成器授权，未实现 |
+| 降级表达 | `NeedInstallGameInputRedist`/`GameInputRedistInstalled`/`GameInputRedistOutdate`（检测 `GameInputRedist.dll`） | `SdlAvailable`/`InputInjectionAvailable`/`UnavailableReason`（可读原因给设置页） | Linux 没有 GameInput 运行时 | 设置页 `GamepadControlSetting` 目前写死“不可用”，接上这三个属性后可动态显示 |
+| Xbox Game Bar 开关 | 改注册表 `HKCU\Software\Microsoft\GameBar\UseNexusForGameBarEnabled`、`...\GameDVR\AppCaptureEnabled` | 保留 `Disable/RestoreGamepadGuideButtonForGameBar*`、`Enable/DisbaleXboxGameBarCapture` 全部签名；方法体只写一次 Debug 日志（**明确 No-op，不伪造成功**） | Linux 没有 Xbox Game Bar | 若接 Steam Input，可改为写 Steam 配置 |
+| Guide 截图模式（Mode=1） | `ScreenCaptureService.Capture()` | 记录 Warning + `TODO(port)`（Features/Screenshot 由另一移植任务负责） | 依赖尚未移植 | 屏幕捕获落地后接线 |
+| 长按 Guide 呼出主窗口 | `MainWindow.Current.ShowByGamepad()` | `WindowEx.MainWindow.Show()/Activate()` | Avalonia 无 `ShowByGamepad`（Windows 下的“从后台唤醒”语义） | Wayland 不允许抢焦点，只能请求激活 |
+| `RunningGameService.GetRunningGameCount()` | 真实运行中游戏数（Xbox Game Bar 分支用） | 返回 0（`RunningGameService` 属于 `Features/Overlay`，另一任务） | 作用域隔离 | Game Bar 分支在 Linux 本来无效果 |
+| 提示窗口几何 | WinUI Composition `CompositionGeometricClip`（矩形挖圆孔）+ `User32.GetCursorPos`/`ScreenToClient`/`GetDpiForWindow` | Avalonia `CombinedGeometry(Exclude)` + `XQueryPointer` 取全局光标；LT 触发的 600ms KeyFrame 动画 → 16ms 定时器指数缓动 | Avalonia 无 Composition 几何动画 | 原生 Wayland 取不到全局光标，孔固定在窗口中心（Warning 日志） |
+| 提示窗口显示方式 | `SW_SHOWNOACTIVATE` + `WS_EX_TRANSPARENT`（不抢焦点 + 点击穿透） | `Show()` + Topmost，**无点击穿透** | Avalonia 未暴露这两个窗口样式位 | 可用 X11 `XShapeCombineRectangles` 补 InputShape（未做） |
+| 图标 | `Assets/Font/XboxFluent2.ttf`（E9CD/E992/…） | 统一用项目已有 Segoe Fluent Icons（`TextBlock Classes="icon"`） | 该字体不是本项目的 AvaloniaResource | 若要逐字形对齐，需把 ttf 加进 `Assets` 并注册 `FontFamily` |
+
+## 十四、URL 协议（Features/UrlProtocol）
+
+| 位置 | 上游行为 | 本仓库行为 | 原因 | 待办 |
+|---|---|---|---|---|
+| 注册 | 写 `HKCU\Software\Classes\starward`（`URL Protocol` + `shell\open\command`） | `UrlProtocolService.RegisterProtocol()` 写 `~/.local/share/applications/lunarward-url-protocol.desktop`（`Exec=<exe> %u`、`MimeType=x-scheme-handler/lunarward;`、`NoDisplay=true`），随后尽力跑 `update-desktop-database` 与 `xdg-mime default` | Linux 用 XDG .desktop + MIME 关联 | 需要 `xdg-utils`；失败时返回 false 并日志 |
+| 注销 | 删注册表键 | 删 .desktop 文件 + 清 `~/.config/mimeapps.list` 的 `[Default Applications]` 中对应项 | 同上 | 同上 |
+| scheme | `starward://` | `lunarward://`（`UrlProtocolService.Scheme` 常量） | 品牌 | 若要与上游共存可同时注册两个 scheme |
+| 处理入口 | `App.OnLaunched` 解析激活参数 → 各功能 | `HandleUrlProtocolAsync` → `StartupCommands.RunAsync`（startgame/playtime），`test` 打开测试窗口 | 本仓库命令行入口已集中 | 新增协议动作时两处都要加 |
