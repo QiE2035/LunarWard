@@ -33,6 +33,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Ini" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="MiniExcel" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="System.IO.Hashing" />
     <PackageReference Include="ZiggyCreatures.FusionCache" />
