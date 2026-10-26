@@ -1,12 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="LunarWard.Features.Screenshot.ImageViewWindow2"
+        x:CompileBindings="False"
         Title="ImageViewWindow2"
         Width="1200"
         Height="800"
         Background="#1F1F1F"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="48"
         TransparencyLevelHint="None">
 
@@ -63,8 +63,8 @@
              Stretch="None">
         <Image.RenderTransform>
           <TransformGroup>
-            <ScaleTransform x:Name="ScaleTransform_Image" />
-            <TranslateTransform x:Name="TranslateTransform_Image" />
+            <ScaleTransform />
+            <TranslateTransform />
           </TransformGroup>
         </Image.RenderTransform>
       </Image>

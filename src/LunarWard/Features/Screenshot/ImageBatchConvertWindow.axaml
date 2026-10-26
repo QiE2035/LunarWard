@@ -3,6 +3,7 @@
         xmlns:loc="using:LunarWard.Localization"
         xmlns:local="using:LunarWard.Features.Screenshot"
         x:Class="LunarWard.Features.Screenshot.ImageBatchConvertWindow"
+        x:CompileBindings="False"
         Title="{Binding [ImageBatchConvertWindow_ImageBatchConvert], Source={x:Static loc:AppStrings.Instance}}"
         Width="1000"
         Height="600"
@@ -110,9 +111,9 @@
         <ListBox x:Name="ListView_ImageConvertItems"
                  Grid.Row="3"
                  Margin="0,8,0,0"
-                 AllowDrop="True"
-                 DragOver="ListView_ImageConvertItems_DragOver"
-                 Drop="ListView_ImageConvertItems_Drop"
+                 DragDrop.AllowDrop="True"
+                 DragDrop.DragOver="ListView_ImageConvertItems_DragOver"
+                 DragDrop.Drop="ListView_ImageConvertItems_Drop"
                  ItemsSource="{Binding ImageConvertItems}"
                  SelectionMode="Multiple,Toggle">
             <ListBox.ItemTemplate>

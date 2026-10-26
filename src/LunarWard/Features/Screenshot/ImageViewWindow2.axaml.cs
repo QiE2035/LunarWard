@@ -59,6 +59,16 @@ public partial class ImageViewWindow2 : Window
     private bool _dragging;
 
 
+    /// <summary>
+    /// Avalonia 要求 x:Class 窗口有公共无参构造（XAML 编译期实例化校验）；上游 WinUI 无此约束。
+    /// 业务入口仍是下面两个带参构造。
+    /// </summary>
+    public ImageViewWindow2()
+    {
+        InitializeComponent();
+    }
+
+
     public ImageViewWindow2(ScreenshotItem item, ObservableCollection<ScreenshotItem>? collection)
     {
         InitializeComponent();

@@ -3,7 +3,8 @@
              xmlns:local="using:LunarWard.Features.Screenshot"
              xmlns:sc="using:LunarWard.Controls"
              xmlns:sf="using:LunarWard.Frameworks"
-             x:Class="LunarWard.Features.Screenshot.ScreenshotPage2">
+             x:Class="LunarWard.Features.Screenshot.ScreenshotPage2"
+        x:CompileBindings="False">
 
   <!--
     复刻 Starward Features/Screenshot/ScreenshotPage2.xaml（319 行）：
@@ -95,6 +96,7 @@
             <Border Classes="tile"
                     Width="204"
                     Height="115"
+                    Background="{DynamicResource StarCardBackgroundBrush}"
                     Margin="0,0,12,12"
                     Tapped="Grid_ImageItem_Tapped"
                     PointerPressed="Grid_ImageItem_PointerPressed"
@@ -104,7 +106,6 @@
                                 Classes="thumb"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Background="{DynamicResource StarCardBackgroundBrush}"
                                 IsThumbnail="True"
                                 RenderTransformOrigin="0.5,0.5"
                                 Source="{Binding FilePath}"

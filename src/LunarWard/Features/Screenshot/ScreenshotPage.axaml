@@ -4,7 +4,8 @@
              xmlns:loc="using:LunarWard.Localization"
              xmlns:sc="using:LunarWard.Controls"
              xmlns:sf="using:LunarWard.Frameworks"
-             x:Class="LunarWard.Features.Screenshot.ScreenshotPage">
+             x:Class="LunarWard.Features.Screenshot.ScreenshotPage"
+        x:CompileBindings="False">
 
   <!--
     复刻 Starward Features/Screenshot/ScreenshotPage.xaml（274 行）：
@@ -86,6 +87,7 @@
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="local:ScreenshotItem">
                     <Border Classes="thumb-host"
+                            Background="{DynamicResource StarCardBackgroundBrush}"
                             ContextRequested="Grid_ImageItem_ContextRequested"
                             DoubleTapped="Grid_ImageItem_DoubleTapped"
                             PointerPressed="Grid_ImageItem_PointerPressed"
@@ -143,7 +145,6 @@
                                       Height="116"
                                       HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
-                                      Background="{DynamicResource StarCardBackgroundBrush}"
                                       IsThumbnail="True"
                                       RenderTransformOrigin="0.5,0.5"
                                       Source="{Binding FilePath}"

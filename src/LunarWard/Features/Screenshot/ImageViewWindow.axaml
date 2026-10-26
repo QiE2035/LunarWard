@@ -4,12 +4,12 @@
         xmlns:loc="using:LunarWard.Localization"
         xmlns:sc="using:LunarWard.Controls"
         x:Class="LunarWard.Features.Screenshot.ImageViewWindow"
+        x:CompileBindings="False"
         Title="Starward Screenshots Viewer"
         Width="1200"
         Height="676"
         Background="#1F1F1F"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="48"
         TransparencyLevelHint="None">
 
@@ -43,9 +43,9 @@
              Stretch="None">
         <Image.RenderTransform>
           <TransformGroup>
-            <ScaleTransform x:Name="ScaleTransform_Image" />
-            <RotateTransform x:Name="RotateTransform_Image" />
-            <TranslateTransform x:Name="TranslateTransform_Image" />
+            <ScaleTransform />
+            <RotateTransform />
+            <TranslateTransform />
           </TransformGroup>
         </Image.RenderTransform>
       </Image>

@@ -2,13 +2,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="using:LunarWard.Localization"
         x:Class="LunarWard.Features.Screenshot.ScreenCaptureInfoWindow"
+        x:CompileBindings="False"
         Width="320"
         Height="100"
         Background="Transparent"
         CanResize="False"
         ShowActivated="False"
         ShowInTaskbar="False"
-        SystemDecorations="None"
+        WindowDecorations="None"
         Title="ScreenCaptureInfoWindow"
         Topmost="True"
         TransparencyLevelHint="Transparent"
@@ -16,11 +17,11 @@
 
     <!--  上游：<Grid x:Name="RootGrid" Padding="10" Background="#D0202020" ColumnSpacing="16" CornerRadius="8,0,0,8" Translation="320,0,0">
           Avalonia 的 Grid 没有 CornerRadius，改由外层 Border 提供圆角；滑入/滑出动画在代码里用 TranslateTransform 实现。  -->
-    <Border Background="#D0202020"
+    <Border Padding="10"
+            Background="#D0202020"
             ClipToBounds="True"
             CornerRadius="8,0,0,8">
         <Grid x:Name="RootGrid"
-              Padding="10"
               ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
