@@ -14,7 +14,8 @@ namespace LunarWard.UnitTests;
 /// 构造 <see cref="ShellViewModel"/> 会发后不管地访问网络（素材/更新检查），但同步路径只需要
 /// 一份「已有默认运行时」的配置来跳过 <c>RuntimeScanner</c> 扫描，避免测试写盘、拖慢。
 /// </remarks>
-public sealed class ShellViewModelPinnedIconTests
+[Collection(GlobalStaticsCollection.Name)]
+public sealed class ShellViewModelPinnedIconTests : IDisposable
 {
     [Fact]
     public void RestoresPinnedFlagFromConfigWithoutRewritingIt()
@@ -93,4 +94,10 @@ public sealed class ShellViewModelPinnedIconTests
         };
         config.Launcher.DefaultRuntime = "test";
     }
+
+    /// <summary>
+    /// <see cref="AppServices"/> 会把安装路径提供者塞进 <c>GachaLogClient</c> 的静态属性，
+    /// 这里在用例结束后还原，避免污染同一集合里的其它用例。
+    /// </summary>
+    public void Dispose() => LunarWard.Core.Gacha.GachaLogClient.InstallPathProvider = null;
 }

@@ -13,6 +13,7 @@ namespace LunarWard.UnitTests;
 /// 反斜杠会变成**文件名的一部分**，于是"从网页缓存里找抽卡链接"永远失败。
 /// 这类 bug 不会编译报错，也不会有异常——只会静默找不到文件。
 /// </remarks>
+[Collection(GlobalStaticsCollection.Name)]
 public class GachaCachePathTests
 {
     [Theory]
