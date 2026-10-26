@@ -395,7 +395,7 @@ public partial class ScreenshotPage : PageBase
                 window.Show();
             }
             // 上游把当前选中的截图（未选中时全部）交给批量转换窗口。
-            List<ScreenshotItem> items = _selectedItems.Count > 0 ? [.. _selectedItems] : [.. _screenshotItems];
+            List<ScreenshotItem> items = _selectedItems.Count > 0 ? [.. _selectedItems] : [.. (_screenshotItems ?? [])];
             window.Activate(items);
         }
         catch (Exception ex)

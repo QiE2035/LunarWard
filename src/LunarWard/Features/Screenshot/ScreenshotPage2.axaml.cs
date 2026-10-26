@@ -129,7 +129,7 @@ public partial class ScreenshotPage2 : PageBase
 
     private Dictionary<string, ScreenshotItem> _screenshotDict = new();
 
-    public ObservableCollection<ScreenshotItem> Screenshots { get; set => SetProperty(ref field, value); }
+    public ObservableCollection<ScreenshotItem> Screenshots { get; set => SetProperty(ref field, value); } = [];
 
 
 

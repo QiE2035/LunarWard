@@ -174,7 +174,7 @@ internal class ScreenCaptureService
         {
             if (extension is "png")
             {
-                captureItem.Bitmap.Save(filePath);
+                captureItem.Bitmap.Save(filePath, new PngBitmapEncoderOptions());
             }
             else
             {
@@ -182,7 +182,7 @@ internal class ScreenCaptureService
                 string tempPng = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.png");
                 try
                 {
-                    captureItem.Bitmap.Save(tempPng);
+                    captureItem.Bitmap.Save(tempPng, new PngBitmapEncoderOptions());
                     bool converted = extension switch
                     {
                         "avif" => await ScreenCaptureEncoder.TryEncodeAvifAsync(tempPng, filePath, GetQuality()).ConfigureAwait(false),

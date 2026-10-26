@@ -54,7 +54,7 @@ public sealed partial class ScreenCaptureInfoWindow : Window
     public new event global::System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 
 
-    protected bool SetProperty<T>(ref T field, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    private bool SetProperty<T>(ref T field, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
     {
         if (global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -70,7 +70,7 @@ public sealed partial class ScreenCaptureInfoWindow : Window
     {
         // 上游：AppWindow.TitleBar.ExtendsContentIntoTitleBar = true; IsShownInSwitchers = false;
         //       OverlappedPresenter 关边框/不可缩放/AlwaysOnTop。
-        SystemDecorations = WindowDecorations.None;
+        WindowDecorations = WindowDecorations.None;
         CanResize = false;
         Topmost = true;
         ShowInTaskbar = false;

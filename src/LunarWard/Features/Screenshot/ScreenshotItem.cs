@@ -18,7 +18,7 @@ public partial class ScreenshotItem : ObservableObject
 
     public string FileName { get; set; }
 
-    public string FileInfo { get; set => SetProperty(ref field, value); }
+    public string FileInfo { get; set => SetProperty(ref field, value); } = "";
 
     public DateTime CreationTime { get; set; }
 

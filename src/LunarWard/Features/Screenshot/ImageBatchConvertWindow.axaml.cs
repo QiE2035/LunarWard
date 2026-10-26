@@ -72,7 +72,7 @@ public sealed partial class ImageBatchConvertWindow : Window
     public new event global::System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 
 
-    protected bool SetProperty<T>(ref T field, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    private bool SetProperty<T>(ref T field, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
     {
         if (global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -666,18 +666,18 @@ public class ImageConvertItem : ObservableObject
 
     public string OutputFilePath { get; set; }
 
-    public string OutputFileName { get; set => SetProperty(ref field, value); }
+    public string OutputFileName { get; set => SetProperty(ref field, value); } = "";
 
     public long OutputFileSize { get; set => SetProperty(ref field, value); }
 
-    public string OutputFileSizeText { get => field; set => SetProperty(ref field, value); }
+    public string OutputFileSizeText { get => field; set => SetProperty(ref field, value); } = "";
 
-    public IBrush FileDeltaTextBrush { get; set => SetProperty(ref field, value); }
+    public IBrush FileDeltaTextBrush { get; set => SetProperty(ref field, value); } = Brushes.Transparent;
 
-    public string FileDeltaPercent { get; set => SetProperty(ref field, value); }
+    public string FileDeltaPercent { get; set => SetProperty(ref field, value); } = "";
 
 
-    public string ErrorMessage { get; set => SetProperty(ref field, value); }
+    public string ErrorMessage { get; set => SetProperty(ref field, value); } = "";
 
 
     public ImageConvertItem(string filePath)
