@@ -255,7 +255,7 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | `Features/GameInstall/GameInstallService.cs` | **不移植** | 上游是 gRPC **客户端**（`RpcService` + `GameInstaller.GameInstallerClient` + `Starward.RPC.GameInstall.*` 契约 + 独立安装进程），本仓库 RPC 层不在范围内，安装逻辑已由 `LunarWard.Installer`（进程内 `GameInstallService`/`GameInstallController`，同名字段 `GameInstallContext`）承载 | 若将来引入 RPC 层，按上游文件原样落位；否则把 `LunarWard.Installer` 的 `GameInstallService` 视作等价实现 |
 | `Features/GameInstall/GameInstallTaskStartedMessage.cs` | 已移植 | `InstallTask` 类型改指 `LunarWard.Installer.GameInstallContext`（字段集合与 RPC DTO 相同） | — |
 | `Features/GameInstall/{InstallGameDialog,PreDownloadButton,PreDownloadDialog}` | 待移植 | 依赖上面的 RPC 任务模型与既有 `Views/Starward/` 旧实现（本轮不删旧壳） | 待安装层改造后逐行移植 |
-| `Features/GameSelector/NoAnimationImageExStyle.xaml` | **不移植** | 目标类型 `Scighost.WinUI.ImageEx` 是 WinUI 专有控件（占位图/淡入状态机）；Avalonia 侧对应物是 `Image`/`Controls/CachedImage`（task-4） | CachedImage 落地后可用 Avalonia `Transitions` 复刻淡入效果，再决定是否提供同名样式 |
+| `Features/GameSelector/NoAnimationImageExStyle.xaml` | 已移植（等价声明） | 目标类型 `Scighost.WinUI.ImageEx` 是 WinUI 专有控件（占位图/淡入状态机）；Avalonia 侧已落 `Features/GameSelector/NoAnimationImageExStyle.axaml`（静态 `Style` 指向 `Controls/CachedImage`，无过渡），见 §12.6 | — |
 | `Features/GameSelector/GameSelector.xaml(.cs)` | 待移植 | 37KB+28KB，含 Win32 注册表、`GetFileInformationByHandleEx` 硬链接体积统计、XamlRoot 拖拽区、`FlyoutBase` 附加弹出层 | 需先把 `AutoSearchInstalledGames` 的注册表读取换成 `WineRegistry`、硬链接识别换成 `(st_dev, st_ino)` |
 | `Features/GameLauncher/{GameLauncherPage.xaml(.cs),GameLauncherSettingDialog.xaml(.cs),CompactCheckBoxStyle.xaml}` | 待移植 | 本轮已有 `Views/Starward/` 旧实现（Lead 之后统一切壳）；`CompactCheckBoxStyle.xaml` 是 WinUI CheckBox 控件模板，需按 Avalonia 主题重画 | 切壳时逐行对齐；模板类样式单独评审 |
 
@@ -649,8 +649,22 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 ### 12.5 明确未移植（同 §7.3）
 
-- `Features/GameSelector/NoAnimationImageExStyle.xaml`：WinUI `ImageEx` 的样式，Avalonia 无该控件，`Image` 已无淡入动画，样式的存在前提消失。
 - `Features/GameLauncher/CompactCheckBoxStyle.xaml` 的**模板本体**未逐行翻译（见 12.2），只保留紧凑样式语义。
+
+### 12.6 `NoAnimationImageExStyle.xaml` → `.axaml`（task-21 补齐，2026-10-26）
+
+上游 `Features/GameSelector/NoAnimationImageExStyle.xaml` 是 `ResourceDictionary`，只有一个 `<Style x:Key="NoAnimationImageExStyle" TargetType="swi:ImageEx">`：静态属性 `Background=Transparent`、`Foreground={ThemeResource ApplicationForegroundThemeBrush}`、`IsTabStop=False`；`Template` 里是 Grid + 两层 `Image`（`PlaceholderImage` Opacity=1、`Image` Opacity=0），再由 `VisualStateGroup CommonStates` 的 `Failed/Loading/Loaded/Unloaded` 用 `ObjectAnimationUsingKeyFrames` 在 0 时刻切两张图的 Opacity —— 也就是「加载完成直接显示，不播淡入」。
+
+本仓库落点 `src/LunarWard/Features/GameSelector/NoAnimationImageExStyle.axaml`，被 `GameSelector.axaml` 以 `<UserControl.Styles><StyleInclude .../></UserControl.Styles>` 引入。逐条替换：
+
+| 上游 | 本仓库 | 原因 |
+| --- | --- | --- |
+| `TargetType="swi:ImageEx"` | `Selector="controls\|CachedImage"` | `Scighost.WinUI.ImageEx` 是 WinUI 专有控件；`Controls/CachedImage`（`Image` 派生、带 `UriSource` 缓存加载）是它的等价物 |
+| `Setter Background=Transparent`、`Foreground={ThemeResource ApplicationForegroundThemeBrush}` | 删除 | Avalonia `Image` 没有 `Background`/`Foreground`；图片直接铺在父容器背景上，二者无视觉作用 |
+| `Setter IsTabStop=False` | `Setter IsTabStop=False`（保留） | 语义相同 |
+| `ControlTemplate` 两层 `Image` + `PlaceholderImage.PlaceholderSource/PlaceholderStretch/NineGrid` | 删除 | `CachedImage` 自带加载完成即显示，占位图层与 `NineGrid` 无 Avalonia 对应物 |
+| `VisualStateManager` 的 `Failed/Loading/Loaded/Unloaded` + `ObjectAnimationUsingKeyFrames(Opacity)` | 删除，改 `Setter Transitions={x:Null}` | 「不播放动画」在 Avalonia 上等价于「无过渡」；状态机只服务于淡入，没有别的副作用 |
+| `x:Key="NoAnimationImageExStyle"` | 同名 `x:Key` 仍保留在 `<Styles.Resources>`，另有一条无键的 `Style Selector="controls\|CachedImage"` 实际生效 | Avalonia 没有控件级 `Style` 属性，键控样式只能按需 `{StaticResource}`；实际效果由选择器样式提供 |
 
 ---
 

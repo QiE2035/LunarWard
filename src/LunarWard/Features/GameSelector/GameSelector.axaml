@@ -6,6 +6,9 @@
              x:CompileBindings="False"
              x:DataType="local:GameSelector">
 
+    <UserControl.Styles>
+        <StyleInclude Source="avares://LunarWard/Features/GameSelector/NoAnimationImageExStyle.axaml" />
+    </UserControl.Styles>
 
     <Grid>
 

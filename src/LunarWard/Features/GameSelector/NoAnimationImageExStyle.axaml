@@ -1,0 +1,31 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:LunarWard.Controls">
+
+    <!--
+        上游 Starward/Features/GameSelector/NoAnimationImageExStyle.xaml 的 Avalonia 等价物。
+
+        上游形态：ResourceDictionary + <Style x:Key="NoAnimationImageExStyle" TargetType="swi:ImageEx">
+        自定义 ControlTemplate，用 PlaceholderImage / Image 两层图片和 CommonStates
+        (Failed/Loading/Loaded/Unloaded) 的 ObjectAnimationUsingKeyFrames 在 0 时刻切换 Opacity，
+        即「加载完成后直接显示、没有任何淡入过渡」。
+
+        Avalonia 等价：没有 ImageEx 控件（Scighost.WinUI.ImageEx 是 WinUI 专有），本仓库用
+        Controls/CachedImage（Image 的派生类，带 UriSource 缓存加载）替代。CachedImage 加载完成即
+        直接显示 Source，本身就不播放过渡动画，所以上游模板里的两层图片 + 视觉状态机在此等价于
+        「不设置 Transitions、不做 Opacity 动画」。资源键名保持上游不变，供将来有键控样式需求时引用。
+    -->
+    <Styles.Resources>
+        <Style x:Key="NoAnimationImageExStyle" Selector="controls|CachedImage">
+            <!-- 上游 Setter IsTabStop=False；Background/Foreground 在 Avalonia Image 上不存在，省略（见 docs/09）。 -->
+            <Setter Property="IsTabStop" Value="False" />
+        </Style>
+    </Styles.Resources>
+
+    <!-- 实际生效的静态样式：作用域内所有 CachedImage 一律不参与动画/焦点切换。 -->
+    <Style Selector="controls|CachedImage">
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Transitions" Value="{x:Null}" />
+    </Style>
+
+</Styles>
