@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <RootNamespace>LunarWard.Wine</RootNamespace>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\LunarWard.Platform\LunarWard.Platform.csproj" />
-  </ItemGroup>
-</Project>

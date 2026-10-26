@@ -51,7 +51,6 @@
     <ProjectReference Include="..\LunarWard.Core\LunarWard.Core.csproj" />
     <ProjectReference Include="..\LunarWard.Language\LunarWard.Language.csproj" />
     <ProjectReference Include="..\LunarWard.Platform\LunarWard.Platform.csproj" />
-    <ProjectReference Include="..\LunarWard.Wine\LunarWard.Wine.csproj" />
     <ProjectReference Include="..\LunarWard.Installer\LunarWard.Installer.csproj" />
     <ProjectReference Include="..\LunarWard.RPC\LunarWard.RPC.csproj" />
     <ProjectReference Include="..\LunarWard.Setup.Core\LunarWard.Setup.Core.csproj" />
