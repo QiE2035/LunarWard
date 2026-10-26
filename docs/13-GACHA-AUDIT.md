@@ -122,7 +122,7 @@ dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj --filter "Fully
 
 ### G-9 本地遗留双份 `GachaNoUp`
 
-| 项 | `src/LunarWard.Core/Gacha/GachaNoUp.cs`（本地遗留） | `src/LunarWard/Features/Gacha/GachaNoUp.cs`（移植版，`359b654`） |
+| 项 | `src/LunarWard.Core/Gacha/GachaNoUp.cs`（本地遗留，**endgame 删除 Core 副本**） | `src/LunarWard/Features/Gacha/GachaNoUp.cs`（移植版，保留） |
 | --- | --- | --- |
 | 字节数 / 行数 | 20698 / 543 | 18826 / 503 |
 | namespace | `LunarWard.Core.Gacha` | `LunarWard.Features.Gacha` |
@@ -130,8 +130,9 @@ dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj --filter "Fully
 | `ComputeIsUp(string gameKind, int gachaType, int itemId, DateTime time)` | 有（LunarWard 补充：区间内=false、区间外=true、卡池无表=null、原神 400→301） | 无（上游无） |
 | 属性初始化器 | `Game { get; set; } = null!`、`Name { ... } = null!`、`NoUpTimes { ... } = []` | 无初始化器（净上游写法） |
 | 三游戏卡池/物品/时间段数据 | 一致 | 一致 |
+| 谁在用 | `LunarWard.Launch`、旧 MVVM 层、`ComputeIsUp` 调用点 | `Features/Gacha/**` 内的 `GachaNoUp.Dictionary`（同命名空间优先，解析到移植版） |
 
-影响面：`Features/Gacha/**` 内的 `GachaNoUp.Dictionary` 因同命名空间优先，解析到**移植版**；`Core` 遗留版由 Launcher / 旧 MVVM 使用。两份数据逐项相同（单测 `GachaModelParityTests` 锁定），故当前行为一致；endgame 删除 Core 遗留版时需把 `ComputeIsUp` 的调用点一并收敛。
+处置（lead 裁决）：**只保留移植版**；Core 副本登记为 endgame 删除项，当前**不删**（`LunarWard.Launch` 与旧 Core 调用点仍在用）。删除时需把 `ComputeIsUp` 的调用点一并收敛。两份数据逐项相同由单测 `GachaModelParityTests` 锁定。
 
 ## 六、验收命令
 
