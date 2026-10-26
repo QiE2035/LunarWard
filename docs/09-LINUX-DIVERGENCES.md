@@ -87,3 +87,91 @@
   「开始游戏」「图标字形」边缘看到 RGB 彩边。本轮在 `MainWindow.axaml` 用
   `TextOptions.TextRenderingMode="Antialias"` 强制灰度抗锯齿——这是**有意偏离**上游的
   唯一一处视觉差异，换来与 Windows 截图并排比对时不出现彩色毛边。
+## 五、浏览器内核（WebView2 → WebKitGTK 4.1，2026-10-26，`task-2`）
+
+上游 `Microsoft.Web.WebView2` 在 Linux 上没有二进制分发。**不采用「不做」**（`10-ALIGNMENT.md` §0
+反面清单），用系统自带的 WebKitGTK 4.1 做等价实现：C# P/Invoke `libwebkit2gtk-4.1`（GTK3 API）
++ Avalonia `NativeControlHost`（X11 XID 嵌入）。**不用 CEF**（Chromium 运行时 100 MB+，与发行包体积不符）。
+
+落点：`src/LunarWard/Frameworks/WebView/`
+- `WebView.cs` — Avalonia 控件 `NativeControlHost` 子类，负责 X11 socket 窗口与 GTK 侧的生命周期
+- `CoreWebView2Compat.cs` — 与 WebView2 同名的门面（`CoreWebView2` / `CoreWebView2Settings` /
+  `CoreWebView2Profile` / `CoreWebView2CookieManager` / 各 `…EventArgs`），移植上游窗口时只需把
+  `using Microsoft.Web.WebView2.*` 换成 `using LunarWard.Frameworks.WebView;`、`WebView2` 换成 `WebView`
+- `WebKitWebViewCore.cs` — 原生层（信号、脚本、Cookie、截图、自定义 scheme）
+- `GtkRuntime.cs` — 独立 GTK 线程 + 主循环（Avalonia 已占用主线程，GTK 不能抢 `gtk_main`）
+- `VirtualHostMapping.cs` — `SetVirtualHostNameToFolderMapping` 的等价物（`appassets://` 自定义 scheme）
+- `SelfTest/` — 可 `dotnet run` 的最小验证程序（只编译原生层，不依赖 Avalonia）
+- `SelfTest.Avalonia/` — 把控件放进真实 Avalonia 窗口的嵌入自检（验证 `NativeControlHost` 这条链路）
+
+| 上游（WebView2） | LunarWard（WebKitGTK 4.1） | 说明 / 已知差异 |
+|---|---|---|
+| `Source` / `Navigate(url)` | `webkit_web_view_load_uri` | 一致 |
+| `NavigateToString(html)` | `webkit_web_view_load_html(html, baseUri)` | 一致；`BaseUri` 用于相对路径与同源判定 |
+| `ExecuteScriptAsync(script)` | `webkit_web_view_evaluate_javascript` + `jsc_value_to_json` | 返回值语义与 WebView2 一致（字符串带引号、对象为 JSON）。**默认把脚本包进函数再 `eval` 执行**，因为上游 `BBSWebBridge` / `LoginPage` 会在每次 `DOMContentLoaded` 重跑含顶层 `let` 的脚本，直接求值第二次会抛 `Identifier … has already been declared`。CSP 禁 `unsafe-eval` 时自动退回直接求值 |
+| `WebMessageReceived` / `window.chrome.webview.postMessage` | `WebKitUserContentManager` 的 `script-message-received::lunarward` + 文档开始时注入的 `window.chrome.webview` 垫片 | 上游 JS 源码不用改；`TryGetWebMessageAsString()` 按 JSON 首字符是否为 `"` 判定 |
+| `DOMContentLoaded` 事件 | 无等价信号 → 注入脚本在 `DOMContentLoaded` 时向内部处理器回报 | 时序与上游一致（页面脚本之前注册） |
+| `NavigationStarting` / `NavigationCompleted` | `load-changed` / `load-failed` | `NavigationStarting.Cancel` 只在 `decide-policy` 里生效，当前实现记录告警；上游 LoginPage 用它拦外链，需在移植该页时接到 `decide-policy` |
+| `NewWindowRequested` | `create` 信号返回 NULL（阻止默认弹窗）+ 抛事件 | 目标 URL 交给调用方 `Launcher` 打开 |
+| `DocumentTitleChanged` / `SourceChanged` / `HistoryChanged` | `notify::title` / `notify::uri` | 一致 |
+| `WebResourceResponseReceived` | `resource-load-started` + `webkit_web_resource_get_data` | **只对 URI 含 `.json` 的资源抓取**（ZZZGachaInfo 只嗅探 JSON），不是全量镜像响应 |
+| `CoreWebView2Environment.GetAvailableBrowserVersionString()` | `webkit_get_major_version/get_minor_version/get_micro_version` | WelcomeWindow 的「WebView2 组件初始化失败」判定改读这里 |
+| `CookieManager`（Get/Add/Delete/DeleteAll） | `webkit_cookie_manager_*` + `libsoup-3.0` `SoupCookie` | 一致；上游 `CreateCookie(name, value, domain, path)` 全参数保留 |
+| `SetVirtualHostNameToFolderMapping(host, folder, access)` | 自定义 scheme `appassets://<host>/<path>` + 主框架 URL 重写 | **只重写主框架导航**；页面里硬编码的 `https://<host>/…` 子资源不会被改写（上游当前无调用点，移植时需注意） |
+| `Profile.PreferredColorScheme` | GTK 设置 `gtk-application-prefer-dark-theme` | WebKitGTK 4.1 没有 `prefers-color-scheme` 的 API，只能从 GTK 主题侧影响页面 |
+| `CallDevToolsProtocolMethodAsync` | 只等价实现 `Page.captureScreenshot`（走 `webkit_web_view_get_snapshot`） | 其它方法显式抛 `PlatformNotSupportedException`；WebKit 的 inspector 需 `WEBKIT_INSPECTOR_SERVER`，不接 CDP |
+| `OpenDevToolsWindow` | 仅置 `webkit_settings_set_enable_developer_extras` 并告警 | 上游只用于调试 |
+
+**平台嵌入与 Wayland 降级**
+
+- X11（含 XWayland）：`NativeControlHost.CreateNativeControlCore` 里 `XCreateWindow` 建 socket 子窗口，
+  交给 `gtk_plug_new(xid)` 做 XEmbed。GTK 后端必须在 `gtk_init` 前定好，所以嵌入路径会通过
+  `setenv("GDK_BACKEND","x11")` 强制 X11（`LUNARWARD_WEBVIEW_GDK_BACKEND` 可覆盖）。
+  注意 `.NET` 的 `Environment.SetEnvironmentVariable` 不足以让 GDK 读到，必须用 libc `setenv`。
+- Wayland 原生：没有 XID 可嵌，`IsEmbedded=false`，自动降级为**独立 GTK 窗口**（同一个
+  `GtkWindow` + 同一个 webview），日志与 `StatusMessage` 写明原因，不会静默黑屏。
+- **Avalonia 12 的 X11 平台句柄描述符是 `XID`**（不是 `X11` / `XWindow`）；三者都要认，否则会被
+  自己的判断误判成「非 X11 平台」而白白降级。
+- **`CreateNativeControlCore` 不能返回 `null`**：Avalonia 12 在 `X11NativeControlHost.Attachment`
+  的构造函数里直接解引用，会 `NullReferenceException` 崩在布局阶段。降级时返回一个句柄为 0 的占位
+  `PlatformHandle`，真正的画面放在独立 GTK 窗口里。
+- Avalonia 的 X11 后端在没有合成器/GBM 的环境会打印 `Failed to create GBM buffer of size WxH：
+  无效的参数`——这是 Avalonia 自己的回退路径，不影响 WebView 内容（截图正常）。
+- 尺寸：`GtkPlug` 是 `GtkWindow` 子类，尺寸默认由宿主 socket 的 XEMBED 协商决定；Avalonia 的
+  XID 不会发协商消息，所以必须自己 `gtk_widget_size_allocate`，否则分配结果停在 1×1
+  （实测：不调用时快照 272×1267，调用后 900×600）。
+
+**运行证据**（真实执行，`artifacts/webview-selftest/`）
+
+- `dotnet run --project src/LunarWard/Frameworks/WebView/SelfTest` → 10 项 PASS：导航完成、
+  `DOMContentLoaded` 注入回报、JS→C# 消息（对象 + 纯字符串两种）、`ExecuteScriptAsync` 三种返回、
+  顶层 `let` 脚本连跑两次、视口 900×600、截图合法、Cookie 写入+读回。
+- `--xembed`：自建 X11 socket（模拟 Avalonia 的 XID），`GtkPlug 嵌入：socket=0x4000001
+  plug=0x3E0000C embedded=True`，11 项 PASS（多一项 XEmbed 校验）。
+- `--wayland`：`GDK 后端 = wayland`，`IsEmbedded=False` 降级独立窗口，同样全 PASS。
+- `dotnet run --project src/LunarWard/Frameworks/WebView/SelfTest.Avalonia` → 真实 Avalonia 窗口里
+  9 项 PASS：依赖可用、`Avalonia NativeControlHost 走 XID 嵌入（非降级）`、
+  JS→C# 消息 `{"ok":true,"host":"avalonia"}`、`ExecuteScriptAsync(document.title)` = `"AVALONIA-EMBED"`、
+  读到页面脚本写回的 DOM `"JS 已执行：42"`、`SetVirtualHostNameToFolderMapping` 等价物
+  （`https://probe.local/` → `appassets://probe.local/index.html`，页面标题 `"APPMAPPED"`）、
+  `ZoomFactor=1.5` 生效（`devicePixelRatio="1.875"`，宿主 1.25× 缩放 × 1.5）、截图 960×640；
+  日志 `avalonia-selftest.log`。
+- 截图：`avalonia-embed.png`（960×640，Avalonia 窗口内）、`webview-selftest-xembed.png` /
+  `-x11.png` / `-wayland.png`（Wayland 下 2× 缩放 1800×1200）；
+  日志：`run-x11-standalone.log`、`run-wayland.log`、`selftest.log`。
+
+**依赖与安装**
+
+`pkg-config --modversion webkit2gtk-4.1 gtk+-3.0` 必须能查到。缺失时的安装命令由程序自己打印
+（`WebViewAvailability.InstallHint`）：Arch `sudo pacman -S webkit2gtk-4.1 gtk3 libsoup3`；
+Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；Fedora
+`sudo dnf install webkit2gtk4.1 gtk3 libsoup3`。控件在缺库时不抛异常，`IsWebViewAvailable`
+为 false 且 `MissingDependenciesMessage` 给出来源，页面照上游显示「组件初始化失败」状态。
+
+**尚未覆盖（移植对应窗口时要补）**
+
+1. `NavigationStarting.Cancel` 的真实拦截（需接 `decide-policy`）——LoginPage 拦站外跳转要用。
+2. `WebResourceResponseReceived` 全量（现在只抓 `.json`）——ZZZGachaInfo 若以后嗅探非 JSON 需扩展。
+3. 自定义 scheme 的子资源改写（现在只重写主框架 URL）。
+4. `SetVirtualHostNameToFolderMapping` 的 `DenyCors` 只能退化成「不允许跨源」，粒度不如 WebView2。
+5. DevTools Protocol 除截图外一律不支持；上游 `BBSWebBridge` 目前只用 `Page.captureScreenshot`。

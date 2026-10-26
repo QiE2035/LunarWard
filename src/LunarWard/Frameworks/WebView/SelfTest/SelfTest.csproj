@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    WebKitGTK WebView 的最小自检程序：直接编译 Frameworks/WebView 下的原生层源码
+    （不含 Avalonia 控件层），因此不需要 Avalonia 依赖，也不会被 LunarWard.csproj
+    重复编译（主工程已 Remove 本目录）。
+
+    运行：dotnet run （project 指向本目录即可）
+      默认           X11 后端 + 独立 GTK 窗口，做完整验证（加载 HTML / 执行 JS / 消息回传 / 截图）
+      probe          （参数名前加两个短横线）只打印依赖与版本
+      wayland        （同上）强制 Wayland 后端，验证降级路径
+      embed XID      （同上）嵌进指定 XID，手工验证 XEmbed
+    参数解析见 Program.cs。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>LunarWard.Frameworks.WebView.SelfTest</RootNamespace>
+    <AssemblyName>LunarWard.WebView.SelfTest</AssemblyName>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="../WebKitWebViewCore.cs" />
+    <Compile Include="../GtkRuntime.cs" />
+    <Compile Include="../WebViewAvailability.cs" />
+    <Compile Include="../VirtualHostMapping.cs" />
+    <Compile Include="../Interop/NativeMethods.cs" />
+  </ItemGroup>
+
+</Project>

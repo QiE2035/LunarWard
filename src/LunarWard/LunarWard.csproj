@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LunarWard.Core\LunarWard.Core.csproj" />
+    <ProjectReference Include="..\LunarWard.Language\LunarWard.Language.csproj" />
     <ProjectReference Include="..\LunarWard.Platform\LunarWard.Platform.csproj" />
     <ProjectReference Include="..\LunarWard.Wine\LunarWard.Wine.csproj" />
     <ProjectReference Include="..\LunarWard.Launch\LunarWard.Launch.csproj" />
@@ -39,5 +40,17 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Frameworks/WebView/SelfTest（原生层，不依赖 Avalonia）与 SelfTest.Avalonia
+      （真实 Avalonia 窗口里的嵌入自检）各自有 csproj，直接编译本目录下的源码，
+      不属于主程序编译单元。
+    -->
+    <Compile Remove="Frameworks\WebView\SelfTest*\**" />
+    <None Remove="Frameworks\WebView\SelfTest*\**" />
+    <EmbeddedResource Remove="Frameworks\WebView\SelfTest*\**" />
+    <AvaloniaResource Remove="Frameworks\WebView\SelfTest*\**" />
   </ItemGroup>
 </Project>
