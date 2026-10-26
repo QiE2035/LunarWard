@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace LunarWard.Launch.Database;
 
-internal static class DatabaseService
+public static class DatabaseService
 {
 
 
@@ -47,7 +47,7 @@ internal static class DatabaseService
     // LunarWard：上游只有一个全局数据库，连接串来自 SetDatabase。
     // LunarWard 还需要同时打开「默认库」和「抓包库」（CaptureMode），
     // 因此保留按连接串创建连接的内部重载，公开 API 与上游一致。
-    internal static SqliteConnection CreateConnection(string connectionString)
+    public static SqliteConnection CreateConnection(string connectionString)
     {
         var con = new SqliteConnection(connectionString);
         con.Open();
@@ -83,7 +83,7 @@ internal static class DatabaseService
     /// 对指定连接串执行与上游 <c>SetDatabase</c> 相同的建库/升级流程。
     /// LunarWard 的 <see cref="LunarWardDatabase"/> 实例封装（抓包库等）走这里。
     /// </summary>
-    internal static void InitializeDatabase(string connectionString, string databasePath)
+    public static void InitializeDatabase(string connectionString, string databasePath)
     {
         lock (_lock)
         {
