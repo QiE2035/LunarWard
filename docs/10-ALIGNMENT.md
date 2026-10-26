@@ -189,18 +189,28 @@ src/LunarWard/
 | 2 | `src/LunarWard/Views/Starward/Pages/{GameLauncher,Gacha,Screenshot,…}` + `Views/Starward/Dialogs/*` | ~40 | 对应 `Features/*` |
 | 3 | `src/LunarWard/ViewModels/**`（含 `StarwardPage`/`PageContext` 体系） | 49 | 逻辑已并入上游 `.axaml.cs` |
 | 4 | `src/LunarWard/Services/**`（26 个） | 26 | 上游 `Features/*Service` + `AppConfig` |
-| 5 | `src/LunarWard/Views/Starward/MainWindow.axaml(.cs)` 外壳 | 2 | `Features/ViewHost/MainWindow+MainView`（**已切换**：`App.StartPortShell` 正常启动走新壳，见提交 6021e52；`--screenshot/--page/--tray-test` 自检仍走旧壳，待自检迁移后删旧壳） |
-| 6 | `src/LunarWard.Launch/**`（69 个，含旧 Database/启动逻辑） | 69 | 并入 `LunarWard`（Features/GameLauncher、DatabaseService） |
-| 7 | `src/LunarWard.Games`、`src/LunarWard.Platform` | 2 工程 | 并入 `LunarWard/Frameworks` 或删除 |
+| 5 | `src/LunarWard/Views/**`、`ViewModels/**`、`AppServices.cs`（旧 UI 层整层） | 125+ | **已完成**：`Features/ViewHost/MainWindow+MainView` 成为唯一外壳；`App.axaml.cs` 重写为上游 `App.xaml.cs` 结构（`OnFrameworkInitializationCompleted` ≡ OnLaunched / `HandleStartupAsync` / `EnsureMainWindow` / `EnsureSystemTray` / `Exit`），`AppInstance`→`Frameworks/SingleInstance`，`Timer`→`DispatcherTimer`。提交 `675af80`、`8893576`、本步多个提交 |
+| 6 | `src/LunarWard.Launch/**`（69 个，含旧 Database/启动逻辑） | 69 | 并入 `LunarWard`（Features/GameLauncher、DatabaseService）——**进行中**：task-18（fold-projects）折叠 5 个非上游工程 |
+| 7 | `src/LunarWard.{Games,Platform,Wine,Installer}` | 4 工程 | 并入 `LunarWard`（同 task-18）；终态 `LunarWard.slnx` 只剩 app/Core/Language/RPC/Setup.Core |
 | 8 | `src/LunarWard/Localization/AppStrings.cs`、`Styles/Starward.axaml` 等本地独有层 | ~10 | `LunarWard.Language` + `Features/*` 样式 |
 
 删除前置条件：`scripts/check-alignment.py` 报告「本地独有文件数 = 已登记白名单」（脚本已落地，见 §6）。
 
+### 7.1 本轮已执行（2026-10-26 傍晚）
+
+- **旧 UI 层已整层删除**：`src/LunarWard/Views/**`（84 文件）、`src/LunarWard/ViewModels/**`（41 文件）、`AppServices.cs`。`Views.Starward/Controls/StarwardContentDialog` 迁到 `Frameworks/Dialogs/`（提交 `8893576`），旧重复卡片 `Controls/{GachaStatsCard,ZZZGachaStatsCard}.axaml(.cs)` 删除（新实现在 `Features/Gacha/`）。
+- **启动骨架重写**：`App.axaml.cs` 现在与上游 `App.xaml.cs` 一一对应（见 §7 第 5 行），自检工具集中到文件末尾 `RunCaptureTooling`（`--screenshot`/`--page`），不再有旧壳分支、`LUNARWARD_LEGACY_SHELL`、`--window settings|account|dailynote`。
+- **`Program.cs`** 只保留上游 `Program.cs` 的职责 + 本仓库 CLI 工具（`--version/--help/--scan-games`）+ 自检参数解析；`rpc`/`startgame`/`playtime`/`lunarward://` 四类子命令回到 `App.HandleStartupAsync`（与上游一致）。
+- **验证**：新外壳下 17 个页面/设置分页截图自检全过（命令见 `docs/12-XAML-PORT-GUIDE.md` 与 `scripts/smoke-screenshots.sh`），单测 859/859。
+- 待办：`Services/**` 剩余文件的归属（`GameScanner`/`AppVersion`/`BackgroundService`/`VideoBackgroundPlayer`/`DialogService`/`GameAssets`/`ReleaseChecker`/`CaptureMode` 等），以及 task-18 的 5 工程折叠。
+
+
 ## 8. 开放决策（需 Lead 拍板，暂记）
 
 1. **RPC 工程**：上游 `Starward.RPC` 是独立进程（NamedPipe + Windows ACL + `Starward.NativeLib` zstd + Vanara）。
-   Linux 无 NamedPipe ACL、NativeLib 是 Windows 原生库 —— 属「严重平台局限」，本轮**不建**该进程，
-   进程内服务先行；`Features/RPC/RpcClientFactory.cs` 落地时按接口保留。待 GameInstall 完整对齐后复评。
+   **决策已推翻**（2026-10-26）：NamedPipe → Unix domain socket（`NamedPipesConnectionFactory` → `UnixSocketConnectionFactory`），
+   独立进程照建（`src/LunarWard.RPC`，rpc-port 已交付，`SelfTest` 见到 `SELFTEST_OK`）。ACL 部分用 `chmod 0600` + 同用户校验，
+   NativeLib 的 zstd 用 `ZstdSharp.Port` 等价。详见 `docs/09-LINUX-DIVERGENCES.md` 的 RPC 节。
 2. **Setup 安装器**：上游用 `Aprillz.MewUI`（Windows 专有 UI）。等价物 = 现有 `LunarWard.Installer`（Avalonia），
    不复刻 MewUI。
 3. **Launcher（C++ 壳）**：上游 3 个 C++ 文件负责启动前环境；Linux 由 `Program.cs` + `.desktop` 承担，不写 C++。

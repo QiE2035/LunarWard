@@ -883,3 +883,27 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 | 10 | `GameLauncherSettingDialog`/`PreDownloadDialog` 的 `Close` 命令 | `[RelayCommand] Close()` 调用 `Hide()` | 方法改名 `CloseDialog()`，XAML 绑 `CloseDialogCommand` | `Close` 与 `StarwardContentDialog.Close()` 同名会递归 | 无 |
 
 > 同批修掉：`ToolTipService.ToolTip` → `ToolTip.Tip`、`ToggleSwitch.IsOn` → `IsChecked`、`AppBarSeparator` → `Separator`、`Style` 资源键 → `Classes="accent"`、`BitmapImage` → `Image.Source` 直接绑定、`IsSpellCheckEnabled`/`IsTextScaleFactorEnabled`/`DesiredPlacement` 删除、`FontIcon` → `Frameworks.FontIcon`、`x:Bind` → `Binding`（`{x:Static lang:Lang.X}` 单独二次置换）。
+
+## 二十五、应用入口（`App.axaml.cs` / `Program.cs` / 单实例，2026-10-26，Lead）
+
+P6 收尾把启动骨架重写成上游 `src/Starward/App.xaml.cs` 的结构（本仓库 `src/LunarWard/App.axaml.cs`），
+`OnFrameworkInitializationCompleted` 等价上游 `OnLaunched`，其余成员一一对应：
+
+| # | 上游 | 本仓库 | 说明 |
+|---|---|---|---|
+| 1 | 构造函数 `InitializeComponent()` / `RequestedTheme = Dark` | `Initialize()` 里 `AvaloniaXamlLoader.Load(this)` + `RequestedThemeVariant = ThemeVariant.Dark` | Avalonia 的初始化入口是 `Initialize()` |
+| 2 | `Microsoft.UI.Xaml.UnhandledException` | `Dispatcher.UIThread.UnhandledException` | 崩溃日志格式与上游逐字节一致（`App Crash:` 前缀 + `Exception.Data` 全打印） |
+| 3 | `System.Timers.Timer` 60s GC | `DispatcherTimer` 60s GC | UI 线程计时器，行为相同 |
+| 4 | `OnLaunched(LaunchActivatedEventArgs)` | `OnFrameworkInitializationCompleted()` | 参数改从 `Environment.GetCommandLineArgs()` 读（与上游 `HandleStartupAsync` 同源） |
+| 5 | `AppInstance.GetCurrent/FindOrRegisterForKey("main")/RedirectActivationToAsync` | `Frameworks/SingleInstance`（`$TMPDIR/lunarward-{user}.sock`，Unix socket + `activate` 一行） | 无 Windows 激活重定向；第二次启动把消息发给主实例后退出，主实例 `EnsureMainWindow()` |
+| 6 | `--hide` → `new SystemTrayWindow()`；否则 `new MainWindow()` | 同（`SystemTrayWindow(mainWindow)` 用 Avalonia `TrayIcon` + `NativeMenu`） | 托盘菜单项与上游一致（`Lang.MainPage_Launcer` / `Lang.Common_Exit`） |
+| 7 | `HandleStartupAsync`：`rpc` / `playtime` / `startgame` / `starward://` | 同四个分支，协议前缀改 `lunarward://` | `RpcRunner.Run(args)` 在 app 进程内跑宿主（上游同），`Program.cs` 不再提前拦截 |
+| 8 | `EnsureMainWindow` / `EnsureSystemTray` / `Exit` / `FindInstanceForKey` | 前三个同名同语义；`FindInstanceForKey` 不移植（Linux 单实例走 socket，没有按 key 枚举的等价物） | `Exit()` 保留 `GamepadController.RestoreGamepadGuideButtonForGameBar()` 前置调用 |
+| 9 | `App.Current` | `public static new App Current => (App)Application.Current!` | 同 |
+
+自检工具（`--screenshot` / `--page` / `--settings-section` 等）不属于上游结构，集中在 `App.RunCaptureTooling` 一处，
+不参与正常启动路径；`--window settings|account|dailynote` 旧窗口自检随旧 UI 层一起删除。
+
+`Program.cs` 现在只做三件上游 `Program.cs` 也在做的事（崩溃兜底、`--version/--help`）+ 本仓库 CLI 工具
+（`--scan-games`、自检参数解析）；`rpc`/`startgame`/`playtime` 子命令不再由 `Program` 拦截，
+统一由 `App.HandleStartupAsync` 处理（与上游一致）。
