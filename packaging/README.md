@@ -7,7 +7,7 @@
 | `lunarward.desktop` | 桌面入口（含 URL scheme handler） |
 | `PKGBUILD` | Arch / CachyOS 打包脚本 |
 
-图标复用应用内资产：`src/LunarWard.App/Assets/lunarward.ico`（16×16，32bpp）。
+图标复用应用内资产：`src/LunarWard/Assets/lunarward.ico`（16×16，32bpp）。
 **不要**在本目录再放一份副本——避免图标改了但包里还是旧图。
 
 ---
@@ -73,7 +73,7 @@ makepkg --printsrcinfo > .SRCINFO
 ```bash
 cd /path/to/lunarward
 
-dotnet publish src/LunarWard.App/LunarWard.App.csproj \
+dotnet publish src/LunarWard/LunarWard.csproj \
   -c Release \
   -r linux-x64 \
   --self-contained false \

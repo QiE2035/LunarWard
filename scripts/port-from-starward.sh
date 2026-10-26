@@ -2,7 +2,7 @@
 # 从上游 Starward 复制源文件到本仓库，作为移植起点。
 #
 # 使用方式（在仓库根目录执行）：
-#   scripts/port-from-starward.sh src/Starward/Features/Gacha/UIGF/UIGF4GachaWindow.xaml.cs src/LunarWard.App/Views/Starward/Uigf4GachaWindow.axaml.cs
+#   scripts/port-from-starward.sh src/Starward/Features/Gacha/UIGF/UIGF4GachaWindow.xaml.cs src/LunarWard/Views/Starward/Uigf4GachaWindow.axaml.cs
 #   STARWARD_SRC=/path/to/Starward scripts/port-from-starward.sh ...
 #
 # 流程（见 docs/00-DECISIONS.md D14）：

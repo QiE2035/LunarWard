@@ -1,4 +1,4 @@
-using LunarWard.App.ViewModels.Starward;
+using LunarWard.ViewModels.Starward;
 using LunarWard.Core.GameRecord.StarRail.ApocalypticShadow;
 using Xunit;
 

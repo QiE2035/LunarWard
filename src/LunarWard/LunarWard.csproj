@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>LunarWard</RootNamespace>
+    <AssemblyName>LunarWard</AssemblyName>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationIcon>Assets/lunarward.ico</ApplicationIcon>
+    <!--
+      AVLN3001：XAML 资源「找不到公共无参构造函数」，因为页面 ctor 接收 PageContext
+      （docs/07-UI-REPLICA.md §6 的契约）。这些页面只由代码创建，不走 XAML runtime loader。
+    -->
+    <NoWarn>$(NoWarn);CS8618;AVLN3001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="DialogHost.Avalonia" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Iciclecreek.Avalonia.Terminal" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <!-- 区服 logo / 游戏图标等品牌素材，来自上游的内容包（contentFiles 拷进输出 Assets/） -->
+    <PackageReference Include="Starward.Assets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LunarWard.Core\LunarWard.Core.csproj" />
+    <ProjectReference Include="..\LunarWard.Platform\LunarWard.Platform.csproj" />
+    <ProjectReference Include="..\LunarWard.Wine\LunarWard.Wine.csproj" />
+    <ProjectReference Include="..\LunarWard.Launch\LunarWard.Launch.csproj" />
+    <ProjectReference Include="..\LunarWard.Games\LunarWard.Games.csproj" />
+    <ProjectReference Include="..\LunarWard.Installer\LunarWard.Installer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+</Project>

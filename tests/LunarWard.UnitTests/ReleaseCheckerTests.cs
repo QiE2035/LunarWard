@@ -1,7 +1,7 @@
 using Xunit;
 using System.Net;
 using System.Text;
-using LunarWard.App.Services;
+using LunarWard.Services;
 
 namespace LunarWard.UnitTests;
 

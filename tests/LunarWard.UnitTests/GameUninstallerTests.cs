@@ -1,4 +1,4 @@
-using LunarWard.App.Services;
+using LunarWard.Services;
 using Xunit;
 
 namespace LunarWard.UnitTests;

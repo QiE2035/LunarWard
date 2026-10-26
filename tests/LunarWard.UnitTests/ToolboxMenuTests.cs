@@ -1,4 +1,4 @@
-using LunarWard.App.ViewModels.Starward;
+using LunarWard.ViewModels.Starward;
 using Xunit;
 
 namespace LunarWard.UnitTests;

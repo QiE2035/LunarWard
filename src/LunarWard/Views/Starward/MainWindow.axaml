@@ -1,0 +1,82 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LunarWard.ViewModels.Starward"
+        xmlns:sw="using:LunarWard.Views.Starward"
+        xmlns:dh="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+        x:Class="LunarWard.Views.Starward.MainWindow"
+        x:DataType="vm:ShellViewModel"
+        Title="LunarWard"
+        Width="1200" Height="676"
+        CanResize="False"
+        CanMaximize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        ExtendClientAreaToDecorationsHint="False"
+        WindowDecorations="None"
+        TextOptions.TextRenderingMode="Antialias"
+        FontFamily="{StaticResource StarFontFamily}"
+        PointerPressed="OnWindowPointerPressed">
+
+  <!--
+    复刻 Starward MainWindow：
+      · 1200×676，不可缩放/最大化（Starward MainWindow.xaml.cs 的 OverlappedPresenter 设置）
+      · 48px 高标题栏（TitleBarHeightOption.Tall），拖拽区铺满整幅宽度
+      · 窗口右上角是三个 46×32 的标题栏按钮（最小化 / 最大化-禁用 / 关闭）
+      · 背景图与内容都画到 y=0，标题栏压在背景上
+  -->
+  <!--
+    最外层 DialogHost：Windows/WinUI 里 ContentDialog 是"窗口内的浮层"，不是独立窗口；
+    Avalonia 没有内建等价物，这里用 DialogHost.Avalonia 提供同一语义
+    （暗化底层内容 + 居中卡片 + 圆角/阴影；OverlayBackground 对应 WinUI ContentDialogSmokeFill #66000000），对话框内容本身仍是普通 UserControl。
+  -->
+  <!--
+    Win11 由 DWM 给窗口圆角（8px）。Linux 上没有等价的窗口管理器处理（无边框窗口就是直角），
+    所以这里让窗口透明、把内容裁进一个 8px 圆角的 Border —— KWin 支持 ARGB 窗口，视觉与 Windows 一致。
+  -->
+  <Border x:Name="RootBorder" CornerRadius="8" ClipToBounds="True"
+          Background="#FF1E1E1E" BorderBrush="#1AFFFFFF" BorderThickness="1">
+  <dh:DialogHost x:Name="RootDialogHost" CloseOnClickAway="False" OverlayBackground="Transparent">
+    <Grid RowDefinitions="48,*">
+
+    <!-- 内容层：从 y=0 开始，被标题栏覆盖（背景铺满整窗，和 Starward 一致） -->
+    <sw:StarwardShell x:Name="Shell" Grid.Row="0" Grid.RowSpan="2" />
+
+    <!--
+      标题栏按钮。这里**不再**铺一层整宽的透明拖拽区：它压在内容层（含左上角游戏切换按钮）上，
+      会让按钮只有下边沿能点到（z 序上被这层吃掉）。拖拽改由窗口级的 PointerPressed 处理，
+      只有点在「没人处理的空白处」才移动窗口，控件自己的点击不受影响。
+    -->
+    <StackPanel Grid.Row="0" Grid.RowSpan="2"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right" VerticalAlignment="Top"
+                Height="48">
+      <Button Classes="caption-button" Click="OnMinimizeClick" ToolTip.Tip="{Binding Strings[Shell.Minimize]}">
+        <TextBlock Classes="icon" FontSize="10" Text="&#xE921;" />
+      </Button>
+      <Button Classes="caption-close" Click="OnCloseClick" ToolTip.Tip="{Binding Strings[Shell.Close]}">
+        <TextBlock Classes="icon" FontSize="10" Text="&#xE8BB;" />
+      </Button>
+    </StackPanel>
+
+    <!--
+      对话框遮罩。DialogHost 自带的 OverlayBackground 改成透明（隐藏时不会替我们跑过渡），
+      这层由 DialogService 在打开/关闭时拨 Opacity，做 180ms 淡入淡出；
+      关掉期间不参与命中，弹窗期间吃掉点击（不让点击穿到下面的页面/标题栏拖拽）。
+    -->
+    <Border x:Name="DialogScrim"
+            Grid.Row="0" Grid.RowSpan="2"
+            Background="#66000000"
+            Opacity="0"
+            IsHitTestVisible="False"
+            PointerPressed="OnDialogScrimPointerPressed">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </Border.Transitions>
+    </Border>
+    </Grid>
+  </dh:DialogHost>
+  </Border>
+</Window>

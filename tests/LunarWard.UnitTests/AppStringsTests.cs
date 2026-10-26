@@ -1,4 +1,4 @@
-using LunarWard.App.Localization;
+using LunarWard.Localization;
 using Xunit;
 
 namespace LunarWard.UnitTests;
@@ -143,10 +143,10 @@ public class AppStringsTests
                 ?? throw new InvalidOperationException("找不到仓库根目录");
         }
 
-        var source = File.ReadAllText(Path.Join(root, "src", "LunarWard.App", "Localization", "AppStrings.cs"));
+        var source = File.ReadAllText(Path.Join(root, "src", "LunarWard", "Localization", "AppStrings.cs"));
 
         Assert.DoesNotContain("Dictionary<string, string>", source, StringComparison.Ordinal);
-        Assert.Contains("LunarWard.App.Localization.Resources", source, StringComparison.Ordinal);
+        Assert.Contains("LunarWard.Localization.Resources", source, StringComparison.Ordinal);
     }
 
 }

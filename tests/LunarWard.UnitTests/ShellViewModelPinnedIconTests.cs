@@ -1,5 +1,5 @@
-using LunarWard.App;
-using LunarWard.App.ViewModels.Starward;
+using LunarWard;
+using LunarWard.ViewModels.Starward;
 using LunarWard.Launch;
 using LunarWard.Platform;
 using Xunit;

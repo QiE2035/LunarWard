@@ -1,0 +1,149 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:LunarWard.Views.Starward.Controls">
+
+  <!--
+    隐式 ControlTheme 必须挂在 Styles.Resources 里（Avalonia 只在样式树里按类型找默认主题，
+    放 Application.Resources 不会被 ContentControl 的 Theme 解析捡到）。
+  -->
+  <Styles.Resources>
+
+  <!--
+    复刻 WinUI 3 ContentDialog 的默认外观（`Styles/_ContentDialog` 主题）：
+
+      标题行 48px（FontSize 20 / SemiBold）
+      右上角 40×40 关闭按钮（圆角 4，悬停 ControlFillColorSecondary），与标题行同一层
+      内容区由调用方给 Padding（WinUI 里是每个 dialog 自己 Grid Padding="24"）
+      底部按钮栏右对齐（Primary 强调色 / Secondary / Close，关闭按钮文字「关闭 / 取消」）
+      MinWidth 320 / MaxWidth 548（内容宽的 dialog 自己放宽，WinUI 是显式改 ContentDialogMaxWidth）
+      圆角 8、1px 描边、亚克力底、投影
+
+    上游 Starward 的各 dialog 都把 ContentDialogPadding 设为 0、ContentDialogMaxWidth 设为 1200，
+    标题和关闭按钮画在自己的内容里；这里把关闭按钮收敛到容器（X 浮在内容右上角），
+    内容里各 dialog 自己的标题保留原样，所以多数 dialog 不设 Title（标题行自动收起）。
+  -->
+  <ControlTheme x:Key="{x:Type controls:StarwardContentDialog}" TargetType="controls:StarwardContentDialog">
+
+    <Setter Property="Background" Value="{DynamicResource StarAcrylicBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource StarCardStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="MinWidth" Value="320" />
+    <Setter Property="MaxWidth" Value="548" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontFamily" Value="{DynamicResource StarFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Foreground" Value="{DynamicResource StarTextPrimary}" />
+    <Setter Property="IsTabStop" Value="False" />
+
+    <Setter Property="Template">
+      <ControlTemplate TargetType="controls:StarwardContentDialog">
+        <!--  X 在 Border 外面：既不被圆角裁剪，也不会被内容里的 ScrollViewer 吃掉点击  -->
+        <Panel>
+          <Border x:Name="ChromeBorder"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  BoxShadow="0 16 48 0 #99000000"
+                  ClipToBounds="True">
+            <Grid RowDefinitions="Auto,*,Auto">
+
+              <!-- 标题行：WinUI ContentDialogTitleMargin 24,0,24,0 + 48 高 -->
+              <Grid x:Name="HeaderPanel"
+                    Grid.Row="0"
+                    Height="48"
+                    Margin="24,0,56,0">
+                <TextBlock Text="{TemplateBinding Title}"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
+              </Grid>
+
+              <ContentPresenter x:Name="ContentHost"
+                                Grid.Row="1"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding ContentPadding}"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch" />
+
+              <!-- 按钮栏：右对齐，Primary / Secondary / Close，间距 8（WinUI ContentDialogButtonSpacing） -->
+              <StackPanel x:Name="ButtonPanel"
+                          Grid.Row="2"
+                          Margin="24,0,24,24"
+                          Orientation="Horizontal"
+                          HorizontalAlignment="Right"
+                          Spacing="8">
+                <Button x:Name="PrimaryButton"
+                        Classes="accent"
+                        MinWidth="96"
+                        Content="{TemplateBinding PrimaryButtonText}" />
+                <Button x:Name="SecondaryButton"
+                        MinWidth="96"
+                        Content="{TemplateBinding SecondaryButtonText}" />
+                <Button x:Name="CloseButton"
+                        MinWidth="96"
+                        Content="{TemplateBinding CloseButtonText}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- 关闭：40×40 命中区 + E711 字形；上游多数 dialog 自己画的也是这个位置（4px 内缩） -->
+          <Button x:Name="CloseIconButton"
+                  Width="40"
+                  Height="40"
+                  Margin="0,4,4,0"
+                  Padding="0"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Top"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  CornerRadius="4"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center">
+            <TextBlock Classes="icon"
+                       FontSize="14"
+                       Text="&#xE711;"
+                       Foreground="{DynamicResource StarTextSecondary}" />
+          </Button>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- 无标题 / 无按钮栏 / 无关闭按钮时各自收起，避免留下 48px 或 24px 的空白 -->
+    <Style Selector="^:noheader /template/ Grid#HeaderPanel">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:nobuttons /template/ StackPanel#ButtonPanel">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:noicon /template/ Button#CloseIconButton">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:noprimary /template/ Button#PrimaryButton">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:nosecondary /template/ Button#SecondaryButton">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:noclose /template/ Button#CloseButton">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^ /template/ Button#CloseIconButton">
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <!-- 模板选择器只能穿越一次 /template/，所以悬停底色设在 Button 自己的 Background 上 -->
+    <Style Selector="^ /template/ Button#CloseIconButton:pointerover">
+      <Setter Property="Background" Value="{DynamicResource StarControlFillHoverBrush}" />
+    </Style>
+    <Style Selector="^ /template/ Button#CloseIconButton:pressed">
+      <Setter Property="Background" Value="{DynamicResource StarControlFillPressedBrush}" />
+    </Style>
+  </ControlTheme>
+
+  </Styles.Resources>
+</Styles>

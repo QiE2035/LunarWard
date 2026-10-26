@@ -1,0 +1,326 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.ViewModels.Starward"
+             x:Class="LunarWard.Views.Starward.Pages.ToolboxPage"
+             x:DataType="vm:ToolboxPageViewModel">
+
+  <!--
+    1:1 复刻 Starward Features/GameRecord/GameRecordPage.xaml（527 行）的容器：
+      · NavigationView PaneDisplayMode=Left、OpenPaneLength=248、IsSettingsVisible=False
+      · PaneCustomContent 56 高：头像 56（56 圆）/ 角色昵称+区服+Lv / 登录按钮 / 角色列表
+      · MenuItems：原神（战绩、旅行者札记、深境螺旋、幻想真境剧诗、幽境危战）/
+        绝区零（绳网月报、式舆防卫战、危局强袭战），40 高、图标 20、文字 14
+      · PaneFooter：更新设备指纹（LunarWard 未接 → 保留位置、禁用）
+      · Frame：未选中时空白（Starward BlankPage）；选中后战绩子页尚未移植，
+        显示"尚未移植"占位（不伪造数据）
+    LunarWard 追加：左栏底部「本机游戏账号」打开既有 wine 账号快照窗口。
+    颜色/字号只用 Styles/Starward.axaml 的资源键。
+  -->
+
+  <UserControl.Styles>
+    <!-- Starward NavigationViewItem：40 高、4 圆角、左侧 3×16 强调条 -->
+    <Style Selector="Button.nav-item">
+      <Setter Property="Height" Value="40" />
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="Margin" Value="4,2" />
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <Style Selector="Button.nav-item /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="Button.nav-item:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarControlFillHoverBrush}" />
+    </Style>
+
+    <Style Selector="Button.nav-item.selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource StarSelectionBrush}" />
+    </Style>
+
+    <!-- 选中指示条（NavigationViewSelectionIndicator：3×16 强调色、左侧 2px） -->
+    <Style Selector="Border.nav-indicator">
+      <Setter Property="Width" Value="3" />
+      <Setter Property="Height" Value="16" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="-16,0,0,0" />
+      <Setter Property="CornerRadius" Value="2" />
+      <Setter Property="Background" Value="{StaticResource StarAccentBrush}" />
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="Button.nav-item.selected Border.nav-indicator">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <!-- 菜单项内容：源码 Margin="-2,0,0,0"、图标 20 + 文字（ColumnSpacing 12） -->
+    <Style Selector="Grid.nav-content">
+      <Setter Property="Margin" Value="-2,0,0,0" />
+      <Setter Property="ColumnSpacing" Value="12" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid ColumnDefinitions="248,*">
+
+    <!-- ══ 左栏 248（Starward NavigationView 的 Pane） ═══════════════ -->
+    <Grid Grid.Column="0" RowDefinitions="56,*,Auto" Background="Transparent">
+
+      <!-- 顶部 56：头像 / 角色信息 / 登录 / 角色列表（源码 :29-240） -->
+      <Grid Grid.Row="0" Height="56" ColumnDefinitions="64,*,Auto">
+
+        <Grid Grid.Column="0" Width="56" Height="56" Margin="8,0,0,0">
+          <Border Width="56" Height="56" CornerRadius="28" ClipToBounds="True"
+                  Background="{StaticResource StarControlFillBrush}">
+            <Panel>
+              <TextBlock Classes="icon"
+                         FontSize="24"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         Foreground="{StaticResource StarTextSecondary}"
+                         Text="&#xE77B;"
+                         IsVisible="{Binding !HasAvatar}" />
+              <Image Source="{Binding Avatar}" Stretch="UniformToFill" IsVisible="{Binding HasAvatar}" />
+            </Panel>
+          </Border>
+        </Grid>
+
+        <!-- 角色信息（源码 :88-100） -->
+        <StackPanel Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Spacing="2"
+                    IsVisible="{Binding HasRole}">
+          <TextBlock Text="{Binding Nickname}" TextTrimming="CharacterEllipsis" />
+          <TextBlock FontSize="12" Foreground="{StaticResource StarTextSecondary}">
+            <Run Text="{Binding RegionText}" />
+            <Run Text=" " />
+            <Run Text="{Binding LevelText}" />
+          </TextBlock>
+        </StackPanel>
+
+        <!-- 登录（源码 :102-133；Flyout 用"输入 cookie"替代 WebView 登录） -->
+        <Button x:Name="Button_Login"
+                Grid.Column="1" Grid.ColumnSpan="2"
+                Margin="0,0,12,0"
+                Height="32"
+                VerticalAlignment="Center"
+                Classes="accent"
+                Content="{Binding Strings[Toolbox.Login]}"
+                IsVisible="{Binding !HasRole}">
+          <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedLeft">
+              <StackPanel MinWidth="320" Spacing="8">
+                <TextBlock FontSize="16" Text="{Binding Strings[Toolbox.InputCookie]}" />
+                <TextBlock FontSize="12"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           TextWrapping="Wrap"
+                           Text="{Binding Strings[Toolbox.LoginHint]}" />
+                <TextBox Text="{Binding CookieInput, Mode=TwoWay}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         Height="72"
+                         PlaceholderText="{Binding Strings[Toolbox.CookiePlaceholder]}" />
+                <TextBlock FontSize="12"
+                           Foreground="{StaticResource StarErrorBrush}"
+                           TextWrapping="Wrap"
+                           Text="{Binding ErrorText}"
+                           IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                  <Button Content="{Binding Strings[Toolbox.WebLogin]}"
+                          IsEnabled="False"
+                          ToolTip.Tip="{Binding Strings[Toolbox.WebLoginUnsupported]}" />
+                  <Button Classes="accent"
+                          Content="{Binding Strings[Toolbox.SaveCookie]}"
+                          Command="{Binding SaveCookieCommand}"
+                          IsEnabled="{Binding !IsBusy}" />
+                </StackPanel>
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <!-- 角色列表（源码 :136-240） -->
+        <Button Grid.Column="2"
+                Width="28" Height="44"
+                Margin="0,0,12,0"
+                Padding="0"
+                Background="Transparent"
+                BorderThickness="0"
+                IsVisible="{Binding HasRole}">
+          <StackPanel Spacing="-6">
+            <TextBlock Classes="icon" FontSize="16" Foreground="{StaticResource StarTextSecondary}" Text="&#xE70E;" />
+            <TextBlock Classes="icon" FontSize="16" Foreground="{StaticResource StarTextSecondary}" Text="&#xE70D;" />
+          </StackPanel>
+          <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedRight">
+              <Grid MinWidth="240" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="4">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
+                  <Button Grid.Column="0"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Background="Transparent"
+                          Command="{Binding RefreshRoleCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                      <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                      <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Toolbox.RefreshInfo]}" />
+                    </StackPanel>
+                  </Button>
+                </Grid>
+
+                <Border Grid.Row="1"
+                        Height="1"
+                        Margin="0,4"
+                        Background="{StaticResource StarDividerBrush}" />
+
+                <ItemsControl Grid.Row="2" ItemsSource="{Binding Roles}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ToolboxRoleItem">
+                      <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                          <TextBlock Text="{Binding Nickname}" TextTrimming="CharacterEllipsis" />
+                          <TextBlock FontSize="12"
+                                     Foreground="{StaticResource StarTextSecondary}"
+                                     Text="{Binding Detail}" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Width="36" Height="28"
+                                Padding="0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                ToolTip.Tip="{Binding Strings[Toolbox.DeleteRole]}"
+                                Command="{Binding $parent[UserControl].((vm:ToolboxPageViewModel)DataContext).DeleteRoleCommand}"
+                                CommandParameter="{Binding}">
+                          <TextBlock Classes="icon" FontSize="14" Text="&#xE74D;"
+                                     Foreground="{StaticResource StarTextSecondary}" />
+                        </Button>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Grid.Row="3"
+                           Margin="0,8,0,0"
+                           FontSize="12"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           TextWrapping="Wrap"
+                           Text="{Binding StatusText}" />
+              </Grid>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+      </Grid>
+
+      <!-- 战绩菜单（源码 :256-500）：分隔线 + 按游戏显示的 NavigationViewItem -->
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel>
+          <Border Height="1" Margin="12,8,12,8" Background="{StaticResource StarDividerBrush}" />
+
+          <ItemsControl ItemsSource="{Binding MenuItems}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ToolboxMenuItem">
+                <Button Classes="nav-item"
+                        Classes.selected="{Binding IsSelected}"
+                        Command="{Binding $parent[UserControl].((vm:ToolboxPageViewModel)DataContext).SelectMenuCommand}"
+                        CommandParameter="{Binding}">
+                  <Grid>
+                    <Border Classes="nav-indicator" />
+                    <Grid Classes="nav-content" ColumnDefinitions="20,*">
+                      <TextBlock Grid.Column="0"
+                                 Classes="icon"
+                                 FontSize="16"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding Icon}" />
+                      <TextBlock Grid.Column="1"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding Title}"
+                                 TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                  </Grid>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- PaneFooter（源码 :502-515）+ LunarWard 追加的本机账号入口 -->
+      <StackPanel Grid.Row="2" Margin="0,0,0,8">
+        <Button Classes="nav-item"
+                Command="{Binding UpdateDeviceFingerprintCommand}"
+                IsEnabled="{Binding CanUpdateDeviceFingerprint}"
+                ToolTip.Tip="{Binding Strings[Toolbox.FingerprintUnsupported]}">
+          <Grid Classes="nav-content" ColumnDefinitions="20,*">
+            <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE928;" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1"
+                       VerticalAlignment="Center"
+                       Text="{Binding Strings[Toolbox.UpdateFingerprint]}"
+                       TextTrimming="CharacterEllipsis" />
+          </Grid>
+        </Button>
+
+        <Button Classes="nav-item"
+                Command="{Binding OpenLocalAccountsCommand}"
+                ToolTip.Tip="{Binding Strings[Toolbox.LocalAccountsHint]}">
+          <Grid Classes="nav-content" ColumnDefinitions="20,*">
+            <TextBlock Grid.Column="0" Classes="icon" FontSize="16" Text="&#xE8C7;" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1"
+                       VerticalAlignment="Center"
+                       Text="{Binding Strings[Toolbox.LocalAccounts]}"
+                       TextTrimming="CharacterEllipsis" />
+          </Grid>
+        </Button>
+      </StackPanel>
+    </Grid>
+
+    <!-- ══ 右侧 Frame（Starward 未选中时是 BlankPage：空白） ═══════════ -->
+    <Grid Grid.Column="1">
+
+      <!-- 已移植的战绩子页（深境螺旋；其余仍是占位） -->
+      <ContentControl x:Name="ContentHost" />
+
+      <!-- 战绩子页尚未移植：选中菜单后显示占位（不伪造数据） -->
+      <StackPanel HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Spacing="16"
+                  IsVisible="{Binding ShowPlaceholder}">
+        <Border Width="160" Height="160" CornerRadius="80" Background="{StaticResource StarControlFillBrush}">
+          <TextBlock Classes="icon"
+                     FontSize="64"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Foreground="{StaticResource StarTextTertiary}"
+                     Text="{Binding SelectedItem.Icon}" />
+        </Border>
+        <TextBlock HorizontalAlignment="Center"
+                   FontSize="16"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   Text="{Binding PlaceholderTitle}" />
+        <TextBlock HorizontalAlignment="Center"
+                   FontSize="12"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   MaxWidth="420"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"
+                   IsVisible="{Binding ShowWebRecordHint}"
+                   Text="{Binding Strings[Toolbox.WebRecordHint]}" />
+      </StackPanel>
+
+      <!-- 登录/错误/忙碌提示：Starward 用 ContentDialog / InfoBar，这里放在内容区右上 -->
+      <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,24,0" Spacing="8">
+        <TextBlock FontSize="12"
+                   Foreground="{StaticResource StarErrorBrush}"
+                   TextWrapping="Wrap"
+                   MaxWidth="420"
+                   Text="{Binding ErrorText}"
+                   IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <TextBlock FontSize="12"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   Text="{Binding StatusText}" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>

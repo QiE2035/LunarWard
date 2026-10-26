@@ -44,7 +44,7 @@ build() {
 
   mkdir -p "$pkgdir/usr/lib/lunarward"
 
-  dotnet publish src/LunarWard.App/LunarWard.App.csproj \
+  dotnet publish src/LunarWard/LunarWard.csproj \
     -c Release \
     -r linux-x64 \
     --self-contained false \
@@ -77,7 +77,7 @@ LAUNCHER
     "$pkgdir/usr/share/applications/lunarward.desktop"
 
   # ── 图标（.ico 直接放 pixmaps，桌面环境普遍支持） ──
-  install -Dm644 src/LunarWard.App/Assets/lunarward.ico \
+  install -Dm644 src/LunarWard/Assets/lunarward.ico \
     "$pkgdir/usr/share/pixmaps/lunarward.ico"
 
   # ── 许可与第三方声明 ──

@@ -1,0 +1,487 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.ViewModels.Starward"
+             x:Class="LunarWard.Views.Starward.Pages.Record.ForgottenHallPage"
+             x:DataType="vm:ForgottenHallPageViewModel">
+
+  <!--
+    忘却之庭页（崩坏：星穹铁道的混沌回忆）：逐行对照
+    Starward Features/GameRecord/StarRail/ForgottenHallPage.xaml（542 行）。
+    结构 = 左栏（刷新 + 各期列表） + 右侧（统计周期 / 出战统计卡 / 每层卡片的两个节点阵容）。
+    Starward 用 Assets 的星星、星芒、快速通关配图与稀有度底图，LunarWard 没有这些素材：
+    星星用字形 ★ 替代（普通星用强调色，额外星用金色），快速通关只保留文字，稀有度底图用同色底。
+  -->
+
+  <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
+
+    <!-- ══ 空态（Starward Image_Emoji + 没有数据） ═════════════════════ -->
+    <StackPanel Grid.RowSpan="2"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16"
+                IsVisible="{Binding ShowEmpty}">
+      <Border Width="160"
+              Height="160"
+              CornerRadius="80"
+              Background="{StaticResource StarControlFillBrush}">
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="64"
+                   Foreground="{StaticResource StarTextTertiary}"
+                   Text="&#xE7BA;" />
+      </Border>
+      <TextBlock HorizontalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{Binding Strings[Common.NoData]}" />
+    </StackPanel>
+
+    <!-- ══ 左栏：刷新（Starward StackPanel Margin="0,24,0,0"） ═════════ -->
+    <StackPanel Margin="0,24,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Spacing="12">
+      <Button Height="36"
+              BorderThickness="0"
+              Classes="accent"
+              CornerRadius="0,18,18,0"
+              Command="{Binding RefreshCommand}">
+        <StackPanel Margin="4,0,4,0" Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+          <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Common.Refresh]}" />
+        </StackPanel>
+      </Button>
+    </StackPanel>
+
+    <!-- ══ 左栏：各期列表（Starward ListView_PageList） ═════════════════ -->
+    <ListBox Grid.Row="1"
+             Margin="0,12,0,0"
+             Padding="12,0,12,0"
+             Background="Transparent"
+             ItemsSource="{Binding PeriodList}"
+             SelectedItem="{Binding CurrentPeriod, Mode=TwoWay}">
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem">
+          <Setter Property="Padding" Value="4,0" />
+          <Setter Property="Margin" Value="0,4" />
+          <Setter Property="CornerRadius" Value="4" />
+          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+      </ListBox.Styles>
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:ForgottenHallPeriodItem">
+          <Border Padding="12,8"
+                  Background="{StaticResource StarOverlayAcrylicBrush}"
+                  CornerRadius="4">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding DateText}" />
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="16"
+                           Foreground="#E4C891"
+                           Text="&#xE735;" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding StarNumText}" />
+                <Border Width="1"
+                        Height="13"
+                        Margin="4,2,0,0"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource StarTextSecondary}"
+                        IsVisible="{Binding HasExtraStar}"
+                        Opacity="0.25" />
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="16"
+                           Foreground="#E4C891"
+                           Text="&#xE735;"
+                           IsVisible="{Binding HasExtraStar}" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding ExtraStarNumText}"
+                           IsVisible="{Binding HasExtraStar}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <!-- ══ 右侧详情（Starward ScrollViewer Grid.Column="1"） ═══════════ -->
+    <ScrollViewer Grid.RowSpan="2"
+                  Grid.Column="1"
+                  IsVisible="{Binding HasData}">
+      <StackPanel Margin="24" Spacing="8">
+
+        <!-- 统计周期 + 期名 -->
+        <Grid>
+          <TextBlock Foreground="{StaticResource StarTextSecondary}" Text="{Binding PeriodText}" />
+          <TextBlock HorizontalAlignment="Right" Text="{Binding PeriodName}" />
+        </Grid>
+
+        <!-- 出战统计（Starward Grid Padding 8 + CustomOverlayAcrylicBrush） -->
+        <Border Margin="0,-4,0,0"
+                Padding="8"
+                Background="{StaticResource StarOverlayAcrylicBrush}"
+                CornerRadius="8"
+                BoxShadow="0 4 16 0 #40000000">
+          <Grid ColumnDefinitions="*,*,*">
+            <StackPanel Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="8">
+              <TextBlock VerticalAlignment="Center"
+                         FontSize="24"
+                         Foreground="#E4C891"
+                         Text="&#xE735;" />
+              <TextBlock VerticalAlignment="Center"
+                         FontSize="16"
+                         Text="{Binding StarNumText}" />
+              <Border Width="1"
+                      Height="13"
+                      Margin="0,2,0,0"
+                      VerticalAlignment="Center"
+                      Background="{StaticResource StarTextSecondary}"
+                      IsVisible="{Binding HasExtraStar}"
+                      Opacity="0.25" />
+              <TextBlock VerticalAlignment="Center"
+                         FontSize="24"
+                         Foreground="#F0C060"
+                         Text="&#xE735;"
+                         IsVisible="{Binding HasExtraStar}" />
+              <TextBlock VerticalAlignment="Center"
+                         FontSize="16"
+                         Text="{Binding ExtraStarNumText}"
+                         IsVisible="{Binding HasExtraStar}" />
+            </StackPanel>
+
+            <TextBlock Grid.Column="1"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis">
+              <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[ForgottenHall.FarthestStage]}" />
+              <Run Text=" " />
+              <Run Text="{Binding MaxFloorText}" />
+            </TextBlock>
+
+            <TextBlock Grid.Column="2"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Center">
+              <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Strings[ForgottenHall.TimesChallenged]}" />
+              <Run Text=" " />
+              <Run Text="{Binding BattleNumText}" />
+            </TextBlock>
+          </Grid>
+        </Border>
+
+        <!-- 每层一张卡（Starward ItemsControl + WrapPanel 12 间距） -->
+        <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding Floors}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ForgottenHallFloorItem">
+              <Border Width="388"
+                      Margin="6"
+                      Background="{StaticResource StarOverlayAcrylicBrush}"
+                      BoxShadow="0 4 16 0 #40000000"
+                      CornerRadius="8,28,8,8">
+                <StackPanel>
+
+                <!-- 标题 + 节点 1 / 2（Starward Grid Height=300 Padding=20,0） -->
+                <Grid Height="300" Margin="20,0">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="52" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                  </Grid.RowDefinitions>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+
+                  <Border Grid.ColumnSpan="2"
+                          Margin="-24,0"
+                          Background="{StaticResource StarControlFillBrush}" />
+
+                  <!-- 名称 + 使用轮次 -->
+                  <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock FontWeight="Bold"
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Margin="0,2,0,0" FontSize="12" Foreground="{StaticResource StarTextSecondary}">
+                      <Run Text="{Binding Strings[ForgottenHall.CyclesUsed]}" />
+                      <Run Text="{Binding RoundNumText}" />
+                    </TextBlock>
+                  </StackPanel>
+
+                  <!-- 星星（普通星 + 额外星） -->
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                      <TextBlock VerticalAlignment="Center"
+                                 FontSize="24"
+                                 Foreground="#E4C891"
+                                 Text="{Binding NormalStars}" />
+                      <Border Width="1"
+                              Height="13"
+                              Margin="0,3,0,0"
+                              VerticalAlignment="Center"
+                              Background="{StaticResource StarTextSecondary}"
+                              IsVisible="{Binding HasExtraStar}"
+                              Opacity="0.25" />
+                      <TextBlock VerticalAlignment="Center"
+                                 FontSize="24"
+                                 Foreground="#F0C060"
+                                 Text="{Binding ExtraStars}"
+                                 IsVisible="{Binding HasExtraStar}" />
+                    </StackPanel>
+                  </StackPanel>
+
+                  <!-- 节点 1 -->
+                  <TextBlock Grid.Row="1"
+                             Grid.ColumnSpan="2"
+                             Margin="0,8,0,0"
+                             FontSize="12"
+                             IsVisible="{Binding ShowTeams}">
+                    <Run Text="{Binding Strings[ForgottenHall.TeamSetup]}" />
+                    <Run Text="1" />
+                    <Run Text=" " />
+                    <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Node1TimeText}" />
+                  </TextBlock>
+
+                  <ItemsControl Grid.Row="2"
+                                Grid.ColumnSpan="2"
+                                HorizontalAlignment="Center"
+                                IsVisible="{Binding ShowTeams}"
+                                ItemsSource="{Binding Node1Avatars}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="12" />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ForgottenHallAvatarItem">
+                        <Grid Width="72" Height="84">
+                          <Border Width="72"
+                                  Height="84"
+                                  CornerRadius="8"
+                                  Background="{Binding BackgroundBrush}" />
+                          <Border Width="72"
+                                  Height="72"
+                                  VerticalAlignment="Top"
+                                  CornerRadius="0,12,0,0"
+                                  ClipToBounds="True">
+                            <Grid>
+                              <TextBlock HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         FontSize="28"
+                                         Foreground="#66FFFFFF"
+                                         Text="&#xE77B;" />
+                              <Image Source="{Binding Icon}"
+                                     Stretch="UniformToFill"
+                                     IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            </Grid>
+                          </Border>
+                          <Border HorizontalAlignment="Right"
+                                  VerticalAlignment="Top"
+                                  Background="#A0000000"
+                                  CornerRadius="0,12,0,8"
+                                  IsVisible="{Binding HasRank}">
+                            <TextBlock Margin="4,2"
+                                       FontSize="14"
+                                       Foreground="{StaticResource StarTextSecondary}"
+                                       Text="{Binding RankText}" />
+                          </Border>
+                          <Border Height="16"
+                                  Margin="0,0,0,1.5"
+                                  VerticalAlignment="Bottom"
+                                  Background="#A0000000">
+                            <TextBlock Margin="0,0,0,1"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding LevelText}" />
+                          </Border>
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+
+                  <!-- 节点 2 -->
+                  <TextBlock Grid.Row="3"
+                             Grid.ColumnSpan="2"
+                             FontSize="12"
+                             IsVisible="{Binding ShowTeams}">
+                    <Run Text="{Binding Strings[ForgottenHall.TeamSetup]}" />
+                    <Run Text="2" />
+                    <Run Text=" " />
+                    <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Node2TimeText}" />
+                  </TextBlock>
+
+                  <ItemsControl Grid.Row="4"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,4"
+                                HorizontalAlignment="Center"
+                                IsVisible="{Binding ShowTeams}"
+                                ItemsSource="{Binding Node2Avatars}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="12" />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ForgottenHallAvatarItem">
+                        <Grid Width="72" Height="84">
+                          <Border Width="72"
+                                  Height="84"
+                                  CornerRadius="8"
+                                  Background="{Binding BackgroundBrush}" />
+                          <Border Width="72"
+                                  Height="72"
+                                  VerticalAlignment="Top"
+                                  CornerRadius="0,12,0,0"
+                                  ClipToBounds="True">
+                            <Grid>
+                              <TextBlock HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         FontSize="28"
+                                         Foreground="#66FFFFFF"
+                                         Text="&#xE77B;" />
+                              <Image Source="{Binding Icon}"
+                                     Stretch="UniformToFill"
+                                     IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            </Grid>
+                          </Border>
+                          <Border HorizontalAlignment="Right"
+                                  VerticalAlignment="Top"
+                                  Background="#A0000000"
+                                  CornerRadius="0,12,0,8"
+                                  IsVisible="{Binding HasRank}">
+                            <TextBlock Margin="4,2"
+                                       FontSize="14"
+                                       Foreground="{StaticResource StarTextSecondary}"
+                                       Text="{Binding RankText}" />
+                          </Border>
+                          <Border Height="16"
+                                  Margin="0,0,0,1.5"
+                                  VerticalAlignment="Bottom"
+                                  Background="#A0000000">
+                            <TextBlock Margin="0,0,0,1"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding LevelText}" />
+                          </Border>
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+
+                  <!-- 快速通关（Starward 用 20004.png，这里只留文字） -->
+                  <StackPanel Grid.Row="1"
+                              Grid.RowSpan="4"
+                              Grid.ColumnSpan="2"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Spacing="8"
+                              IsVisible="{Binding IsFast}">
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="48"
+                               Foreground="{StaticResource StarTextTertiary}"
+                               Text="&#xE73E;" />
+                    <TextBlock HorizontalAlignment="Center"
+                               Foreground="{StaticResource StarTextSecondary}"
+                               Text="{Binding Strings[ForgottenHall.QuickCleared]}" />
+                  </StackPanel>
+                </Grid>
+
+                <!-- 节点 3（星芒模式才有，Starward Grid Height=132） -->
+                <Grid Height="132"
+                      Margin="20,0"
+                      IsVisible="{Binding HasNode3}"
+                      VerticalAlignment="Top">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                  </Grid.RowDefinitions>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+
+                  <StackPanel Grid.Row="0" Orientation="Horizontal">
+                    <TextBlock Margin="0,3,0,0"
+                               FontSize="12"
+                               Foreground="{StaticResource StarTextSecondary}"
+                               Text="&#xE735;" />
+                    <TextBlock Margin="6,3,0,0"
+                               VerticalAlignment="Center"
+                               FontSize="12">
+                      <Run Text="{Binding Strings[ForgottenHall.TeamSetup]}" />
+                      <Run Text="3" />
+                      <Run Text=" " />
+                      <Run Foreground="{StaticResource StarTextSecondary}" Text="{Binding Node3TimeText}" />
+                    </TextBlock>
+                  </StackPanel>
+
+                  <ItemsControl Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                Margin="0,0,0,4"
+                                HorizontalAlignment="Center"
+                                ItemsSource="{Binding Node3Avatars}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="12" />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ForgottenHallAvatarItem">
+                        <Grid Width="72" Height="84">
+                          <Border Width="72"
+                                  Height="84"
+                                  CornerRadius="8"
+                                  Background="{Binding BackgroundBrush}" />
+                          <Border Width="72"
+                                  Height="72"
+                                  VerticalAlignment="Top"
+                                  CornerRadius="0,12,0,0"
+                                  ClipToBounds="True">
+                            <Grid>
+                              <TextBlock HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         FontSize="28"
+                                         Foreground="#66FFFFFF"
+                                         Text="&#xE77B;" />
+                              <Image Source="{Binding Icon}"
+                                     Stretch="UniformToFill"
+                                     IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            </Grid>
+                          </Border>
+                          <Border Height="16"
+                                  Margin="0,0,0,1.5"
+                                  VerticalAlignment="Bottom"
+                                  Background="#A0000000">
+                            <TextBlock Margin="0,0,0,1"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding LevelText}" />
+                          </Border>
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

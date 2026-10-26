@@ -1,5 +1,5 @@
 using System.Xml.Linq;
-using LunarWard.App.Localization;
+using LunarWard.Localization;
 using Xunit;
 
 namespace LunarWard.UnitTests;
@@ -11,7 +11,7 @@ namespace LunarWard.UnitTests;
 public class AppStringsResxTests
 {
     private static readonly string LocalizationDirectory = Path.Join(
-        RepositoryRoot(), "src", "LunarWard.App", "Localization");
+        RepositoryRoot(), "src", "LunarWard", "Localization");
 
     private static string NeutralResx => Path.Join(LocalizationDirectory, "Resources.resx");
     private static string EnglishResx => Path.Join(LocalizationDirectory, "Resources.en-US.resx");

@@ -1,4 +1,4 @@
-using LunarWard.App.ViewModels.Starward;
+using LunarWard.ViewModels.Starward;
 using LunarWard.Core.GameRecord.StarRail.PureFiction;
 using Xunit;
 

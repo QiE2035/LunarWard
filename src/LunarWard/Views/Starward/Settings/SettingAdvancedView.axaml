@@ -1,0 +1,248 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.ViewModels.Starward"
+             x:Class="LunarWard.Views.Starward.Settings.SettingAdvancedView"
+             x:DataType="vm:SettingAdvancedViewModel">
+
+  <!--
+    1:1 复刻 Starward Features/Setting/AdvancedSetting.xaml（125 行）：
+      19      20px「URL 协议（实验中）」
+      20-24   0,8 14px 次要色说明
+      25-28   0,8 ToggleSwitch「注册 URL 协议」
+      29-40   0,12 强调按钮 40 高 / Padding 16,0 / CornerRadius 8,20,20,8（E76E + 测试 URL 协议）
+      43-45   0,20 20px「RPC 服务」
+      46-50   0,8 14px 次要色说明
+      51-56   0,8 警示色说明（仅当应用在可移动磁盘，默认折叠）
+      58-61   0,8 ToggleSwitch「保持 RPC 服务后台运行」
+      63-120  0,8 Grid：三种状态行（未运行 / 正在运行 / 无法连接），每行 Spacing=8：
+              16px 图标 E9D9 + 次要色文字 + AppBarSeparator + 「运行服务 / 停止服务」
+              文本按钮
+    行号均指 Starward/src/Starward/Features/Setting/AdvancedSetting.xaml。
+
+    LunarWard 落位说明：
+      · URL 协议真实存在（.desktop 的 MimeType=x-scheme-handler/lunarward），
+        但注册发生在打包安装时 → 开关保留位置、反映注册状态但禁用；状态路径写
+        在开关下方的追加说明里；「测试 URL 协议」按钮可用。
+      · LunarWard 没有 RPC 独立进程 → 标题/说明/状态行保留，状态固定为「未运行」，
+        不画「运行服务 / 停止服务」按钮（不存在这个服务）。
+      · 之后的「日志级别 / 环境变量默认值 / 自检截图命令」是 LunarWard 追加，
+        排在 Starward 两块之后。
+  -->
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel HorizontalAlignment="Stretch">
+
+      <!-- AdvancedSetting.xaml:19 -->
+      <TextBlock Classes="section" Text="{Binding Strings[Settings.Advanced.UrlProtocol]}" />
+
+      <!-- AdvancedSetting.xaml:20-24 -->
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Advanced.UrlProtocolDesc]}" />
+
+      <!-- AdvancedSetting.xaml:25-28（真实注册在打包安装时完成，界面只反映状态） -->
+      <ToggleSwitch Margin="0,8,0,0"
+                    IsEnabled="False"
+                    IsChecked="{Binding IsUrlRegistered}"
+                    OffContent="{Binding Strings[Settings.Advanced.RegisterUrlProtocol]}"
+                    OnContent="{Binding Strings[Settings.Advanced.RegisterUrlProtocol]}" />
+
+      <!-- LunarWard 追加说明：开关被禁用的原因 + .desktop 实际路径 -->
+      <TextBlock Margin="0,4,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding UrlProtocolStatus}" />
+
+      <!-- AdvancedSetting.xaml:29-40 -->
+      <Button Height="40"
+              Margin="0,12,0,0"
+              Padding="16,0"
+              BorderThickness="0"
+              HorizontalAlignment="Left"
+              CornerRadius="8,20,20,8"
+              Classes="accent"
+              Command="{Binding TestUrlProtocolCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" FontSize="16" Text="&#xE76E;" />
+          <TextBlock Text="{Binding Strings[Settings.Advanced.TestUrl]}" />
+        </StackPanel>
+      </Button>
+
+      <TextBlock Margin="0,8,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding TestResult}"
+                 IsVisible="{Binding !!TestResult}" />
+
+      <!-- AdvancedSetting.xaml:43-45 -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Advanced.RpcService]}" />
+
+      <!-- AdvancedSetting.xaml:46-50 -->
+      <TextBlock Margin="0,8,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Advanced.RpcDesc]}" />
+
+      <!-- AdvancedSetting.xaml:58-61（Starward 是「保持 RPC 后台运行」开关；LunarWard
+           没有 RPC 进程 → 保留同位置的状态行，不伪造开关） -->
+      <Grid Margin="0,8,0,0">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon"
+                     FontSize="16"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="&#xE9D9;" />
+          <TextBlock Foreground="{StaticResource StarTextSecondary}"
+                     VerticalAlignment="Center"
+                     Text="{Binding Strings[Settings.Advanced.RpcNotRunning]}" />
+        </StackPanel>
+      </Grid>
+
+      <!-- AdvancedSetting.xaml:62-120 的「运行/停止服务」按钮：服务不存在，保留说明 -->
+      <TextBlock Margin="0,4,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Advanced.RpcUnavailableNote]}" />
+
+      <!-- ── LunarWard 追加：日志级别（Starward 高级页没有）────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Advanced.LogLevel]}" />
+
+      <TextBlock Margin="0,8,0,0" Text="{Binding LogLevelValue}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Advanced.LogLevelDesc]}" />
+
+      <Grid Margin="0,8,0,0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+        <Button Grid.Column="0"
+                Height="32"
+                Width="72"
+                Command="{Binding OpenLogFolderCommand}"
+                Content="{Binding Strings[Settings.Common.Open]}" />
+        <TextBlock Grid.Column="1"
+                   VerticalAlignment="Center"
+                   Margin="4,0,0,0"
+                   FontFamily="{StaticResource StarMonoFontFamily}"
+                   FontSize="12"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   TextTrimming="CharacterEllipsis"
+                   ToolTip.Tip="{Binding LogDirectory}"
+                   Text="{Binding LogDirectory}" />
+      </Grid>
+
+      <!-- ── LunarWard 追加：高级环境变量默认值（十层合并器的基线层）────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Advanced.EnvDefaults]}" />
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Advanced.EnvDefaultsDesc]}" />
+
+      <Border Classes="panel" Margin="0,12,0,0" Padding="0" IsVisible="{Binding HasEnv}">
+        <Grid RowDefinitions="Auto,*">
+          <Grid Grid.Row="0" ColumnDefinitions="220,*,100" Margin="12,8">
+            <TextBlock Grid.Column="0"
+                       FontSize="12"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{Binding Strings[Main.Key]}" />
+            <TextBlock Grid.Column="1"
+                       FontSize="12"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{Binding Strings[Main.Value]}" />
+            <TextBlock Grid.Column="2"
+                       FontSize="12"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{Binding Strings[Main.Source]}" />
+          </Grid>
+          <Border Grid.Row="0"
+                  Height="1"
+                  VerticalAlignment="Bottom"
+                  Background="{StaticResource StarDividerBrush}" />
+
+          <ScrollViewer Grid.Row="1" MaxHeight="220" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding EnvRows}" Margin="12,4">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:SettingEnvRowViewModel">
+                  <Grid ColumnDefinitions="220,*,100" Margin="0,2">
+                    <TextBlock Grid.Column="0"
+                               FontFamily="{StaticResource StarMonoFontFamily}"
+                               FontSize="12"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding Key}"
+                               Text="{Binding Key}" />
+                    <TextBlock Grid.Column="1"
+                               FontFamily="{StaticResource StarMonoFontFamily}"
+                               FontSize="12"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding Value}"
+                               Text="{Binding Value}" />
+                    <TextBlock Grid.Column="2"
+                               FontSize="12"
+                               Foreground="{StaticResource StarTextSecondary}"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Source}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <TextBlock Margin="0,12,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding EnvStatus}"
+                 IsVisible="{Binding !HasEnv}" />
+
+      <!-- ── LunarWard 追加：自检截图命令 ───────────────────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Advanced.SelfCheck]}" />
+
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Advanced.SelfCheckDesc]}" />
+
+      <Grid Margin="0,12,0,0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <Border Grid.Column="0"
+                Padding="10,8"
+                CornerRadius="4"
+                Background="{StaticResource StarControlFillBrush}"
+                BorderBrush="{StaticResource StarCardStrokeBrush}"
+                BorderThickness="1">
+          <TextBlock FontFamily="{StaticResource StarMonoFontFamily}"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Text="{Binding SelfCheckCommand}" />
+        </Border>
+        <Button Grid.Column="1"
+                Height="32"
+                VerticalAlignment="Center"
+                Command="{Binding CopySelfCheckCommand}"
+                Content="{Binding Strings[Settings.Common.CopyPath]}" />
+      </Grid>
+
+      <TextBlock Margin="0,8,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding HasStatus}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

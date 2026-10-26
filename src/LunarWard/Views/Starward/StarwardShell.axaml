@@ -1,0 +1,551 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.ViewModels.Starward"
+             xmlns:local="using:LunarWard.Views.Starward"
+             x:Class="LunarWard.Views.Starward.StarwardShell"
+             x:DataType="vm:ShellViewModel"
+             KeyDown="OnKeyDown">
+
+  <!--
+    Starward MainView 结构（Features/ViewHost/MainView.xaml）：
+      背景层（全窗，含标题栏） → 左栏 56px → NavigationView 内容（Frame，上边距 48）
+      → GameSelector（全屏层，在最上）。
+    标题栏是 Window 自己的 48px 层，见 MainWindow.axaml。
+  -->
+  <Grid ClipToBounds="True">
+
+    <!-- ── 背景层 ─────────────────────────────────────────────── -->
+    <Grid>
+      <!-- 没有素材时的底色（Starward 用 Placeholder + 模糊图） -->
+      <Border Background="#FF1E1E1E" IsVisible="{Binding !HasBackgroundImage}" />
+      <Image Source="{Binding BackgroundImage}"
+             Stretch="UniformToFill"
+             IsVisible="{Binding HasBackgroundImage}" />
+      <ContentPresenter x:Name="VideoBackgroundHost" IsHitTestVisible="False" />
+
+      <!--
+        上游 AppBackground：官方背景的 theme 是一张透明底 PNG（左上角是游戏 logo 与版本标题文字），
+        静态图时合成到背景位图、视频时压在每一帧上。这里用同尺寸的 Image 层叠，效果一致。
+      -->
+      <Image Source="{Binding BackgroundOverlayImage}"
+             Stretch="UniformToFill"
+             IsVisible="{Binding HasBackgroundOverlay}"
+             IsHitTestVisible="False"
+             RenderOptions.BitmapInterpolationMode="HighQuality" />
+
+      <!--
+        上游 AppBackground 在右上/右下各有一片 400×400 暗角渐变。这里去掉：
+        在亮色版本图上它们看起来就是两块黑色半透明遮罩（用户反馈），
+        而开始游戏按钮与便笺时钟本身自带底色，不需要这层压暗。
+      -->
+
+    </Grid>
+
+    <!--
+      Starward Border_OverlayMask：全窗铺一层 CustomAcrylic，只有启动器页不盖
+      （MainView.NavigateTo 里 page is BlankPage or GameLauncherPage → Opacity 0）；
+      其余页面 Opacity 1，靠 250ms 的 Opacity 过渡淡入淡出（上游 ScalarTransition）。
+      声明顺序也照 Starward：背景 → 56px 竖条 → mask → 导航 → 内容。
+    -->
+    <Border x:Name="Border_OverlayMask"
+            Background="{StaticResource StarAcrylicBrush}"
+            Opacity="{Binding OverlayMaskOpacity}"
+            IsHitTestVisible="False">
+      <!-- 上游 Border_OverlayMask.OpacityTransition = 默认 ScalarTransition（250ms 线性） -->
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.25" />
+        </Transitions>
+      </Border.Transitions>
+    </Border>
+
+    <!-- ── 左栏（Starward 是一个独立的 CustomAcrylic 竖条；悬停展开到 240px） ── -->
+    <Border Width="56" HorizontalAlignment="Left" Background="{StaticResource StarAcrylicBrush}" />
+    <local:NavigationRail HorizontalAlignment="Left" VerticalAlignment="Stretch" />
+
+    <!--
+      ── 页面宿主（Starward MainView_Frame，Margin="0,48,0,0"） ──
+      页面切换的淡入 + 轻微上移：上游是 Frame 的默认转场，这里用 Transitions 做 180ms ease-out。
+      起始值（Opacity 0 / translateY 12）由 code-behind 在换页时同步写入再放开过渡，
+      这样新页面一定从「透明 + 略低」进场，而不是继承上一页已经落定的状态。
+    -->
+    <ContentPresenter x:Name="PageHost" Margin="56,48,0,0">
+      <ContentPresenter.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="CubicEaseOut" />
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </ContentPresenter.Transitions>
+    </ContentPresenter>
+
+
+    <!--
+      应用内提示条堆叠（Starward MainWindow 的 RootInfoBar + Helpers/InAppToast.cs）。
+      上游把 InfoBar 追加在窗口底部；这里右下角、宽 380、自下而上堆叠。
+    -->
+    <StackPanel x:Name="ToastHost"
+                MaxWidth="600"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="24,72,24,72"
+                Spacing="0" />
+
+    <!--
+      ── 游戏选择层（Starward Features/GameSelector/GameSelector.xaml）────────────
+      全屏 #80000000，内容 Padding 68,80,0,0；每款游戏一张 192×108 卡片，
+      国服/国际服/B 站是卡片内的 Servers 条目（点卡片才弹 flyout）。
+    -->
+    <!--
+      选择层的显隐不再直接用 IsVisible 硬切（Avalonia 隐藏时不会跑动画）：
+      整层常驻、默认 Opacity 0 + 不参与命中；打开时淡入、内容同时从 98.5% 略微放大到位，
+      关闭时淡出并立刻关掉命中，避免留网。见 StarwardShell.axaml.cs 的 OnGameSelectorVisibilityChanged。
+    -->
+    <Grid x:Name="GameSelectorOverlayCard" Opacity="0" IsHitTestVisible="False">
+      <Grid.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </Grid.Transitions>
+
+      <Grid.Styles>
+        <!-- 卡片悬停：遮罩淡入（源码 0.167s 的 Logo/IconAndName 交叉淡入） -->
+        <Style Selector="Border.choice:pointerover Border.choiceHover">
+          <Setter Property="Opacity" Value="1" />
+        </Style>
+
+        <!-- 卡片悬停时轻微放大（源码是 0.167s 的交叉淡入，这里用 1.03 的缩放进阶代替手写动画） -->
+        <Style Selector="Border.choice">
+          <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+          <Setter Property="Transitions">
+            <Transitions>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+            </Transitions>
+          </Setter>
+        </Style>
+        <Style Selector="Border.choice:pointerover">
+          <Setter Property="RenderTransform" Value="scale(1.03)" />
+        </Style>
+
+        <!-- 选择层内容：打开时从「下移 8、缩小到 98.5%」到位 -->
+        <Style Selector="Border.selector-content">
+          <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+          <Setter Property="RenderTransform" Value="translate(0px, 8px) scale(0.985)" />
+          <Setter Property="Transitions">
+            <Transitions>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+            </Transitions>
+          </Setter>
+        </Style>
+        <Style Selector="Border.selector-content.open">
+          <Setter Property="RenderTransform" Value="translate(0px, 0px) scale(1)" />
+        </Style>
+      </Grid.Styles>
+
+      <!-- 点空白处关闭（Border_FullBackground_Tapped） -->
+      <Border Background="{StaticResource StarScrimBrush}" PointerPressed="OnGameSelectorScrimPressed" />
+
+      <!-- Starward Border_FullBackground Padding="68,80,0,0" -->
+      <Border x:Name="GameSelectorContent" Classes="selector-content" Padding="68,80,0,0">
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalContentAlignment="Top">
+          <StackPanel Orientation="Vertical" Spacing="40" HorizontalAlignment="Left" VerticalAlignment="Top">
+
+            <!-- Starward ItemsControl GameBizDisplays：横向 StackPanel Spacing=16 -->
+            <ItemsControl ItemsSource="{Binding GameChoices}" HorizontalAlignment="Left">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" Spacing="16" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:GameChoiceViewModel">
+                  <Border Width="192" Height="108" CornerRadius="8" ClipToBounds="True" Cursor="Hand"
+                          Classes="choice"
+                          Background="#40000000"
+                          Tapped="OnGameChoiceTapped"
+                          PointerPressed="OnGameChoicePointerPressed"
+                          PointerMoved="OnGameChoicePointerMoved"
+                          PointerReleased="OnGameChoicePointerReleased"
+                          DragDrop.AllowDrop="True"
+                          DragDrop.DragOver="OnGameChoiceDragOver"
+                          DragDrop.Drop="OnGameChoiceDrop">
+                    <!--
+                      区服 flyout（源码 FlyoutBase.AttachedFlyout）：点卡片后由 code-behind 以
+                      Placement=Bottom / Transient 弹出；hover 只做高亮，不弹（闪烁根因）。
+                      每行 24×24 区服角标 + 名称 + 28×28 pin（E718 常态、E841 叠加）。
+                    -->
+                    <Border.ContextFlyout>
+                      <Flyout Placement="Bottom">
+                        <ItemsControl ItemsSource="{Binding Servers}" MinWidth="220">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GameServerItem">
+                              <Button Padding="4"
+                                      HorizontalAlignment="Stretch"
+                                      HorizontalContentAlignment="Stretch"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      Click="OnGameServerClick">
+                                <Grid ColumnSpacing="12" ColumnDefinitions="Auto,*,Auto">
+                                  <!-- 区服 logo 来自 Starward.Assets 内容包；加载前退回文字角标 -->
+                                  <Border Width="24" Height="24" CornerRadius="4" ClipToBounds="True">
+                                    <Panel>
+                                      <!-- 有真素材时只画素材（bilibili 的 logo 本身是粉底，再垫粉底会糊成一块） -->
+                                      <Image Source="{Binding BadgeImage}" Stretch="Uniform"
+                                             IsVisible="{Binding HasBadgeImage}" />
+                                      <Border Background="{Binding BadgeBrush}" CornerRadius="4"
+                                              IsVisible="{Binding !HasBadgeImage}">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="White"
+                                                   Text="{Binding BadgeText}" />
+                                      </Border>
+                                    </Panel>
+                                  </Border>
+                                  <TextBlock Grid.Column="1"
+                                             HorizontalAlignment="Left" VerticalAlignment="Center"
+                                             FontSize="14"
+                                             Text="{Binding Name}" />
+                                  <Button Grid.Column="2"
+                                          Width="28" Height="28"
+                                          Padding="0"
+                                          HorizontalAlignment="Right"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Click="OnGameServerPinClick">
+                                    <Panel>
+                                      <TextBlock Classes="icon" FontSize="16" Text="&#xE718;" />
+                                      <TextBlock Classes="icon" FontSize="16" Text="&#xE841;"
+                                                 IsVisible="{Binding IsPinned}" />
+                                    </Panel>
+                                  </Button>
+                                </Grid>
+                              </Button>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </Flyout>
+                    </Border.ContextFlyout>
+
+                    <Panel>
+                      <!-- 背景缩略图（UniformToFill，圆角由卡片裁切） -->
+                      <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" IsVisible="{Binding HasThumbnail}" />
+                      <!-- 中央 Logo（Starward CachedImage Background #60000000） -->
+                      <Border Margin="24" Background="#60000000" IsVisible="{Binding HasLogo}">
+                        <Image Source="{Binding Logo}" Stretch="Uniform" />
+                      </Border>
+                      <!-- 既没 Logo 也没缩略图时才用游戏名兜底 -->
+                      <TextBlock Text="{Binding Name}"
+                                 Margin="12"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 FontSize="16" FontWeight="Bold"
+                                 TextWrapping="Wrap" TextAlignment="Center"
+                                 IsVisible="{Binding ShowFallbackTitle}" />
+                      <!-- 已安装标记 -->
+                      <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                              Margin="6" Padding="6,2" CornerRadius="4"
+                              Background="#99000000"
+                              IsVisible="{Binding IsInstalled}">
+                        <TextBlock FontSize="11" Foreground="{StaticResource StarTextSecondary}"
+                                   Text="{Binding Strings[Launcher.Installed]}" />
+                      </Border>
+
+                      <!--
+                        悬停遮罩（源码 Grid_GameBizDisplay_IconAndName）：#D0000000 底 + 强调色 2px + 圆角 6，
+                        48×48 图标 + 「选择游戏服务器」。源码 0.167s 淡入。
+                      -->
+                      <Border Classes="choiceHover"
+                              Opacity="0"
+                              Background="#D0000000"
+                              BorderBrush="{StaticResource StarAccentBrush}"
+                              BorderThickness="2"
+                              CornerRadius="6"
+                              IsHitTestVisible="False">
+                        <Border.Transitions>
+                          <Transitions>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.167" />
+                          </Transitions>
+                        </Border.Transitions>
+                        <Grid ColumnDefinitions="*,Auto,Auto,*">
+                          <Border Grid.Column="1"
+                                  Width="48" Height="48"
+                                  Margin="0,0,8,0"
+                                  HorizontalAlignment="Right" VerticalAlignment="Center"
+                                  CornerRadius="8"
+                                  ClipToBounds="True"
+                                  IsVisible="{Binding HasIcon}">
+                            <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                          </Border>
+                          <TextBlock Grid.Column="2"
+                                     Margin="8,0,0,0"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                     FontSize="14"
+                                     TextWrapping="Wrap"
+                                     Text="{Binding Strings[Shell.SelectGameServer]}" />
+                        </Grid>
+                      </Border>
+                    </Panel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!--
+              已安装游戏实际占用大小（源码 Expander_InstalledGamesActualSize）：
+              外框 ControlOnImageFillColorDefaultBrush（#0DFFFFFF）+ 圆角 8，Expander MinWidth 820。
+            -->
+            <Border HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Background="#0DFFFFFF" CornerRadius="8">
+              <Expander MinWidth="820"
+                        HorizontalAlignment="Left"
+                        HorizontalContentAlignment="Stretch"
+                        Background="Transparent"
+                        Foreground="{StaticResource StarTextSecondary}">
+                <Expander.Header>
+                  <Grid ColumnSpacing="12" ColumnDefinitions="*,Auto,Auto,Auto">
+                    <TextBlock VerticalAlignment="Center" FontSize="14" Foreground="{StaticResource StarTextSecondary}">
+                      <Run Text="{Binding Strings[Shell.ActualSizeOfInstalledGames]}" /><Run Text="  " /><Run Text="{Binding InstalledGamesSizeText}" /><Run Text="{Binding InstalledGamesSavedSizeHint}" />
+                    </TextBlock>
+                    <!-- 计算中（源码 StackPanel「计算中」+ ProgressRing 20×20） -->
+                    <ProgressBar Grid.Column="1"
+                                 Width="16" Height="16"
+                                 IsIndeterminate="True"
+                                 VerticalAlignment="Center"
+                                 Background="Transparent"
+                                 IsVisible="{Binding IsCalculatingInstalledGames}"
+                                 ToolTip.Tip="{Binding Strings[Shell.Calculating]}" />
+                    <!-- 自动查找（源码 Button_AutoSearchInstalledGames E721，32×32） -->
+                    <Button Grid.Column="2"
+                            Width="32" Height="32" Padding="0"
+                            Background="Transparent" BorderThickness="0"
+                            Command="{Binding AutoSearchInstalledGamesCommand}"
+                            ToolTip.Tip="{Binding Strings[Shell.AutoSearch]}">
+                      <TextBlock Classes="icon" FontSize="16" Text="&#xE721;" />
+                    </Button>
+                    <!-- 刷新（源码 Button_RefreshInstalledGames E72C，32×32） -->
+                    <Button Grid.Column="3"
+                            Width="32" Height="32" Padding="0"
+                            Background="Transparent" BorderThickness="0"
+                            Command="{Binding RefreshInstalledGamesCommand}"
+                            ToolTip.Tip="{Binding Strings[Shell.RefreshSize]}">
+                      <TextBlock Classes="icon" FontSize="16" Text="&#xE72C;" />
+                    </Button>
+                  </Grid>
+                </Expander.Header>
+                <ItemsControl ItemsSource="{Binding InstalledGameItems}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:InstalledGameItem">
+                      <Grid ColumnSpacing="12" Height="36"
+                            ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                        <!-- 36×36 游戏图标（源码 CachedImage） -->
+                        <Border Width="36" Height="36" CornerRadius="8" ClipToBounds="True" IsVisible="{Binding HasIcon}">
+                          <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                        </Border>
+                        <!-- 游戏名 MinWidth 160 -->
+                        <TextBlock Grid.Column="1" MinWidth="160" VerticalAlignment="Center"
+                                   FontSize="14" Text="{Binding GameName}" />
+                        <!-- 24×24 区服角标（源码 ServerIcon） -->
+                        <Border Grid.Column="2" Width="24" Height="24" CornerRadius="4"
+                                VerticalAlignment="Center" ClipToBounds="True">
+                          <Panel>
+                            <Image Source="{Binding BadgeImage}" Stretch="Uniform"
+                                   IsVisible="{Binding HasBadgeImage}" />
+                            <Border Background="{Binding BadgeBrush}" CornerRadius="4"
+                                    IsVisible="{Binding !HasBadgeImage}">
+                              <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         FontSize="11" Foreground="White"
+                                         Text="{Binding BadgeText}" />
+                            </Border>
+                          </Panel>
+                        </Border>
+                        <!-- 区服名 MinWidth 100 -->
+                        <TextBlock Grid.Column="3" MinWidth="100" VerticalAlignment="Center"
+                                   FontSize="14" Text="{Binding ServerName}" />
+                        <!-- 容量 MinWidth 100 -->
+                        <TextBlock Grid.Column="4" MinWidth="100" VerticalAlignment="Center"
+                                   FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                                   Text="{Binding SizeText}" />
+                        <!-- 安装路径 MinWidth 200 -->
+                        <TextBlock Grid.Column="5" MinWidth="200" VerticalAlignment="Center"
+                                   FontSize="12" Foreground="{StaticResource StarTextSecondary}"
+                                   TextTrimming="CharacterEllipsis" Text="{Binding Path}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Expander>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+
+    <!--
+      ── 左上角当前游戏图标 + 横排区服图标条（Starward GameSelector 的
+         Border_CurrentGameIcon / Grid_GameIconsArea）────────────────────────────
+      当前图标 40×40、Margin 8,10,8,8、圆角 8，未固定图标条时右下角叠 20×20 区服角标；
+      图标条 Height 60、Padding 6,0,12,0、横向 40×40 图标，平时 Translation -100 收起，
+      指针进入当前图标/图标条时滑出到 0。只在 60px 高度内命中，不会在窗口左边缘留下竖条。
+    -->
+    <Grid x:Name="GameIconsHost"
+          HorizontalAlignment="Left" VerticalAlignment="Top"
+          Height="60">
+      <Grid.Styles>
+        <Style Selector="Button.server-icon">
+          <Setter Property="Width" Value="40" />
+          <Setter Property="Height" Value="40" />
+          <Setter Property="Margin" Value="6,8" />
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="CornerRadius" Value="8" />
+          <Setter Property="BorderThickness" Value="0" />
+          <Setter Property="Background" Value="Transparent" />
+          <!-- 悬停提亮靠 server-mask 淡出，这里再补一层 1.08 的轻微放大 -->
+          <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+          <Setter Property="Transitions">
+            <Transitions>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CubicEaseOut" />
+            </Transitions>
+          </Setter>
+        </Style>
+        <Style Selector="Button.server-icon:pointerover">
+          <Setter Property="RenderTransform" Value="scale(1.08)" />
+        </Style>
+        <Style Selector="Button.server-icon Border.server-mask">
+          <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.server-icon.current Border.server-mask">
+          <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="Button.server-icon:pointerover Border.server-mask">
+          <Setter Property="Opacity" Value="0" />
+        </Style>
+        <!-- 图标条本体：Translation -100 ↔ 0（源码 GameIconsAreaVisible + Vector3Transition） -->
+        <Style Selector="Panel.icons-strip">
+          <Setter Property="RenderTransform" Value="translate(0px, -100px)" />
+          <Setter Property="Transitions">
+            <Transitions>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.167" />
+            </Transitions>
+          </Setter>
+        </Style>
+        <Style Selector="Panel.icons-strip.visible">
+          <Setter Property="RenderTransform" Value="translate(0px, 0px)" />
+        </Style>
+      </Grid.Styles>
+
+      <!-- 当前游戏图标（源码 Border_CurrentGameIcon + Button，Margin 8,10,8,8） -->
+      <Border Background="Transparent"
+              HorizontalAlignment="Left" VerticalAlignment="Top"
+              PointerEntered="OnCurrentGameIconPointerEntered"
+              PointerExited="OnCurrentGameIconPointerExited">
+        <Button Width="40" Height="40"
+                Margin="8,10,8,8"
+                Padding="0"
+                CornerRadius="8"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{Binding OpenGameSelectorCommand}"
+                ToolTip.Tip="{Binding Strings[Shell.SelectGame]}">
+          <Panel Width="40" Height="40">
+            <Border CornerRadius="8" ClipToBounds="True" Background="#33FFFFFF" />
+            <Border CornerRadius="8" ClipToBounds="True">
+              <Image Source="{Binding CurrentGameIcon}" Stretch="UniformToFill" IsVisible="{Binding HasGameIcon}" />
+            </Border>
+            <TextBlock Classes="icon" FontSize="20" Text="&#xE8A9;" IsVisible="{Binding !HasGameIcon}" />
+            <!-- 20×20 区服角标（源码 ServerIcon，未固定图标条时显示） -->
+            <Border Width="20" Height="20"
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    CornerRadius="4" ClipToBounds="True"
+                    IsVisible="{Binding ShowCurrentServerBadge}">
+              <Panel>
+                <Image Source="{Binding CurrentServerBadgeImage}" Stretch="Uniform"
+                       IsVisible="{Binding HasCurrentServerBadgeImage}" />
+                <Border Background="{Binding CurrentServerBadgeBrush}" CornerRadius="4"
+                        IsVisible="{Binding !HasCurrentServerBadgeImage}">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                             FontSize="10" FontWeight="SemiBold" Foreground="White"
+                             Text="{Binding CurrentServerBadgeText}" />
+                </Border>
+              </Panel>
+            </Border>
+          </Panel>
+        </Button>
+      </Border>
+
+      <!-- 横排区服图标条（Margin 56,0,0,0 / Padding 6,0,12,0） -->
+      <Panel x:Name="GameIconsArea"
+             Classes="icons-strip"
+             Classes.visible="{Binding IsGameIconsVisible}"
+             Margin="56,0,0,0"
+             Height="60"
+             HorizontalAlignment="Left"
+             VerticalAlignment="Top"
+             IsHitTestVisible="{Binding IsGameIconsVisible}"
+             PointerExited="OnGameIconsAreaPointerExited">
+        <StackPanel Orientation="Horizontal" Margin="6,0,12,0" Spacing="0">
+          <ItemsControl ItemsSource="{Binding PinnedServers}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="0" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:GameServerItem">
+                <Button Classes="server-icon"
+                        Classes.current="{Binding IsCurrent}"
+                        Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).SelectGameIconCommand}"
+                        CommandParameter="{Binding}"
+                        ToolTip.Tip="{Binding Name}">
+                  <Panel Width="40" Height="40">
+                    <Border CornerRadius="8" Background="#33FFFFFF" />
+                    <Border CornerRadius="8" ClipToBounds="True">
+                      <Image Source="{Binding Icon}" Stretch="UniformToFill" IsVisible="{Binding HasIcon}" />
+                    </Border>
+                    <TextBlock Classes="icon" FontSize="20" Text="&#xE8A9;" IsVisible="{Binding !HasIcon}" />
+                    <!-- 右下角 20×20 区服角标（图标条条目始终显示） -->
+                    <Border Width="20" Height="20"
+                            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                            CornerRadius="4" ClipToBounds="True">
+                      <Panel>
+                        <Image Source="{Binding BadgeImage}" Stretch="Uniform"
+                               IsVisible="{Binding HasBadgeImage}" />
+                        <Border Background="{Binding BadgeBrush}" CornerRadius="4"
+                                IsVisible="{Binding !HasBadgeImage}">
+                          <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                     FontSize="10" FontWeight="SemiBold" Foreground="White"
+                                     Text="{Binding BadgeText}" />
+                        </Border>
+                      </Panel>
+                    </Border>
+                    <Border Classes="server-mask" Background="#60000000" CornerRadius="8" />
+                  </Panel>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- 固定图标条（源码 Border_Pin，只在全屏选择层显示） -->
+          <Button Width="40" Height="40"
+                  Margin="6,0,0,0"
+                  Padding="0"
+                  CornerRadius="8"
+                  Background="#33FFFFFF"
+                  BorderThickness="0"
+                  IsVisible="{Binding IsGameSelectorOpen}"
+                  Command="{Binding ToggleGameIconsPinnedCommand}"
+                  ToolTip.Tip="{Binding Strings[Shell.SelectGame]}">
+            <Panel>
+              <TextBlock Classes="icon" FontSize="16" Text="&#xE840;" IsVisible="{Binding !IsGameIconsPinned}" />
+              <TextBlock Classes="icon" FontSize="16" Text="&#xE841;" IsVisible="{Binding IsGameIconsPinned}" />
+            </Panel>
+          </Button>
+        </StackPanel>
+      </Panel>
+    </Grid>
+  </Grid>
+</UserControl>

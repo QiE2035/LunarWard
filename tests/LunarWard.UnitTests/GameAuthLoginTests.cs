@@ -1,4 +1,4 @@
-using LunarWard.App.ViewModels.Starward;
+using LunarWard.ViewModels.Starward;
 using LunarWard.Core;
 using LunarWard.Core.Account;
 using LunarWard.Launch;

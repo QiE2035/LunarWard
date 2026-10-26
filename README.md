@@ -51,10 +51,10 @@ dotnet build LunarWard.slnx
 dotnet test  LunarWard.slnx
 
 # 3. 运行
-dotnet run --project src/LunarWard.App
+dotnet run --project src/LunarWard
 
 # 4. 无头自检（渲染一帧 Starward 界面到 PNG 后退出，用于 CI）
-dotnet run --project src/LunarWard.App -- --screenshot /tmp/lunarward.png
+dotnet run --project src/LunarWard -- --screenshot /tmp/lunarward.png
 #    逐页出图：--page launcher|game-setting|screenshot|gacha|toolbox|self-query|genshin-beyond|settings
 #    工具箱演示数据：LUNARWARD_TOOLBOX_DEMO=1（不联网、不写用户数据），
 #                   LUNARWARD_TOOLBOX_GAME=starrail 可切到崩铁菜单，配合 --tab <序号> 选中子页
@@ -146,7 +146,7 @@ lunarward/
 │   ├── LunarWard.Launch/          # 七相位启动引擎（核心）、LaunchPlan、启动报告
 │   ├── LunarWard.Games/           # 区服（config.ini）、B站 PCGameSDK、游戏适配
 │   ├── LunarWard.Installer/       # ← Starward.RPC/GameInstall 移植（去 gRPC/Vanara）
-│   └── LunarWard.App/             # Avalonia 12 视图层（Starward UI 复刻）
+│   └── LunarWard/             # Avalonia 12 视图层（Starward UI 复刻）
 ├── tests/
 │   ├── LunarWard.UnitTests/           # 276
 │   ├── LunarWard.Installer.UnitTests/ # 31

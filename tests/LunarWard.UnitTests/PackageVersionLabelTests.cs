@@ -1,5 +1,5 @@
-using LunarWard.App.Localization;
-using LunarWard.App.Views.Starward;
+using LunarWard.Localization;
+using LunarWard.Views.Starward;
 using Xunit;
 
 namespace LunarWard.UnitTests;

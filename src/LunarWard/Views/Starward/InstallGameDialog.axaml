@@ -1,0 +1,92 @@
+<controls:StarwardContentDialog xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                xmlns:controls="using:LunarWard.Views.Starward.Controls"
+                                xmlns:loc="using:LunarWard.Localization"
+                                x:Class="LunarWard.Views.Starward.InstallGameDialog"
+                                MaxWidth="560">
+
+  <!-- Starward Features/GameInstall/InstallGameDialog.xaml：560 宽、Grid Padding=24。
+       亚克力底/圆角/描边与右上角关闭由 StarwardContentDialog 容器提供。 -->
+  <Border Width="560" Padding="24">
+    <Grid>
+
+      <StackPanel>
+
+        <!-- 标题：Starward FontSize 18 Bold -->
+        <TextBlock Text="{Binding [InstallGameDialog.SelectPath], Source={x:Static loc:AppStrings.Instance}}"
+                   FontSize="18" FontWeight="Bold" />
+
+        <!-- 路径行：36 高、圆角 8、背景 ControlFillColorSecondary；右侧「更改」 -->
+        <Border Height="36" Margin="0,16,0,0" CornerRadius="8" Background="#14FFFFFF">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock x:Name="InstallationPathText"
+                     Margin="12,4" VerticalAlignment="Center" FontSize="14"
+                     Foreground="{DynamicResource StarTextSecondary}"
+                     TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+          <Button Grid.Column="1" Padding="12,0" VerticalAlignment="Stretch"
+                  Background="Transparent" BorderThickness="0" CornerRadius="8"
+                  Click="OnChangePathClick">
+            <TextBlock Text="{Binding [InstallGameDialog.Change], Source={x:Static loc:AppStrings.Instance}}"
+                       FontSize="14" Foreground="{DynamicResource StarAccentBrush}" />
+          </Button>
+        </Grid>
+        </Border>
+
+        <!-- 音频语言（Starward：Switch 分段，只有安装包带音频包时显示） -->
+        <Border x:Name="AudioLanguageBar" Margin="0,8,0,0" Classes="segmented"
+                Background="Transparent" Padding="0" HorizontalAlignment="Stretch" IsVisible="False">
+          <StackPanel x:Name="AudioLanguagePanel" Orientation="Horizontal" Spacing="2" />
+        </Border>
+
+        <!-- 空间需求（Starward：字号 12 次要色，「解压所需空间 」｜「可用空间 」） -->
+        <StackPanel x:Name="FreeSpacePanel" Margin="1,8,0,0" Orientation="Horizontal" Spacing="8">
+          <TextBlock FontSize="12" Foreground="{DynamicResource StarTextSecondary}">
+            <Run Text="{Binding [InstallGameDialog.SpaceRequired], Source={x:Static loc:AppStrings.Instance}}" />
+            <Run Text=" " />
+            <Run x:Name="UnzipSpaceRun" />
+          </TextBlock>
+          <Rectangle Width="1" Height="12" Fill="#24FFFFFF" VerticalAlignment="Center" />
+          <TextBlock x:Name="AvailableSpaceText" FontSize="12"
+                     Foreground="{DynamicResource StarTextSecondary}">
+            <Run Text="{Binding [InstallGameDialog.SpaceAvailable], Source={x:Static loc:AppStrings.Instance}}" />
+            <Run Text=" " />
+            <Run x:Name="AvailableSpaceRun" />
+          </TextBlock>
+        </StackPanel>
+
+        <!-- 校验错误（Starward：SystemFillColorCaution） -->
+        <TextBlock x:Name="ErrorMessageText" Margin="1,8,1,0" FontSize="12"
+                   Foreground="{DynamicResource StarCautionBrush}"
+                   TextWrapping="Wrap" IsVisible="False" />
+
+        <!-- 自动创建子文件夹 -->
+        <CheckBox x:Name="AutoSubfolderCheck" Margin="0,8,0,0"
+                  Click="OnAutoSubfolderClick">
+          <TextBlock Foreground="{DynamicResource StarTextSecondary}"
+                     Text="{Binding [InstallGameDialog.AutoSubfolder], Source={x:Static loc:AppStrings.Instance}}" />
+        </CheckBox>
+
+      </StackPanel>
+
+      <!-- 硬链接说明（Starward：左下角，SupportedHardLink 时显示） -->
+      <StackPanel x:Name="HardLinkPanel" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                  Orientation="Horizontal" Spacing="4" IsVisible="False">
+        <TextBlock VerticalAlignment="Center" FontSize="12"
+                   Foreground="{DynamicResource StarTextSecondary}"
+                   Text="{Binding [InstallGameDialog.SupportHardLinks], Source={x:Static loc:AppStrings.Instance}}" />
+        <Button Padding="4" Background="Transparent" BorderThickness="0">
+          <TextBlock Classes="icon" FontSize="12" Text="&#xE9CE;"
+                     Foreground="{DynamicResource StarTextSecondary}" />
+          <Button.Flyout>
+            <Flyout>
+              <TextBlock MaxWidth="380" FontSize="12" TextWrapping="Wrap"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="{Binding [InstallGameDialog.HardLinkDesc], Source={x:Static loc:AppStrings.Instance}}" />
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+      </StackPanel>
+
+    </Grid>
+  </Border>
+</controls:StarwardContentDialog>

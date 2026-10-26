@@ -1,0 +1,276 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LunarWard.ViewModels.Starward"
+             x:Class="LunarWard.Views.Starward.Settings.SettingScreenshotView"
+             x:DataType="vm:SettingScreenshotViewModel">
+
+  <!--
+    1:1 复刻 Starward Features/Setting/ScreenshotSetting.xaml（189 行）：
+      16      StackPanel Padding="0,0,24,24"（Avalonia 无 Padding；LunarWard 改由 SettingPage 的 SectionHost 统一留白）
+      19      20px「游戏截图」
+      22-25   0,12 说明（14px 次要色）
+      28-73   0,8 Grid：修改文件夹强调按钮（40 高 / 16,0 / 8,20,20,8，E8DE）+ 当前文件夹胶囊
+              （40 高 / Margin 16,0 / Padding 20,0,20,1 / 圆角 20，路径最多两行省略 + E8A7）
+      77-79   0,16 20px「截图快捷键」
+      82-85   0,8 说明
+      88-96   HotkeyInput（MinWidth 200 / Margin 0,12 / 左对齐，边框 1 / 圆角 4，文字「点击设置快捷键」）
+      100-102 0,16 20px「其他选项」
+      105-124 0,8 水平 StackPanel Spacing=12：14px「格式和质量」+ Segmented(PNG/AVIF/JPEG XL)
+              + Segmented(中/高/无损)
+      127-131 0,6 12px 次要色说明（AVIF/JPEG XL 省空间）
+      134-149 三个 ToggleSwitch：0,4 色彩管理 / 0,-4 自动复制 / 0,-4 自动转 SDR
+      152-154 次要色「如果截图为 HDR 图像，将同时保存 SDR 图片。」
+      156-163 0,12 按钮行：测试截图 / 清除缩略图缓存
+      166-169 0,12 截图错误（警示色，默认折叠）
+      171     MenuFlyoutSeparator Margin 0,12,0,12
+      174-184 12px 次要色：功能介绍和限制 / 手柄截图建议（0,6）
+    行号均指 Starward/src/Starward/Features/Setting/ScreenshotSetting.xaml。
+
+    LunarWard 落位说明：
+      · 游戏截图由游戏自己写入 → 「修改文件夹」禁用；文件夹胶囊仍可打开目录；
+      · Linux 没有全局热键 → HotkeyInput 换成同样边框/圆角/文字的禁用占位框；
+      · 没有 WIC 转码，也不改写截图 → 格式/质量分段、三个开关、测试截图/清除缩略图
+        全部保留位置并禁用，旁边写原因；HDR 说明保留原文（没有 HDR 采集，不会发生）。
+      · 末尾「截图目录」区块是 LunarWard 追加（张数与占用、打开/复制路径）。
+  -->
+  <ScrollViewer Background="{x:Null}"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled">
+    <!-- 右侧/底部留白由 SettingPage 的 SectionHost(Margin 24) 统一提供，子页不再重复。 -->
+    <StackPanel>
+
+      <!-- ScreenshotSetting.xaml:19 -->
+      <TextBlock Classes="section" Text="{Binding Strings[Screenshot.Title]}" />
+
+      <!-- ScreenshotSetting.xaml:22-25 -->
+      <TextBlock Margin="0,12,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Screenshot.BuiltinFolderDesc]}" />
+
+      <!-- ScreenshotSetting.xaml:28-73 -->
+      <Grid Margin="0,8,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <!-- ScreenshotSetting.xaml:34-45（目录由游戏决定 → 禁用） -->
+        <Button Grid.Column="0"
+                Height="40"
+                Padding="16,0"
+                BorderThickness="0"
+                CornerRadius="8,20,20,8"
+                Classes="accent"
+                IsEnabled="False">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE8DE;" />
+            <TextBlock Text="{Binding Strings[Settings.Common.ChangeFolder]}" />
+          </StackPanel>
+        </Button>
+
+        <!-- ScreenshotSetting.xaml:47-72（当前截图文件夹胶囊：打开目录） -->
+        <Button Grid.Column="1"
+                Height="40"
+                Margin="16,0,0,0"
+                Padding="20,0,20,1"
+                BorderThickness="0"
+                CornerRadius="20"
+                Command="{Binding OpenDirectoryCommand}"
+                ToolTip.Tip="{Binding DirectoryPath}">
+          <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       MaxLines="2"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="Wrap"
+                       Text="{Binding DirectoryPath}" />
+            <TextBlock Grid.Column="1"
+                       Classes="icon"
+                       Margin="0,2,2,0"
+                       FontSize="14"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="&#xE8A7;" />
+          </Grid>
+        </Button>
+      </Grid>
+
+      <TextBlock Margin="0,8,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Screenshot.NoChangeFolder]}" />
+
+      <!-- ScreenshotSetting.xaml:77-79 -->
+      <TextBlock Margin="0,16,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Screenshot.Shortcut]}" />
+
+      <!-- ScreenshotSetting.xaml:82-85（Starward 是「单键快捷键需管理员权限」，Linux 换成同样位置的说明） -->
+      <TextBlock Margin="0,8,0,0"
+                 Classes="description"
+                 Text="{Binding Strings[Settings.Hotkey.SingleKeyTips]}" />
+
+      <!-- ScreenshotSetting.xaml:88-96 HotkeyInput →
+           Starward 的 HotkeyInput.xaml：边框 1、圆角 4、文字「点击设置快捷键」。Linux 没有
+           全局热键，这里保留同样的框、禁用并给 tooltip。 -->
+      <Border MinWidth="200"
+              Height="34"
+              Margin="0,12,0,0"
+              HorizontalAlignment="Left"
+              Background="Transparent"
+              BorderBrush="{StaticResource StarTextTertiary}"
+              BorderThickness="1"
+              CornerRadius="4"
+              ToolTip.Tip="{Binding Strings[Settings.Hotkey.HotkeyUnavailable]}">
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="12,6"
+                   Foreground="{StaticResource StarTextSecondary}"
+                   Text="{Binding Strings[Settings.Hotkey.ClickToSet]}" />
+      </Border>
+
+      <!-- ScreenshotSetting.xaml:100-102 -->
+      <TextBlock Margin="0,16,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Settings.Screenshot.OtherOptions]}" />
+
+      <!-- ScreenshotSetting.xaml:105-124（Segmented → 只显示实际格式的禁用占位块） -->
+      <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="12">
+        <TextBlock VerticalAlignment="Center" Text="{Binding Strings[Settings.Screenshot.FormatAndQuality]}" />
+        <Border Height="32"
+                VerticalAlignment="Center"
+                Padding="12,0"
+                CornerRadius="4"
+                Background="{StaticResource StarControlFillBrush}"
+                BorderBrush="{StaticResource StarCardStrokeBrush}"
+                BorderThickness="1"
+                IsEnabled="False">
+          <TextBlock VerticalAlignment="Center"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{Binding Strings[Settings.Screenshot.GameDecides]}" />
+        </Border>
+      </StackPanel>
+
+      <!-- ScreenshotSetting.xaml:127-131 -->
+      <TextBlock Margin="0,6,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Screenshot.FormatUnavailable]}" />
+
+      <!-- ScreenshotSetting.xaml:134-137 色彩管理 -->
+      <ToggleSwitch Margin="0,4,0,0"
+                    IsEnabled="False"
+                    OffContent="{Binding Strings[Settings.Screenshot.ColorManagement]}"
+                    OnContent="{Binding Strings[Settings.Screenshot.ColorManagement]}" />
+
+      <!-- ScreenshotSetting.xaml:140-143 自动复制截图文件 -->
+      <ToggleSwitch Margin="0,-4,0,0"
+                    IsEnabled="False"
+                    OffContent="{Binding Strings[Settings.Screenshot.AutoCopy]}"
+                    OnContent="{Binding Strings[Settings.Screenshot.AutoCopy]}" />
+
+      <!-- ScreenshotSetting.xaml:146-149 自动转换为 SDR 图片 -->
+      <ToggleSwitch Margin="0,-4,0,0"
+                    IsEnabled="False"
+                    OffContent="{Binding Strings[Settings.Screenshot.AutoSdr]}"
+                    OnContent="{Binding Strings[Settings.Screenshot.AutoSdr]}" />
+
+      <!-- ScreenshotSetting.xaml:152-154 -->
+      <TextBlock FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Screenshot.HdrNote]}" />
+
+      <!-- ScreenshotSetting.xaml:156-163 -->
+      <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="12">
+        <Button IsEnabled="False" Content="{Binding Strings[Settings.Screenshot.TestCapture]}" />
+        <Button IsEnabled="False" Content="{Binding Strings[Settings.Screenshot.ClearThumbnailCache]}" />
+      </StackPanel>
+
+      <TextBlock Margin="0,4,0,0"
+                 MaxWidth="820"
+                 HorizontalAlignment="Left"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Screenshot.CaptureButtonsUnavailable]}" />
+
+      <!-- ScreenshotSetting.xaml:166-169 截图错误（LunarWard 不采集，永远折叠） -->
+      <TextBlock Margin="0,12,0,0"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 TextWrapping="Wrap"
+                 IsVisible="False" />
+
+      <!-- ScreenshotSetting.xaml:171 MenuFlyoutSeparator -->
+      <Border Height="1"
+              Margin="0,12,0,12"
+              Background="{StaticResource StarDividerBrush}" />
+
+      <!-- ScreenshotSetting.xaml:174-177 -->
+      <TextBlock FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Screenshot.FeatureDesc]}" />
+
+      <!-- ScreenshotSetting.xaml:180-184 -->
+      <TextBlock Margin="0,6,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Strings[Settings.Screenshot.GamepadSuggestion]}" />
+
+      <!-- ── LunarWard 追加：截图目录统计（张数 / 占用 / 打开 / 复制）────────────
+               Starward 没有这块；放在全部 Starward 条目之后。──────────────────── -->
+      <TextBlock Margin="0,20,0,0"
+                 Classes="section"
+                 Text="{Binding Strings[Screenshot.Directory]}" />
+
+      <TextBlock Margin="0,8,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 TextWrapping="Wrap"
+                 Text="{Binding CountText}" />
+
+      <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="12">
+        <Button Height="40"
+                Padding="16,0"
+                BorderThickness="0"
+                CornerRadius="8,20,20,8"
+                Classes="accent"
+                IsEnabled="{Binding HasGameDirectory}"
+                Command="{Binding OpenDirectoryCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE838;" />
+            <TextBlock Text="{Binding Strings[Screenshot.OpenDirectory]}" />
+          </StackPanel>
+        </Button>
+        <Button Height="40"
+                Padding="16,0"
+                BorderThickness="0"
+                CornerRadius="8,20,20,8"
+                IsEnabled="{Binding HasGameDirectory}"
+                Command="{Binding CopyPathCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" FontSize="16" Text="&#xE8C8;" />
+            <TextBlock Text="{Binding Strings[Screenshot.CopyPath]}" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+
+      <TextBlock Margin="0,8,0,0"
+                 FontSize="12"
+                 Foreground="{StaticResource StarCautionBrush}"
+                 TextWrapping="Wrap"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding HasStatus}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

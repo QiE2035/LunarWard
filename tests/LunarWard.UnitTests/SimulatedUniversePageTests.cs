@@ -1,5 +1,5 @@
 using Avalonia.Media;
-using LunarWard.App.ViewModels.Starward;
+using LunarWard.ViewModels.Starward;
 using Xunit;
 
 namespace LunarWard.UnitTests;
@@ -41,7 +41,7 @@ public sealed class SimulatedUniversePageTests
                     ScheduleBegin = new DateTime(2026, 10, 1),
                 },
             },
-            LunarWard.App.Localization.AppStrings.Instance);
+            LunarWard.Localization.AppStrings.Instance);
 
         Assert.Equal("2026-10-01", item.DateText);
     }
@@ -62,7 +62,7 @@ public sealed class SimulatedUniversePageTests
             Miracles = [new() { Id = 1, Name = "奇物 1" }],
         };
 
-        var vm = new SimulatedUniverseItemViewModel(record, LunarWard.App.Localization.AppStrings.Instance);
+        var vm = new SimulatedUniverseItemViewModel(record, LunarWard.Localization.AppStrings.Instance);
 
         Assert.Equal("Ⅲ", vm.DifficultyText);
         Assert.Equal("12800", vm.ScoreText);

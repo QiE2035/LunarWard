@@ -36,7 +36,7 @@ for page in "${pages[@]}"; do
         XDG_CONFIG_HOME="$tmp/cfg" \
         XDG_DATA_HOME="$tmp/data" \
         XDG_CACHE_HOME="$tmp/cache" \
-        dotnet run --project src/LunarWard.App -c Debug -- "${args[@]}" >"$log" 2>&1; then
+        dotnet run --project src/LunarWard -c Debug -- "${args[@]}" >"$log" 2>&1; then
         echo "OK   $page"
     else
         echo "FAIL $page（日志：$log）" >&2

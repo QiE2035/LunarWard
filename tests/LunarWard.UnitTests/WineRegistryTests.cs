@@ -1,4 +1,4 @@
-using LunarWard.App.Services;
+using LunarWard.Services;
 using LunarWard.Platform;
 using Xunit;
 
@@ -130,7 +130,7 @@ public class WineRegistryRealWineTests
 
         using var temp = new TempDirectory();
         var paths = new XdgPaths(temp.Combine("c"), temp.Combine("d"), temp.Combine("k"));
-        using var log = new LunarWard.App.Services.LogService(paths);
+        using var log = new LunarWard.Services.LogService(paths);
         var registry = new WineRegistry(UnixProcessLauncher.Default, log);
         var prefix = temp.Combine("prefix");
         Directory.CreateDirectory(prefix);
@@ -159,7 +159,7 @@ public class WineRegistryRealWineTests
             await boot.WaitForExitAsync(cts.Token);
         }
 
-        var key = LunarWard.App.Services.GameSettingRegistry.RegistryKeyFor("genshin", "China")!;
+        var key = LunarWard.Services.GameSettingRegistry.RegistryKeyFor("genshin", "China")!;
         Assert.True(await registry.WriteDwordAsync(wine, prefix, key, "LunarWardTestFlag", 1920));
         Assert.Equal(1920, await registry.ReadDwordAsync(wine, prefix, key, "LunarWardTestFlag"));
     }

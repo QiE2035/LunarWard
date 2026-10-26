@@ -1,4 +1,4 @@
-using LunarWard.App.Services;
+using LunarWard.Services;
 using LunarWard.Core.HoYoPlay;
 using Xunit;
 
