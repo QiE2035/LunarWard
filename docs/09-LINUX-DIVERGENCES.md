@@ -806,3 +806,18 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 - 已知阻塞：`MainView.NavigateTo` 里 `GameSettingPage` 仍是旧 `Views/Starward/StarwardPage` 基类（`PageContext` 构造），`Frameworks.Frame` 只处理 `PageBase`；task-11 切壳后统一。
 
 > 构建基础设施（2026-10-26，dapper-db）：`src/LunarWard/Frameworks/WebView/SelfTest.Avalonia/XProbe.axaml` 是嵌套子工程，主工程会把它当 XAML 项，导致 `AXN0001`（找不到 `SelftestAvalonia.XProbe`）并使**整个程序集**的 `x:Name` 字段生成失败（表现为各页 CS0103）。已在 `src/LunarWard/LunarWard.csproj` 补 `<AvaloniaXaml Remove="Frameworks\WebView\SelfTest*\**" />`（此前只有 `AvaloniaResource Remove`，Avalonia 12 的 XAML 编译项是 `AvaloniaXaml`）。另外 `Features/Codec/ImageLoader.cs`、`PngCodec.cs` 的编译错误已顺手修：`ProcessResult`→`ProcessRunner.Result`（record 嵌套在同类 `ProcessRunner` 里）、`WritecHRM` 的 Span 捕获 lambda 改为显式传参（上游该函数由 Win2D 完成，无对应代码）。
+
+## 二十二、全量 XAML 重编译暴露的共性问题（2026-10-26，dapper-db / task-4 收尾）
+
+> **教训（对全组适用）**：`dotnet build` 是增量的，只有改动过的 `.axaml` 才会重新走 Avalonia 编译器；换别人文件/换机器后**不完全重新编译就看不到自己 XAML 的错误**。验收前必须做一次 `dotnet build src/LunarWard/LunarWard.csproj -t:Rebuild`（错误行前缀是 `Avalonia error AVLNxxxx`，不是 `error CS`，`grep ": error"` 会漏掉）。
+
+`Controls` + `Features/Screenshot` 组在 `-t:Rebuild` 下暴露并修掉 6 类问题（均已提交）：
+
+| # | 现象（全量编译才出现） | 根因 | 修法 |
+|---|---|---|---|
+| 1 | `AVLN2100: Cannot parse a compiled binding without an explicit x:DataType` | csproj 开了 `<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>`，`{Binding}` 必须有 `x:DataType` | 6 个移植窗口/页面根节点加 `x:CompileBindings="False"`（与本仓库 `GameLauncherPage.axaml`、`InstallGameDialog.axaml` 一致；避免给 code-behind 每个属性补 `x:DataType`） |
+| 2 | `AVLN2000: Unable to resolve ... property Name on type ScaleTransform` | Avalonia 12 不给 `TransformGroup` 里的变换生成 `x:Name` 字段 | XAML 去掉三个 `x:Name`；代码侧用 `(TransformGroup)Image.RenderTransform` 取 `Children[i]`（docs/09 §8.3 #15） |
+| 3 | `AVLN2000: Unable to resolve ... ExtendClientAreaChromeHints` | Avalonia 12 删除了该属性 | 删掉 `ExtendClientAreaChromeHints="NoChrome"`，保留 `ExtendClientAreaToDecorationsHint="True"` + `ExtendClientAreaTitleBarHeightHint="48"` |
+| 4 | `AVLN2000: Unable to resolve ... property Padding on type Grid` / `Background on type CachedImage` | `Grid` 无 `Padding`；`Image` 无 `Background`（上游 `ImageEx` 是 `TemplatedControl`） | `ScreenCaptureInfoWindow` 的 `Padding="10"` 移到外层 `Border`；两处缩略图底色把 `Background` 移到外层 `Border`（`Border.thumb-host` / `Border.tile`），`CachedImage` 保持纯 `Image` |
+| 5 | `AVLN2000: Unable to resolve ... AllowDrop / DragOver / Drop on ListBox` | 这三个是 `DragDrop` 的附着属性/事件 | 改 `DragDrop.AllowDrop="True"`、`DragDrop.DragOver="…"`、`DragDrop.Drop="…"` |
+| 6 | `AVLN3000: Unable to find public constructor for type ImageViewWindow2()` | Avalonia XAML 编译器要求 `x:Class` 窗口有公共无参构造；上游两个构造都带参 | 补 `public ImageViewWindow2() { InitializeComponent(); }`（仅满足 XAML 编译器，业务入口仍是两个带参构造） |
