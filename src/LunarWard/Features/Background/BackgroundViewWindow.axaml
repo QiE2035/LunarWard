@@ -9,7 +9,6 @@
         Width="1000" Height="640"
         WindowStartupLocation="CenterScreen"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="PreferSystemChrome"
         ExtendClientAreaTitleBarHeightHint="32">
     <Grid x:Name="RootGrid" RowDefinitions="32,*">
 

@@ -1,5 +1,5 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
         上游：Starward/Features/Background/AppBackgroundImageExStyle.xaml（5514 B）
@@ -51,4 +51,4 @@
         <Setter Property="VerticalAlignment" Value="Stretch" />
     </Style>
 
-</ResourceDictionary>
+</Styles>

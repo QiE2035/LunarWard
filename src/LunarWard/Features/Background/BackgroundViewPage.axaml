@@ -65,7 +65,7 @@
         </StackPanel>
 
         <!--  背景图库  -->
-        <ListBox x:Name="ListView_Images" Grid.Row="2" SelectionMode="None"
+        <ListBox x:Name="ListView_Images" Grid.Row="2"
                  Background="Transparent" BorderThickness="0"
                  SelectionChanged="OnImagesSelectionChanged"
                  DoubleTapped="OnImagesDoubleTapped"
@@ -80,17 +80,17 @@
                     <Border Width="208" Height="140" Margin="0,0,12,12" CornerRadius="8" ClipToBounds="True"
                             Background="{DynamicResource StarCardBackgroundBrush}"
                             BorderBrush="{DynamicResource StarCardStrokeBrush}" BorderThickness="1">
-                        <Panel>
-                            <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                            <TextBlock Text="&#xE714;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       IsVisible="{Binding IsVideo}" />
-                            <Border.ContextFlyout>
+                        <Border.ContextFlyout>
                                 <MenuFlyout>
                                     <MenuItem Header="{x:Static lang:Lang.Common_Open}" Click="OnItemOpenClick" />
                                     <MenuItem Header="{x:Static lang:Lang.Common_Copy}" Click="OnItemCopyClick" />
                                     <MenuItem Header="{x:Static lang:Lang.Common_Delete}" Click="OnItemDeleteClick" />
                                 </MenuFlyout>
                             </Border.ContextFlyout>
+                        <Panel>
+                            <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <TextBlock Text="&#xE714;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       IsVisible="{Binding IsVideo}" />
                             <Border VerticalAlignment="Bottom" Height="30" Background="#CC000000">
                                 <TextBlock Text="{Binding FileInfo}" FontSize="11" Margin="10,0"
                                            VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
