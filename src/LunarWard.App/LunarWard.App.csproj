@@ -26,6 +26,8 @@
     <PackageReference Include="Iciclecreek.Avalonia.Terminal" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Sinks.File" />
+    <!-- 区服 logo / 游戏图标等品牌素材，来自上游的内容包（contentFiles 拷进输出 Assets/） -->
+    <PackageReference Include="Starward.Assets" />
   </ItemGroup>
 
   <ItemGroup>

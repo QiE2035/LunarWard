@@ -57,10 +57,10 @@
 
 | 元素 | 位置 / 尺寸 |
 |---|---|
-| 当前游戏图标 | 内容区左上 (8,10)，40×40，圆角 8；未固定图标条时右下角叠 20×20 区服角标；指针进入滑出图标条，点击打开全屏选择层 |
-| 游戏图标条 | 顶部 60 高、Margin 56,0,0,0、Padding 6,0,12,0；40×40 图标横排、Spacing 0，每项右下角 20×20 区服角标 + `#60000000` 遮罩（当前/悬停 0）；收起时 `Translation -100`，只在 60px 高度内命中 |
+| 当前游戏图标 | 内容区左上 (8,10)，40×40，圆角 8；未固定图标条时右下角叠 20×20 区服 logo；指针进入滑出图标条，点击打开全屏选择层 |
+| 游戏图标条 | 顶部 60 高、Margin 56,0,0,0、Padding 6,0,12,0；40×40 图标横排、Spacing 0，每项右下角 20×20 区服 logo + `#60000000` 遮罩（当前/悬停 0）；收起时 `Translation -100`，只在 60px 高度内命中 |
 | 游戏选择层 | 全屏 `#80000000`、Padding 68,80,0,0；**每款游戏一张卡**（192×108、`#40000000`、圆角 8、UniformToFill 缩略图），区服收在卡片内；点卡片才弹区服 Flyout（Bottom/Transient），单区服直接切换；悬停显示「选择游戏服务器」；点空白 / ESC / 右上关闭 |
-| 已安装游戏 | 卡片下方 Expander（MinWidth 820、`#0DFFFFFF` 圆角 8）：占用大小 + 硬链接节省 + 自动查找 + 刷新，展开为每区服一行（图标/游戏名/区服角标/区服名/容量/路径） |
+| 已安装游戏 | 卡片下方 Expander（MinWidth 820、`#0DFFFFFF` 圆角 8）：占用大小 + 硬链接节省 + 自动查找 + 刷新，展开为每区服一行（图标/游戏名/区服 logo/区服名/容量/路径） |
 | 公告卡 | 左 60、底 40，380×304，圆角 8，`CustomAcrylic`；上半 Banner 176 高，下半 Pivot 124 高 |
 | 公告卡 Banner | `UniformToFill`，圆角 8；悬停右下角显示 `1/3` 计数；点击打开链接 |
 | 公告卡 Pivot | 表头 `活动 / 公告 / 资讯`，16px Bold，header 高 36，左右 margin 12，选中下划线 3px 圆角；右侧公告铃铛按钮（E789）带红点 |
@@ -73,6 +73,18 @@
 | 账号切换 | 右下，开始按钮上方 100px，右侧 40px；头像 40×40 圆角 4 + 悬停列表 |
 | 背景切换条 | 悬停底部 60px 高渐变区时出现：PipsPager 圆点 + 图库/复制/另存为/播放按钮 |
 | 公告/Update Toast | 底部居中，宽 ≤600，距底 72 |
+
+素材来源（与上游同一条管线）：
+
+- **品牌素材**（游戏方形图标、区服 logo `gameicon_hyperion.png` / `gameicon_hoyolab.png` /
+  `gameicon_bilibili.png`、字体等）不在 Starward 源码仓库里，而是仓库 `large-resource`
+  分支打包成的 NuGet 内容包 `Starward.Assets`（`contentFiles` 全部 `copyToOutput=true`，
+  还原后落进输出目录 `Assets/`，源码用 `ms-appx:///Assets/Image/...` 引用）。LunarWard 在
+  `Directory.Packages.props` 引用同一个包（0.6.5），路径映射见 `Services/GameAssets.cs`；
+  图片加载失败时区服角标退回「国/际/B」文字占位。
+- **游戏美术**（卡片 192×108 缩略图、Logo、启动器背景）由 HoYoPlay `getGames` 的
+  `display.icon/thumbnail/logo/background` 在运行时拉取，缓存到 `~/.cache/lunarward`，
+  离线时用缓存（`Services/StarwardAssets.cs`）。
 
 ## 3. 视觉 token
 

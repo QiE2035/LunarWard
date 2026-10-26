@@ -1,6 +1,7 @@
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
+using LunarWard.App.Services;
 using LunarWard.Games;
 
 namespace LunarWard.App.ViewModels.Starward;
@@ -134,9 +135,9 @@ public sealed partial class GameServerItem : ObservableObject
         : Edition == GameEdition.Global ? "国际服" : "官方国服";
 
     /// <summary>
-    /// 24×24 区服角标的文字。上游用打包的 <c>gameicon_hyperion.png</c> /
-    /// <c>gameicon_hoyolab.png</c> / <c>gameicon_bilibili.png</c>；LunarWard 没有这些素材
-    /// （docs/08「不伪造素材」），用同尺寸文字角标占位。
+    /// 区服角标的文字兜底：上游用打包的 <c>gameicon_hyperion.png</c> /
+    /// <c>gameicon_hoyolab.png</c> / <c>gameicon_bilibili.png</c>（见 <see cref="BadgeImage"/>），
+    /// 图片还没加载完时先显示同尺寸文字角标。
     /// </summary>
     public string BadgeText => Channel == GameChannel.Bilibili
         ? "B"
@@ -171,12 +172,27 @@ public sealed partial class GameServerItem : ObservableObject
     private Bitmap? _icon;
 
     public bool HasIcon => Icon is not null;
+
+
+    /// <summary>
+    /// 区服 logo（24×24 flyout / 已安装列表、20×20 图标条与左上角角标），来自
+    /// <c>Starward.Assets</c> 内容包的 <c>Assets/Image/gameicon_*.png</c>。
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasBadgeImage))]
+    private Bitmap? _badgeImage;
+
+    public bool HasBadgeImage => BadgeImage is not null;
+
+
+    /// <summary>区服 logo 的文件路径（<see cref="GameAssets.ServerIconPath"/>）。</summary>
+    public string BadgeImagePath => GameAssets.ServerIconPath(Edition, Channel);
 }
 
 
 /// <summary>「已安装游戏实际占用大小」的一行（图标 / 游戏名 / 区服 / 容量 / 路径）。</summary>
-public sealed class InstalledGameItem(string gameName, string serverName, string badgeText, IBrush badgeBrush,
-                                     Bitmap? icon, string sizeText, string path)
+public sealed partial class InstalledGameItem(string gameName, string serverName, string badgeText, IBrush badgeBrush,
+                                              Bitmap? icon, string sizeText, string path) : ObservableObject
 {
     public string GameName { get; } = gameName;
 
@@ -193,6 +209,13 @@ public sealed class InstalledGameItem(string gameName, string serverName, string
     public string Path { get; } = path;
 
     public bool HasIcon => Icon is not null;
+
+    /// <summary>区服 logo（24×24，来自 <c>Starward.Assets</c>；加载前显示 <see cref="BadgeText"/>）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasBadgeImage))]
+    private Bitmap? _badgeImage;
+
+    public bool HasBadgeImage => BadgeImage is not null;
 
     public string ToolTip => $"{GameName} · {ServerName}\n{Path}";
 }

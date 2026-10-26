@@ -154,12 +154,18 @@
                                       BorderThickness="0"
                                       Click="OnGameServerClick">
                                 <Grid ColumnSpacing="12" ColumnDefinitions="Auto,*,Auto">
+                                  <!-- 区服 logo 来自 Starward.Assets 内容包；加载前退回文字角标 -->
                                   <Border Width="24" Height="24" CornerRadius="4" ClipToBounds="True"
                                           Background="{Binding BadgeBrush}">
-                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               FontSize="11" FontWeight="SemiBold"
-                                               Foreground="White"
-                                               Text="{Binding BadgeText}" />
+                                    <Panel>
+                                      <Image Source="{Binding BadgeImage}" Stretch="UniformToFill"
+                                             IsVisible="{Binding HasBadgeImage}" />
+                                      <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                 FontSize="11" FontWeight="SemiBold"
+                                                 Foreground="White"
+                                                 IsVisible="{Binding !HasBadgeImage}"
+                                                 Text="{Binding BadgeText}" />
+                                    </Panel>
                                   </Border>
                                   <TextBlock Grid.Column="1"
                                              HorizontalAlignment="Left" VerticalAlignment="Center"
@@ -310,9 +316,16 @@
                                    FontSize="14" Text="{Binding GameName}" />
                         <!-- 24×24 区服角标（源码 ServerIcon） -->
                         <Border Grid.Column="2" Width="24" Height="24" CornerRadius="4"
-                                VerticalAlignment="Center" Background="{Binding BadgeBrush}">
-                          <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                                     FontSize="11" Foreground="White" Text="{Binding BadgeText}" />
+                                VerticalAlignment="Center" ClipToBounds="True"
+                                Background="{Binding BadgeBrush}">
+                          <Panel>
+                            <Image Source="{Binding BadgeImage}" Stretch="UniformToFill"
+                                   IsVisible="{Binding HasBadgeImage}" />
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontSize="11" Foreground="White"
+                                       IsVisible="{Binding !HasBadgeImage}"
+                                       Text="{Binding BadgeText}" />
+                          </Panel>
                         </Border>
                         <!-- 区服名 MinWidth 100 -->
                         <TextBlock Grid.Column="3" MinWidth="100" VerticalAlignment="Center"
@@ -408,12 +421,17 @@
             <!-- 20×20 区服角标（源码 ServerIcon，未固定图标条时显示） -->
             <Border Width="20" Height="20"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                    CornerRadius="4"
+                    CornerRadius="4" ClipToBounds="True"
                     Background="{Binding CurrentServerBadgeBrush}"
                     IsVisible="{Binding ShowCurrentServerBadge}">
-              <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                         FontSize="10" FontWeight="SemiBold" Foreground="White"
-                         Text="{Binding CurrentServerBadgeText}" />
+              <Panel>
+                <Image Source="{Binding CurrentServerBadgeImage}" Stretch="UniformToFill"
+                       IsVisible="{Binding HasCurrentServerBadgeImage}" />
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="10" FontWeight="SemiBold" Foreground="White"
+                           IsVisible="{Binding !HasCurrentServerBadgeImage}"
+                           Text="{Binding CurrentServerBadgeText}" />
+              </Panel>
             </Border>
           </Panel>
         </Button>
@@ -452,11 +470,16 @@
                     <!-- 右下角 20×20 区服角标（图标条条目始终显示） -->
                     <Border Width="20" Height="20"
                             HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                            CornerRadius="4"
+                            CornerRadius="4" ClipToBounds="True"
                             Background="{Binding BadgeBrush}">
-                      <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                                 FontSize="10" FontWeight="SemiBold" Foreground="White"
-                                 Text="{Binding BadgeText}" />
+                      <Panel>
+                        <Image Source="{Binding BadgeImage}" Stretch="UniformToFill"
+                               IsVisible="{Binding HasBadgeImage}" />
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontSize="10" FontWeight="SemiBold" Foreground="White"
+                                   IsVisible="{Binding !HasBadgeImage}"
+                                   Text="{Binding BadgeText}" />
+                      </Panel>
                     </Border>
                     <Border Classes="server-mask" Background="#60000000" CornerRadius="8" />
                   </Panel>
