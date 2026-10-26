@@ -50,6 +50,28 @@ public partial class GameLauncherPage : StarwardPage
             _viewModel.ShowBackgroundBar = true;
         }
 
+        if (CaptureMode.PauseVideo)
+        {
+            DispatcherTimer.RunOnce(
+                () => _viewModel.ToggleVideoCommand.Execute(null),
+                TimeSpan.FromMilliseconds(4000));
+        }
+
+        if (CaptureMode.SwitchTest >= 0)
+        {
+            DispatcherTimer.RunOnce(
+                () => _viewModel.SelectBackgroundCommand.Execute(CaptureMode.SwitchTest),
+                TimeSpan.FromMilliseconds(3000));
+        }
+
+        if (CaptureMode.GalleryDialog)
+        {
+            // 自检：等背景目录加载完再开图库浮层，否则列表是空的。
+            DispatcherTimer.RunOnce(
+                () => _viewModel.OpenBackgroundGalleryCommand.Execute(null),
+                TimeSpan.FromMilliseconds(2500));
+        }
+
         if (CaptureMode.ShowDragOverlay)
         {
             _viewModel.IsDragOverlayVisible = true;

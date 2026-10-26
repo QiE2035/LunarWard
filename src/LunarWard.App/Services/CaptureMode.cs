@@ -195,6 +195,15 @@ internal static class CaptureMode
     /// </remarks>
     public static bool LauncherSettingOverlay { get; set; }
 
+    /// <summary>自检：打开启动页的「背景图库」浮层（<c>--gallery-dialog</c>）。</summary>
+    public static bool GalleryDialog { get; set; }
+
+    /// <summary>自检：背景加载完后切到第 N 张（<c>--switch-test N</c>），用来验证切换链路。</summary>
+    public static int SwitchTest { get; set; } = -1;
+
+    /// <summary>自检：视频背景起播 4s 后触发一次「暂停」（<c>--pause-video</c>），用于核对暂停态海报。</summary>
+    public static bool PauseVideo { get; set; }
+
     /// <summary>截图页自检：把图库换成临时目录里的样例图（不碰用户游戏目录）。</summary>
     public static bool ScreenshotSeed { get; set; }
 
