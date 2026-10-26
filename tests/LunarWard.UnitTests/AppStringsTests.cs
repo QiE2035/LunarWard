@@ -130,11 +130,11 @@ public class AppStringsTests
     }
 
     /// <summary>
-    /// 两个字典内部都不允许重复键（审计 CO-01）。Dictionary 的索引器初始化会静默覆盖，
-    /// 重复时后写的那份永远不会生效，运行时也看不出问题——只能解析源码。
+    /// 文案已经迁到 .resx（审计 CO-01 的重复键检查搬到 <c>AppStringsResxTests.ResxFiles_HaveNoDuplicateNames</c>）。
+    /// 这里守住另一半：代码里不许再出现手写字典，否则 resx 与 C# 会变成两份真相。
     /// </summary>
     [Fact]
-    public void Source_HasNoDuplicateKeysInEitherDictionary()
+    public void Source_HasNoHandWrittenStringTables()
     {
         var root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Join(root, "LunarWard.slnx")))
@@ -142,32 +142,11 @@ public class AppStringsTests
             root = Directory.GetParent(root)?.FullName
                 ?? throw new InvalidOperationException("找不到仓库根目录");
         }
-        var lines = File.ReadAllLines(Path.Join(root, "src", "LunarWard.App", "Localization", "AppStrings.cs"));
-        var spans = new List<(int Start, int End)>();
-        var starts = lines.Select((line, index) => (line, index))
-            .Where(x => x.line.Contains("Dictionary<string, string>", StringComparison.Ordinal))
-            .Select(x => x.index).ToList();
-        for (var i = 0; i < starts.Count; i++)
-        {
-            spans.Add((starts[i], i + 1 < starts.Count ? starts[i + 1] : lines.Length));
-        }
 
-        var keyPattern = new System.Text.RegularExpressions.Regex("^\\s*\\[\"([^\"]+)\"\\]\\s*=");
-        var duplicates = new List<string>();
-        foreach (var (start, end) in spans)
-        {
-            var seen = new HashSet<string>(StringComparer.Ordinal);
-            for (var i = start; i < end; i++)
-            {
-                var match = keyPattern.Match(lines[i]);
-                if (match.Success && !seen.Add(match.Groups[1].Value))
-                {
-                    duplicates.Add($"{match.Groups[1].Value}（第 {i + 1} 行）");
-                }
-            }
-        }
+        var source = File.ReadAllText(Path.Join(root, "src", "LunarWard.App", "Localization", "AppStrings.cs"));
 
-        Assert.True(duplicates.Count == 0, "发现重复键：" + string.Join(", ", duplicates));
+        Assert.DoesNotContain("Dictionary<string, string>", source, StringComparison.Ordinal);
+        Assert.Contains("LunarWard.App.Localization.Resources", source, StringComparison.Ordinal);
     }
 
 }
