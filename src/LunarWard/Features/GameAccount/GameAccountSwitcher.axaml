@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:LunarWard.Features.GameAccount"
+             xmlns:lang="using:LunarWard.Language"
+             x:Class="LunarWard.Features.GameAccount.GameAccountSwitcher"
+             x:DataType="local:GameAccountSwitcher">
+  <!-- 移植自 Starward/src/Starward/Features/GameAccount/GameAccountSwitcher.xaml -->
+  <UserControl.Resources>
+    <local:GameAccountUidStringConverter x:Key="GameAccountUidStringConverter" />
+  </UserControl.Resources>
+
+  <StackPanel Name="StackPanel_Account"
+              Height="40"
+              Orientation="Horizontal"
+              Spacing="16">
+
+    <Border Background="{DynamicResource StarAcrylicBrush}"
+            CornerRadius="20"
+            BoxShadow="0 0 16 0 #33000000">
+      <ComboBox Name="ComboBox_GameAccount"
+                Height="40"
+                MinWidth="200"
+                BorderThickness="0"
+                ItemsSource="{Binding GameAccountList}"
+                SelectedItem="{Binding SelectGameAccount, Mode=TwoWay}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="local:GameAccount">
+            <TextBlock Padding="8,0,0,0" VerticalAlignment="Center">
+              <Run Text="{Binding Name}" />
+              <Run Text=" " />
+              <Run FontSize="12"
+                   Foreground="{DynamicResource StarTextSecondary}"
+                   Text="{Binding Uid, Converter={StaticResource GameAccountUidStringConverter}}" />
+            </TextBlock>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </Border>
+
+    <Border Background="{DynamicResource StarAcrylicBrush}"
+            CornerRadius="20"
+            BoxShadow="0 0 16 0 #33000000">
+      <Grid ColumnDefinitions="*,Auto">
+        <Button Height="40"
+                Command="{Binding ChangeGameAccountCommand}"
+                CornerRadius="20,0,0,20"
+                IsEnabled="{Binding CanChangeGameAccount}">
+          <TextBlock Text="{x:Static lang:Lang.LauncherPage_SwitchAccount}" />
+        </Button>
+
+        <Button Grid.Column="1"
+                Width="40"
+                Height="40"
+                CornerRadius="0,20,20,0"
+                IsEnabled="{Binding SelectGameAccount, Converter={StaticResource ObjectToBoolConverter}}">
+          <TextBlock Classes="icon" FontSize="14" Text="&#xE70F;" />
+          <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedRight">
+              <StackPanel MinWidth="200" MaxWidth="280" Spacing="4">
+                <TextBlock Margin="0,4"
+                           FontWeight="SemiBold"
+                           Text="{x:Static lang:Lang.LauncherPage_AccountInformation}" />
+
+                <TextBlock Text="{x:Static lang:Lang.LauncherPage_Nickname}" />
+                <TextBox Name="TextBox_Nickname"
+                         IsSpellCheckEnabled="False"
+                         Text="{Binding SelectGameAccount.Name, Mode=TwoWay}" />
+
+                <TextBlock Text="Uid" />
+                <AutoCompleteBox Name="AutoSuggestBox_Uid"
+                                 GotFocus="AutoSuggestBox_Uid_GotFocus"
+                                 TextInput="AutoSuggestBox_Uid_TextInput"
+                                 MinimumPrefixLength="0"
+                                 IsTextCompletionEnabled="True"
+                                 Text="{Binding SelectGameAccount.Uid, Converter={StaticResource GameAccountUidStringConverter}, Mode=TwoWay}" />
+
+                <TextBlock Foreground="{DynamicResource StarTextSecondary}"
+                           Text="{x:Static lang:Lang.GameAccountSwitcher_TheCurrentlyLoggedInAccountIsNotSaved}"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding SelectGameAccount.IsSaved, Converter={StaticResource BoolReversed}}" />
+
+                <Border Background="{DynamicResource StarAcrylicBrush}" CornerRadius="20">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <Button Height="40"
+                            MinWidth="100"
+                            Command="{Binding SaveGameAccountCommand}"
+                            CornerRadius="20,0,0,20">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Name="FontIcon_SaveGameAccount" Classes="icon" FontSize="16" Text="&#xE74E;" />
+                        <TextBlock Text="{x:Static lang:Lang.Common_Save}" />
+                      </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="1"
+                            Height="40"
+                            CornerRadius="0,20,20,0">
+                      <TextBlock Text="{x:Static lang:Lang.Common_Delete}" />
+                      <Button.Flyout>
+                        <MenuFlyout>
+                          <MenuItem Command="{Binding DeleteGameAccountCommand}"
+                                    Header="{x:Static lang:Lang.LauncherPage_ConfirmDelete}" />
+                        </MenuFlyout>
+                      </Button.Flyout>
+                    </Button>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+      </Grid>
+    </Border>
+  </StackPanel>
+</UserControl>

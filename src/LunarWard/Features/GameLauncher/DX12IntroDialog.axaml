@@ -1,0 +1,55 @@
+<controls:StarwardContentDialog xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                xmlns:controls="using:LunarWard.Views.Starward.Controls"
+                                xmlns:lang="using:LunarWard.Language"
+                                xmlns:local="using:LunarWard.Features.GameLauncher"
+                                x:Class="LunarWard.Features.GameLauncher.DX12IntroDialog"
+                                x:DataType="local:DX12IntroDialog">
+  <!-- 移植自 Starward/src/Starward/Features/GameLauncher/DX12IntroDialog.xaml
+       ContentDialog → StarwardContentDialog，CachedImage 待 task-4 落地后切换（先用 Image）。 -->
+  <Grid MaxWidth="680" Padding="24">
+
+    <StackPanel Spacing="20">
+      <TextBlock FontSize="20"
+                 FontWeight="Bold"
+                 Text="{x:Static lang:Lang.DX12IntroDialog_DX12EffectDetails}" />
+
+      <StackPanel HorizontalAlignment="Center"
+                  Orientation="Horizontal"
+                  Spacing="20">
+        <Border Width="300" Height="225" CornerRadius="16" ClipToBounds="True">
+          <Grid>
+            <!-- TODO(task-4)：待 Controls/CachedImage 落地后换成 sc:CachedImage -->
+            <Image Stretch="UniformToFill" Source="{Binding GameDXConfig.DX11PreviewImage, Mode=OneWay}" />
+            <Border Padding="0,4,0,4"
+                    VerticalAlignment="Bottom"
+                    Background="#66000000">
+              <TextBlock HorizontalAlignment="Center"
+                         FontWeight="Bold"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="{x:Static lang:Lang.DX12IntroDialog_RegularGraphics}" />
+            </Border>
+          </Grid>
+        </Border>
+        <Border Width="300" Height="225" CornerRadius="16" ClipToBounds="True">
+          <Grid>
+            <!-- TODO(task-4)：待 Controls/CachedImage 落地后换成 sc:CachedImage -->
+            <Image Stretch="UniformToFill" Source="{Binding GameDXConfig.DX12PreviewImage, Mode=OneWay}" />
+            <Border Padding="0,4,0,4"
+                    VerticalAlignment="Bottom"
+                    Background="#66000000">
+              <TextBlock HorizontalAlignment="Center"
+                         FontWeight="Bold"
+                         Foreground="{DynamicResource StarTextSecondary}"
+                         Text="{x:Static lang:Lang.DX12IntroDialog_DX12EnhancedGraphics}" />
+            </Border>
+          </Grid>
+        </Border>
+      </StackPanel>
+
+      <TextBlock FontSize="16"
+                 Text="{Binding GameDXConfig.I18nIntro, Mode=OneWay}"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </Grid>
+</controls:StarwardContentDialog>

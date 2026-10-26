@@ -1,7 +1,7 @@
 using Dapper;
 using LunarWard.Core;
 using LunarWard.Games;
-using LunarWard.Launch.Database;
+using LunarWard.Features.Database;
 using Microsoft.Extensions.Logging;
 
 namespace LunarWard.Features.GameAccount;
@@ -25,13 +25,20 @@ public class GameAccountService
 
     private readonly ILogger<GameAccountService> _logger;
 
-    private readonly WineAccountService _wine;
+    private readonly string? _prefix;
 
 
-    public GameAccountService(ILogger<GameAccountService> logger, string prefix)
+    /// <summary>
+    /// 平台替换：Windows 下只有一份注册表，不必传路径；Linux 下每个档案一个 prefix，
+    /// 由 <see cref="Features.GameLauncher.GamePrefixContext"/> 提供当前值（DI 构造时无需参数）。
+    /// </summary>
+    private WineAccountService Wine => new(_prefix ?? Features.GameLauncher.GamePrefixContext.CurrentPrefix!);
+
+
+    public GameAccountService(ILogger<GameAccountService> logger, string? prefix = null)
     {
         _logger = logger;
-        _wine = new WineAccountService(prefix);
+        _prefix = prefix;
     }
 
 
@@ -40,7 +47,7 @@ public class GameAccountService
     {
         // 上游：key = biz.GetGameRegistryKey(); keyName = cn ? MIHOYOSDK_ADL_PROD_CN_h3123967166 : MIHOYOSDK_ADL_PROD_OVERSEA_h1158948810
         // 平台替换：WineAccountService.Read 按 GameBiz 选 section + key 并读取 hex 值
-        if (_wine.Read(biz) is not { } snapshot)
+        if (Wine.Read(biz) is not { } snapshot)
         {
             return null;
         }
@@ -134,7 +141,7 @@ public class GameAccountService
             Value = account.Value,
             Time = account.Time,
         };
-        if (_wine.Write(snapshot) is { } error)
+        if (Wine.Write(snapshot) is { } error)
         {
             _logger.LogWarning("Change account {name} ({biz}) failed: {error}", account.Name, account.GameBiz, error);
             return;

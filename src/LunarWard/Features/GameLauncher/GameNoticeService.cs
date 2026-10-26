@@ -2,7 +2,7 @@ using Dapper;
 using LunarWard.Core;
 using LunarWard.Core.GameNotice;
 using LunarWard.Games;
-using LunarWard.Launch.Database;
+using LunarWard.Features.Database;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Threading;
