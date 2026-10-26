@@ -25,12 +25,10 @@ namespace LunarWard.Features.GameSetting;
 /// 平台替换：WinRT <c>DisplayInformation</c>（HDR 探测）/ <c>DisplayArea</c>（屏幕分辨率）
 /// → Avalonia <c>Screens</c>，HDR 探测在 Linux 下无对应 API，暂不置警示（见 docs/09）。
 /// <para>
-/// 宿主适配：上游继承 <c>Starward.Frameworks.PageBase</c>（WinUI Page，构造后由 Frame 调
-/// <c>OnNavigatedTo(GameId)</c>）。本仓库宿主 <c>StarwardShell</c> 只接受
-/// <c>StarwardPage</c>（ctor <c>PageContext</c> + 无参 <c>OnNavigatedTo</c>），故改为
-/// <c>StarwardPage</c> 子类；<see cref="CurrentGameId"/> / <see cref="CurrentGameBiz"/>
-/// 由 <see cref="PageContext.Profile"/> 经 <see cref="LauncherService.BuildGameInfo"/> 推导，
-/// 语义与上游 PageBase 一致（见 docs/09-LINUX-DIVERGENCES.md §十一）。
+/// 宿主适配：与上游一致地继承 <c>Frameworks.PageBase</c>，页面<b>无参可构造</b>，
+/// <c>CurrentGameId</c> / <c>CurrentGameBiz</c> 由宿主在导航时经
+/// <see cref="PageBase.OnNavigatedTo(object?)"/> 注入（Avalonia 无 Frame/NavigationEventArgs，
+/// 见 <c>docs/09-LINUX-DIVERGENCES.md</c>）。
 /// </para>
 /// </summary>
 public sealed partial class GameSettingPage : Frameworks.PageBase, INotifyPropertyChanged
