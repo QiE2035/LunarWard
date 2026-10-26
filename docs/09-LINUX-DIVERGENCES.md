@@ -247,3 +247,14 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | 25 | `GenshinHDRLuminanceSettingDialog` | Win2D `CanvasSwapChainPanel`（R16G16B16A16Float swapchain + `LinearTransferEffect` 线性增益，`.jxr` HDR 贴图） | 摩拉预览用 `Image(Sign.png)` + `MoraPreviewOpacity`；场景区为占位 Border（`.jxr` 无法解码）；`HDREnabled` 恒 false（自动亮度按钮禁用） | Avalonia 无 Win2D/HDR swapchain，Skia 不解 `.jxr` | HDR 与 Wine/DXVK 同属本轮不做范围；后续可用 Skia 色彩矩阵近似 |
 | 26 | 全部 | `x:Bind` / `x:DefaultBindMode` / `ThemeResource` | `{Binding}`（`Mode=TwoWay` 显式）/ `DynamicResource`（`StarTextSecondary`、`StarOverlayAcrylicBrush`、`StarCardBackgroundBrush`、`StarCautionBrush`） | 语法不同；资源键见 `Styles/Starward.axaml` |
 | 27 | 全部 | `Visibility` 绑定（`ObjectToVisibilityConverter`、`BoolToVisibilityReversedConverter`） | `IsVisible` + `BoolReversed`/`ObjectToBool` 转换器，或 `{Binding !X}` | Avalonia `IsVisible` 直接吃 bool |
+
+### 7.3 未移植 / 待后续（同节内追加）
+
+| 上游文件 | 状态 | 原因 | 待办 |
+|---|---|---|---|
+| `Features/GameInstall/GameInstallService.cs` | **不移植** | 上游是 gRPC **客户端**（`RpcService` + `GameInstaller.GameInstallerClient` + `Starward.RPC.GameInstall.*` 契约 + 独立安装进程），本仓库 RPC 层不在范围内，安装逻辑已由 `LunarWard.Installer`（进程内 `GameInstallService`/`GameInstallController`，同名字段 `GameInstallContext`）承载 | 若将来引入 RPC 层，按上游文件原样落位；否则把 `LunarWard.Installer` 的 `GameInstallService` 视作等价实现 |
+| `Features/GameInstall/GameInstallTaskStartedMessage.cs` | 已移植 | `InstallTask` 类型改指 `LunarWard.Installer.GameInstallContext`（字段集合与 RPC DTO 相同） | — |
+| `Features/GameInstall/{InstallGameDialog,PreDownloadButton,PreDownloadDialog}` | 待移植 | 依赖上面的 RPC 任务模型与既有 `Views/Starward/` 旧实现（本轮不删旧壳） | 待安装层改造后逐行移植 |
+| `Features/GameSelector/NoAnimationImageExStyle.xaml` | **不移植** | 目标类型 `Scighost.WinUI.ImageEx` 是 WinUI 专有控件（占位图/淡入状态机）；Avalonia 侧对应物是 `Image`/`Controls/CachedImage`（task-4） | CachedImage 落地后可用 Avalonia `Transitions` 复刻淡入效果，再决定是否提供同名样式 |
+| `Features/GameSelector/GameSelector.xaml(.cs)` | 待移植 | 37KB+28KB，含 Win32 注册表、`GetFileInformationByHandleEx` 硬链接体积统计、XamlRoot 拖拽区、`FlyoutBase` 附加弹出层 | 需先把 `AutoSearchInstalledGames` 的注册表读取换成 `WineRegistry`、硬链接识别换成 `(st_dev, st_ino)` |
+| `Features/GameLauncher/{GameLauncherPage.xaml(.cs),GameLauncherSettingDialog.xaml(.cs),CompactCheckBoxStyle.xaml}` | 待移植 | 本轮已有 `Views/Starward/` 旧实现（Lead 之后统一切壳）；`CompactCheckBoxStyle.xaml` 是 WinUI CheckBox 控件模板，需按 Avalonia 主题重画 | 切壳时逐行对齐；模板类样式单独评审 |
