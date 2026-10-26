@@ -1,0 +1,228 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:cc="using:LunarWard.Controls"
+        xmlns:lang="using:LunarWard.Language"
+        xmlns:local="using:LunarWard.Features.Gacha.UIGF"
+        xmlns:sf="using:LunarWard.Frameworks"
+        x:Class="LunarWard.Features.Gacha.UIGF.UIGF4GachaWindow"
+        Title="GachaImportAndExportWindow"
+        Height="600"
+        Width="1000">
+
+  <!--
+    上游 Starward/Features/Gacha/UIGF/UIGF4GachaWindow.xaml 的逐结构移植。
+    WinUI Pivot -> Avalonia TabControl（保留可见的 36 高、16 号粗体表头，见 docs/09）；
+    ListView(SelectionMode=Multiple) -> ListBox；NumberBox -> NumericUpDown。
+  -->
+
+  <Window.Styles>
+    <Style Selector="TabControl.pivot /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
+      <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="TabItem.pivotHeader">
+      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="Height" Value="36" />
+      <Setter Property="Margin" Value="12,0,12,0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+  </Window.Styles>
+
+  <Grid Name="RootGrid" Loaded="RootGrid_Loaded" Unloaded="RootGrid_Unloaded" RowDefinitions="32,*">
+
+    <TextBlock Margin="12,0,0,0"
+               VerticalAlignment="Center"
+               Foreground="{StaticResource StarTextSecondary}">
+      <Run Text="{x:Static lang:Lang.ToolboxSetting_GachaRecordsImportExport}" />
+      <Run Text="(UIGF v4.2)" />
+    </TextBlock>
+
+    <TabControl Name="Pivot_ExportImport"
+                Grid.Row="1"
+                Classes="pivot"
+                Padding="0">
+
+      <!--  导出  -->
+      <TabItem Classes="pivotHeader" Header="{x:Static lang:Lang.GachaImportAndExportWindow_Export}">
+        <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+          <StackPanel Margin="12,0,0,0" Orientation="Horizontal" Spacing="12">
+            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.GachaImportAndExportWindow_SelectTheGachaRecordsToExport}" />
+            <Button Name="Button_Export"
+                    Command="{Binding ExportCommand}"
+                    Content="{x:Static lang:Lang.GachaImportAndExportWindow_Export}" />
+            <TextBlock VerticalAlignment="Center"
+                       Foreground="{StaticResource StarErrorBrush}"
+                       Text="{Binding ExportError}" />
+          </StackPanel>
+
+          <TextBlock Grid.Row="1"
+                     Margin="296,8,0,0"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{x:Static lang:Lang.GachaImportAndExportWindow_TheLastGachaPull}" />
+
+          <StackPanel Grid.Row="2" Margin="92,0,0,0" Orientation="Horizontal" Spacing="12">
+            <TextBlock Width="100"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="Uid" />
+            <TextBlock Width="80"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.GachaImportAndExportWindow_Count}" />
+            <TextBlock Width="160"
+                       VerticalAlignment="Bottom"
+                       FontSize="12"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.GachaImportAndExportWindow_TimeServerTimeZone}" />
+            <TextBlock Width="200"
+                       VerticalAlignment="Bottom"
+                       FontSize="12"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.GachaImportAndExportWindow_Name}" />
+          </StackPanel>
+
+          <ListBox Name="ListView_Export"
+                   Grid.Row="3"
+                   Margin="0,8,0,0"
+                   ItemsSource="{Binding GachaExportArchives}"
+                   SelectionMode="Multiple">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="local:GachaUidArchiveDisplay">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <cc:CachedImage Width="36" Height="36" Source="{Binding GameIcon}" />
+                  <TextBlock Width="100" VerticalAlignment="Center" Text="{Binding Uid}" />
+                  <TextBlock Width="80" VerticalAlignment="Center" Text="{Binding Count}" />
+                  <TextBlock Width="160"
+                             VerticalAlignment="Center"
+                             Text="{Binding LastItemTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                  <TextBlock Width="200" VerticalAlignment="Center" Text="{Binding LastItemName}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+        </Grid>
+      </TabItem>
+
+      <!--  导入  -->
+      <TabItem Classes="pivotHeader" Header="{x:Static lang:Lang.GachaImportAndExportWindow_Import}">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+
+          <StackPanel Margin="12,0,0,0" Orientation="Horizontal" Spacing="12">
+            <TextBlock VerticalAlignment="Center" Text="{x:Static lang:Lang.GachaImportAndExportWindow_SelectTheFileToImport}" />
+            <Button Name="Button_SelectFile"
+                    Command="{Binding SelectFileCommand}"
+                    Content="{x:Static lang:Lang.GachaImportAndExportWindow_SelectFile}" />
+            <Button Name="Button_Import"
+                    Command="{Binding ImportCommand}"
+                    Content="{x:Static lang:Lang.GachaImportAndExportWindow_Import}" />
+            <TextBlock VerticalAlignment="Center"
+                       Foreground="{StaticResource StarErrorBrush}"
+                       Text="{Binding ImportError}" />
+          </StackPanel>
+
+          <TextBlock Grid.Row="1"
+                     Margin="12,8,0,0"
+                     Foreground="{StaticResource StarCautionBrush}"
+                     Text="{x:Static lang:Lang.GachaImportAndExportWindow_TimeZoneOffsetWarning}"
+                     TextWrapping="Wrap" />
+
+          <TextBlock Grid.Row="2"
+                     Margin="296,8,0,0"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{x:Static lang:Lang.GachaImportAndExportWindow_TheLastGachaPull}" />
+
+          <StackPanel Grid.Row="3" Margin="92,0,0,0" Orientation="Horizontal" Spacing="12">
+            <TextBlock Width="100"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="Uid" />
+            <TextBlock Width="80"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.GachaImportAndExportWindow_Count}" />
+            <TextBlock Width="160"
+                       VerticalAlignment="Bottom"
+                       FontSize="12"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.GachaImportAndExportWindow_TimeServerTimeZone}" />
+            <TextBlock Width="200"
+                       VerticalAlignment="Bottom"
+                       FontSize="12"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.GachaImportAndExportWindow_Name}" />
+            <TextBlock Width="160"
+                       VerticalAlignment="Bottom"
+                       FontSize="12"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.GachaImportAndExportWindow_TimeZoneOffset}" />
+            <TextBlock Width="160"
+                       VerticalAlignment="Bottom"
+                       FontSize="12"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.GachaImportAndExportWindow_OffsetTime}" />
+          </StackPanel>
+
+          <ListBox Name="ListView_Import"
+                   Grid.Row="4"
+                   Margin="0,4,0,0"
+                   ItemsSource="{Binding GachaImportArchives}"
+                   SelectionMode="Multiple">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="local:GachaUidArchiveDisplay">
+                <Grid ColumnSpacing="12">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="36" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition />
+                  </Grid.ColumnDefinitions>
+                  <cc:CachedImage Grid.Column="0" Width="36" Height="36" Source="{Binding GameIcon}" />
+                  <TextBlock Grid.Column="1" Width="100" VerticalAlignment="Center" Text="{Binding Uid}" />
+                  <TextBlock Grid.Column="2" Width="80" VerticalAlignment="Center" Text="{Binding Count}" />
+                  <TextBlock Grid.Column="3"
+                             Width="160"
+                             VerticalAlignment="Center"
+                             Text="{Binding LastItemTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                  <TextBlock Grid.Column="4" Width="200" VerticalAlignment="Center" Text="{Binding LastItemName}" />
+                  <NumericUpDown Grid.Column="5"
+                                 Width="160"
+                                 VerticalAlignment="Center"
+                                 Minimum="-12"
+                                 Maximum="14"
+                                 Increment="1"
+                                 FormatString="0"
+                                 Value="{Binding Timezone, Mode=TwoWay}" />
+                  <TextBlock Grid.Column="6"
+                             Width="160"
+                             VerticalAlignment="Center"
+                             Text="{Binding LastItemTimeOffest, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+                  <TextBlock Grid.Column="7"
+                             VerticalAlignment="Center"
+                             Foreground="{StaticResource StarSuccessBrush}"
+                             Text="{Binding Result}"
+                             TextWrapping="Wrap" />
+                  <TextBlock Grid.Column="7"
+                             VerticalAlignment="Center"
+                             Foreground="{StaticResource StarErrorBrush}"
+                             Text="{Binding Error}"
+                             TextWrapping="Wrap" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+        </Grid>
+      </TabItem>
+
+    </TabControl>
+
+  </Grid>
+</Window>
