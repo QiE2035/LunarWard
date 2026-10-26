@@ -527,6 +527,23 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 | `{ThemeResource X}` / `{StaticResource X}`（WinUI 资源键） | WinUI 主题资源 | `{DynamicResource X}`（同文件内定义的 `x:Key` 保留 `StaticResource`） | Avalonia 里 `DynamicResource` 找不到键只留空值，不会抛异常 | 想还原配色时把键映射到 `Styles/Starward.axaml` 的 `Star*` 资源 |
 | 命名空间泄漏（验收脚本） | `using Microsoft.UI.Windowing;` / `Windows.Graphics;` / `Microsoft.UI;` | 删除，改 Avalonia 等价物 | 迁移规则要求不残留 WinUI 命名空间 | — |
 
+### 全量重建（`-t:Rebuild`）后的 XAML 机械替换
+
+增量构建会跳过未改动 `.axaml` 的 Avalonia XAML 编译，所以「增量 0 error」不可信；下面这些只有在全量重建时才会暴露，已按 `docs/16-XAML-MAPPING.md` 全部落地（提交 `cc5fecd`）：
+
+| WinUI 写法 | 本仓库写法 | 原因 |
+| --- | --- | --- |
+| `{x:Bind X}` / `{x:Bind X, Converter=…}` | 根节点加 `x:CompileBindings="False"`，保持 `{Binding X}` 原样 | Avalonia 默认对 `{Binding}` 做编译绑定，需要 `x:DataType`；上游页面没有 `x:DataType`，关掉编译绑定等价于 WinUI 的运行时 `{Binding}` 语义 |
+| `{x:Bind lang:Lang.Key}` / 其他 `{x:Bind Type.Member}` 静态成员 | `{x:Static lang:Lang.Key}` | 静态成员不是绑定路径，Avalonia 用 `x:Static` |
+| `{x:Bind sfgr:AvatarRankHelper.RankToVisibility(Rank)}` | `IsVisible="{Binding Rank, Converter={StaticResource RankToVisibilityConverter}}"`（`Features/GameRecord/GameRecordConverters.cs`） | Avalonia 绑定表达式不能调用方法 |
+| `{x:Bind linq:Enumerable.Range(0, N)}` | `ItemsSource="{Binding N, Converter={StaticResource RangeConverter}}"` | 同上；转换器生成 `0..N-1` 与 `Enumerable.Range` 一致 |
+| `Converter={DynamicResource XxxConverter}` | `Converter={StaticResource XxxConverter}` | 转换器在 `App.axaml` 资源字典里，`StaticResource` 才能拿到实例 |
+| `<BitmapImage x:Key="K" Source="ms-appx:///…"/>` + `{StaticResource K}` | 资源声明删除，引用处内联 `avares://LunarWard/Assets/…` | Avalonia 没有可在 XAML 里构造的 `BitmapImage`，图片是 `IImage` 资源 URI |
+| `MenuFlyoutItem` / `MenuFlyoutSeparator` / `AppBarSeparator` / `MenuFlyoutItem.Icon` | `MenuItem` / `Separator` / `MenuItem.Icon` | Avalonia 只有 `MenuItem` |
+| `Grid.Translation="x,y,z"` | `RenderTransform="translate(x,y)"` | Avalonia 没有 `Translation` 属性 |
+| `TextBlock.IsTextScaleFactorEnabled`、`ScrollViewer.HorizontalScrollMode/VerticalScrollMode/ZoomMode` | 删除 | 无等价物（系统缩放跟随平台） |
+| `StackPanel.VerticalSpacing` / `HorizontalSpacing` | `Spacing` | 属性名不同 |
+
 ### WebView 已知缺口（移植窗口时补）
 
 | 缺口 | 上游用法 | 本仓库现状 | 影响的窗口 |
