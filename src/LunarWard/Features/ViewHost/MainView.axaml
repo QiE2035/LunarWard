@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.ViewHost"
+             xmlns:nf="using:LunarWard.Frameworks"
+             xmlns:sfb="using:LunarWard.Features.Background"
+             xmlns:sfg="using:LunarWard.Features.GameSelector"
+             x:Class="LunarWard.Features.ViewHost.MainView">
+
+  <!--
+    上游 Features/ViewHost/MainView.xaml 的 1:1 移植：
+    背景（AppBackground）+ 左栏亚克力条 + 遮罩 + NavigationView(LeftCompact, 56) + Frame + GameSelector。
+    Avalonia 差异：NavigationView / Frame / FontIcon 用 Frameworks 下的等价实现（docs/09 §五）。
+  -->
+
+  <Grid>
+
+    <sfb:AppBackground x:Name="AppBackground" CurrentGameId="{Binding CurrentGameId}" />
+
+    <Border Width="56"
+            HorizontalAlignment="Left"
+            Background="{StaticResource StarAcrylicBrush}" />
+
+    <Border Name="Border_OverlayMask"
+            Background="{StaticResource StarAcrylicBrush}"
+            IsHitTestVisible="False"
+            Opacity="0">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+        </Transitions>
+      </Border.Transitions>
+    </Border>
+
+    <nf:NavigationView Name="MainView_NavigationView"
+                       CompactPaneLength="56"
+                       IsBackButtonVisible="False"
+                       IsPaneToggleButtonVisible="False"
+                       ItemInvoked="NavigationView_ItemInvoked"
+                       PaneDisplayMode="LeftCompact">
+
+      <nf:NavigationView.PaneCustomContent>
+        <Border Height="52" />
+      </nf:NavigationView.PaneCustomContent>
+
+      <nf:NavigationView.MenuItems>
+        <nf:NavigationViewItemSeparator />
+        <!--  启动器  -->
+        <nf:NavigationViewItem Name="NavigationViewItem_Launcher"
+                               IsSelected="True"
+                               Tag="GameLauncherPage"
+                               ToolTip.Tip="{x:Static lang:Lang.MainPage_Launcer}">
+          <nf:NavigationViewItem.Icon>
+            <nf:FontIcon Glyph="&#xE80F;" />
+          </nf:NavigationViewItem.Icon>
+        </nf:NavigationViewItem>
+        <!--  游戏设置  -->
+        <nf:NavigationViewItem Name="NavigationViewItem_GameSetting"
+                               Tag="GameSettingPage"
+                               ToolTip.Tip="{x:Static lang:Lang.LauncherPage_GameSetting}">
+          <nf:NavigationViewItem.Icon>
+            <nf:FontIcon Glyph="&#xE7FC;" />
+          </nf:NavigationViewItem.Icon>
+        </nf:NavigationViewItem>
+        <!--  游戏截图  -->
+        <nf:NavigationViewItem Name="NavigationViewItem_Screenshot"
+                               Tag="ScreenshotPage"
+                               ToolTip.Tip="{x:Static lang:Lang.MainPage_GameScreenshot}">
+          <nf:NavigationViewItem.Icon>
+            <nf:FontIcon Glyph="&#xE91B;" />
+          </nf:NavigationViewItem.Icon>
+        </nf:NavigationViewItem>
+        <!--  抽卡记录  -->
+        <nf:NavigationViewItem Name="NavigationViewItem_GachaLog" Tag="GachaLogPage">
+          <nf:NavigationViewItem.Icon>
+            <nf:FontIcon Glyph="&#xF4A5;" />
+          </nf:NavigationViewItem.Icon>
+        </nf:NavigationViewItem>
+        <!--  工具箱  -->
+        <nf:NavigationViewItem Name="NavigationViewItem_HoyolabToolbox" Tag="GameRecordPage">
+          <nf:NavigationViewItem.Icon>
+            <nf:FontIcon Glyph="&#xF133;" />
+          </nf:NavigationViewItem.Icon>
+        </nf:NavigationViewItem>
+        <!--  账号记录  -->
+        <nf:NavigationViewItem Name="NavigationViewItem_SelfQuery"
+                               Tag="SelfQueryPage"
+                               ToolTip.Tip="{x:Static lang:Lang.SelfQueryPage_AccountRecords}">
+          <nf:NavigationViewItem.Icon>
+            <nf:FontIcon Glyph="&#xE8C7;" />
+          </nf:NavigationViewItem.Icon>
+        </nf:NavigationViewItem>
+        <!--  千星奇域颂愿  -->
+        <nf:NavigationViewItem Name="NavigationViewItem_GenshinBeyondGacha"
+                               Tag="GenshinBeyondGachaPage"
+                               ToolTip.Tip="{x:Static lang:Lang.GenshinBeyondGachaPage_MiliastraWonderlandOde}">
+          <nf:NavigationViewItem.Icon>
+            <nf:FontIcon Glyph="&#xE776;" />
+          </nf:NavigationViewItem.Icon>
+        </nf:NavigationViewItem>
+      </nf:NavigationView.MenuItems>
+
+      <nf:Frame Name="MainView_Frame" Margin="0,48,0,0" />
+
+    </nf:NavigationView>
+
+    <sfg:GameSelector x:Name="GameSelector" CurrentGameChanged="GameSelector_CurrentGameChanged" />
+
+  </Grid>
+
+</UserControl>

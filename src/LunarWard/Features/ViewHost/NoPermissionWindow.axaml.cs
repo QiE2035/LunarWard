@@ -99,7 +99,7 @@ public sealed partial class NoPermissionWindow : WindowEx
         catch (Exception ex)
         {
             Log.Error(ex, "以管理员身份重启失败");
-            InAppToast.Show(this, ex.Message);
+            InAppToast.MainWindow?.Error(ex.Message);
         }
     }
 

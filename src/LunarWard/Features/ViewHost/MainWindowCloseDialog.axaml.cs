@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using LunarWard.Helpers.Enumeration;
 using LunarWard.Language;
 using LunarWard.Views.Starward.Controls;
@@ -14,8 +16,11 @@ namespace LunarWard.Features.ViewHost;
 /// + 由 <see cref="EnumItemsSource{T}"/> 在 code-behind 生成的 <see cref="RadioButton"/> 列表。
 /// 选项来源、双向绑定（<c>MainWindowCloseOption.Value</c>）与上游一致。
 /// </remarks>
-public sealed partial class MainWindowCloseDialog : StarwardContentDialog
+public sealed partial class MainWindowCloseDialog : StarwardContentDialog, INotifyPropertyChanged
 {
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
 
     /// <summary>提示文字。</summary>
     public static string HintText => Lang.CloseWindowDialog_YouCouldChangeTheOptionAgainInSettingPage;
@@ -31,9 +36,9 @@ public sealed partial class MainWindowCloseDialog : StarwardContentDialog
                 return;
             }
             field = value;
-            OnPropertyChanged();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainWindowCloseOption)));
         }
-    } = new(MainWindowCloseOption.Hide);
+    } = new(LunarWard.Features.ViewHost.MainWindowCloseOption.Hide);
 
 
     public MainWindowCloseDialog()
