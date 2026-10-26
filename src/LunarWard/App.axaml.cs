@@ -3,6 +3,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
+using System.Text;
 using LunarWard.ViewModels;
 using LunarWard.ViewModels.Starward;
 using LunarWard.Views;
@@ -76,7 +78,77 @@ public partial class App : Application
     }
 
 
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+
+        // 移植自上游 App.xaml.cs 构造函数：全局异常落盘（格式与上游一致）+ 60s 一次 GC。
+        Dispatcher.UIThread.UnhandledException += App_UnhandledException;
+        _gcTimer = new DispatcherTimer(TimeSpan.FromSeconds(60), DispatcherPriority.Background, (_, _) => GC.Collect());
+        _gcTimer.Start();
+    }
+
+
+    private DispatcherTimer? _gcTimer;
+
+
+    /// <summary>上游 <c>App.Current</c>。</summary>
+    public static new App Current => (App)Application.Current!;
+
+
+    private void App_UnhandledException(object? sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            string logFile = AppConfig.LogFile;
+            if (string.IsNullOrWhiteSpace(logFile))
+            {
+                string logFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LunarWard", "log");
+                Directory.CreateDirectory(logFolder);
+                logFile = Path.Combine(logFolder, $"LunarWard_{DateTime.Now:yyMMdd}.log");
+            }
+            var sb = new StringBuilder();
+            sb.AppendLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] App Crash:");
+            sb.AppendLine(e.Exception.ToString());
+            if (e.Exception.Data.Count > 0)
+            {
+                foreach (System.Collections.DictionaryEntry item in e.Exception.Data)
+                {
+                    sb.AppendLine($"{item.Key}: {item.Value}");
+                }
+            }
+            using var fs = File.Open(logFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete);
+            using var sw = new StreamWriter(fs);
+            sw.Write(sb);
+        }
+        catch
+        {
+            // 崩溃日志自身失败时不再抛出。
+        }
+    }
+
+
+    /// <summary>上游 <c>App.EnsureMainWindow</c>：多实例转发激活时把主窗口显示出来。</summary>
+    public void EnsureMainWindow()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } window })
+        {
+            if (window.WindowState == WindowState.Minimized)
+            {
+                window.WindowState = WindowState.Normal;
+            }
+            window.Show();
+            window.Activate();
+        }
+    }
+
+
+    /// <summary>上游 <c>App.Exit</c>：先恢复手柄 Guide 键，再关窗退出。</summary>
+    public new void Exit()
+    {
+        LunarWard.Features.GamepadControl.GamepadController.RestoreGamepadGuideButtonForGameBar();
+        (ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+    }
 
 
     public override void OnFrameworkInitializationCompleted()

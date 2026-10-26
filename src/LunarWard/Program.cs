@@ -5,7 +5,9 @@ using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Threading;
+using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 
 namespace LunarWard;
 
@@ -14,6 +16,11 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // 移植自上游 Program.cs：进程级未处理异常先落盘，再让 CLR 终止进程。
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        TaskScheduler.UnobservedTaskException += (_, e) => CurrentDomain_UnhandledException(null, new UnhandledExceptionEventArgs(e.Exception, false));
+        Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Normal;
+
         // --version / --help：不启动窗口，也不读配置（打包脚本 / 桌面环境探测会调用）。
         if (args.Contains("--version") || args.Contains("-V"))
         {
@@ -237,6 +244,41 @@ internal static class Program
     {
         var at = Array.IndexOf(args, name);
         return at >= 0 && at + 1 < args.Length ? args[at + 1] : null;
+    }
+
+
+    /// <summary>
+    /// 上游 <c>Program.CurrentDomain_UnhandledException</c> 的等价实现（日志文件名与格式保持一致）。
+    /// </summary>
+    private static void CurrentDomain_UnhandledException(object? sender, UnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            string logFile = LunarWard.AppConfig.LogFile;
+            if (string.IsNullOrWhiteSpace(logFile))
+            {
+                string logFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LunarWard", "log");
+                Directory.CreateDirectory(logFolder);
+                logFile = Path.Combine(logFolder, $"LunarWard_{DateTime.Now:yyMMdd}.log");
+            }
+            var sb = new StringBuilder();
+            sb.AppendLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Program Crash:");
+            sb.AppendLine(e.ExceptionObject?.ToString());
+            if (e.ExceptionObject is Exception { Data.Count: > 0 } ex)
+            {
+                foreach (System.Collections.DictionaryEntry item in ex.Data)
+                {
+                    sb.AppendLine($"{item.Key}: {item.Value}");
+                }
+            }
+            using var fs = File.Open(logFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete);
+            using var sw = new StreamWriter(fs);
+            sw.Write(sb);
+        }
+        catch
+        {
+            // 崩溃日志自身失败时不再抛出，避免掩盖原始异常。
+        }
     }
 
 
