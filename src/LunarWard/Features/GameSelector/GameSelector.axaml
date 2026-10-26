@@ -28,8 +28,7 @@
                     Cursor="Hand"
                     BorderThickness="0"
                     Command="{Binding ShowFullBackgroundCommand}"
-                    CornerRadius="8"
-                    >
+                    CornerRadius="8">
                 <Grid>
                     <TextBlock HorizontalAlignment="Center"
                               VerticalAlignment="Center"
@@ -100,7 +99,6 @@
                                     <!--  背景图  -->
                                     <Image HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
-                                                    CornerRadius="8"
                                                     Source="{Binding GameInfo.Display.Thumbnail.Url}"
                                                     Stretch="UniformToFill"
                                                      />
@@ -108,15 +106,14 @@
                                     <Image Name="Grid_GameBizDisplay_Logo"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
-                                                    Background="#60000000"
                                                     Source="{Binding GameInfo.Display.Logo.Url}"
                                                      />
                                     <!--  鼠标移入时 Icon & 选择服务器  -->
+                                    <Border BorderBrush="{DynamicResource StarAccentBrush}"
+                                            BorderThickness="2"
+                                            CornerRadius="6">
                                     <Grid Name="Grid_GameBizDisplay_IconAndName"
                                           Background="#D0000000"
-                                          BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
-                                          BorderThickness="2"
-                                          CornerRadius="6"
                                           Opacity="0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition />
@@ -130,7 +127,6 @@
                                                         Margin="0,0,8,0"
                                                         HorizontalAlignment="Right"
                                                         VerticalAlignment="Center"
-                                                        CornerRadius="8"
                                                         Source="{Binding GameInfo.Display.Icon.Url}"
                                                          />
                                         <TextBlock Grid.Column="2"
@@ -141,7 +137,7 @@
                                                    
                                                    Text="{x:Static lang:Lang.SelectGamePage_SelectGameServer}"
                                                    TextWrapping="Wrap" />
-                                    </Grid>
+                                    </Grid></Border>
                                     <!--  动画  -->
                                     <!--  动画触发  -->
                                     <!--  服务器列表  -->
@@ -154,8 +150,7 @@
                                                                 Padding="4"
                                                                 HorizontalAlignment="Stretch"
                                                                 HorizontalContentAlignment="Stretch"
-                                                                Click="Button_GameServer_Click"
-                                                                >
+                                                                Click="Button_GameServer_Click">
                                                             <Grid ColumnSpacing="12">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="Auto" />
@@ -180,8 +175,7 @@
                                                                         Height="28"
                                                                         Padding="0"
                                                                         HorizontalAlignment="Right"
-                                                                        Click="Button_PinGameBiz_Click"
-                                                                        >
+                                                                        Click="Button_PinGameBiz_Click">
                                                                     <Grid>
                                                                         <TextBlock FontSize="16"
                                                                                   Classes="icon" Text="&#xE718;"
@@ -260,7 +254,7 @@
                                                 Padding="0"
                                                 Command="{Binding InitializeInstalledGamesCommand}"
                                                 
-                                                ToolTipService.ToolTip="{x:Static lang:Lang.Common_Refresh}">
+                                                ToolTip.Tip="{x:Static lang:Lang.Common_Refresh}">
                                             <TextBlock FontSize="14"
                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                       Classes="icon" Text="&#xE72C;" />
@@ -273,7 +267,7 @@
                                                 Padding="0"
                                                 Command="{Binding AutoSearchInstalledGamesCommand}"
                                                 
-                                                ToolTipService.ToolTip="{x:Static lang:Lang.GameBizSelector_AutoSearch}">
+                                                ToolTip.Tip="{x:Static lang:Lang.GameBizSelector_AutoSearch}">
                                             <TextBlock FontSize="14"
                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                       Classes="icon" Text="&#xE721;" />
@@ -293,7 +287,6 @@
                                             <!--  游戏图标  -->
                                             <Image Width="36"
                                                             Height="36"
-                                                            CornerRadius="8"
                                                             Source="{Binding GameIcon, }" />
                                             <!--  游戏名  -->
                                             <TextBlock MinWidth="160"
@@ -304,7 +297,6 @@
                                                             Height="24"
                                                             HorizontalAlignment="Center"
                                                             VerticalAlignment="Center"
-                                                            CornerRadius="4"
                                                             Source="{Binding ServerIcon, }" />
                                             <!--  服务器名  -->
                                             <TextBlock MinWidth="100"
@@ -357,7 +349,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="local:GameBizIcon">
-                        <Border CornerRadius="8" BoxShadow="0 0 16 0 #40000000"><Grid x:Name="Grid_GameIcon" Width="40" Height="40" Cursor="Hand" DoubleTapped="Grid_GameIcon_DoubleTapped" IsDoubleTapEnabled="True" IsTapEnabled="True" PointerEntered="Grid_GameIcon_PointerEntered" PointerExited="Grid_GameIcon_PointerExited" Tag="{Binding GameId}" Tapped="Grid_GameIcon_Tapped">
+                        <Border CornerRadius="8" BoxShadow="0 0 16 0 #40000000"><Grid x:Name="Grid_GameIcon" Width="40" Height="40" Cursor="Hand" DoubleTapped="Grid_GameIcon_DoubleTapped" PointerEntered="Grid_GameIcon_PointerEntered" PointerExited="Grid_GameIcon_PointerExited" Tag="{Binding GameId}" Tapped="Grid_GameIcon_Tapped">
                             <Image Width="40"
                                             Height="40"
                                             Source="{Binding GameIcon}" />
@@ -366,10 +358,7 @@
                                    HorizontalAlignment="Right"
                                    VerticalAlignment="Bottom">
                                 <Image.Source>
-                                    <BitmapImage DecodePixelHeight="20"
-                                                 DecodePixelType="Logical"
-                                                 DecodePixelWidth="20"
-                                                 UriSource="{Binding ServerIcon}" />
+                                    <Binding Path="ServerIcon" />
                                 </Image.Source>
                             </Image>
                             <Border Background="#60000000" Opacity="{Binding MaskOpacity}">
@@ -394,8 +383,7 @@
                 <Button Padding="0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        Command="{Binding PinCommand}"
-                        >
+                        Command="{Binding PinCommand}">
                     <Grid>
                         <TextBlock HorizontalAlignment="Center"
                                   VerticalAlignment="Center"

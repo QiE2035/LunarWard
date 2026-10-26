@@ -4,7 +4,7 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
-             xmlns:diary="clr-namespace:LunarWard.Core.GameRecord.Genshin.TravelersDiary"
+             xmlns:diary="using:LunarWard.Core.GameRecord.Genshin.TravelersDiary"
              xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.Genshin"
              xmlns:sc="clr-namespace:LunarWard.Controls"
@@ -213,9 +213,9 @@
                                   ItemsSource="{Binding CurrentSeries}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel HorizontalSpacing="12"
+                                <WrapPanel ItemSpacing="12"
                                               Orientation="Horizontal"
-                                              Spacing="4" />
+                                               LineSpacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
@@ -295,9 +295,9 @@
                                   ItemsSource="{Binding SelectSeries}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel HorizontalSpacing="12"
+                                <WrapPanel ItemSpacing="12"
                                               Orientation="Horizontal"
-                                              Spacing="4" />
+                                               LineSpacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>

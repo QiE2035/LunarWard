@@ -7,10 +7,8 @@
   <!-- 移植自 Starward/src/Starward/Features/GameLauncher/StartGameButton.xaml。
        替换点：AnimatedIcon→TextBlock.icon、ProgressRing→ProgressBar(IsIndeterminate)、
        ThemeShadow/Translation→BoxShadow、模板内 VisualState 动画改由 Avalonia 主题承担。 -->
-  <Border CornerRadius="22"><Grid Name="Grid_Root" Height="44" MinWidth="180" Background="{DynamicResource StarAcrylicBrush}" PointerEntered="Control_PointerEntered" PointerExited="Control_PointerExited">
-    <Grid.BoxShadow>
-      <BoxShadows>0 0 16 0 #40000000</BoxShadows>
-    </Grid.BoxShadow>
+  <Border BoxShadow="0 0 16 0 #40000000" CornerRadius="22">
+    <Grid Name="Grid_Root" Height="44" MinWidth="180" Background="{DynamicResource StarAcrylicBrush}" PointerEntered="Control_PointerEntered" PointerExited="Control_PointerExited">
 
     <!--  Accent Color 背景  -->
     <Border Name="Rect_AccentBackground"

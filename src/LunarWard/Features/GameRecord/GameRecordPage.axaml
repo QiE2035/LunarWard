@@ -7,7 +7,7 @@
              xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord"
              xmlns:sc="clr-namespace:LunarWard.Controls"
-             xmlns:scg="clr-namespace:LunarWard.Core.GameRecord"
+             xmlns:scg="using:LunarWard.Core.GameRecord"
              xmlns:sf="clr-namespace:LunarWard.Frameworks"
              xmlns:sh="clr-namespace:LunarWard.Helpers">
 
@@ -94,12 +94,12 @@
                             IsVisible="{Binding CurrentRole, Converter={StaticResource ObjectToVisibilityReversedConverter}}">
                         <Button.Flyout>
                             <MenuFlyout x:Name="Flyout_LoginMenu_1" Placement="BottomEdgeAlignedLeft">
-                                <MenuItem Command="{Binding WebLoginCommand}" Text="{x:Static lang:Lang.HoyolabToolboxPage_WebLogin}">
+                                <MenuItem Command="{Binding WebLoginCommand}" Header="{x:Static lang:Lang.HoyolabToolboxPage_WebLogin}">
                                     <MenuItem.Icon>
                                         <fw:FontIcon Classes="icon" Glyph="&#xE774;" />
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem Command="{Binding InputCookieCommand}" Text="{x:Static lang:Lang.HoyolabToolboxPage_InputCookie}">
+                                <MenuItem Command="{Binding InputCookieCommand}" Header="{x:Static lang:Lang.HoyolabToolboxPage_InputCookie}">
                                     <MenuItem.Icon>
                                         <fw:FontIcon Classes="icon" Glyph="&#xE70F;" />
                                     </MenuItem.Icon>
@@ -168,12 +168,12 @@
                                         </StackPanel>
                                         <Button.Flyout>
                                             <MenuFlyout x:Name="Flyout_LoginMenu_2" Placement="RightEdgeAlignedTop">
-                                                <MenuItem Command="{Binding WebLoginCommand}" Text="{x:Static lang:Lang.HoyolabToolboxPage_WebLogin}">
+                                                <MenuItem Command="{Binding WebLoginCommand}" Header="{x:Static lang:Lang.HoyolabToolboxPage_WebLogin}">
                                                     <MenuItem.Icon>
                                                         <fw:FontIcon Classes="icon" Glyph="&#xE774;" />
                                                     </MenuItem.Icon>
                                                 </MenuItem>
-                                                <MenuItem Command="{Binding InputCookieCommand}" Text="{x:Static lang:Lang.HoyolabToolboxPage_InputCookie}">
+                                                <MenuItem Command="{Binding InputCookieCommand}" Header="{x:Static lang:Lang.HoyolabToolboxPage_InputCookie}">
                                                     <MenuItem.Icon>
                                                         <fw:FontIcon Classes="icon" Glyph="&#xE70F;" />
                                                     </MenuItem.Icon>
@@ -219,7 +219,7 @@
                                                                 <MenuItem  x:Name="MenuFlyoutItem_CopyCookie"
                                                                                 Click="MenuFlyoutItem_CopyCookie_Click"
                                                                                 Tag="{x:Bind}"
-                                                                                Text="{x:Static lang:Lang.HoyolabToolboxPage_CopyCookie}">
+                                                                                Header="{x:Static lang:Lang.HoyolabToolboxPage_CopyCookie}">
                                                                     <MenuItem.Icon>
                                                                         <fw:FontIcon Classes="icon" Glyph="&#xE8C8;" />
                                                                     </MenuItem.Icon>
@@ -227,7 +227,7 @@
                                                                 <MenuItem  x:Name="MenuFlyoutItem_DeleteGameRole"
                                                                                 Click="MenuFlyoutItem_DeleteGameRole_Click"
                                                                                 Tag="{x:Bind}"
-                                                                                Text="{x:Static lang:Lang.HoyolabToolboxPage_DeleteGameRole}">
+                                                                                Header="{x:Static lang:Lang.HoyolabToolboxPage_DeleteGameRole}">
                                                                     <MenuItem.Icon>
                                                                         <fw:FontIcon Classes="icon" Glyph="&#xE74D;" />
                                                                     </MenuItem.Icon>

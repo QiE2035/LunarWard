@@ -7,7 +7,7 @@
              xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.DailyNote"
              xmlns:sc="clr-namespace:LunarWard.Controls"
-             xmlns:scggd="clr-namespace:LunarWard.Core.GameRecord.Genshin.DailyNote">
+             xmlns:scggd="using:LunarWard.Core.GameRecord.Genshin.DailyNote">
 
     <Button x:Name="Button_DailyNote"
             Padding="0"
@@ -229,9 +229,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="scggd:TaskRewardStatus">
                                         <Grid Width="20"
-                                              Height="20"
-                                             
-                                             >
+                                              Height="20">
                                             <Image Width="16"
                                                    Height="16"
                                                    Opacity="0.6"
@@ -272,9 +270,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="scggd:AttendanceRewardStatus">
                                         <Grid Width="20"
-                                              Height="20"
-                                             
-                                             >
+                                              Height="20">
                                             <Image Width="16"
                                                         Height="16"
                                                         HorizontalAlignment="Center"

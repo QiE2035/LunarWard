@@ -115,7 +115,7 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 BorderThickness="0"
-                Command="{Binding CloseCommand}"
+                Command="{Binding CloseDialogCommand}"
                 CornerRadius="8">
             <TextBlock Classes="icon" Text="&#xE711;" FontSize="16"
                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>

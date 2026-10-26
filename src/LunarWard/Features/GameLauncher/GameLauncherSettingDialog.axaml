@@ -452,10 +452,10 @@
                         <Grid x:Name="Grid_BackgroundDragIn"
                               Height="140"
                               Margin="0,12,0,0"
-                              AllowDrop="True"
+                              DragDrop.AllowDrop="True"
                               Background="Transparent"
-                              DragOver="Grid_BackgroundDragIn_DragOver"
-                              Drop="Grid_BackgroundDragIn_Drop">
+                              DragDrop.DragOver="Grid_BackgroundDragIn_DragOver"
+                              DragDrop.Drop="Grid_BackgroundDragIn_Drop">
                             <Rectangle HorizontalAlignment="Stretch"
                                        VerticalAlignment="Stretch"
                                        RadiusX="8"
@@ -484,14 +484,7 @@
                 <Border>
                     <fw:Pivot>
 
-                        <fw:Pivot.Resources>
-                            <!-- 上游用 DefaultPivotHeaderItemStyle 调 header 高度/字号；Avalonia 的 TabItem
-                                 由主题模板决定，这里改成对 TabItem 的样式（等价视觉效果），不引用不存在的资源键。 -->
-                            <Style Selector="TabItem">
-                                <Setter Property="MinHeight" Value="28" />
-                                <Setter Property="FontSize" Value="16" />
-                            </Style>
-                        </fw:Pivot.Resources>
+
 
                         <!--  正式版  -->
                         <fw:PivotItem Margin="0,-8,0,0">
@@ -565,7 +558,7 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 BorderThickness="0"
-                Command="{Binding CloseCommand}"
+                Command="{Binding CloseDialogCommand}"
                 CornerRadius="8">
             <TextBlock FontSize="16"
                       Foreground="{DynamicResource StarTextSecondary}"

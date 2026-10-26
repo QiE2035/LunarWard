@@ -13,16 +13,19 @@
         <SolidColorBrush x:Key="Rarity3ForegroundBrush">#5EAAED</SolidColorBrush>
         <SolidColorBrush x:Key="Rarity2ForegroundBrush">#3BA272</SolidColorBrush>
 
+
+        <local:GenshinBeyondGachaPityProgressBackgroundBrushConverter x:Key="GenshinBeyondGachaPityProgressBackgroundBrushConverter" />
+        <local:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />
+    </fw:PageBase.Resources>
+
+    <fw:PageBase.Styles>
         <Style Selector="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="NoWrap" />
             <Setter Property="TextTrimming" Value="None" />
             <Setter Property="Foreground" Value="{StaticResource StarTextSecondary}" />
         </Style>
-
-        <local:GenshinBeyondGachaPityProgressBackgroundBrushConverter x:Key="GenshinBeyondGachaPityProgressBackgroundBrushConverter" />
-        <local:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />
-    </fw:PageBase.Resources>
+    </fw:PageBase.Styles>
 
     <Grid RowDefinitions="44,*">
 

@@ -11,7 +11,7 @@
              xmlns:sf="clr-namespace:LunarWard.Frameworks"
              xmlns:sfg="clr-namespace:LunarWard.Features.Gacha"
              xmlns:sh="clr-namespace:LunarWard.Helpers"
-             xmlns:so="clr-namespace:LunarWard.Core.GameRecord.Genshin.StygianOnslaught">
+             xmlns:so="using:LunarWard.Core.GameRecord.Genshin.StygianOnslaught">
 
     <UserControl.Resources>
         <sfg:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />

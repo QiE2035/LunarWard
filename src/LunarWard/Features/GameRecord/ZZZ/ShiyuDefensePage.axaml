@@ -5,12 +5,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
-             xmlns:cw="clr-namespace:CommunityToolkit.WinUI"
              xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.ZZZ"
              xmlns:sc="clr-namespace:LunarWard.Controls"
-             xmlns:scgz="clr-namespace:LunarWard.Core.GameRecord.ZZZ"
-             xmlns:scgzs="clr-namespace:LunarWard.Core.GameRecord.ZZZ.ShiyuDefense"
+             xmlns:scgz="using:LunarWard.Core.GameRecord.ZZZ"
+             xmlns:scgzs="using:LunarWard.Core.GameRecord.ZZZ.ShiyuDefense"
              xmlns:sf="clr-namespace:LunarWard.Frameworks"
              xmlns:sfgr="clr-namespace:LunarWard.Features.GameRecord">
 
@@ -519,9 +518,7 @@
                                     <!--  邦布  -->
                                     <Grid Width="58"
                                           Height="78"
-                                          Margin="0,15,0,0"
-                                         
-                                         >
+                                          Margin="0,15,0,0">
                                         <!--  背景  -->
                                         <sc:CachedImage Width="54"
                                                         Height="56"
@@ -536,7 +533,7 @@
                                                 Height="56"
                                                 Margin="2,2,2,2"
                                                 VerticalAlignment="Top"
-                                                cw:UIElementExtensions.ClipToBounds="True"
+                                                ClipToBounds="True"
                                                 CornerRadius="8,8,0,0">
                                             <sc:CachedImage Height="84"
                                                             Margin="-8,-8,0,0"
@@ -768,9 +765,7 @@
                                     <!--  邦布  -->
                                     <Grid Width="58"
                                           Height="78"
-                                          Margin="0,15,0,0"
-                                         
-                                         >
+                                          Margin="0,15,0,0">
                                         <!--  背景  -->
                                         <sc:CachedImage Width="54"
                                                         Height="56"
@@ -785,7 +780,7 @@
                                                 Height="56"
                                                 Margin="2,2,2,2"
                                                 VerticalAlignment="Top"
-                                                cw:UIElementExtensions.ClipToBounds="True"
+                                                ClipToBounds="True"
                                                 CornerRadius="8,8,0,0">
                                             <sc:CachedImage Height="84"
                                                             Margin="-8,-8,0,0"
@@ -1068,9 +1063,7 @@
                                         <!--  邦布  -->
                                         <Grid Width="58"
                                               Height="78"
-                                              Margin="0,15,0,0"
-                                             
-                                             >
+                                              Margin="0,15,0,0">
                                             <!--  背景  -->
                                             <sc:CachedImage Width="54"
                                                             Height="56"
@@ -1085,7 +1078,7 @@
                                                     Height="56"
                                                     Margin="2,2,2,2"
                                                     VerticalAlignment="Top"
-                                                    cw:UIElementExtensions.ClipToBounds="True"
+                                                    ClipToBounds="True"
                                                     CornerRadius="8,8,0,0">
                                                 <sc:CachedImage Height="84"
                                                                 Margin="-8,-8,0,0"
@@ -1292,9 +1285,7 @@
                                         <!--  邦布  -->
                                         <Grid Width="58"
                                               Height="78"
-                                              Margin="0,15,0,0"
-                                             
-                                             >
+                                              Margin="0,15,0,0">
                                             <!--  背景  -->
                                             <sc:CachedImage Width="54"
                                                             Height="56"
@@ -1309,7 +1300,7 @@
                                                     Height="56"
                                                     Margin="2,2,2,2"
                                                     VerticalAlignment="Top"
-                                                    cw:UIElementExtensions.ClipToBounds="True"
+                                                    ClipToBounds="True"
                                                     CornerRadius="8,8,0,0">
                                                 <sc:CachedImage Height="84"
                                                                 Margin="-8,-8,0,0"

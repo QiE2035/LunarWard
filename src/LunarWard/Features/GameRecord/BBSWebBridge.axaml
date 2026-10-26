@@ -20,9 +20,7 @@
                 <Image x:Name="Image_Screenshot" Stretch="Uniform" />
             </ScrollViewer>
             <Grid
-                  VerticalAlignment="Bottom"
-                 
-                 >
+                  VerticalAlignment="Bottom">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <!--  保存  -->
                     <Button Command="{Binding SaveScreenshotCommand}">

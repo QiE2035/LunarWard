@@ -6,7 +6,7 @@
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.ZZZ"
-             xmlns:report="clr-namespace:LunarWard.Core.GameRecord.ZZZ.InterKnotReport"
+             xmlns:report="using:LunarWard.Core.GameRecord.ZZZ.InterKnotReport"
              xmlns:sc="clr-namespace:LunarWard.Controls"
              xmlns:sf="clr-namespace:LunarWard.Frameworks"
              xmlns:sfg="clr-namespace:LunarWard.Features.GameRecord"
@@ -192,9 +192,9 @@
                                   ItemsSource="{Binding CurrentSeries}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel HorizontalSpacing="12"
+                                <WrapPanel ItemSpacing="12"
                                               Orientation="Horizontal"
-                                              Spacing="4" />
+                                               LineSpacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
@@ -275,9 +275,9 @@
                                   ItemsSource="{Binding SelectSeries}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel HorizontalSpacing="12"
+                                <WrapPanel ItemSpacing="12"
                                               Orientation="Horizontal"
-                                              Spacing="4" />
+                                               LineSpacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
