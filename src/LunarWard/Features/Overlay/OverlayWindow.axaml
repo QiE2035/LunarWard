@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sf:WindowEx x:Class="LunarWard.Features.Overlay.OverlayWindow"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:LunarWard.Features.Overlay"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:sf="using:LunarWard.Frameworks"
+             Title="OverlayWindow"
+             x:CompileBindings="False"
+             mc:Ignorable="d">
+
+    <!-- 平台替换：上游根节点是 `<Grid x:Name="RootGrid" Background="#80000000" KeyDown=… Opacity="0">`
+         配 `<Grid.OpacityTransition><ScalarTransition /></Grid.OpacityTransition>`。
+         Avalonia 的 Grid 没有 CornerRadius，而上游代码里直接写 `RootGrid.CornerRadius = new CornerRadius(0,0,8,8)`，
+         所以这里把根节点换成 Border（自带 CornerRadius + KeyDown + Opacity），
+         OpacityTransition 换成 `Transitions` 里的 `DoubleTransition`，动画语义与上游 0.3s 淡入淡出一致。 -->
+    <Border x:Name="RootGrid"
+            Background="#80000000"
+            CornerRadius="0"
+            KeyDown="RootGrid_KeyDown"
+            Opacity="0">
+        <Border.Transitions>
+            <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+        </Border.Transitions>
+    </Border>
+
+</sf:WindowEx>

@@ -1,5 +1,7 @@
+using Avalonia.Threading;
 using LunarWard.Core;
 using LunarWard.Features.GamepadControl;
+using LunarWard.Features.Screenshot;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,7 +18,9 @@ namespace LunarWard.Features.Overlay;
 /// <list type="bullet">
 /// <item>Win32 前台窗口钩子（<c>User32.SetWinEventHook</c>/<c>UnhookWinEvent</c>/<c>WinEventProc</c>）整体移除：
 /// Linux 无等价物，「最近活跃游戏」退化为「最后加入的游戏」。</item>
-/// <item><c>OverlayWindow</c> 尚未移植，<see cref="OpenOverlayWindow"/> 保持上游「恒返回 false」的行为。</item>
+/// <item><c>OverlayWindow</c> 已移植（同目录 <c>OverlayWindow.axaml(.cs)</c>）。上游 <see cref="OpenOverlayWindow"/>
+/// 第一行就是 <c>return false;</c>（其后半段是死代码）；Linux 端按后半段的意图接线，去掉 early return，
+/// 能否显示由「窗口句柄是否可解析」决定（docs/09 §8.5、第二十六节）。</item>
 /// <item><c>Process.MainWindowHandle</c> 在 .NET/Linux 上恒为 0，窗口句柄留给抓屏后端提供。</item>
 /// </list>
 /// </remarks>
@@ -99,8 +103,13 @@ internal static class RunningGameService
             }
             if (_runningGames.Count == 0)
             {
-                // 上游此处关闭 OverlayWindow（`_overlayWindow?.DispatcherQueue.TryEnqueue(…Close)`）；
-                // OverlayWindow 尚未移植（docs/09 §8.4），落地后在这里接回。
+                // 平台替换：上游 `_overlayWindow?.DispatcherQueue.TryEnqueue(() => { if (_overlayWindow?.AppWindow is not null) _overlayWindow.Close(); });`
+                // Avalonia 对应 Dispatcher.UIThread.Post；OverlayWindow 在 UI 线程创建/关闭。
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _overlayWindow?.Close();
+                    _overlayWindow = null;
+                });
                 _timer.Stop();
                 GamepadController.RestoreGamepadGuideButtonForGameBarBecauseOfGameExit();
             }
@@ -109,11 +118,36 @@ internal static class RunningGameService
 
 
 
+    private static OverlayWindow? _overlayWindow;
+
+
     public static bool OpenOverlayWindow()
     {
-        // 上游该方法函数体第一行就是 `return false;`（Overlay 尚未启用），照抄该行为；
-        // OverlayWindow 移植后按其后半段恢复：判断 _latestActiveGame/WindowHandle，再 ShowActive。
-        return false;
+        // 平台替换：上游第一行是 `return false;`（Overlay 未启用，其后为死代码），这里按后半段意图实现。
+        // 上游的 `User32.IsIconic(hwnd)`（最小化判定）与前台钩子在 Linux 无等价物：
+        // 改为「能否用 xdotool 解析到游戏窗口句柄」，解析不到就不显示覆盖层。
+        RunningGame? runningGame = _latestActiveGame;
+        if (runningGame is null)
+        {
+            return false;
+        }
+        nint hwnd = runningGame.WindowHandle != 0 ? runningGame.WindowHandle : ScreenCaptureHelper.FindWindowByPid(runningGame.Pid);
+        if (hwnd == 0)
+        {
+            return false;
+        }
+        if (runningGame.WindowHandle == 0)
+        {
+            runningGame.WindowHandle = hwnd;
+        }
+        // 平台替换：上游在 UI 线程直接 `new OverlayWindow()` / `ShowActive`；调用点可能在游戏进程的事件线程，
+        // 这里统一切到 Avalonia UI 线程。
+        Dispatcher.UIThread.Post(() =>
+        {
+            _overlayWindow ??= new OverlayWindow();
+            _overlayWindow.ShowActive(runningGame);
+        });
+        return true;
     }
 
 

@@ -921,3 +921,33 @@ P6 收尾把启动骨架重写成上游 `src/Starward/App.xaml.cs` 的结构（�
 `Program.cs` 现在只做三件上游 `Program.cs` 也在做的事（崩溃兜底、`--version/--help`）+ 本仓库 CLI 工具
 （`--scan-games`、自检参数解析）；`rpc`/`startgame`/`playtime` 子命令不再由 `Program` 拦截，
 统一由 `App.HandleStartupAsync` 处理（与上游一致）。
+
+## 二十六、Features/Overlay 收尾（`OverlayWindow`，2026-10-26，dapper-db / task-20）
+
+上游最后两个未落地的文件 `Features/Overlay/OverlayWindow.xaml(.cs)` 已移植为
+`src/LunarWard/Features/Overlay/OverlayWindow.axaml(.cs)`（文件级 1:1，成员名/事件名不变）。
+覆盖层语义与上游一致：覆盖在游戏窗口客户区上的半透明遮罩，`Escape` 或窗口失活时淡出隐藏。
+逐处替换（代码里都带 `// 平台替换：` 注释）：
+
+| # | 上游 | 本仓库 | 原因 | 影响 |
+|---|---|---|---|---|
+| 1 | `WindowEx`（WinUI 基类）/ `AppWindow` | `Frameworks.WindowEx`（`Avalonia.Window` 派生）+ Window 属性 | 平台基类不同 | 无 |
+| 2 | `SystemBackdrop = new TransparentBackdrop()` | `Helpers.TransparentBackdrop.ApplyTo(this)` | WinUI 系统背景/DWM 模糊在 X11/Wayland 无等价物 | 合成器不支持透明时退化为不透明黑底并写日志 |
+| 3 | `AppWindow.Presenter`（`OverlappedPresenter`：不可最大化/不可缩放/去边框/置顶）+ User32 去 `WS_DLGFRAME` | `CanResize=false` + `WindowDecorations=None` + `Topmost=true` + `ExtendClientAreaToDecorationsHint=true` | Avalonia 无 `OverlappedPresenter` | 无边框/置顶/固定大小语义一致 |
+| 4 | `Activated` 事件里判 `WindowActivationState.Deactivated` | `Deactivated` 事件 | Avalonia 有独立事件 | 失活即隐藏，与上游一致 |
+| 5 | `KeyRoutedEventArgs` + `Windows.System.VirtualKey.Escape` | `KeyEventArgs` + `Key.Escape` | 控件库不同 | 无 |
+| 6 | `User32.GetClientRect` + `User32.ClientToScreen` + `AppWindow.MoveAndResize` | `xdotool getwindowgeometry --shell` 解析客户区 → `Position`/`ClientSize`（物理像素） | Linux 无 User32；`Process.MainWindowHandle` 在 .NET/Linux 上恒 0 | X11 可精确定位；Wayland 拿不到几何时退回主屏工作区（不静默黑屏） |
+| 7 | `runningGame.WindowHandle`（`Process.MainWindowHandle`） | 句柄为 0 时用 `ScreenCaptureHelper.FindWindowByPid(pid)`（`xdotool search --pid`） | 同上 | 与抓屏后端共用同一套窗口定位 |
+| 8 | `User32.SetForegroundWindow(hwnd)` | `xdotool windowactivate <id>`（尽力而为，失败静默） | Linux 无 SetForegroundWindow | Wayland 下通常无效，覆盖层仍显示在游戏上方 |
+| 9 | 按 `SystemWin11` 判定是否给底部圆角（`CornerRadius(0,0,8,8)`） | 恒直角（`CornerRadius(0)`），删除 `SystemWin11` 字段 | Linux 无 Win11 圆角窗口合成语义 | 避免裁掉游戏画面四角 |
+| 10 | XAML 根 `<Grid x:Name="RootGrid">` + `<Grid.OpacityTransition><ScalarTransition/>` | `<Border x:Name="RootGrid" CornerRadius=…>` + `<Border.Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.3"/>` | Avalonia 的 `Grid` 既无 `CornerRadius` 也无 `OpacityTransition`；而上游代码直接给 `RootGrid.CornerRadius` 赋值 | 淡入淡出时长与上游一致（0.3s） |
+| 11 | `public new async void Hide()` / `Close()` | 同签名（`new` 遮蔽 `WindowEx.Hide()`/`Window.Close()`） | Avalonia 侧 `WindowEx.Hide` 是 virtual、`Close` 是普通方法 | 先淡出 300ms 再隐藏/关闭，与上游一致 |
+| 12 | `RunningGameService.OpenOverlayWindow()` 第一行 `return false;`（其后为死代码） | 按后半段意图实现：解析句柄成功即 `Dispatcher.UIThread.Post` 里 `new OverlayWindow()` + `ShowActive` | 上游「Overlay 未启用」是功能开关而非平台差异 | 现在在 X11 上可用；`_latestActiveGame` 来自 `AddRuninngGame` |
+| 13 | `User32.IsIconic(hwnd)`（最小化判定） | 用「`xdotool` 能否解析到窗口句柄」代替 | Linux 无等价查询 | 最小化时可能仍显示覆盖层（无碍） |
+| 14 | `_overlayWindow?.DispatcherQueue.TryEnqueue(…Close)`（游戏全退出时） | `Dispatcher.UIThread.Post(…Close)` | Avalonia 用 `Dispatcher` | 无 |
+
+行为级遗留（不影响构建/启动）：
+
+- 覆盖层依赖 `xdotool`（与抓屏后端同一依赖，缺失时投影到主屏工作区/不激活游戏窗口）。
+- Wayland 下无法枚举/激活外部游戏窗口，`OpenOverlayWindow` 会因句柄解析失败返回 `false`（与上游「未启用」的观察结果一致）。
+- 上游 `RunningGameService` 的前台窗口钩子仍未移植（`WinEventHook` 只是字段承载），因此「最近活跃游戏」= 最后 `AddRuninngGame` 的游戏。
