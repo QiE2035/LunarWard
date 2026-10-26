@@ -64,6 +64,13 @@ public sealed partial class BBSWebBridge : UserControl
     private bool initialized = false;
 
 
+    /// <summary>
+    /// Linux: 上游是普通 CLR 属性（WinUI 的 x:Bind 支持），Avalonia 的 {Binding} 目标必须是 AvaloniaProperty，
+    /// 因此补一个 DirectProperty 包装，宿主窗口的 CurrentGameBiz="{Binding CurrentRole.GameBiz}" 才能生效。
+    /// </summary>
+    public static readonly DirectProperty<BBSWebBridge, GameBiz> CurrentGameBizProperty =
+        AvaloniaProperty.RegisterDirect<BBSWebBridge, GameBiz>(nameof(CurrentGameBiz), o => o.CurrentGameBiz, (o, v) => o.CurrentGameBiz = v);
+
     public GameBiz CurrentGameBiz { get; set; }
 
 
@@ -74,6 +81,12 @@ public sealed partial class BBSWebBridge : UserControl
 
 
     private GameRecordRole _GameRecordRole;
+
+    /// <summary>
+    /// Linux: 同 <see cref="CurrentGameBizProperty"/>，为 Avalonia 绑定补 DirectProperty 包装。
+    /// </summary>
+    public static readonly DirectProperty<BBSWebBridge, GameRecordRole> GameRecordRoleProperty =
+        AvaloniaProperty.RegisterDirect<BBSWebBridge, GameRecordRole>(nameof(GameRecordRole), o => o.GameRecordRole, (o, v) => o.GameRecordRole = v);
 
     public GameRecordRole GameRecordRole
     {

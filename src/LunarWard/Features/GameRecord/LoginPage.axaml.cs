@@ -176,7 +176,7 @@ public sealed partial class LoginPage : PageBase
     }
 
 
-    private void Button_GoBack_Click(object sender, RoutedEventArgs e)
+    private void Button_GoBack_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
@@ -189,7 +189,7 @@ public sealed partial class LoginPage : PageBase
     }
 
 
-    private void Button_GoForward_Click(object sender, RoutedEventArgs e)
+    private void Button_GoForward_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
@@ -202,7 +202,7 @@ public sealed partial class LoginPage : PageBase
     }
 
 
-    private void Button_RefreshOrCancel_Click(object sender, RoutedEventArgs e)
+    private void Button_RefreshOrCancel_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
@@ -219,7 +219,7 @@ public sealed partial class LoginPage : PageBase
     }
 
 
-    private async void Button_Finish_Click(object sender, RoutedEventArgs e)
+    private async void Button_Finish_Click(object? sender, RoutedEventArgs e)
     {
         try
         {

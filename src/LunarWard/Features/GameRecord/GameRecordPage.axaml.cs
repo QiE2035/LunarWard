@@ -326,7 +326,7 @@ public sealed partial class GameRecordPage : PageBase
     }
 
 
-    private void ListView_GameRoles_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void ListView_GameRoles_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (e.AddedItems.Cast<object?>().FirstOrDefault() is GameRecordRole role)
         {
@@ -340,7 +340,7 @@ public sealed partial class GameRecordPage : PageBase
     }
 
 
-    private void MenuFlyoutItem_CopyCookie_Click(object sender, RoutedEventArgs e)
+    private void MenuFlyoutItem_CopyCookie_Click(object? sender, RoutedEventArgs e)
     {
         try
         {
@@ -354,7 +354,7 @@ public sealed partial class GameRecordPage : PageBase
     }
 
 
-    private void MenuFlyoutItem_DeleteGameRole_Click(object sender, RoutedEventArgs e)
+    private void MenuFlyoutItem_DeleteGameRole_Click(object? sender, RoutedEventArgs e)
     {
         GameRecordRole? gameRole = null;
         try
