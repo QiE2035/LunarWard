@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:LunarWard.Controls"
+             x:Class="LunarWard.Controls.ColorfulTextBlock">
+
+    <!-- 上游：<TextBlock x:Name="ThisTextBlock" HorizontalAlignment="{x:Bind HorizontalAlignment}" …
+         TextWrapping="{x:Bind TextWrapping}" />
+         x:Bind 的逐项透传改为构造函数里的代码绑定（见 ColorfulTextBlock.axaml.cs）。
+         上游 IsTextSelectionEnabled="{x:Bind IsTextScaleFactorEnabled}" 是笔误，且 Avalonia TextBlock 无文本选择，不搬运。 -->
+    <TextBlock Name="ThisTextBlock" />
+
+</UserControl>
