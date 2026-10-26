@@ -27,6 +27,13 @@ internal static class Program
             return;
         }
 
+        // 平台替换：上游 App.xaml.cs 在参数为 rpc 时转交独立 RPC 进程入口（NamedPipe → Unix socket 后仍走同一可执行文件）。
+        if (args.Length >= 1 && args[0].ToLowerInvariant() is "rpc")
+        {
+            RPC.RpcRunner.Run(args);
+            return;
+        }
+
         // 命令行子命令（上游 App.xaml.cs 的 HandleStartupAsync）：startgame 等不打开窗口。
         if (Services.StartupCommands.IsCommand(args))
         {

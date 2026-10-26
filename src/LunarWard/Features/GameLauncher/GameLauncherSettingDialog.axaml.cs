@@ -18,6 +18,7 @@ using LunarWard.Features.GameInstall;
 using LunarWard.Features.GameSelector;
 using LunarWard.Features.HoYoPlay;
 using LunarWard.Helpers;
+using LunarWard.RPC.GameInstall;
 using System;
 using System.Collections.Generic;
 using System.IO;

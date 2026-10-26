@@ -12,6 +12,7 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -72,7 +73,7 @@ public sealed partial class InstallGameDialog : StarwardContentDialog
         if (CurrentGameId is null)
         {
             _logger.LogWarning("CurrentGameId is null.");
-            this.Hide();
+            this.Close();
             return;
         }
         SetDefaultInstallationPath();
@@ -145,7 +146,7 @@ public sealed partial class InstallGameDialog : StarwardContentDialog
             if (config is null)
             {
                 _logger.LogWarning("GameConfig of ({GameBiz}) is null.", CurrentGameId.GameBiz);
-                this.Hide();
+                this.Close();
                 return;
             }
             if (!string.IsNullOrWhiteSpace(config.AudioPackageScanDir))

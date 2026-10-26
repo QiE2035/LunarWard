@@ -155,4 +155,19 @@ internal abstract class DriveHelper
             return null;
         }
     }
+
+
+    /// <summary>
+    /// 平台替换：上游用「卷格式是 NTFS」判断能不能建硬链接；Linux 上换成判断本地 POSIX 文件系统
+    /// （ext2/3/4、xfs、btrfs、zfs、tmpfs、overlay 支持硬链接，vfat/exfat/ntfs、网络盘不支持）。
+    /// </summary>
+    public static bool IsHardLinkSupported(string path)
+    {
+        string? format = GetDriveFormat(path);
+        if (string.IsNullOrWhiteSpace(format))
+        {
+            return false;
+        }
+        return format.ToLowerInvariant() is "ext2" or "ext3" or "ext4" or "xfs" or "btrfs" or "zfs" or "tmpfs" or "overlay" or "f2fs";
+    }
 }

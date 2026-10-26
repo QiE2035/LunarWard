@@ -11,6 +11,7 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -77,7 +78,7 @@ public sealed partial class PreDownloadDialog : StarwardContentDialog
         if (CurrentGameId is null)
         {
             _logger.LogWarning("CurrentGameId is null.");
-            this.Hide();
+            this.Close();
             return;
         }
         _ = GetGamePackageAsync();
@@ -410,7 +411,7 @@ public sealed partial class PreDownloadDialog : StarwardContentDialog
     [RelayCommand]
     private void Close()
     {
-        this.Hide();
+        this.Close();
     }
 
 

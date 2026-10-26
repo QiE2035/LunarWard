@@ -662,3 +662,43 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 `BackgroundViewPage` 的**拖拽导出**（`DragItemsStarting` → `DataPackage` 文件对象）未实现；多选复制得到路径文本而非文件对象。Avalonia `StorageProvider` 无法直接构造「文件对象」剪贴板负载，登记为缺口，不阻塞本轮。
 
+
+## 十八、RPC 安装栈（2026-10-26，rpc-port / task-10）
+
+上游 `src/Starward.RPC`（5251 行，gRPC + protobuf 独立进程）整体搬入新工程 `src/LunarWard.RPC`，主程序侧 `Features/RPC/RpcService.cs`（168 行）+ `Features/GameInstall/*`（GamePackageService 184 / GameInstallService 417 / 三个对话框）按上游逐行移植，命名空间 `Starward.*`→`LunarWard.*`，公开成员名保持上游拼写。
+
+### 平台替换清单（逐点）
+
+| 上游（Windows） | 本仓库（Linux） | 文件 |
+| --- | --- | --- |
+| `NamedPipeServerStream` + PipeSecurity（`RPC/{SessionId}/{Version}`） | Unix domain socket：Kestrel `ListenUnixSocket`，路径 `$XDG_RUNTIME_DIR/lunarward/rpc.sock`；`XDG_RUNTIME_DIR` 不可用时回退 `/tmp/lunarward-$UID/rpc.sock`。目录创建后 `chmod 700`，socket 文件 `chmod 600`。 | `src/LunarWard.RPC/AppConfig.cs`、`Program.cs` |
+| 客户端 `NamedPipesConnectionFactory` | `UnixSocketConnectionFactory`（`SocketsHttpHandler.ConnectCallback` → `UnixDomainSocketEndPoint`），地址 `http://localhost`，与服务端共用同一份 `RpcClientFactory`（上游也是共享的） | `src/LunarWard.RPC/RpcClientFactory.cs`、`UnixSocketConnectionFactory.cs` |
+| 命名 Mutex 单实例 | 独占打开锁文件 `rpc.lock`（`FileShare.None`）；`CheckRpcServerRunning` = socket 存在 + 锁获取失败 | `src/LunarWard.RPC/AppConfig.cs`、`RpcClientFactory.cs` |
+| `Process.Start(..., Verb = "runas")` 提权启动 `Starward.RPC.exe` | 无 UAC：`Process.Start` 同一可执行文件，参数 `rpc <StartupMagic> <pid>`；主程序 `Program.Main` 增加 `rpc` 分发（上游 `App.xaml.cs` 同逻辑）。**主程序 `Program.cs` 是本次唯一动到 `Features/RPC|GameInstall` 之外的改动。** | `src/LunarWard/Features/RPC/RpcService.cs`、`src/LunarWard/Program.cs` |
+| `Vanara.PInvoke.Kernel32.CreateHardLink` | libc `link(2)`（`NativeMethods.Link`，`SetLastError`）；同卷判断由「卷格式 == NTFS」改为 `DriveHelper.IsHardLinkSupported`（ext2/3/4、xfs、btrfs、zfs、tmpfs、overlay、f2fs 白名单） | `HardLink.cs`、`GameInstallHelper.cs`、`GamePackageService.cs`、`GameUninstallService.cs`、`Helpers/DriveHelper.cs` |
+| `SharpSevenZip`（内置 7z.dll，仅 Windows native） | 外部 `7zz/7z/7za` 进程（`LUNARWARD_7Z` 可覆盖），zip 走 `ZipFile` 回退；元数据探测（`hdiffmap.json` / `hdifffiles.txt`）用 `7z l -slt` | `GameInstall/ArchiveExtractor.cs` |
+| `Snap.HPatch.HPatch.PatchZstandard`（仅 win-x64 native） | 外部 `hpatchz/hpatch` 进程（`LUNARWARD_HPATCHZ` 可覆盖）；为主程序流提供临时文件桥接（`PatchStream`） | `GameInstall/DiffPatcher.cs`、`GameInstallHelper.cs` |
+| `Vanara` 卷/USB 检测（`unsafe` + `DeviceIoControl`） | `DriveInfo` + `/sys/block/*/removable` + `/proc/self/mountinfo` 前缀判断，去掉 `unsafe` 与 `IsAdmin`（Linux 无提权语义） | `src/LunarWard.RPC/DriveHelper.cs`、`AppConfig.cs` |
+| 缓存目录 `LocalApplicationData\Starward` | 便携模式 `<exe目录>/.cache`；否则 `~/.local/share/LunarWard`（主程序 AppConfig 已同名） | `src/LunarWard.RPC/AppConfig.cs` |
+
+gRPC 服务定义、`.proto` 消息字段与调用侧代码未改（仅 `option csharp_namespace` / `package` 由 `Starward.RPC*` 改为 `LunarWard.RPC*`，两端一致）。
+
+### 自测（已通过）
+
+```
+LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgFjeyDxeA 1
+# 输出：SELFTEST_OK pid=1721122 path=.../LunarWard.RPC
+# 日志：Now listening on: "http://unix:/run/user/1000/lunarward/rpc.sock"
+#       Application started.  → Application is shutting down.
+```
+自测走完整 DI 管线（Serilog、Kestrel、`RpcClientFactory`），客户端与服务端经同一个 Unix socket 通信，验证 `Env.GetRpcServerInfo` 往返；同时校验 socket 文件权限 600、目录 700。
+
+### 已知缺口 / 待办
+
+1. `7z`/`hpatchz` 为**运行时外部依赖**，发行包未内置；缺失时 `SevenZipArchiveExtractor` 抛 `InstallerCapabilityException`（安装/预下载会明确报错，不会静默跳过）。打包脚本需把 `7zz`/`hpatchz` 放进 PATH 或设置 `LUNARWARD_7Z`/`LUNARWARD_HPATCHZ`。
+2. xunit 端到端测试未加：主工程当前被 `Features/GameRecord` 等他人任务拖红，测试工程无法整体编译；本轮以 `LUNARWARD_RPC_SELFTEST` 自测覆盖「服务端起 + 客户端 ping 通」。
+3. 真实游戏包下载/安装全链路（Sophon 分块、断点续传、hpatch 实际打补丁）未在 CI 实测，仅静态对齐 + gRPC 往返验证。
+4. `src/LunarWard.RPC` 为可执行工程（上游为 Library）：新增 `EntryPoint.cs` 与 `LUNARWARD_RPC_SELFTEST` 分支，便于独立启动与自测；上游 `Starward.slnx` 中它是库工程，此处属平台必要偏离。
+5. `Features/RPC/` 目录只落 `RpcService.cs`（与上游一致）；`RpcClientFactory` 按上游同构放在 RPC 工程内、随 ProjectReference 共享，主程序不另存一份。
+6. `GameInstallTaskStartedMessage` 现为 RPC 契约类型 `LunarWard.RPC.GameInstall.GameInstallContext`（上游原名），三个对话框直接发送，无需桥接；文件头注释仍称之为 `LunarWard.Installer.GameInstallContext`，后续清理注释即可（不影响行为）。
+7. `docs/10-ALIGNMENT.md` 中 RPC 行仍写「本轮不建」，需由 lead/settings-migrate 更新；`scripts/check-alignment.py` 的 RPC 映射同理。
