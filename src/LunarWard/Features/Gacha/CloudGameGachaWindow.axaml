@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lang="using:LunarWard.Language"
+        xmlns:sf="using:LunarWard.Frameworks"
+        xmlns:wv="using:LunarWard.Frameworks.WebView"
+        x:Class="LunarWard.Features.Gacha.CloudGameGachaWindow"
+        Title="CloudGameGachaWindow"
+        Width="1000"
+        Height="700">
+
+  <!--
+    上游 Starward/Features/Gacha/CloudGameGachaWindow.xaml 的逐结构移植。
+    WebView2 -> Frameworks/WebView/WebView（WebKitGTK，API 与 WebView2 同形）。
+  -->
+
+  <Grid Name="RootGrid"
+        Padding="0,32,0,0"
+        Background="{StaticResource StarAcrylicBrush}"
+        Loaded="RootGrid_Loaded"
+        RowDefinitions="Auto,*"
+        ColumnDefinitions="*,Auto">
+
+    <TextBlock Name="TextBlock_Info"
+               Margin="12,0,12,0"
+               VerticalAlignment="Center"
+               Foreground="{StaticResource StarTextSecondary}"
+               Text="{x:Static lang:Lang.CloudGameGachaWindow_OpenTheGachaRecordsPageInGameAndThenClickTheButtonOnTheRight}"
+               TextWrapping="Wrap" />
+    <TextBlock Name="TextBlock_Error"
+               Margin="12,0,12,0"
+               VerticalAlignment="Center"
+               Foreground="{StaticResource StarErrorBrush}"
+               TextWrapping="Wrap"
+               IsVisible="False" />
+    <Button Grid.Column="1"
+            Click="Button_Click"
+            Content="获取抽卡记录" />
+
+    <wv:WebView Name="webview" Grid.Row="1" Grid.ColumnSpan="2" />
+
+  </Grid>
+</Window>
