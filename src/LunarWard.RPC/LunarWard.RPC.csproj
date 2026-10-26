@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>LunarWard.RPC</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- 平台替换：上游 Starward.RPC.csproj 的 net10.0-windows / Windows 专属属性已按 Linux 等价替换 -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="ZstdSharp.Port" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="**\*.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LunarWard.Core\LunarWard.Core.csproj" />
+    <ProjectReference Include="..\LunarWard.Setup.Core\LunarWard.Setup.Core.csproj" />
+  </ItemGroup>
+
+</Project>

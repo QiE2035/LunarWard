@@ -7,6 +7,7 @@
     <Project Path="src/LunarWard.Installer/LunarWard.Installer.csproj" />
     <Project Path="src/LunarWard.Launch/LunarWard.Launch.csproj" />
     <Project Path="src/LunarWard.Platform/LunarWard.Platform.csproj" />
+    <Project Path="src/LunarWard.RPC/LunarWard.RPC.csproj" />
     <Project Path="src/LunarWard.Setup.Core/LunarWard.Setup.Core.csproj" />
     <Project Path="src/LunarWard.Wine/LunarWard.Wine.csproj" />
   </Folder>

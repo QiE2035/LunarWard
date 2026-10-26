@@ -51,6 +51,7 @@
     <ProjectReference Include="..\LunarWard.Launch\LunarWard.Launch.csproj" />
     <ProjectReference Include="..\LunarWard.Games\LunarWard.Games.csproj" />
     <ProjectReference Include="..\LunarWard.Installer\LunarWard.Installer.csproj" />
+    <ProjectReference Include="..\LunarWard.RPC\LunarWard.RPC.csproj" />
     <ProjectReference Include="..\LunarWard.Setup.Core\LunarWard.Setup.Core.csproj" />
   </ItemGroup>
 
