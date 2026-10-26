@@ -9,8 +9,8 @@ namespace LunarWard.Features.GameLauncher;
 /// 游戏目录下 <c>config.ini</c> 的 <c>[General]</c> 段。
 /// </summary>
 /// <remarks>
-/// 与 <c>src/LunarWard.Games/GameConfigIni.cs</c> 同名不同命名空间：上游文件就在 Features/GameLauncher，
-/// 这里按上游落位；<c>LunarWard.Games</c> 那份由 endgame 统一删除（见 docs/09 §7.1 #11）。
+/// 上游文件本来就在 <c>Features/GameLauncher</c>，这里按上游落位；同名实现已随 <c>LunarWard.Games</c>
+/// 工程折叠一并删除（task-18），现在是唯一实现。
 /// </remarks>
 public class GameConfigIni
 {

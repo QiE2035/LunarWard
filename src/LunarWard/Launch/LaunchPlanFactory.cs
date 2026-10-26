@@ -3,8 +3,8 @@ using LunarWard.Wine;
 namespace LunarWard.Launch;
 
 /// <summary>
-/// 游戏侧的启动信息。由 <c>LunarWard.Games</c> 的 <c>GameCatalog</c>/<c>GameAdapter</c>
-/// 提供，避免 <c>LunarWard.Launch</c> 反向依赖 <c>LunarWard.Games</c>。
+/// 游戏侧的启动信息。由 <c>Features/GameLauncher</c> 的 <c>GameCatalog</c> 与
+/// <c>Wine/GameAdapter</c> 提供（<c>LunarWard.Games</c> 工程已折叠进 app，见 docs/10 §7）。
 /// </summary>
 public sealed record GameLaunchInfo
 {
@@ -31,7 +31,7 @@ public sealed record GameLaunchInfo
 
 
     /// <summary>
-    /// 无 <c>LunarWard.Games</c> 时的最小兜底（按 kind + edition 猜）。
+    /// 没有 <c>GameCatalog</c> 条目时的最小兜底（按 kind + edition 猜）。
     /// 仅用于测试与"游戏目录里只有一个 exe"的简陋场景。
     /// </summary>
     public static GameLaunchInfo Fallback(string kind, string edition)
