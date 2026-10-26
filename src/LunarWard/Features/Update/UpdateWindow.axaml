@@ -1,0 +1,266 @@
+<sf:WindowEx xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="using:Avalonia.Data.Converters"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.Update"
+             xmlns:s="using:LunarWard"
+             xmlns:sf="using:LunarWard.Frameworks"
+             xmlns:wv="using:LunarWard.Frameworks.WebView"
+             x:Class="LunarWard.Features.Update.UpdateWindow"
+             x:DataType="local:UpdateWindow"
+             Title="LunarWard · Update"
+             CanMaximize="False">
+
+  <!--
+    上游 Starward/Features/Update/UpdateWindow.xaml 的逐结构移植（栏位/间距/文本顺序一致）。
+    控件替换（docs/09-LINUX-DIVERGENCES.md）：
+      x:Bind → {Binding}（x:DataType + AvaloniaUseCompiledBindingsByDefault）；
+      {ThemeResource TextFillColorSecondaryBrush} → {StaticResource StarTextSecondary}；
+      {ThemeResource AccentTextFillColorPrimaryBrush} → {StaticResource StarAccentBrush}；
+      AccentButtonStyle → Classes="accent"；MenuFlyoutSeparator → Separator；
+      FontIcon Glyph EBE7 → TextBlock Classes="icon"（上游同一字体回落策略）；
+      ProgressRing → ProgressBar IsIndeterminate（Avalonia 无圆环控件）；
+      local:UpdateWindow.StringToVisibility(...) → StringConverters.IsNotNullOrEmpty；
+      WebView2 → Frameworks/WebView/WebView（WebKitGTK，API 同形）。
+  -->
+
+  <Grid Name="RootGrid" Loaded="RootGrid_Loaded"
+        ColumnDefinitions="Auto,*">
+
+    <Grid Name="Grid_Update" Margin="24" Grid.Column="0">
+
+      <StackPanel Spacing="8">
+
+        <!--  新版本  -->
+        <TextBlock FontSize="24" Text="{x:Static lang:Lang.UpdatePage_NewVersion}" />
+
+        <!--  当前版本 -> 最新版本  -->
+        <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="8">
+          <TextBlock VerticalAlignment="Bottom"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{x:Static s:AppConfig.AppVersion}" />
+          <TextBlock Classes="icon"
+                     VerticalAlignment="Bottom"
+                     FontSize="16"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="&#xEBE7;" />
+          <TextBlock VerticalAlignment="Bottom"
+                     Foreground="{StaticResource StarAccentBrush}"
+                     Text="{Binding NewVersion.Version}" />
+        </StackPanel>
+
+        <!--  版本信息  -->
+        <Grid Margin="0,8,0,0" ColumnSpacing="12" RowSpacing="8"
+              RowDefinitions="Auto,Auto,Auto"
+              ColumnDefinitions="Auto,*">
+          <!--  架构：  -->
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{x:Static lang:Lang.UpdatePage_Architecture}" />
+          <TextBlock Grid.Row="0" Grid.Column="1"
+                     Text="{Binding ArchitectureText}" />
+          <!--  发布渠道  -->
+          <TextBlock Grid.Row="1" Grid.Column="0"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{x:Static lang:Lang.UpdatePage_ReleaseChannel}" />
+          <TextBlock Grid.Row="1" Grid.Column="1"
+                     Text="{Binding ChannelText}" />
+          <!--  编译时间：  -->
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{x:Static lang:Lang.UpdatePage_BuiltTime}" />
+          <TextBlock Grid.Row="2" Grid.Column="1"
+                     Text="{Binding NewVersion.BuildTime.LocalDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
+        </Grid>
+
+        <!--  相关链接  -->
+        <Grid Margin="0,4,0,0" ColumnSpacing="4" ColumnDefinitions="Auto,*">
+          <TextBlock Margin="0,6,0,0"
+                     VerticalAlignment="Top"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{x:Static lang:Lang.UpdatePage_Links}" />
+          <StackPanel Grid.Column="1" Spacing="4">
+            <HyperlinkButton Click="HyperlinkButton_Click"
+                             Content="{x:Static lang:Lang.UpdatePage_ReleasePage}"
+                             Tag="release" />
+            <!--  Window 内不能用 Converter → 上游静态方法，这里用内置 StringConverters 等价 -->
+            <HyperlinkButton Click="HyperlinkButton_Click"
+                             Tag="package"
+                             IsVisible="{Binding NewVersion.PackageUrl, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
+              <TextBlock>
+                <Run Text="{x:Static lang:Lang.UpdateWindow_FullPackage}" />
+                <Run Text="" />
+                <Run Text="(" /><Run Text="{Binding PackageSizeText}" /><Run Text=")" />
+              </TextBlock>
+            </HyperlinkButton>
+          </StackPanel>
+        </Grid>
+
+        <Separator />
+
+        <!--  更新后自动重启  -->
+        <CheckBox Content="{x:Static lang:Lang.UpdateWindow_AutoRestartAfterUpdate}"
+                  IsChecked="{Binding AutoRestartWhenUpdateFinished, Mode=TwoWay}" />
+        <!--  重启后显示更新内容  -->
+        <CheckBox Margin="0,-4,0,0"
+                  Content="{x:Static lang:Lang.UpdateWindow_DisplayUpdateContentAfterRestart}"
+                  IsChecked="{Binding ShowUpdateContentAfterUpdateRestart, Mode=TwoWay}" />
+      </StackPanel>
+
+      <!--  下载进度条  -->
+      <Grid Margin="0,0,0,48" VerticalAlignment="Bottom" RowSpacing="4"
+            RowDefinitions="Auto,Auto,Auto">
+        <TextBlock Name="TextBlock_Bytes"
+                   Grid.Row="0"
+                   HorizontalAlignment="Left"
+                   Text="{Binding ProgressBytesText}"
+                   IsVisible="{Binding IsProgressTextVisible}" />
+        <TextBlock Name="TextBlock_Progress"
+                   Grid.Row="0"
+                   HorizontalAlignment="Right"
+                   Text="{Binding ProgressPercentText}"
+                   IsVisible="{Binding IsProgressTextVisible}" />
+        <ProgressBar Name="ProgressBar_Update"
+                     Grid.Row="1"
+                     IsVisible="{Binding IsProgressBarVisible}"
+                     Value="0" />
+        <TextBlock Grid.Row="2"
+                   MaxWidth="360"
+                   HorizontalAlignment="Left"
+                   Text="{Binding ErrorMessage}"
+                   TextWrapping="Wrap"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" />
+        <!--  防止内容隐藏后改变布局  -->
+        <TextBlock Grid.Row="2" />
+      </Grid>
+
+      <!--  更新按键  -->
+      <StackPanel HorizontalAlignment="Left"
+                  VerticalAlignment="Bottom"
+                  Orientation="Horizontal"
+                  Spacing="24">
+
+        <Grid>
+          <!--  现在更新  -->
+          <Button Name="Button_UpdateNow"
+                  Classes="accent"
+                  Height="36"
+                  Padding="20,0,20,0"
+                  BorderThickness="0"
+                  Command="{Binding UpdateNowCommand}"
+                  Content="{x:Static lang:Lang.UpdatePage_UpdateNow}"
+                  CornerRadius="18"
+                  IsEnabled="{Binding IsUpdateNowEnabled}" />
+          <!--  重新启动  -->
+          <Button Name="Button_Restart"
+                  Classes="accent"
+                  Height="36"
+                  Padding="20,0,20,0"
+                  BorderThickness="0"
+                  Command="{Binding RestartCommand}"
+                  Content="{x:Static lang:Lang.Common_Restart}"
+                  CornerRadius="18"
+                  IsVisible="False" />
+        </Grid>
+
+        <!--  以后提醒  -->
+        <Grid>
+          <SplitButton Name="Button_UpdateRemindLatter"
+                       Height="36"
+                       BorderThickness="0"
+                       Command="{Binding RemindMeLatterCommand}"
+                       CornerRadius="18"
+                       IsEnabled="{Binding IsUpdateRemindLatterEnabled}"
+                       Opacity="0"
+                       PointerEntered="Button_UpdateRemindLatter_PointerEntered"
+                       PointerExited="Button_UpdateRemindLatter_PointerExited">
+            <TextBlock Margin="4,0,0,0"
+                       Foreground="Transparent"
+                       Text="{x:Static lang:Lang.UpdatePage_RemindLatter}" />
+            <SplitButton.Flyout>
+              <MenuFlyout Placement="Top">
+                <MenuItem Command="{Binding IgnoreThisVersionCommand}"
+                          Foreground="{StaticResource StarAccentBrush}"
+                          Header="{x:Static lang:Lang.UpdatePage_IgnoreThisVersion}" />
+              </MenuFlyout>
+            </SplitButton.Flyout>
+          </SplitButton>
+          <TextBlock Margin="16,0,0,0"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Center"
+                     Foreground="{StaticResource StarAccentBrush}"
+                     IsHitTestVisible="False"
+                     Text="{x:Static lang:Lang.UpdatePage_RemindLatter}" />
+        </Grid>
+
+      </StackPanel>
+
+    </Grid>
+
+    <!--  更新内容加载  -->
+    <StackPanel x:Name="StackPanel_Loading"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="24">
+      <TextBlock HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}"
+                 Text="{x:Static lang:Lang.UpdateContentWindow_RecentlyUpdatedContent}" />
+      <!--  ProgressRing → indeterminate ProgressBar（Avalonia 无圆环控件）  -->
+      <ProgressBar Width="32" Height="32" IsIndeterminate="True" />
+    </StackPanel>
+
+    <!--  更新内容加载出错  -->
+    <StackPanel x:Name="StackPanel_Error"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="24"
+                IsVisible="False">
+      <TextBlock x:Name="TextBlock_Error"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 FontSize="16"
+                 Foreground="{StaticResource StarTextSecondary}" />
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button x:Name="Button_Retry"
+                Height="36"
+                HorizontalAlignment="Left"
+                BorderThickness="0"
+                Command="{Binding RetryCommand}"
+                CornerRadius="18">
+          <TextBlock Margin="8,0,8,0"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{x:Static lang:Lang.DownloadGamePage_Retry}" />
+        </Button>
+        <SplitButton Name="Button_RemindLatter"
+                     Height="36"
+                     BorderThickness="0"
+                     Command="{Binding RemindMeLatterCommand}"
+                     CornerRadius="18">
+          <TextBlock Margin="4,0,0,0"
+                     Foreground="{StaticResource StarTextSecondary}"
+                     Text="{x:Static lang:Lang.UpdatePage_RemindLatter}" />
+          <SplitButton.Flyout>
+            <MenuFlyout>
+              <MenuItem Name="Button_Ignore"
+                        Command="{Binding IgnoreThisVersionCommand}"
+                        Foreground="{StaticResource StarTextSecondary}"
+                        Header="{x:Static lang:Lang.UpdatePage_IgnoreThisVersion}" />
+            </MenuFlyout>
+          </SplitButton.Flyout>
+        </SplitButton>
+      </StackPanel>
+    </StackPanel>
+
+    <!--  webview2 → WebKitGTK WebView  -->
+    <wv:WebView x:Name="webview"
+                Grid.Column="1"
+                Margin="0,32,0,0"
+                IsVisible="False" />
+
+  </Grid>
+
+</sf:WindowEx>
