@@ -39,6 +39,10 @@ public sealed partial class MainWindow : WindowEx
     public static MainWindow? Current { get; private set; }
 
 
+    /// <summary>对话框浮层宿主（<see cref="Services.DialogService"/> 优先使用它）。</summary>
+    public static DialogHostAvalonia.DialogHost? CurrentDialogHost => Current?.RootDialogHost;
+
+
     public MainWindow()
     {
         Current = this;
