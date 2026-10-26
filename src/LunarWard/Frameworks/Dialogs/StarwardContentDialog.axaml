@@ -1,6 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:LunarWard.Views.Starward.Controls">
+        xmlns:controls="using:LunarWard.Frameworks.Dialogs">
 
   <!--
     隐式 ControlTheme 必须挂在 Styles.Resources 里（Avalonia 只在样式树里按类型找默认主题，

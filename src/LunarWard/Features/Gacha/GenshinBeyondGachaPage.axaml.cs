@@ -29,7 +29,7 @@ namespace LunarWard.Features.Gacha;
 /// <remarks>
 /// 平台替换点（见 docs/09 的「七、抽卡与云游戏」）：
 /// <c>InfoBar</c> 进度条 + 取消按钮 → <see cref="GachaProgressToast"/>；
-/// <c>ContentDialog</c> → <see cref="Services.DialogService"/> + <see cref="Views.Starward.Controls.StarwardContentDialog"/>；
+/// <c>ContentDialog</c> → <see cref="Services.DialogService"/> + <see cref="Frameworks.Dialogs.StarwardContentDialog"/>；
 /// <c>Launcher.LaunchFolderAsync(FolderLauncherOptions)</c> → <see cref="RevealInFileManager"/>（xdg-open）；
 /// <c>StorageFile/StorageFolder</c> 校验 → <see cref="File"/>/<see cref="Directory"/>；
 /// <c>FontIcon</c> → <c>TextBlock Classes="icon"</c>；<c>Visibility</c> → <see cref="Avalonia.Visual.IsVisibleProperty"/>；
@@ -332,7 +332,7 @@ public sealed partial class GenshinBeyondGachaPage : PageBase, INotifyPropertyCh
         try
         {
             var textbox = new TextBox();
-            var dialog = new Views.Starward.Controls.StarwardContentDialog
+            var dialog = new Frameworks.Dialogs.StarwardContentDialog
             {
                 // 输入 URL
                 Title = Lang.GachaLogPage_InputURL,

@@ -17,7 +17,7 @@ using LunarWard.Features.ViewHost;
 using LunarWard.Frameworks;
 using LunarWard.Helpers;
 using LunarWard.Services;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

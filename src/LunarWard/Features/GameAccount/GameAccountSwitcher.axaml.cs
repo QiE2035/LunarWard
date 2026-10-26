@@ -7,7 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using LunarWard.Core;
 using LunarWard.Language;
 using LunarWard.Services;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

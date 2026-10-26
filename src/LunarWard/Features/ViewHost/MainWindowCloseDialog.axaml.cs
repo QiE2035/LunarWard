@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using LunarWard.Helpers.Enumeration;
 using LunarWard.Language;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 
 namespace LunarWard.Features.ViewHost;
 

@@ -6,7 +6,7 @@ using LunarWard.Core.HoYoPlay;
 using LunarWard.Features.HoYoPlay;
 using LunarWard.Helpers;
 using LunarWard.RPC.GameInstall;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Avalonia.Input;

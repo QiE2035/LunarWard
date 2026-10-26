@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Helpers;
 using LunarWard.Localization;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

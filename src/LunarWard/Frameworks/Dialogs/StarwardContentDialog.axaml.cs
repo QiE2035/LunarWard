@@ -12,7 +12,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
-namespace LunarWard.Views.Starward.Controls;
+namespace LunarWard.Frameworks.Dialogs;
 
 /// <summary>
 /// Starward / WinUI <c>ContentDialog</c> 的 Avalonia 等价物：窗口内浮层对话框的内容容器。

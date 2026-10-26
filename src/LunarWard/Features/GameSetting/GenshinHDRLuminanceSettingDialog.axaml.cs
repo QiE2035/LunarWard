@@ -7,7 +7,7 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Core;
 using LunarWard.Language;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 using Microsoft.Extensions.Logging;
 
 namespace LunarWard.Features.GameSetting;

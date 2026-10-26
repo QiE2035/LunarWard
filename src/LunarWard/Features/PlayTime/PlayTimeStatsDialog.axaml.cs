@@ -6,7 +6,7 @@ using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Features.Database;
 using LunarWard.Features.PlayTime.Charts;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

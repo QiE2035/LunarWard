@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;

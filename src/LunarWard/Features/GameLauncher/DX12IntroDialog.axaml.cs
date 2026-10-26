@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 using LunarWard.Core.HoYoPlay;
-using LunarWard.Views.Starward.Controls;
+using LunarWard.Frameworks.Dialogs;
 
 namespace LunarWard.Features.GameLauncher;
 
