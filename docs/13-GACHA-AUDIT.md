@@ -96,6 +96,9 @@
 | `GachaLogQueryTests.cs` | `GachaLogQuery.ToString()` 字段顺序与命名：原神/星铁 `gacha_type=`，绝区零 `real_gacha_type=`；`BeyondGachaLogQuery`；`size=20` 固定 |
 | `GachaPaginationTests.cs` | `GetGachaLogByTypeAsync` 推进规则：满 20 且 `Last.Id > end_id` 才 `page++`/`end_id=Last.Id`；短页、空页、`Last.Id <= end_id` 三种停止条件 |
 | `GachaNoUpTests.cs` | `GachaNoUp.Dictionary` 键拼法（`{GameBiz}{gacha_type}`）与三游戏区间表存在性；`ComputeIsUp` 区间内=false / 区间外=true / 未知物品=true / 未知卡池或游戏=null；原神 400 归一到 301 |
+| `GachaAlignmentTests.cs` | `GachaTypeStats` 的 `Avarage_5_*` 拼写与格式（上游刻意拼作 `Avarage`）；`GachaBanner.Value`/`ToLocalization()`；`GachaLogItemEx` 的 `Progress` 三套分母（90 / 原神武器 80 / 星铁光锥 80 / ZZZ 音擎·邦布 80）、`IdText`、`IsUp`（`new bool` 与基类 `int` 各自独立）、`IsPointerIn` 的 `PropertyChanged`；`GachaLogUrl` 构造器时间戳；`GachaUidArchiveDisplay.ArchiveName` 三游戏 + `Timezone` 联动 `LastItemTimeOffest`；`UIGF4ImportException` 的 Game/Uid/Message；三个 Rarity 背景/图标转换器（1..5 与 `Transparent.png` 兜底）；`GachaPityProgressBackgroundBrushConverter`（74/63/65 三档变色、90/80 保底 offset、`Opacity=0.4`、相对端点、非 item 返回 null）；`SelfQueryStatsNumberConverter` 的 `+N`/`-N`/`-` 与 `ConvertBack` 抛错 |
+| `GachaModelParityTests.cs` | 两份 `GachaNoUp`（`Features` 移植版 vs `Core` 遗留版）卡池键集合、每个物品的 `NoUpTimes` 区间逐项一致；`ComputeIsUp` 只在 Core 遗留版；ZZZ 图鉴 `ItemList`/`ItemListAvatar`/`ItemListBuddy`/`IconInfo`/`IconInfoItem` 的 `JsonPropertyName` 映射 |
+| `GachaLinuxDivergenceTests.cs` | 把下文 G-1..G-8 逐条落成结构断言（G-2/G-3 明确标注「单测不可断言」并只锁定替代实现存在） |
 | `GachaExportSchemaTests.cs` | UIGF v3 `info` 字段名、顺序与取值（`uid`/`gacha_type`/`item_id` 写成字符串，`time` 为 `yyyy-MM-dd HH:mm:ss`，`export_app` 默认 Starward，`uigf_version=v3.0`，`srgf_version=v1.0`）；SRGF 列表项；UIGF v4.2 顶层 `info`/`hk4e`/`hkrpg`/`nap`/`hk4e_ugc` 与归档 `uid`/`timezone`/`lang`（`lang` 为 null 时整个省略） |
 
 运行：
@@ -113,9 +116,22 @@ dotnet test tests/LunarWard.UnitTests/LunarWard.UnitTests.csproj --filter "Fully
 | G-3 | `AppWindow.TitleBar.ExtendsContentIntoTitleBar` / `DesktopAcrylicBackdrop` 无等价 | 标题栏由窗口管理器绘制，窗口内不再自绘亚克力 | 注释保留上游写法 + `WindowEx` 适配；`docs/09 §十五` |
 | G-4 | WinUI `InfoBar`（进度条 + 取消按钮）不存在 | 抽卡同步进度提示 | 以 `Features/Gacha/GachaProgressToast.cs` 等价实现（标题/消息/取消按钮，5s 自动消失） |
 | G-5 | `TextBlock.IsTextTrimmedChanged` 不存在 | `GachaStatsCard` 的自适应字号（上游页面从未调用该处理器） | 删除处理器，保留 `ResetGachaTypeTextFontSize()` |
-| G-6 | `Core/SelfQuery/SelfQueryService.cs` 是本地遗留（上游 Core 无此文件），与本簇 `Features/SelfQuery/SelfQueryService.cs` 同名，导致 `AppConfig.ServiceProvider.cs` 里 `CS0104` 二义性 | 影响全仓编译 | 需 Core owner 删除 `src/LunarWard.Core/SelfQuery/SelfQueryService.cs`（不在本簇写作用域） |
+| G-6 | `Core/SelfQuery/SelfQueryService.cs` 是本地遗留（上游 Core 无此文件），与本簇 `Features/SelfQuery/SelfQueryService.cs` 同名，曾在 `AppConfig.ServiceProvider.cs` 引发 `CS0104` 二义性 | 旧 MVVM 层（`ViewModels/Starward/SelfQueryPageViewModel.cs`、`Launch/Database/SelfQueryLogStore.cs`）仍在用 Core 那份 | lead 已在 `AppConfig.ServiceProvider.cs` 用 `using SelfQueryService = LunarWard.Features.SelfQuery.SelfQueryService;` 消歧，**不删** Core 文件；登记为 endgame 删除项（`docs/10 §7`）。单测 `G6_BothSelfQueryServices_ExistAndAreDistinct` 锁定两份并存 |
 | G-7 | `OverlayWindow` 未移植，`RunningGameService.OpenOverlayWindow()` 恒 false | 云游戏叠加层不可用 | CloudGame 簇未调用该 API，无需改动；待叠加层落地后复评 |
 | G-8 | 抽卡数据层 SQL 由 `LunarWard.Features.Database.DatabaseService.CreateConnection()` 提供，连接串与上游一致但库文件名/目录不同 | 数据库文件位置差异（平台等价） | `docs/09 §十五` 已记 |
+
+### G-9 本地遗留双份 `GachaNoUp`
+
+| 项 | `src/LunarWard.Core/Gacha/GachaNoUp.cs`（本地遗留） | `src/LunarWard/Features/Gacha/GachaNoUp.cs`（移植版，`359b654`） |
+| --- | --- | --- |
+| 字节数 / 行数 | 20698 / 543 | 18826 / 503 |
+| namespace | `LunarWard.Core.Gacha` | `LunarWard.Features.Gacha` |
+| `using System.Globalization;` | 有 | 无（上游无） |
+| `ComputeIsUp(string gameKind, int gachaType, int itemId, DateTime time)` | 有（LunarWard 补充：区间内=false、区间外=true、卡池无表=null、原神 400→301） | 无（上游无） |
+| 属性初始化器 | `Game { get; set; } = null!`、`Name { ... } = null!`、`NoUpTimes { ... } = []` | 无初始化器（净上游写法） |
+| 三游戏卡池/物品/时间段数据 | 一致 | 一致 |
+
+影响面：`Features/Gacha/**` 内的 `GachaNoUp.Dictionary` 因同命名空间优先，解析到**移植版**；`Core` 遗留版由 Launcher / 旧 MVVM 使用。两份数据逐项相同（单测 `GachaModelParityTests` 锁定），故当前行为一致；endgame 删除 Core 遗留版时需把 `ComputeIsUp` 的调用点一并收敛。
 
 ## 六、验收命令
 
