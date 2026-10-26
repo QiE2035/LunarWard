@@ -12,6 +12,7 @@ using LunarWard.Features.Database;
 using LunarWard.Frameworks;
 using LunarWard.Helpers;
 using LunarWard.Services;
+using InAppToast = LunarWard.Helpers.InAppToast;
 using LunarWard.Views.Starward.Controls;
 using System;
 using System.Collections.Generic;

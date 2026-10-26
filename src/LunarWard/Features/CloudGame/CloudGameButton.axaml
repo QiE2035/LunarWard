@@ -1,0 +1,94 @@
+<UserControl x:Class="LunarWard.Features.CloudGame.CloudGameButton"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+
+    <Button Name="Button_CloudGame"
+            Padding="0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Background="Transparent"
+            BorderThickness="0"
+            CornerRadius="8">
+        <Image Width="28"
+               Height="28"
+               Source="avares://LunarWard/Assets/Image/icon_cloudgame.png" />
+
+        <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedLeft" Opened="Flyout_Opened">
+                <Grid Margin="-12,-12,-8,-12"
+                      ColumnSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Image Grid.RowSpan="2"
+                           Width="100"
+                           Height="100"
+                           Source="avares://LunarWard/Assets/Image/animation_game_launch.png" />
+
+                    <TextBlock Grid.Column="1"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom"
+                               FontSize="16"
+                               Foreground="{StaticResource StarTextSecondary}"
+                               Text="{x:Static lang:Lang.CloudGameButton_CloudGame}" />
+
+                    <Border Name="Button_StartGame"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Height="36"
+                            MinWidth="120"
+                            Background="{StaticResource StarOverlayAcrylicBrush}"
+                            CornerRadius="18"
+                            IsVisible="{Binding ExePath, Converter={StaticResource ObjectToVisibilityConverter}}">
+                        <Button HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{Binding StartGameCommand}">
+                            <TextBlock Foreground="{StaticResource StarTextSecondary}" Text="{x:Static lang:Lang.LauncherPage_StartGame}" />
+                        </Button>
+                    </Border>
+
+                    <Border Name="Button_InstallGame"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Height="36"
+                            MinWidth="120"
+                            Background="{StaticResource StarOverlayAcrylicBrush}"
+                            CornerRadius="18"
+                            IsVisible="{Binding ExePath, Converter={StaticResource ObjectToVisibilityReversedConverter}}">
+                        <Button HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{Binding InstallGameCommand}">
+                            <TextBlock Foreground="{StaticResource StarTextSecondary}" Text="{x:Static lang:Lang.LauncherPage_InstallGame}" />
+                        </Button>
+                    </Border>
+
+                    <TextBlock Name="TextBlock_RunningProcessInfo"
+                               Grid.Row="2"
+                               Grid.ColumnSpan="2"
+                               Margin="8,0,8,4"
+                               FontSize="12"
+                               Foreground="{StaticResource StarTextSecondary}"
+                               Text="{Binding RunningProcessInfo}"
+                               IsVisible="{Binding RunningProcessInfo, Converter={StaticResource ObjectToVisibilityConverter}}" />
+
+                </Grid>
+            </Flyout>
+        </Button.Flyout>
+
+    </Button>
+
+</UserControl>
