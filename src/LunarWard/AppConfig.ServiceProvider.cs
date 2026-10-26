@@ -7,9 +7,11 @@ using LunarWard.Core.HoYoPlay;
 using LunarWard.Core.SelfQuery;
 using LunarWard.Features.Database;
 using LunarWard.Features.Gacha;
+using LunarWard.Features.Gacha.UIGF;
 using LunarWard.Features.GameAccount;
 using LunarWard.Features.GameLauncher;
 using LunarWard.Features.HoYoPlay;
+using LunarWard.Features.Update;
 using LunarWard.Setup.Core;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,14 +54,17 @@ public static partial class AppConfig
             // TODO(port): GamePackageService（Features/GameInstall 落地后）
             // TODO(port): PlayTimeRecordService / PlayTimeStatsService（Features/PlayTime 落地后）
             sc.AddSingleton<GameNoticeService>();
-            // TODO(port): SetupService
+            sc.AddSingleton<SetupService>();
 
             sc.AddSingleton<GenshinGachaClient>();
             sc.AddSingleton<StarRailGachaClient>();
             sc.AddSingleton<ZZZGachaClient>();
             sc.AddSingleton<GenshinGachaService>();
             sc.AddSingleton<StarRailGachaService>();
-            // TODO(port): ZZZGachaService / UIGFGachaService / GenshinBeyondGachaClient / GenshinBeyondGachaService
+            sc.AddSingleton<ZZZGachaService>();
+            sc.AddSingleton<UIGFGachaService>();
+            sc.AddSingleton<GenshinBeyondGachaClient>();
+            sc.AddSingleton<GenshinBeyondGachaService>();
 
             sc.AddSingleton<HoyolabClient>();
             sc.AddSingleton<HyperionClient>();
@@ -69,7 +74,7 @@ public static partial class AppConfig
             // TODO(port): SelfQueryService
 
             sc.AddHttpClient<ReleaseClient>().ConfigLunarWardHttpClient();
-            // TODO(port): UpdateService
+            sc.AddTransient<UpdateService>();
 
             // TODO(port): RpcService / GameInstallService
 
@@ -78,7 +83,7 @@ public static partial class AppConfig
 
             // TODO(port): ScreenCaptureService
 
-            // TODO(port): sc.AddHttpClient<LogUploadClient>().ConfigLunarWardHttpClient();
+            sc.AddHttpClient<LogUploadClient>().ConfigLunarWardHttpClient();
 
 
             _serviceProvider = sc.BuildServiceProvider();

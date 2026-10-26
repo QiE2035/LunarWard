@@ -1,0 +1,15 @@
+<controls:StarwardContentDialog xmlns="https://github.com/avaloniaui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                xmlns:controls="using:LunarWard.Views.Starward.Controls"
+                                xmlns:local="using:LunarWard.Features.ViewHost"
+                                x:Class="LunarWard.Features.ViewHost.MainWindowCloseDialog"
+                                x:DataType="local:MainWindowCloseDialog">
+  <!-- 移植自 Starward/src/Starward/Features/ViewHost/MainWindowCloseDialog.xaml
+       ContentDialog → StarwardContentDialog；WinUI RadioButtons → Avalonia RadioButton 列表（code-behind 生成）。 -->
+  <StackPanel Margin="24,8,24,24" Spacing="4">
+    <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+               Text="{x:Static local:MainWindowCloseDialog.HintText}"
+               TextWrapping="Wrap" />
+    <StackPanel Name="OptionsPanel" Spacing="4" />
+  </StackPanel>
+</controls:StarwardContentDialog>
