@@ -2,7 +2,7 @@
 
 > 由 `python3 scripts/port-backlog.py --write` 生成，勿手改表格；人工结论写在每节标题下的「备注」里。
 
-上游文件 **314** 个，本地已有同名落点 **308** 个，**缺 6** 个；本地独有文件 **279** 个（需并入 Features 或删除）。
+上游文件 **314** 个，本地已有同名落点 **308** 个，**缺 6** 个；本地独有文件 **277** 个（需并入 Features 或删除）。
 
 > 注：上表「缺」包含以**等价实现**承载的上游文件（WinUI/Win32 专有物，见`scripts/check-alignment.py` 的 `EQUIVALENTS`）；等价项在 `check-alignment.py` 里单独计数、不计为失败。文件级对齐以 `check-alignment.py` 的 `missing: []` 为准。
 
@@ -472,7 +472,6 @@
 - `Launch/ScreenshotService.cs`
 - `Launch/ToolboxSettings.cs`
 - `Launch/UrlProtocol.cs`
-- `Localization/AppStrings.cs`
 - `Platform/AutostartEntry.cs`
 - `Platform/FileSystem.cs`
 - `Platform/LinuxProcessTree.cs`
@@ -492,7 +491,6 @@
 - `Services/GameScanner.cs`
 - `Services/GameSettingRegistry.cs`
 - `Services/GameUninstaller.cs`
-- `Services/ReleaseChecker.cs`
 - `Services/StarwardAssets.cs`
 - `Services/VideoBackgroundPlayer.cs`
 - `Services/WineRegistry.cs`

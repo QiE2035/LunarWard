@@ -1,5 +1,12 @@
 # 08 — UI 源码对照（Starward → LunarWard）
 
+> **【已废弃 · 2026-10-26】本文描述的是「重实现时期」的页面布局计划与逐页对照进度
+> （旧 `Views/ViewModels` 分层、`SettingXxxView.axaml` 等自造文件名）。这些页面已整体
+> 替换为上游同名 `Features/**` 页面与 `code-behind`，本表不再维护，仅作历史记录保留。
+> 当前的对齐口径、进度看板与验收命令见 `docs/10-ALIGNMENT.md`；平台替换项见
+> `docs/09-LINUX-DIVERGENCES.md`；非上游文件清单见 `docs/17-PLATFORM-LAYER.md`。
+> （`scripts/check-parity.py` 已随之停用：它校验的路径来自本文旧表。）
+
 > 用户的验收标准：**Starward 的 UI 源码是唯一真值**。先一比一移植 XAML 结构与
 > Style，再用 1200×676 截图验证；不按截图猜版式，不把"自创设计"写进注释冒充合同。
 > 本文记录每一页的源文件对应关系、当前完成度、剩余差距和下一步队列。

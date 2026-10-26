@@ -148,17 +148,21 @@ src/LunarWard/
 
 ### 4.5 进度看板（同名落点/上游文件）
 
-| 项 | 读数（2026-10-26 20:10 实测） |
+| 项 | 读数（2026-10-26 终验 `scripts/verify.sh`） |
 |---|---|
 | 文件映射 | `python3 scripts/check-alignment.py`：**613 上游 = 606 同名落点 + 7 等价，missing 0，命名空间泄漏 0，PASS** |
 | 分树 | `src/Starward` 308/314（6 等价）、`src/Starward.Core` 248/248、`src/Starward.Language` 13/13、`src/Starward.Setup.Core` 11/11、`src/Starward.RPC` 26/27（1 等价：NamedPipe→Unix socket） |
 | 分组 | 全部 0 缺失：GameRecord 47、Gacha 40、GameLauncher 26、Setting 25、Screenshot 23、ViewHost 20（2 等价）、Helpers 16（2 等价）、PlayTime 14、Background 13、Converters 11、GameInstall 9、Codec 8、Update 8、GameSetting 7、GameSelector 6、GameAccount 5、Controls 5（2 等价）、Overlay 4、SelfQuery 4、CloudGame 3、GamepadControl 3、UrlProtocol 3、Database 2、Frameworks 2、AppConfig 4、App.xaml(.cs)、Program.cs、GameFeatureConfig、HoYoPlay、RPC |
-| 编译 | `dotnet build LunarWard.slnx` **0 错误**（252 警告全部为上游原样的 nullable/CA 风格警告） |
-| 测试 | `dotnet test tests/LunarWard.UnitTests` 614 项（AppStrings 相关 6 项随 task-22 删除）；`tests/LunarWard.Installer.UnitTests` 36/36；`tests/LunarWard.IntegrationTests` 26/27（1 项 flaky） |
-| 自检 | 17 页 `--screenshot` 全过（`launcher gacha beyond selfquery screenshot toolbox settings game-setting` + 9 个设置分页） |
+| 编译 | `dotnet build LunarWard.slnx --no-incremental` **0 错误**（252 警告，全部为上游原样的 nullable/CA 风格警告 + Avalonia 弃用提示） |
+| 测试 | `LunarWard.UnitTests` **532/532**、`LunarWard.Installer.UnitTests` **36/36**、`LunarWard.IntegrationTests` **27/27**（合计 595，全绿） |
+| 自检 | 17 页 `--screenshot` 全过（`launcher gacha beyond selfquery screenshot toolbox settings game-setting` + 9 个设置分页），图在 `$HOME/.cache/lwart-verify/smoke/` |
+| 依赖 | 跨平台包与上游版本逐项一致（Dapper 2.1.79 等）；Windows 专有包 25 个走等价物（清单见 §2.2） |
+| 工程 | 上游 7 工程 → 本仓库 5 个 `src` 工程 + 3 个测试工程；Setup/Launcher 的处置见 §8 |
+
+一条命令跑完全部四项：`bash scripts/verify.sh`（构建产物与日志写 `$HOME/.cache/lwart-verify`，不占 `/tmp`）。
 
 总览随时用 `python3 scripts/port-backlog.py` 重算（`--write` 写回 `docs/11-PORT-BACKLOG.md`；其中「缺」包含等价项，以 `check-alignment.py` 为准）。
-注意：「有文件」只代表路径对齐，内容是否按上游实现要逐节核对。
+注意：「有文件」只代表路径对齐，内容是否按上游实现要逐节核对；`docs/09` 记录了每一处平台替换的依据。
 
 ## 5. 阶段计划
 
@@ -174,9 +178,11 @@ src/LunarWard/
 
 ## 6. 验收
 
-1. `scripts/check-parity.py` 与新增的 `scripts/check-alignment.py` 通过（工程表、
-   包表、文件映射表三类检查）。
-2. `dotnet build LunarWard.slnx` 0 错误；`dotnet test` 全绿。
+1. `bash scripts/verify.sh` 一次跑完四项：`--no-incremental` 全量构建 0 错误、
+   三个测试工程全绿、17 页截图自检全 `SCREENSHOT_OK`、`check-alignment.py` PASS
+   （工程表、包表、文件映射表、命名空间泄漏四类检查）。
+2. `dotnet build LunarWard.slnx` 0 错误；`dotnet test` 全绿（532 + 36 + 27）。
+   `scripts/check-parity.py` 已随 `docs/08` 废弃而停用（它校验的是重实现时期的旧路径）。
 3. 每处与上游的偏差都能在 `09-LINUX-DIVERGENCES.md` 找到平台依据；
    找不到依据的偏差视为未完成。
 

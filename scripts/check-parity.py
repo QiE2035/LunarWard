@@ -33,6 +33,10 @@ def main() -> int:
         upstream = Path(sys.argv[sys.argv.index('--upstream') + 1])
 
     text = DOC.read_text(encoding='utf-8')
+    if '【已废弃' in text:
+        print('docs/08-UI-PARITY.md 已废弃（重实现时期的页面计划，已被 Features/** 上游同名页取代）')
+        print('当前验收改用：python3 scripts/check-alignment.py')
+        return 0
     missing, checked = [], 0
     for page, src, dst in rows(text):
         for cell, base in ((src, upstream), (dst, ROOT)):

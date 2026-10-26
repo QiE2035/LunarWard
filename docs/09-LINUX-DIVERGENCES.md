@@ -1,5 +1,38 @@
 # 09 — Linux 与上游的差异清单（不可移植项与替代方案）
 
+
+## 目录
+
+1. 没有 Linux 等价物（保留结构，禁用并说明）
+2. 素材缺失（占位结构 + 注释，不画假图）
+3. 框架层替代（WinUI 控件 → Avalonia 等价物）
+4. 字体与背景（2026-10-25，`fix/ui-parity-pass`）
+5. 浏览器内核（WebView2 → WebKitGTK 4.1，2026-10-26，`task-2`）
+6. Helpers 层（2026-10-26，Lead）
+7. Features/Game*（launcher 系）移植（2026-10-26，launcher-port）
+8. Controls + Features/Screenshot 移植（2026-10-26，dapper-db/task-4）
+9. Features/Background（2026-10-26，settings-migrate / task-6）
+10. Features/Setting（2026-10-26，settings-migrate / task-3）
+11. Features/Codec（图片编解码：Win2D + Starward.Codec → SkiaSharp + 自写 PNG + 外部 CLI）
+12. 更新与安装（Features/Update）
+13. 手柄增强（Features/GamepadControl）
+14. URL 协议（Features/UrlProtocol）
+15. 抽卡与云游戏（2026-10-26，gacha-port / task-8）
+16. Features/GameRecord 移植（2026-10-26，webview-webkit / task-5）
+17. Features/GameSetting（2026-10-26，settings-migrate / task-11）
+18. Features/GameSelector、GameLauncherPage、GameLauncherSettingDialog、GameInstall 对话框（2026-10-26，launcher-port / task-7）
+19. Features/Background 平台替换与验收（2026-10-26，settings-migrate / task-13）
+20. RPC 安装栈（2026-10-26，rpc-port / task-10）
+21. Features/PlayTime（2026-10-26，misc-port / task-12）
+22. 启动器簇行为级审计补丁（2026-10-26，launcher-port / task-15）
+23. Features/ViewHost（窗口外壳：MainWindow / MainView / 等价控件，2026-10-26，Lead）
+24. 全量 XAML 重编译暴露的共性问题（2026-10-26，dapper-db / task-4 收尾）
+25. 跨切面 XAML 收口（2026-10-26，Lead）
+26. 启动器簇 XAML 全量重建修复（2026-10-26，launcher-port）
+27. 应用入口（`App.axaml.cs` / `Program.cs` / 单实例，2026-10-26，Lead）
+28. Features/Overlay 收尾（`OverlayWindow`，2026-10-26，dapper-db / task-20）
+29. i18n 收尾：删除 `AppStrings`（task-22，2026-10-26，settings-migrate）
+
 > Starward 是 Windows 应用；LunarWard 的目标是「Linux 上能用、UI 与上游一致」。
 > 本文把**所有主动与上游不一致的地方**集中登记：为什么不做、做了什么替代、在
 > `08-UI-PARITY.md` 的哪一行。原则：能移植的必须移植；不能移植的显式说明，
@@ -391,6 +424,8 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 **删除清单（本轮已 git rm/移动）**：`src/LunarWard/Views/Starward/Settings/` 整目录（10 个 `Setting*View.axaml(.cs)` + `SettingSectionView.cs`）、`src/LunarWard/ViewModels/Starward/Settings/` 整目录（10 个 `Setting*ViewModel.cs`）、`ViewModels/Starward/SettingPageViewModel.cs`。
 **未对齐（明确缺口）**：无（19 个上游文件全部有同名落点）。
 
+- **关于页更新路径已与上游统一（task-23，2026-10-26）**：`ReleaseChecker`（本地自造的 GitHub release 抓取 + 语义化比较）已删除，改走上游 `UpdateService.GetLatestVersionAsync()` + `NuGetVersion.TryParse(AppConfig.AppVersion)` 比较 + `UpdateWindow.NewVersion` 跳转；预览渠道开关恢复为可写（`AppConfig.EnablePreviewRelease`），页面形态按 `Features/Setting/AboutSetting.xaml` 对齐（`ProgressRing` → 不确定态 `ProgressBar`）。
+
 ## 十一、Features/Codec（图片编解码：Win2D + Starward.Codec → SkiaSharp + 自写 PNG + 外部 CLI）
 
 上游 `Features/Codec/` 的全部能力压在三个 Windows-only 组件上：`Microsoft.Graphics.Win2D`（`CanvasBitmap`/`CanvasRenderTarget`/`CanvasEffect` 导出链）、`ComputeSharp.D2D1`（着色器）、`Starward.Codec` NuGet（AVIF/JXL/PNG/UltraHDR/ICC/VP9 解码器，源码不在仓库）。Linux 三者全不可用，本移植按「公开 API 名字/参数一字不改，只换类型」的原则重建：
@@ -569,7 +604,7 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 ---
 
-## 十一、Features/GameSetting（2026-10-26，settings-migrate / task-11）
+## 十七、Features/GameSetting（2026-10-26，settings-migrate / task-11）
 
 上游 `src/Starward/Features/GameSetting/`（7 文件）在本仓库已同名落点，本轮把「页面未接线 + 旧 VM 三件套仍在服役」的偏移收口：
 
@@ -588,7 +623,7 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 ---
 
-## 十二、Features/GameSelector、GameLauncherPage、GameLauncherSettingDialog、GameInstall 对话框（2026-10-26，launcher-port / task-7）
+## 十八、Features/GameSelector、GameLauncherPage、GameLauncherSettingDialog、GameInstall 对话框（2026-10-26，launcher-port / task-7）
 
 上游这四组 UI 在本仓库已同名落点（`Features/GameSelector/`、`Features/GameLauncher/`、`Features/GameInstall/`）。逐文件对应的平台替换如下（服务层见 §七）：
 
@@ -668,7 +703,7 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 
 ---
 
-## 十七、Features/Background 平台替换与验收（2026-10-26，settings-migrate / task-13）
+## 十九、Features/Background 平台替换与验收（2026-10-26，settings-migrate / task-13）
 
 承接 §九（逐条渲染差异表），本节只记 task-13 的**平台替换清单、去重结论与验收证据**，避免与 §九 重复。
 
@@ -719,7 +754,7 @@ Debian/Ubuntu `sudo apt install libwebkit2gtk-4.1-0 libgtk-3-0 libsoup-3.0-0`；
 `BackgroundViewPage` 的**拖拽导出**（`DragItemsStarting` → `DataPackage` 文件对象）未实现；多选复制得到路径文本而非文件对象。Avalonia `StorageProvider` 无法直接构造「文件对象」剪贴板负载，登记为缺口，不阻塞本轮。
 
 
-## 十八、RPC 安装栈（2026-10-26，rpc-port / task-10）
+## 二十、RPC 安装栈（2026-10-26，rpc-port / task-10）
 
 上游 `src/Starward.RPC`（5251 行，gRPC + protobuf 独立进程）整体搬入新工程 `src/LunarWard.RPC`，主程序侧 `Features/RPC/RpcService.cs`（168 行）+ `Features/GameInstall/*`（GamePackageService 184 / GameInstallService 417 / 三个对话框）按上游逐行移植，命名空间 `Starward.*`→`LunarWard.*`，公开成员名保持上游拼写。
 
@@ -759,7 +794,7 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 6. `GameInstallTaskStartedMessage` 现为 RPC 契约类型 `LunarWard.RPC.GameInstall.GameInstallContext`（上游原名），三个对话框直接发送，无需桥接；文件头注释仍称之为 `LunarWard.Installer.GameInstallContext`，后续清理注释即可（不影响行为）。
 7. `docs/10-ALIGNMENT.md` 中 RPC 行仍写「本轮不建」，需由 lead/settings-migrate 更新；`scripts/check-alignment.py` 的 RPC 映射同理。
 
-## 十九、Features/PlayTime（2026-10-26，misc-port / task-12）
+## 二十一、Features/PlayTime（2026-10-26，misc-port / task-12）
 
 对应上游 `Features/PlayTime/`（9 文件，含 `PlayTimeButton`/`PlayTimeStatsDialog` 各一对 xaml + xaml.cs）+ `Features/PlayTime/Charts/`（5 文件），共 14 个上游文件一一直译，逐文件移植：类名、成员名、SQL、状态机、统计口径、图表公开 API（`BarChart.Items`/`PlotHeight`/`MaxBarWidth`、`CalendarHeatmap.Days`/`CellSize`/`CellGap`/`ScaleMax`/`ShowMonthSplit`/`LevelBrush`、`HoverCard.Bind/Show/Hide`、`BarChartItem`/`HeatmapDayItem`/`StatCardItem`）与上游一致。
 
@@ -785,7 +820,7 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 | `PlayTimeButton` 挂载点 | 上游嵌在 `GameLauncherPage`/`MainWindow` | 只交付控件；挂载点在 `Features/GameLauncher` 等页面落地后由 Lead 接线（旧 `Views/Starward/PlayTimeStatsDialog` 与本簇并存） | 跨作用域 | Lead 接线后删除旧 `Views/Starward/PlayTimeStatsDialog` 与 `Controls/PlayTime*Chart` |
 | DI | `AppConfig.GetService<PlayTimeStatsService>()`/`GetService<PlayTimeRecordService>()` | 同上；注册行由 Lead 加进 `AppConfig.ServiceProvider.cs`：`sc.AddSingleton<PlayTimeStatsService>();`、`sc.AddSingleton<PlayTimeRecordService>();`（构造签名 `PlayTimeRecordService(ILogger<PlayTimeRecordService>, HoYoPlayService, PlayTimeStatsService)`、`PlayTimeStatsService()` 无参） | 该文件归 Lead | 未注册时 `GetService` 会抛异常（与上游一致，不静默） |
 
-## 二十、启动器簇行为级审计补丁（2026-10-26，launcher-port / task-15）
+## 二十二、启动器簇行为级审计补丁（2026-10-26，launcher-port / task-15）
 
 对应审计报告：`docs/14-LAUNCHER-AUDIT.md`。本节只记录本轮**新产生**的平台替换/补齐点（此前 §十二 的条目仍然有效）。
 
@@ -800,7 +835,7 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 
 ---
 
-## 二十一、Features/ViewHost（窗口外壳：MainWindow / MainView / 等价控件，2026-10-26，Lead）
+## 二十三、Features/ViewHost（窗口外壳：MainWindow / MainView / 等价控件，2026-10-26，Lead）
 
 上游 `Features/ViewHost` 共 20 个文件，本仓库全部落位（`src/LunarWard/Features/ViewHost/`），本节记录其中的平台替换点。
 本章追加在文末：docs/09 的章节编号在前几轮并行开发中出现过「十一/十二」重复，收尾阶段统一重排（见 docs/10 §7 endgame 第 8 步）。
@@ -843,7 +878,7 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 
 > 构建基础设施（2026-10-26，dapper-db）：`src/LunarWard/Frameworks/WebView/SelfTest.Avalonia/XProbe.axaml` 是嵌套子工程，主工程会把它当 XAML 项，导致 `AXN0001`（找不到 `SelftestAvalonia.XProbe`）并使**整个程序集**的 `x:Name` 字段生成失败（表现为各页 CS0103）。已在 `src/LunarWard/LunarWard.csproj` 补 `<AvaloniaXaml Remove="Frameworks\WebView\SelfTest*\**" />`（此前只有 `AvaloniaResource Remove`，Avalonia 12 的 XAML 编译项是 `AvaloniaXaml`）。另外 `Features/Codec/ImageLoader.cs`、`PngCodec.cs` 的编译错误已顺手修：`ProcessResult`→`ProcessRunner.Result`（record 嵌套在同类 `ProcessRunner` 里）、`WritecHRM` 的 Span 捕获 lambda 改为显式传参（上游该函数由 Win2D 完成，无对应代码）。
 
-## 二十二、全量 XAML 重编译暴露的共性问题（2026-10-26，dapper-db / task-4 收尾）
+## 二十四、全量 XAML 重编译暴露的共性问题（2026-10-26，dapper-db / task-4 收尾）
 
 > **教训（对全组适用）**：`dotnet build` 是增量的，只有改动过的 `.axaml` 才会重新走 Avalonia 编译器；换别人文件/换机器后**不完全重新编译就看不到自己 XAML 的错误**。验收前必须做一次 `dotnet build src/LunarWard/LunarWard.csproj -t:Rebuild`（错误行前缀是 `Avalonia error AVLNxxxx`，不是 `error CS`，`grep ": error"` 会漏掉）。
 
@@ -858,7 +893,7 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 | 5 | `AVLN2000: Unable to resolve ... AllowDrop / DragOver / Drop on ListBox` | 这三个是 `DragDrop` 的附着属性/事件 | 改 `DragDrop.AllowDrop="True"`、`DragDrop.DragOver="…"`、`DragDrop.Drop="…"` |
 | 6 | `AVLN3000: Unable to find public constructor for type ImageViewWindow2()` | Avalonia XAML 编译器要求 `x:Class` 窗口有公共无参构造；上游两个构造都带参 | 补 `public ImageViewWindow2() { InitializeComponent(); }`（仅满足 XAML 编译器，业务入口仍是两个带参构造） |
 
-## 二十三、跨切面 XAML 收口（2026-10-26，Lead）
+## 二十五、跨切面 XAML 收口（2026-10-26，Lead）
 
 全量重建（`--no-incremental`）把主程序 XAML 错误从 3454 压到 156 的过程中，Lead 统一改了以下几类**跨文件机械项**（提交 `d31404b`）：
 
@@ -879,7 +914,7 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 > 本应用固定深色主题（`App.axaml` 的 `RequestedThemeVariant="Dark"`），因此这些别名取深色主题下 WinUI 的固定色值（`#FFFFFFFF` / `#C5FFFFFF` / `#87FFFFFF` 等），**不做浅色映射**；将来若支持浅色需改成 `ThemeVariantScope` 下的两套字典。
 > `BoolReversed`、`ObjectToVisibility` 两个短键也在 `App.axaml` 里补了同名转换器别名（上游 `App.xaml` 的键是全名，个别移植件引用了短名）。
 
-## 二十四、启动器簇 XAML 全量重建修复（2026-10-26，launcher-port）
+## 二十六、启动器簇 XAML 全量重建修复（2026-10-26，launcher-port）
 
 全量重建（`--no-incremental`）暴露此前增量构建掩盖的问题：Avalonia XAML 编译器在 `.axaml` 未变时跳过整段编译，导致页面级错误长期不可见。本轮按 `docs/16-XAML-MAPPING.md` 把 6 个目录的错误从 3420 行（去重 88 项）清零，其中属于「平台能力不等价」的项目登记如下。
 
@@ -898,7 +933,7 @@ LUNARWARD_RPC_SELFTEST=1 dotnet run --project src/LunarWard.RPC -- rpc zb8L3ShgF
 
 > 同批修掉：`ToolTipService.ToolTip` → `ToolTip.Tip`、`ToggleSwitch.IsOn` → `IsChecked`、`AppBarSeparator` → `Separator`、`Style` 资源键 → `Classes="accent"`、`BitmapImage` → `Image.Source` 直接绑定、`IsSpellCheckEnabled`/`IsTextScaleFactorEnabled`/`DesiredPlacement` 删除、`FontIcon` → `Frameworks.FontIcon`、`x:Bind` → `Binding`（`{x:Static lang:Lang.X}` 单独二次置换）。
 
-## 二十五、应用入口（`App.axaml.cs` / `Program.cs` / 单实例，2026-10-26，Lead）
+## 二十七、应用入口（`App.axaml.cs` / `Program.cs` / 单实例，2026-10-26，Lead）
 
 P6 收尾把启动骨架重写成上游 `src/Starward/App.xaml.cs` 的结构（本仓库 `src/LunarWard/App.axaml.cs`），
 `OnFrameworkInitializationCompleted` 等价上游 `OnLaunched`，其余成员一一对应：
@@ -922,7 +957,7 @@ P6 收尾把启动骨架重写成上游 `src/Starward/App.xaml.cs` 的结构（�
 （`--scan-games`、自检参数解析）；`rpc`/`startgame`/`playtime` 子命令不再由 `Program` 拦截，
 统一由 `App.HandleStartupAsync` 处理（与上游一致）。
 
-## 二十六、Features/Overlay 收尾（`OverlayWindow`，2026-10-26，dapper-db / task-20）
+## 二十八、Features/Overlay 收尾（`OverlayWindow`，2026-10-26，dapper-db / task-20）
 
 上游最后两个未落地的文件 `Features/Overlay/OverlayWindow.xaml(.cs)` 已移植为
 `src/LunarWard/Features/Overlay/OverlayWindow.axaml(.cs)`（文件级 1:1，成员名/事件名不变）。
@@ -983,7 +1018,7 @@ P6 收尾把启动骨架重写成上游 `src/Starward/App.xaml.cs` 的结构（�
 
 **端到端 Guide 截图未验证**：需要运行中的游戏窗口（`RunningGameService.GetLatestActiveGame()` 非 `null`），本机无游戏可测。已验证的是工具链可用性与回退顺序（反射探针逐步尝试 spectacle→import 并聚合失败信息，`--page screenshot` 自检正常出图）。
 
-## 二十七、i18n 收尾：删除 `AppStrings`（task-22，2026-10-26，settings-migrate）
+## 二十九、i18n 收尾：删除 `AppStrings`（task-22，2026-10-26，settings-migrate）
 
 - `src/LunarWard/Localization/`（`AppStrings` + 两个 resx）整体删除，界面文案只剩上游 `Lang`；设置页与截图页共 193 处引用迁移完毕。
 - 7 个键映射到上游 `Lang`（`Common_Open/Copy/CopiedToClipboard/Cancel/Delete`、`AboutSetting_UpdatedToTheLatestVersion`、`AboutSettingPage_CurrentVersionIsNotTheLatestVersion`），其余 136 处平台差异说明改为内联中文（见 `docs/15` §7）。
