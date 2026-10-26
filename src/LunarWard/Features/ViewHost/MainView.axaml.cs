@@ -60,6 +60,9 @@ public sealed partial class MainView : UserControl, INotifyPropertyChanged
             {
                 _currentGameId = value;
                 OnPropertyChanged();
+                // AppBackground.CurrentGameId 是普通 CLR 属性（非 AvaloniaProperty），不能走 CompiledBinding，
+                // 这里手工同步（上游 XAML 用 {x:Bind}，Avalonia 的生成式绑定要求 StyledProperty）。
+                AppBackground.CurrentGameId = value;
             }
         }
     }

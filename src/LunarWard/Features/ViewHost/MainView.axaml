@@ -15,7 +15,7 @@
 
   <Grid>
 
-    <sfb:AppBackground x:Name="AppBackground" CurrentGameId="{Binding CurrentGameId}" />
+    <sfb:AppBackground x:Name="AppBackground" />
 
     <Border Width="56"
             HorizontalAlignment="Left"
