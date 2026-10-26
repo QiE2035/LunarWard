@@ -16,6 +16,9 @@ using LunarWard.Features.HoYoPlay;
 using LunarWard.Features.PlayTime;
 using LunarWard.Features.RPC;
 using LunarWard.Features.SelfQuery;
+// 本地遗留 src/LunarWard.Core/SelfQuery/SelfQueryService.cs（上游 Core 无此文件，仅旧 MVVM 层使用）
+// 与 Features 版同名；此处显式指向移植版，旧 Core 文件待 endgame 删除。
+using SelfQueryService = LunarWard.Features.SelfQuery.SelfQueryService;
 using LunarWard.Features.Update;
 using LunarWard.Setup.Core;
 using Microsoft.Data.Sqlite;

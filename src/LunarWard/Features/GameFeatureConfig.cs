@@ -1,6 +1,7 @@
 using LunarWard.Core;
 using LunarWard.Core.HoYoPlay;
 using LunarWard.Features.Gacha;
+using LunarWard.Features.SelfQuery;
 using LunarWard.Features.GameLauncher;
 using LunarWard.Features.GameSetting;
 using LunarWard.Features.Screenshot;
