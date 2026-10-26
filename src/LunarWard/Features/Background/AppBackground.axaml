@@ -10,7 +10,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="avares://LunarWard/Features/Background/AppBackgroundImageExStyle.xaml" />
+                <ResourceDictionary Source="avares://LunarWard/Features/Background/AppBackgroundImageExStyle.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>

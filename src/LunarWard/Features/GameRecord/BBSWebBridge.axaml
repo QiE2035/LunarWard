@@ -5,7 +5,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:webview="clr-namespace:LunarWard.Frameworks.WebView"
-             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord">
 
     <Grid>

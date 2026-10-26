@@ -63,7 +63,6 @@
 
                 <TextBlock Text="{x:Static lang:Lang.LauncherPage_Nickname}" />
                 <TextBox Name="TextBox_Nickname"
-                         IsSpellCheckEnabled="False"
                          Text="{Binding SelectGameAccount.Name, Mode=TwoWay}" />
 
                 <TextBlock Text="Uid" />

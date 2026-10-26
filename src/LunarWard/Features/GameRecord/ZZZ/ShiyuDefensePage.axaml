@@ -6,7 +6,7 @@
         xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:cw="clr-namespace:CommunityToolkit.WinUI"
-             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.ZZZ"
              xmlns:sc="clr-namespace:LunarWard.Controls"
              xmlns:scgz="clr-namespace:LunarWard.Core.GameRecord.ZZZ"

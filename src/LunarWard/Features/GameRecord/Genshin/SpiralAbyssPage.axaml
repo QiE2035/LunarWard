@@ -6,7 +6,7 @@
         xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:abyss="clr-namespace:LunarWard.Core.GameRecord.Genshin.SpiralAbyss"
-             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:linq="clr-namespace:System.Linq"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.Genshin"
              xmlns:sc="clr-namespace:LunarWard.Controls"

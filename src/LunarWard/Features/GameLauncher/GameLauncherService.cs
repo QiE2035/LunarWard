@@ -419,7 +419,7 @@ internal partial class GameLauncherService
     /// 声明为 <c>public</c> 是本移植的可测缝：单测直接断言 wine 路径、命令行字符串与环境注入，
     /// 不启动真实进程（见 docs/14）。
     /// </remarks>
-    public static ProcessStartInfo BuildStartInfo(GameId gameId, string exe, string? arg)
+    public static ProcessStartInfo BuildStartInfo(GameId gameId, string exe, string? arg, bool? enableDX12 = null)
     {
         string workDir = Path.GetDirectoryName(exe) ?? Environment.CurrentDirectory;
         string extension = Path.GetExtension(exe);
@@ -446,12 +446,19 @@ internal partial class GameLauncherService
             // 平台替换：上游在 Windows 上用原生 DX12；Linux 走 DXVK/VKD3D，需要显式开启 nvapi 与 DXR。
             try
             {
+                // GameBiz.Game 用上游的 hk4e/nap 口径，GameAdapter 用 GameCatalog 的 genshin/zzz 口径。
+                string gameKind = gameId.GameBiz.Game switch
+                {
+                    "hk4e" => LunarWard.Games.GameCatalog.Genshin,
+                    "nap" => LunarWard.Games.GameCatalog.Zzz,
+                    var other => other,
+                };
                 var adapter = LunarWard.Games.GameAdapter.BuildEnv(
-                    gameKind: gameId.GameBiz.Game,
+                    gameKind: gameKind,
                     wineWayland: false,
                     timeoutFix: false,
                     borderless: false,
-                    dx12: AppConfig.GetEnableDX12(gameId.GameBiz),
+                    dx12: enableDX12 ?? AppConfig.GetEnableDX12(gameId.GameBiz),
                     fsr: false);
                 foreach ((string key, string value) in adapter.Env)
                 {

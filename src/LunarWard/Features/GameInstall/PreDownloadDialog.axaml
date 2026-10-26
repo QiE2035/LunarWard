@@ -11,7 +11,7 @@
                BorderThickness="0"
                CornerRadius="8">
 
-    <Grid Width="400" Padding="24">
+    <Border Padding="24"><Grid Width="400">
 
         <StackPanel>
 
@@ -77,8 +77,7 @@
                     Command="{Binding StartPredownloadCommand}"
                     Content="{x:Static lang:Lang.PreDownloadDialog_StartPreInstall}"
                     FontSize="14"
-                    IsEnabled="False"
-                    Style="{DynamicResource AccentButtonStyle}" />
+                    IsEnabled="False" Classes="accent" />
 
         </StackPanel>
 
@@ -123,5 +122,6 @@
         </Button>
 
     </Grid>
+    </Border>
 
 </controls:StarwardContentDialog>

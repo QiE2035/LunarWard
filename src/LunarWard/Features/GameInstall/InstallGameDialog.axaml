@@ -11,7 +11,7 @@
                BorderThickness="0"
                CornerRadius="8">
 
-    <Grid Width="560" Padding="24">
+    <Border Padding="24"><Grid Width="560">
 
         <StackPanel>
 
@@ -21,9 +21,7 @@
                        Text="{x:Static lang:Lang.InstallGameDialog_SelectInstallationPath}" />
 
             <!--  Path  -->
-            <Grid Height="36"
-                  Margin="0,16,0,0"
-                  CornerRadius="8">
+            <Border CornerRadius="8"><Grid Height="36" Margin="0,16,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
@@ -50,7 +48,7 @@
                                Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                Text="{x:Static lang:Lang.Common_Change}" />
                 </Button>
-            </Grid>
+            </Grid></Border>
 
             <!--  Select Language  -->
             <ListBox x:Name="Segmented_SelectLanguage"
@@ -83,7 +81,7 @@
                     <Run Text="" />
                     <Run Text="{Binding UnzipSpaceText}" />
                 </TextBlock>
-                <AppBarSeparator Padding="2" />
+                <Separator Margin="0,2" />
                 <TextBlock x:Name="TextBlock_AvailableSpace"
                            FontSize="12"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}">
@@ -114,8 +112,7 @@
                     Command="{Binding StartInstallationCommand}"
                     Content="{x:Static lang:Lang.InstallGameDialog_StartInstallation}"
                     FontSize="14"
-                    IsEnabled="False"
-                    Style="{DynamicResource AccentButtonStyle}" />
+                    IsEnabled="False" Classes="accent" />
 
         </StackPanel>
 
@@ -161,5 +158,6 @@
         </Button>
 
     </Grid>
+    </Border>
 
 </controls:StarwardContentDialog>

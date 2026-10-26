@@ -7,7 +7,7 @@
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:cw="clr-namespace:CommunityToolkit.WinUI"
              xmlns:fic="clr-namespace:LunarWard.Core.GameRecord.ZZZ.DeadlyAssault"
-             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:linq="clr-namespace:System.Linq"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.ZZZ"
              xmlns:sc="clr-namespace:LunarWard.Controls"

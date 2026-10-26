@@ -6,12 +6,7 @@
              xmlns:local="using:LunarWard.Features.GameInstall"
              x:CompileBindings="False">
 
-    <Grid x:Name="Grid_Root"
-          Height="44"
-          Background="Transparent"
-          CornerRadius="16"
-          PointerEntered="Grid_Root_PointerEntered"
-          PointerExited="Grid_Root_PointerExited">
+    <Border CornerRadius="16"><Grid x:Name="Grid_Root" Height="44" Background="Transparent" PointerEntered="Grid_Root_PointerEntered" PointerExited="Grid_Root_PointerExited">
 
         <Border x:Name="Border_TextShadowTarget" />
 
@@ -23,8 +18,7 @@
                 Command="{Binding PredownloadCommand}"
                 CornerRadius="16"
                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                IsEnabled="{Binding IsButtonEnabled}"
-                Style="{DynamicResource PredownloadButtonStyle}">
+                IsEnabled="{Binding IsButtonEnabled}">
             <Grid ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -48,7 +42,6 @@
 
         <!--  下载进度  -->
         <Popup x:Name="Popup_DownloadProgress"
-               DesiredPlacement="Top"
                PlacementTarget="{Binding Grid_Root}">
             <Border MinWidth="200"
                     MaxWidth="240"
@@ -108,5 +101,6 @@
         </Popup>
 
     </Grid>
+    </Border>
 
 </UserControl>

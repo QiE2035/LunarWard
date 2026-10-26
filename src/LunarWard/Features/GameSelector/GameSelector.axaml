@@ -96,15 +96,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:GameBizDisplay">
-                                <Grid Name="Grid_GameBizDisplay"
-                                      Width="192"
-                                      Height="108"
-                                      Padding="0"
-                                      Cursor="Hand"
-                                      Background="#40000000"
-                                      CornerRadius="8"
-                                      PointerEntered="Grid_GameBizDisplay_PointerEntered"
-                                      Tapped="Grid_GameBizDisplay_Tapped">
+                                <Border CornerRadius="8"><Grid Name="Grid_GameBizDisplay" Width="192" Height="108" Cursor="Hand" Background="#40000000" PointerEntered="Grid_GameBizDisplay_PointerEntered" Tapped="Grid_GameBizDisplay_Tapped">
                                     <!--  背景图  -->
                                     <Image HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
@@ -207,17 +199,14 @@
                                             </ItemsControl>
                                         </Flyout>
                                     </FlyoutBase.AttachedFlyout>
-                                </Grid>
+                                </Grid></Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
 
                     <!--  已安装游戏及大小  -->
-                    <Grid HorizontalAlignment="Left"
-                          VerticalAlignment="Top"
-                          Background="{DynamicResource ControlOnImageFillColorDefaultBrush}"
-                          CornerRadius="8">
+                    <Border CornerRadius="8"><Grid HorizontalAlignment="Left" VerticalAlignment="Top" Background="{DynamicResource ControlOnImageFillColorDefaultBrush}">
                         <Expander x:Name="Expander_InstalledGamesActualSize"
                                   MinWidth="820"
                                   HorizontalContentAlignment="Stretch"
@@ -256,7 +245,7 @@
                                         <TextBlock VerticalAlignment="Center"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                    Text="{x:Static lang:Lang.GameSelector_Calculating}" />
-                                        <ProgressRing Width="20"
+                                        <ProgressBar Width="20"
                                                       Height="20"
                                                       HorizontalAlignment="Left"
                                                       IsIndeterminate="True" />
@@ -332,7 +321,7 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </Expander>
-                    </Grid>
+                    </Grid></Border>
 
 
                 </StackPanel>
@@ -346,111 +335,29 @@
         <!--  横排待选游戏图标  -->
         <Grid x:Name="Grid_GameIconsArea"
               Height="60"
-              Margin="56,0,0,0"
-              Padding="6,0,12,0"
+              Margin="62,0,12,0"
               HorizontalAlignment="Left"
               VerticalAlignment="Top"
               Background="Transparent"
               PointerExited="Grid_GameIconsArea_PointerExited"
-              SizeChanged="Grid_GameIconsArea_SizeChanged"
-              Translation="0,-100,0">
-            <Grid.ChildrenTransitions>
-                <TransitionCollection>
-                    <RepositionThemeTransition />
-                </TransitionCollection>
-            </Grid.ChildrenTransitions>
+              RenderTransform="translate(0,-100)"
+              SizeChanged="Grid_GameIconsArea_SizeChanged">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <!--  游戏图标  -->
-            <ListView AllowDrop="True"
-                      CanReorderItems="{Binding s:AppConfig.IsAdmin, Converter={StaticResource BoolReversedConverter}}"
-                      ItemsSource="{Binding GameBizIcons}"
-                      ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                      SelectionMode="Single">
-                <ListView.ItemsPanel>
+            <ItemsControl ItemsSource="{Binding GameBizIcons}"
+                      ScrollViewer.VerticalScrollBarVisibility="Hidden">
+                <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <ItemsStackPanel Orientation="Horizontal" />
+                        <StackPanel Orientation="Horizontal" Spacing="8" />
                     </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-                <!--  ListViewItemStyle 防止出现选中效果，移除各种背景颜色  -->
-                <ListView.ItemContainerStyle>
-                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
-                        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
-                        <Setter Property="Background" Value="{DynamicResource ListViewItemBackground}" />
-                        <Setter Property="Foreground" Value="{DynamicResource ListViewItemForeground}" />
-                        <Setter Property="TabNavigation" Value="Local" />
-                        <Setter Property="IsHoldingEnabled" Value="True" />
-                        <!--  下方留出空间，防止阴影被截断  -->
-                        <Setter Property="Padding" Value="6,8,6,8" />
-                        <Setter Property="HorizontalContentAlignment" Value="Center" />
-                        <Setter Property="VerticalContentAlignment" Value="Center" />
-                        <Setter Property="MinWidth" Value="0" />
-                        <Setter Property="MinHeight" Value="0" />
-                        <Setter Property="AllowDrop" Value="False" />
-                        <Setter Property="UseSystemFocusVisuals" Value="True" />
-                        <Setter Property="FocusVisualMargin" Value="0" />
-                        <Setter Property="FocusVisualPrimaryBrush" Value="{DynamicResource ListViewItemFocusVisualPrimaryBrush}" />
-                        <Setter Property="FocusVisualPrimaryThickness" Value="0" />
-                        <Setter Property="FocusVisualSecondaryBrush" Value="{DynamicResource ListViewItemFocusVisualSecondaryBrush}" />
-                        <Setter Property="FocusVisualSecondaryThickness" Value="0" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListViewItem">
-                                    <ListViewItemPresenter HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                           CheckBoxBrush="{DynamicResource ListViewItemCheckBoxBrush}"
-                                                           CheckBrush="{DynamicResource ListViewItemCheckBrush}"
-                                                           CheckMode="{DynamicResource ListViewItemCheckMode}"
-                                                           ContentMargin="{TemplateBinding Padding}"
-                                                           ContentTransitions="{TemplateBinding ContentTransitions}"
-                                                           Control.IsTemplateFocusTarget="True"
-                                                           DisabledOpacity="{DynamicResource ListViewItemDisabledThemeOpacity}"
-                                                           DragBackground="Transparent"
-                                                           DragForeground="{DynamicResource ListViewItemDragForeground}"
-                                                           DragOpacity="{DynamicResource ListViewItemDragThemeOpacity}"
-                                                           FocusBorderBrush="{DynamicResource ListViewItemFocusBorderBrush}"
-                                                           FocusSecondaryBorderBrush="{DynamicResource ListViewItemFocusSecondaryBorderBrush}"
-                                                           FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
-                                                           FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
-                                                           FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
-                                                           FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
-                                                           FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
-                                                           PlaceholderBackground="Transparent"
-                                                           PointerOverBackground="Transparent"
-                                                           PointerOverForeground="{DynamicResource ListViewItemForegroundPointerOver}"
-                                                           PressedBackground="Transparent"
-                                                           ReorderHintOffset="{DynamicResource ListViewItemReorderHintThemeOffset}"
-                                                           SelectedBackground="Transparent"
-                                                           SelectedForeground="{DynamicResource ListViewItemForegroundSelected}"
-                                                           SelectedPointerOverBackground="Transparent"
-                                                           SelectedPressedBackground="Transparent"
-                                                           SelectionCheckMarkVisualEnabled="{DynamicResource ListViewItemSelectionCheckMarkVisualEnabled}"
-                                                           SelectionIndicatorVisualEnabled="False" />
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.ItemTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="local:GameBizIcon">
-                        <Grid x:Name="Grid_GameIcon"
-                              Width="40"
-                              Height="40"
-                              Cursor="Hand"
-                              CornerRadius="8"
-                              DoubleTapped="Grid_GameIcon_DoubleTapped"
-                              IsDoubleTapEnabled="True"
-                              IsTapEnabled="True"
-                              PointerEntered="Grid_GameIcon_PointerEntered"
-                              PointerExited="Grid_GameIcon_PointerExited"
-                              Shadow="{DynamicResource ThemeShadow}"
-                              Tag="{Binding GameId}"
-                              Tapped="Grid_GameIcon_Tapped"
-                              Translation="0,0,16">
+                        <Border CornerRadius="8" BoxShadow="0 0 16 0 #40000000"><Grid x:Name="Grid_GameIcon" Width="40" Height="40" Cursor="Hand" DoubleTapped="Grid_GameIcon_DoubleTapped" IsDoubleTapEnabled="True" IsTapEnabled="True" PointerEntered="Grid_GameIcon_PointerEntered" PointerExited="Grid_GameIcon_PointerExited" Tag="{Binding GameId}" Tapped="Grid_GameIcon_Tapped">
                             <Image Width="40"
                                             Height="40"
                                             Source="{Binding GameIcon}" />
@@ -467,10 +374,10 @@
                             </Image>
                             <Border Background="#60000000" Opacity="{Binding MaskOpacity}">
                             </Border>
-                        </Grid>
+                        </Grid></Border>
                     </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
             <!--  固定  -->
             <Border Name="Border_Pin"
@@ -483,8 +390,7 @@
                     CornerRadius="8"
                     IsHitTestVisible="False"
                     Opacity="0"
-                    Shadow="{DynamicResource ThemeShadow}"
-                    Translation="0,0,16">
+                    BoxShadow="0 0 16 0 #40000000">
                 <Button Padding="0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"

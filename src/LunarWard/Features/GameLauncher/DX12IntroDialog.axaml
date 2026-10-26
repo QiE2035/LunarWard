@@ -7,7 +7,7 @@
                                 x:DataType="local:DX12IntroDialog">
   <!-- 移植自 Starward/src/Starward/Features/GameLauncher/DX12IntroDialog.xaml
        ContentDialog → StarwardContentDialog，CachedImage 待 task-4 落地后切换（先用 Image）。 -->
-  <Grid MaxWidth="680" Padding="24">
+  <Border Padding="24"><Grid MaxWidth="680">
 
     <StackPanel Spacing="20">
       <TextBlock FontSize="20"
@@ -52,4 +52,5 @@
                  TextWrapping="Wrap" />
     </StackPanel>
   </Grid>
+  </Border>
 </controls:StarwardContentDialog>

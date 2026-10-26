@@ -13,9 +13,7 @@
              CornerRadius="8">
 
 
-    <Grid Width="800"
-          Height="480"
-          Padding="24,24,24,0">
+    <Border Padding="24,24,24,0"><Grid Width="800" Height="480">
 
 
         <Grid ColumnDefinitions="200,*">
@@ -53,9 +51,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <!--  游戏图标  -->
-                            <Grid Width="40"
-                                  Height="40"
-                                  CornerRadius="8">
+                            <Border CornerRadius="8"><Grid Width="40" Height="40">
                                 <Image Width="40"
                                                 Height="40"
                                                 Source="{Binding CurrentGameBizIcon.GameIcon, FallbackValue={x:Null}}" />
@@ -64,7 +60,7 @@
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Bottom"
                                                 Source="{Binding CurrentGameBizIcon.ServerIcon, FallbackValue={x:Null}}" />
-                            </Grid>
+                            </Grid></Border>
                             <!--  游戏名  -->
                             <TextBlock Grid.Column="1"
                                        VerticalAlignment="Center"
@@ -135,9 +131,7 @@
 
 
                         <!--  游戏安装位置  -->
-                        <Grid Height="40"
-                              CornerRadius="8"
-                              IsVisible="{Binding InstallPath, Converter={StaticResource ObjectToVisibilityConverter}}">
+                        <Border CornerRadius="8"><Grid Height="40" IsVisible="{Binding InstallPath, Converter={StaticResource ObjectToVisibilityConverter}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition />
                                 <ColumnDefinition Width="Auto" />
@@ -179,7 +173,7 @@
                                           Foreground="{DynamicResource StarTextSecondary}"
                                           Classes="icon" Text="&#xE711;" />
                             </Button>
-                        </Grid>
+                        </Grid></Border>
 
                         <!--  一些操作  -->
                         <StackPanel Orientation="Horizontal" Spacing="12">
@@ -244,14 +238,13 @@
 
 
                         <!--  显示游戏通知  -->
-                        <ToggleSwitch IsOn="{Binding EnableBannerAndPost, Mode=TwoWay}"
+                        <ToggleSwitch IsChecked="{Binding EnableBannerAndPost, Mode=TwoWay}"
                                       OffContent="{x:Static lang:Lang.LauncherPage_ShowGameAnnouncement}"
                                       OnContent="{x:Static lang:Lang.LauncherPage_ShowGameAnnouncement}" />
 
                         <!--  禁用通知红点提醒  -->
                         <ToggleSwitch Margin="0,-12,0,0"
-                                      IsEnabled="{Binding EnableBannerAndPost}"
-                                      IsOn="{Binding DisableGameNoticeRedHot, Mode=TwoWay}"
+                                      IsEnabled="{Binding EnableBannerAndPost}" IsChecked="{Binding DisableGameNoticeRedHot, Mode=TwoWay}"
                                       OffContent="{x:Static lang:Lang.ExperienceSettingPage_DisableRedDotReminderForGameNotices}"
                                       OnContent="{x:Static lang:Lang.ExperienceSettingPage_DisableRedDotReminderForGameNotices}" />
 
@@ -259,7 +252,7 @@
                         <StackPanel Margin="0,-12,0,0"
                                     Orientation="Horizontal"
                                     Spacing="8">
-                            <ToggleSwitch IsOn="{Binding StartGameWithCMD, Mode=TwoWay}"
+                            <ToggleSwitch IsChecked="{Binding StartGameWithCMD, Mode=TwoWay}"
                                           OffContent="{x:Static lang:Lang.GameLauncherSettingDialog_LaunchGameUsingCMD}"
                                           OnContent="{x:Static lang:Lang.GameLauncherSettingDialog_LaunchGameUsingCMD}" />
                             <Button Margin="0,2,0,0"
@@ -291,7 +284,6 @@
                         <!--  命令行参数  -->
                         <TextBox MinWidth="320"
                                  HorizontalAlignment="Left"
-                                 IsSpellCheckEnabled="False"
                                  Text="{Binding StartGameArgument, Mode=TwoWay}"
                                  TextWrapping="Wrap" />
                         <Button Classes="link" Padding="0" FontSize="12" Tag="https://docs.unity3d.com/Manual/PlayerCommandLineArguments.html" Click="Hyperlink_Navigate_Click" Content="{x:Static lang:Lang.GameLauncherSettingDialog_SeeMoreInformationAboutCommandLineArgument}" />
@@ -312,8 +304,7 @@
 
                         <!--  自定义启动程序  -->
                         <ToggleSwitch Margin="0,4,0,-4"
-                                      FontSize="14"
-                                      IsOn="{Binding EnableThirdPartyTool, Mode=TwoWay}"
+                                      FontSize="14" IsChecked="{Binding EnableThirdPartyTool, Mode=TwoWay}"
                                       OffContent="{x:Static lang:Lang.LauncherPage_CustomStartExecutable}"
                                       OnContent="{x:Static lang:Lang.LauncherPage_CustomStartExecutable}" />
                         <Grid ColumnSpacing="12">
@@ -331,11 +322,7 @@
                                     <TextBlock Text="{x:Static lang:Lang.Common_Select}" />
                                 </StackPanel>
                             </Button>
-                            <Grid Grid.Column="1"
-                                  Height="36"
-                                  HorizontalAlignment="Left"
-                                  CornerRadius="8"
-                                  IsVisible="{Binding ThirdPartyToolPath, Converter={StaticResource ObjectToVisibilityConverter}}">
+                            <Border CornerRadius="8"><Grid Grid.Column="1" Height="36" HorizontalAlignment="Left" IsVisible="{Binding ThirdPartyToolPath, Converter={StaticResource ObjectToVisibilityConverter}}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition Width="Auto" />
@@ -364,7 +351,7 @@
                                               Foreground="{DynamicResource StarTextSecondary}"
                                               Classes="icon" Text="&#xE711;" />
                                 </Button>
-                            </Grid>
+                            </Grid></Border>
                         </Grid>
 
                     </StackPanel>
@@ -374,8 +361,7 @@
                 <Border>
                     <StackPanel Spacing="12">
                         <!--  自定义背景  -->
-                        <ToggleSwitch Margin="0,0,0,-8"
-                                      IsOn="{Binding EnableCustomBg, Mode=TwoWay}"
+                        <ToggleSwitch Margin="0,0,0,-8" IsChecked="{Binding EnableCustomBg, Mode=TwoWay}"
                                       OffContent="{x:Static lang:Lang.SettingPage_CustomBackgroundSupportVideo}"
                                       OnContent="{x:Static lang:Lang.SettingPage_CustomBackgroundSupportVideo}" />
                         <!--  请选择像素大小与应用窗口相匹配的图片，较大的图片会降低性能。  -->
@@ -399,11 +385,7 @@
                                     <TextBlock Text="{x:Static lang:Lang.Common_Select}" />
                                 </StackPanel>
                             </Button>
-                            <Grid Grid.Column="1"
-                                  Height="36"
-                                  HorizontalAlignment="Left"
-                                  CornerRadius="8"
-                                  IsVisible="{Binding CustomBg, Converter={StaticResource ObjectToVisibilityConverter}}">
+                            <Border CornerRadius="8"><Grid Grid.Column="1" Height="36" HorizontalAlignment="Left" IsVisible="{Binding CustomBg, Converter={StaticResource ObjectToVisibilityConverter}}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition Width="Auto" />
@@ -429,7 +411,7 @@
                                               Foreground="{DynamicResource StarTextSecondary}"
                                               Classes="icon" Text="&#xE711;" />
                                 </Button>
-                            </Grid>
+                            </Grid></Border>
                         </Grid>
 
                         <!--  音量  -->
@@ -448,7 +430,7 @@
                                     <TextBlock FontSize="16"
                                               Foreground="{DynamicResource ButtonPointerOverBackgroundThemeBrush}"
                                               Classes="icon" Text="&#xE767;" />
-                                    <FontIcon FontSize="16" Glyph="{Binding VideoBgVolumeButtonIcon}" />
+                                    <fw:FontIcon FontSize="16" Glyph="{Binding VideoBgVolumeButtonIcon}" />
                                 </Grid>
                             </Button>
                             <Slider Grid.Column="1"
@@ -593,5 +575,6 @@
 
 
     </Grid>
+    </Border>
 
 </controls:StarwardContentDialog>

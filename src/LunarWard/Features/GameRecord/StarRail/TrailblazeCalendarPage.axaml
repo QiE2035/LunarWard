@@ -5,7 +5,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:calendar="clr-namespace:LunarWard.Core.GameRecord.StarRail.TrailblazeCalendar"
-             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.StarRail"
              xmlns:sc="clr-namespace:LunarWard.Controls"
              xmlns:sf="clr-namespace:LunarWard.Frameworks"

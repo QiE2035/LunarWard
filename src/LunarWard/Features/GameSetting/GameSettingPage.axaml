@@ -1,4 +1,5 @@
 <UserControl x:Class="LunarWard.Features.GameSetting.GameSettingPage"
+             x:CompileBindings="False"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:lang="using:LunarWard.Language"
@@ -126,7 +127,7 @@
     </StackPanel>
 
 
-    <Grid Name="Grid_ApplyBackground"
+    <Border Name="Grid_ApplyBackground"
           Grid.Row="1"
           Background="{DynamicResource StarOverlayAcrylicBrush}"
           CornerRadius="8,0,0,0">
@@ -155,6 +156,6 @@
                    Text="{Binding ErrorMessage}"
                    TextTrimming="CharacterEllipsis" />
       </StackPanel>
-    </Grid>
+    </Border>
   </Grid>
 </UserControl>

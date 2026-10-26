@@ -5,7 +5,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:diary="clr-namespace:LunarWard.Core.GameRecord.Genshin.TravelersDiary"
-             xmlns:lang="clr-namespace:LunarWard.Language"
+             xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.Genshin"
              xmlns:sc="clr-namespace:LunarWard.Controls"
              xmlns:sf="clr-namespace:LunarWard.Frameworks"
