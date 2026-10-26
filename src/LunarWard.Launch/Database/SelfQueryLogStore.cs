@@ -1,5 +1,5 @@
+using Dapper;
 using LunarWard.Core.SelfQuery;
-using Microsoft.Data.Sqlite;
 
 namespace LunarWard.Launch.Database;
 
@@ -8,10 +8,10 @@ namespace LunarWard.Launch.Database;
 /// </summary>
 /// <remarks>
 /// <para>
-/// 表结构、SQL 语义与上游一致：<c>GenshinQueryItem</c> / <c>StarRailQueryItem</c> /
-/// <c>ZZZQueryItem</c>（DDL 见 <see cref="LunarWardDatabase"/>），
-/// <c>INSERT OR REPLACE</c> 按主键覆盖、月份用 <c>DateTime LIKE 'yyyy-MM%'</c> 过滤、
-/// 「检索全部」先按涉及月份 DELETE 再整体重写。
+/// 表结构、SQL 与上游一致：<c>GenshinQueryItem</c> / <c>StarRailQueryItem</c> /
+/// <c>ZZZQueryItem</c>（DDL 见 <see cref="DatabaseService"/>），
+/// <c>INSERT OR REPLACE</c> 按主键覆盖、月份用 <c>STRFTIME('%Y-%m', 时间列)</c> 分组、
+/// <c>DateTime LIKE 'yyyy-MM%'</c> 过滤、「检索全部」先按涉及月份 DELETE 再整体重写。
 /// </para>
 /// <para>
 /// 与原 JSON 实现的差异只有持久化方式；方法签名保持一一对应，页面 VM 不用改逻辑。
@@ -19,8 +19,6 @@ namespace LunarWard.Launch.Database;
 /// </remarks>
 public sealed class SelfQueryLogStore : ISelfQueryStore
 {
-    private const string TimeFormat = "yyyy-MM-dd HH:mm:ss";
-
     private readonly LunarWardDatabase _database;
 
 
@@ -36,7 +34,7 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
 
     public List<long> GetGenshinUids()
-        => QueryLongs("SELECT DISTINCT Uid FROM GenshinQueryItem ORDER BY Uid;");
+        => QueryLongs("SELECT DISTINCT Uid FROM GenshinQueryItem;");
 
 
     public (long Add, long Sub) GetGenshinQueryItemsNumSum(long uid, GenshinQueryType type)
@@ -53,36 +51,15 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
     public List<GenshinQueryItem> GetGenshinQueryItems(long uid, GenshinQueryType type, string? month)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = month is null
-            ? "SELECT * FROM GenshinQueryItem WHERE Uid=@uid AND Type=@type ORDER BY DateTime DESC;"
-            : "SELECT * FROM GenshinQueryItem WHERE Uid=@uid AND Type=@type AND DateTime LIKE @month ORDER BY DateTime DESC;";
-        command.Parameters.AddWithValue("@uid", uid);
-        command.Parameters.AddWithValue("@type", (int)type);
-        if (month is not null)
+        using var dapper = _database.CreateConnection();
+        List<GenshinQueryItem> list = month is null
+            ? dapper.Query<GenshinQueryItem>("SELECT * FROM GenshinQueryItem WHERE Uid=@uid AND Type=@type ORDER BY DateTime DESC;", new { uid, type }).ToList()
+            : dapper.Query<GenshinQueryItem>("SELECT * FROM GenshinQueryItem WHERE Uid=@uid AND Type=@type AND DateTime LIKE @month ORDER BY DateTime DESC;", new { uid, type, month = month + "%" }).ToList();
+        // 本地 GenshinQueryItem 有 DateTime 与 Time 两个字段（API 里叫 datetime，表里只有 DateTime），
+        // 页面按 Time 显示已排序结果，这里补齐（上游页面直接用 DateTime）。
+        foreach (GenshinQueryItem item in list)
         {
-            command.Parameters.AddWithValue("@month", month + "%");
-        }
-        using SqliteDataReader reader = command.ExecuteReader();
-        var list = new List<GenshinQueryItem>();
-        while (reader.Read())
-        {
-            DateTime time = ParseTime(reader, "DateTime");
-            list.Add(new GenshinQueryItem
-            {
-                Uid = reader.GetInt64(0),
-                Id = reader.GetInt64(1),
-                AddNum = reader.GetInt64(2),
-                Reason = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                DateTime = time,
-                Time = time,
-                Type = (GenshinQueryType)reader.GetInt32(5),
-                Icon = reader.IsDBNull(6) ? "" : reader.GetString(6),
-                Level = reader.GetInt32(7),
-                Quality = reader.GetInt32(8),
-                Name = reader.IsDBNull(9) ? "" : reader.GetString(9),
-            });
+            item.Time = item.DateTime;
         }
         return list;
     }
@@ -94,28 +71,26 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
     public void InsertGenshinQueryItems(long uid, GenshinQueryType type, List<GenshinQueryItem> items, bool all = false)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteTransaction transaction = connection.BeginTransaction();
-        if (all)
+        using var dapper = _database.CreateConnection();
+        using var t = dapper.BeginTransaction();
+        DeleteTouchedMonths(dapper, t, "GenshinQueryItem", "DateTime", uid, (int)type, items.Select(x => x.DateTime), all);
+        dapper.Execute("""
+            INSERT OR REPLACE INTO GenshinQueryItem (Uid, Id, AddNum, Reason, DateTime, Type, Icon, Level, Quality, Name)
+            VALUES (@Uid, @Id, @AddNum, @Reason, @DateTime, @Type, @Icon, @Level, @Quality, @Name);
+            """, items.Select(x => new
         {
-            foreach (var month in items.Select(x => x.DateTime.ToString("yyyy-MM")).Distinct())
-            {
-                Execute(connection, transaction,
-                    "DELETE FROM GenshinQueryItem WHERE Uid=@uid AND Type=@type AND DateTime LIKE @time;",
-                    ("@uid", uid), ("@type", (int)type), ("@time", month + "%"));
-            }
-        }
-        foreach (var item in items)
-        {
-            Execute(connection, transaction, """
-                INSERT OR REPLACE INTO GenshinQueryItem (Uid, Id, AddNum, Reason, DateTime, Type, Icon, Level, Quality, Name)
-                VALUES (@Uid, @Id, @AddNum, @Reason, @DateTime, @Type, @Icon, @Level, @Quality, @Name);
-                """,
-                ("@Uid", uid), ("@Id", item.Id), ("@AddNum", item.AddNum), ("@Reason", item.Reason ?? ""),
-                ("@DateTime", item.DateTime.ToString(TimeFormat)), ("@Type", (int)type),
-                ("@Icon", item.Icon ?? ""), ("@Level", item.Level), ("@Quality", item.Quality), ("@Name", item.Name ?? ""));
-        }
-        transaction.Commit();
+            Uid = uid,
+            x.Id,
+            x.AddNum,
+            Reason = x.Reason ?? "",
+            DateTime = x.DateTime,
+            Type = (int)type,
+            Icon = x.Icon ?? "",
+            x.Level,
+            x.Quality,
+            Name = x.Name ?? "",
+        }).ToList(), t);
+        t.Commit();
     }
 
     #endregion
@@ -125,7 +100,7 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
 
     public List<long> GetStarRailUids()
-        => QueryLongs("SELECT DISTINCT Uid FROM StarRailQueryItem ORDER BY Uid;");
+        => QueryLongs("SELECT DISTINCT Uid FROM StarRailQueryItem;");
 
 
     public (long Add, long Sub) GetStarRailQueryItemsNumSum(long uid, StarRailQueryType type)
@@ -142,38 +117,10 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
     public List<StarRailQueryItem> GetStarRailQueryItems(long uid, StarRailQueryType type, string? month)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = month is null
-            ? "SELECT * FROM StarRailQueryItem WHERE Uid=@uid AND Type=@type ORDER BY Time DESC;"
-            : "SELECT * FROM StarRailQueryItem WHERE Uid=@uid AND Type=@type AND Time LIKE @month ORDER BY Time DESC;";
-        command.Parameters.AddWithValue("@uid", uid);
-        command.Parameters.AddWithValue("@type", (int)type);
-        if (month is not null)
-        {
-            command.Parameters.AddWithValue("@month", month + "%");
-        }
-        using SqliteDataReader reader = command.ExecuteReader();
-        var list = new List<StarRailQueryItem>();
-        while (reader.Read())
-        {
-            list.Add(new StarRailQueryItem
-            {
-                Id = reader.GetInt64(0),
-                Uid = reader.GetInt64(1),
-                Type = (StarRailQueryType)reader.GetInt32(2),
-                Action = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                AddNum = reader.GetInt64(4),
-                Time = ParseTime(reader, "Time"),
-                RelicName = reader.IsDBNull(6) ? "" : reader.GetString(6),
-                RelicLevel = reader.GetInt32(7),
-                RelicRarity = reader.GetInt32(8),
-                EquipmentName = reader.IsDBNull(9) ? "" : reader.GetString(9),
-                EquipmentLevel = reader.GetInt32(10),
-                EquipmentRarity = reader.GetInt32(11),
-            });
-        }
-        return list;
+        using var dapper = _database.CreateConnection();
+        return month is null
+            ? dapper.Query<StarRailQueryItem>("SELECT * FROM StarRailQueryItem WHERE Uid=@uid AND Type=@type ORDER BY Time DESC;", new { uid, type }).ToList()
+            : dapper.Query<StarRailQueryItem>("SELECT * FROM StarRailQueryItem WHERE Uid=@uid AND Type=@type AND Time LIKE @month ORDER BY Time DESC;", new { uid, type, month = month + "%" }).ToList();
     }
 
 
@@ -183,29 +130,28 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
     public void InsertStarRailQueryItems(long uid, StarRailQueryType type, List<StarRailQueryItem> items, bool all = false)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteTransaction transaction = connection.BeginTransaction();
-        if (all)
+        using var dapper = _database.CreateConnection();
+        using var t = dapper.BeginTransaction();
+        DeleteTouchedMonths(dapper, t, "StarRailQueryItem", "Time", uid, (int)type, items.Select(x => x.Time), all);
+        dapper.Execute("""
+            INSERT OR REPLACE INTO StarRailQueryItem (Id, Uid, Type, Action, AddNum, Time, RelicName, RelicLevel, RelicRarity, EquipmentName, EquipmentLevel, EquipmentRarity)
+            VALUES (@Id, @Uid, @Type, @Action, @AddNum, @Time, @RelicName, @RelicLevel, @RelicRarity, @EquipmentName, @EquipmentLevel, @EquipmentRarity);
+            """, items.Select(x => new
         {
-            foreach (var month in items.Select(x => x.Time.ToString("yyyy-MM")).Distinct())
-            {
-                Execute(connection, transaction,
-                    "DELETE FROM StarRailQueryItem WHERE Uid=@uid AND Type=@type AND Time LIKE @time;",
-                    ("@uid", uid), ("@type", (int)type), ("@time", month + "%"));
-            }
-        }
-        foreach (var item in items)
-        {
-            Execute(connection, transaction, """
-                INSERT OR REPLACE INTO StarRailQueryItem (Id, Uid, Type, Action, AddNum, Time, RelicName, RelicLevel, RelicRarity, EquipmentName, EquipmentLevel, EquipmentRarity)
-                VALUES (@Id, @Uid, @Type, @Action, @AddNum, @Time, @RelicName, @RelicLevel, @RelicRarity, @EquipmentName, @EquipmentLevel, @EquipmentRarity);
-                """,
-                ("@Id", item.Id), ("@Uid", uid), ("@Type", (int)type), ("@Action", item.Action ?? ""),
-                ("@AddNum", item.AddNum), ("@Time", item.Time.ToString(TimeFormat)),
-                ("@RelicName", item.RelicName ?? ""), ("@RelicLevel", item.RelicLevel), ("@RelicRarity", item.RelicRarity),
-                ("@EquipmentName", item.EquipmentName ?? ""), ("@EquipmentLevel", item.EquipmentLevel), ("@EquipmentRarity", item.EquipmentRarity));
-        }
-        transaction.Commit();
+            x.Id,
+            Uid = uid,
+            Type = (int)type,
+            Action = x.Action ?? "",
+            x.AddNum,
+            x.Time,
+            RelicName = x.RelicName ?? "",
+            x.RelicLevel,
+            x.RelicRarity,
+            EquipmentName = x.EquipmentName ?? "",
+            x.EquipmentLevel,
+            x.EquipmentRarity,
+        }).ToList(), t);
+        t.Commit();
     }
 
     #endregion
@@ -215,11 +161,28 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
 
     public List<long> GetZZZUids()
-        => QueryLongs("SELECT DISTINCT Uid FROM ZZZQueryItem ORDER BY Uid;");
+        => QueryLongs("SELECT DISTINCT Uid FROM ZZZQueryItem;");
 
 
     public (long Add, long Sub) GetZZZQueryItemsNumSum(long uid, ZZZQueryType type)
-        => QueryNumSum("ZZZQueryItem", uid, (int)type);
+    {
+        using var dapper = _database.CreateConnection();
+        if (type is ZZZQueryType.PurchaseGift)
+        {
+            // 上游对「购买赠礼」按条数统计（没有增减金额）。
+            long count = dapper.QueryFirstOrDefault<long>("""
+                SELECT COUNT(*) FROM ZZZQueryItem WHERE Uid=@uid AND Type=@type;
+                """, new { uid, type = (int)type });
+            return (count, 0);
+        }
+        long add = dapper.QueryFirstOrDefault<long>("""
+            SELECT IFNULL(SUM(AddNum), 0) FROM ZZZQueryItem WHERE Uid=@uid AND Type=@type AND AddNum>0;
+            """, new { uid, type = (int)type });
+        long sub = dapper.QueryFirstOrDefault<long>("""
+            SELECT IFNULL(SUM(AddNum), 0) FROM ZZZQueryItem WHERE Uid=@uid AND Type=@type AND AddNum<0;
+            """, new { uid, type = (int)type });
+        return (add, sub);
+    }
 
 
     public long GetZZZLastId(long uid, ZZZQueryType type)
@@ -232,42 +195,10 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
     public List<ZZZQueryItem> GetZZZQueryItems(long uid, ZZZQueryType type, string? month)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = month is null
-            ? "SELECT * FROM ZZZQueryItem WHERE Uid=@uid AND Type=@type ORDER BY DateTime DESC;"
-            : "SELECT * FROM ZZZQueryItem WHERE Uid=@uid AND Type=@type AND DateTime LIKE @month ORDER BY DateTime DESC;";
-        command.Parameters.AddWithValue("@uid", uid);
-        command.Parameters.AddWithValue("@type", (int)type);
-        if (month is not null)
-        {
-            command.Parameters.AddWithValue("@month", month + "%");
-        }
-        using SqliteDataReader reader = command.ExecuteReader();
-        var list = new List<ZZZQueryItem>();
-        while (reader.Read())
-        {
-            list.Add(new ZZZQueryItem
-            {
-                Id = reader.GetInt64(0),
-                Uid = reader.GetInt64(1),
-                Type = (ZZZQueryType)reader.GetInt32(2),
-                Reason = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                AddNum = reader.GetInt64(4),
-                DateTime = ParseTime(reader, "DateTime"),
-                EquipName = reader.IsDBNull(6) ? "" : reader.GetString(6),
-                EquipRarity = reader.GetInt32(7),
-                EquipLevel = reader.GetInt32(8),
-                WeaponName = reader.IsDBNull(9) ? "" : reader.GetString(9),
-                WeaponRarity = reader.GetInt32(10),
-                WeaponLevel = reader.GetInt32(11),
-                ClientIp = reader.IsDBNull(12) ? "" : reader.GetString(12),
-                ActionName = reader.IsDBNull(13) ? "" : reader.GetString(13),
-                CardType = reader.GetInt32(14),
-                ItemName = reader.IsDBNull(15) ? "" : reader.GetString(15),
-            });
-        }
-        return list;
+        using var dapper = _database.CreateConnection();
+        return month is null
+            ? dapper.Query<ZZZQueryItem>("SELECT * FROM ZZZQueryItem WHERE Uid=@uid AND Type=@type ORDER BY DateTime DESC;", new { uid, type = (int)type }).ToList()
+            : dapper.Query<ZZZQueryItem>("SELECT * FROM ZZZQueryItem WHERE Uid=@uid AND Type=@type AND DateTime LIKE @month ORDER BY DateTime DESC;", new { uid, type = (int)type, month = month + "%" }).ToList();
     }
 
 
@@ -277,31 +208,32 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
     public void InsertZZZQueryItems(long uid, ZZZQueryType type, List<ZZZQueryItem> items, bool all = false)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteTransaction transaction = connection.BeginTransaction();
-        if (all)
+        using var dapper = _database.CreateConnection();
+        using var t = dapper.BeginTransaction();
+        DeleteTouchedMonths(dapper, t, "ZZZQueryItem", "DateTime", uid, (int)type, items.Select(x => x.DateTime), all);
+        dapper.Execute("""
+            INSERT OR REPLACE INTO ZZZQueryItem (Id, Uid, Type, Reason, AddNum, DateTime, EquipName, EquipRarity, EquipLevel, WeaponName, WeaponRarity, WeaponLevel, ClientIp, ActionName, CardType, ItemName)
+            VALUES (@Id, @Uid, @Type, @Reason, @AddNum, @DateTime, @EquipName, @EquipRarity, @EquipLevel, @WeaponName, @WeaponRarity, @WeaponLevel, @ClientIp, @ActionName, @CardType, @ItemName);
+            """, items.Select(x => new
         {
-            foreach (var month in items.Select(x => x.DateTime.ToString("yyyy-MM")).Distinct())
-            {
-                Execute(connection, transaction,
-                    "DELETE FROM ZZZQueryItem WHERE Uid=@uid AND Type=@type AND DateTime LIKE @time;",
-                    ("@uid", uid), ("@type", (int)type), ("@time", month + "%"));
-            }
-        }
-        foreach (var item in items)
-        {
-            Execute(connection, transaction, """
-                INSERT OR REPLACE INTO ZZZQueryItem (Id, Uid, Type, Reason, AddNum, DateTime, EquipName, EquipRarity, EquipLevel, WeaponName, WeaponRarity, WeaponLevel, ClientIp, ActionName, CardType, ItemName)
-                VALUES (@Id, @Uid, @Type, @Reason, @AddNum, @DateTime, @EquipName, @EquipRarity, @EquipLevel, @WeaponName, @WeaponRarity, @WeaponLevel, @ClientIp, @ActionName, @CardType, @ItemName);
-                """,
-                ("@Id", item.Id), ("@Uid", uid), ("@Type", (int)type), ("@Reason", item.Reason ?? ""),
-                ("@AddNum", item.AddNum), ("@DateTime", item.DateTime.ToString(TimeFormat)),
-                ("@EquipName", item.EquipName ?? ""), ("@EquipRarity", item.EquipRarity), ("@EquipLevel", item.EquipLevel),
-                ("@WeaponName", item.WeaponName ?? ""), ("@WeaponRarity", item.WeaponRarity), ("@WeaponLevel", item.WeaponLevel),
-                ("@ClientIp", item.ClientIp ?? ""), ("@ActionName", item.ActionName ?? ""),
-                ("@CardType", item.CardType), ("@ItemName", item.ItemName ?? ""));
-        }
-        transaction.Commit();
+            x.Id,
+            Uid = uid,
+            Type = (int)type,
+            Reason = x.Reason ?? "",
+            x.AddNum,
+            x.DateTime,
+            EquipName = x.EquipName ?? "",
+            x.EquipRarity,
+            x.EquipLevel,
+            WeaponName = x.WeaponName ?? "",
+            x.WeaponRarity,
+            x.WeaponLevel,
+            ClientIp = x.ClientIp ?? "",
+            ActionName = x.ActionName ?? "",
+            x.CardType,
+            ItemName = x.ItemName ?? "",
+        }).ToList(), t);
+        t.Commit();
     }
 
     #endregion
@@ -312,99 +244,73 @@ public sealed class SelfQueryLogStore : ISelfQueryStore
 
     private List<long> QueryLongs(string sql)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        using SqliteDataReader reader = command.ExecuteReader();
-        var list = new List<long>();
-        while (reader.Read())
-        {
-            list.Add(reader.GetInt64(0));
-        }
-        return list;
+        using var dapper = _database.CreateConnection();
+        return dapper.Query<long>(sql).ToList();
     }
 
 
     private (long Add, long Sub) QueryNumSum(string table, long uid, int type)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"""
-            SELECT IFNULL(SUM(CASE WHEN AddNum > 0 THEN AddNum END), 0),
-                   IFNULL(SUM(CASE WHEN AddNum < 0 THEN AddNum END), 0)
-            FROM {table} WHERE Uid=@uid AND Type=@type;
-            """;
-        command.Parameters.AddWithValue("@uid", uid);
-        command.Parameters.AddWithValue("@type", type);
-        using SqliteDataReader reader = command.ExecuteReader();
-        return reader.Read() ? (reader.GetInt64(0), reader.GetInt64(1)) : (0, 0);
+        using var dapper = _database.CreateConnection();
+        long add = dapper.QueryFirstOrDefault<long>($"""
+            SELECT IFNULL(SUM(AddNum), 0) FROM {table} WHERE Uid=@uid AND Type=@type AND AddNum>0;
+            """, new { uid, type });
+        long sub = dapper.QueryFirstOrDefault<long>($"""
+            SELECT IFNULL(SUM(AddNum), 0) FROM {table} WHERE Uid=@uid AND Type=@type AND AddNum<0;
+            """, new { uid, type });
+        return (add, sub);
     }
 
 
     private long QueryLastId(string table, long uid, int type)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"SELECT Id FROM {table} WHERE Uid=@uid AND Type=@type ORDER BY Id DESC LIMIT 1;";
-        command.Parameters.AddWithValue("@uid", uid);
-        command.Parameters.AddWithValue("@type", type);
-        object? value = command.ExecuteScalar();
-        return value is long id ? id : 0;
+        using var dapper = _database.CreateConnection();
+        return dapper.QueryFirstOrDefault<long>($"""
+            SELECT Id FROM {table} WHERE Uid=@uid AND Type=@type ORDER BY Id DESC LIMIT 1;
+            """, new { uid, type });
     }
 
 
     private List<string> QueryMonths(string table, string column, long uid, int type)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"""
-            SELECT DISTINCT substr({column}, 1, 7) FROM {table}
-            WHERE Uid=@uid AND Type=@type AND {column} IS NOT NULL ORDER BY 1 DESC;
-            """;
-        command.Parameters.AddWithValue("@uid", uid);
-        command.Parameters.AddWithValue("@type", type);
-        using SqliteDataReader reader = command.ExecuteReader();
-        var list = new List<string>();
-        while (reader.Read())
-        {
-            if (!reader.IsDBNull(0))
-            {
-                list.Add(reader.GetString(0));
-            }
-        }
-        return list;
+        using var dapper = _database.CreateConnection();
+        // 上游：SELECT DISTINCT STRFTIME('%Y-%m', {column}) FROM {table} WHERE Type=@type ORDER BY {column} DESC;
+        // 这里补了 AND Uid=@uid：上游把 uid 传进参数却没用在 WHERE 里（多 UID 时月份会串），
+        // 本地页面是按 UID 展示的，保留过滤。
+        return dapper.Query<string>($"""
+            SELECT DISTINCT STRFTIME('%Y-%m', {column}) FROM {table}
+            WHERE Uid=@uid AND Type=@type ORDER BY {column} DESC;
+            """, new { uid, type }).ToList();
     }
 
 
     private void DeleteMonth(string table, string column, long uid, int type, string month)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        Execute(connection, null,
-            $"DELETE FROM {table} WHERE Uid=@uid AND Type=@type AND {column} LIKE @time;",
-            ("@uid", uid), ("@type", type), ("@time", month + "%"));
+        using var dapper = _database.CreateConnection();
+        // 上游 DeleteCurrentMonthData：DELETE ... WHERE Uid=@uid AND Type=@Type AND {column} LIKE @time
+        dapper.Execute($"""
+            DELETE FROM {table} WHERE Uid=@uid AND Type=@Type AND {column} LIKE @time;
+            """, new { uid, Type = type, time = month + "%" });
     }
 
 
-    private static DateTime ParseTime(SqliteDataReader reader, string column)
+    /// <summary>
+    /// 「检索全部」时先删掉本批涉及月份的旧数据（上游对每个月单独一条 DELETE，月份按
+    /// <c>yyyy-MM</c> 从本批记录的时间算出来）。
+    /// </summary>
+    private static void DeleteTouchedMonths(System.Data.IDbConnection connection, System.Data.IDbTransaction transaction,
+        string table, string column, long uid, int type, IEnumerable<DateTime> times, bool all)
     {
-        int index = reader.GetOrdinal(column);
-        return reader.IsDBNull(index)
-            ? default
-            : DateTime.TryParse(reader.GetString(index), out DateTime value) ? value : default;
-    }
-
-
-    private static void Execute(SqliteConnection connection, SqliteTransaction? transaction, string sql,
-        params (string Name, object Value)[] parameters)
-    {
-        using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = sql;
-        foreach (var (name, value) in parameters)
+        if (!all)
         {
-            command.Parameters.AddWithValue(name, value);
+            return;
         }
-        command.ExecuteNonQuery();
+        foreach (string month in times.Select(x => x.ToString("yyyy-MM")).Distinct())
+        {
+            connection.Execute($"""
+                DELETE FROM {table} WHERE Uid=@uid AND Type=@type AND {column} LIKE @time;
+                """, new { uid, type, time = month + "%" }, transaction);
+        }
     }
 
     #endregion

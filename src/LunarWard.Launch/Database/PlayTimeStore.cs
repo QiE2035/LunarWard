@@ -1,4 +1,4 @@
-using Microsoft.Data.Sqlite;
+using Dapper;
 
 namespace LunarWard.Launch.Database;
 
@@ -50,44 +50,32 @@ public sealed class PlayTimeStore
     /// </summary>
     public void Save(string gameBiz, int pid, long startTimeMs, long endTimeMs)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = """
-            INSERT OR REPLACE INTO PlayTimeStats (GameBiz, Pid, StartTime, EndTime, Interruption, Type)
-            VALUES (@gameBiz, @pid, @startTime, @endTime, 0, 0);
-            """;
-        command.Parameters.AddWithValue("@gameBiz", gameBiz);
-        command.Parameters.AddWithValue("@pid", pid);
-        command.Parameters.AddWithValue("@startTime", startTimeMs);
-        command.Parameters.AddWithValue("@endTime", endTimeMs);
-        command.ExecuteNonQuery();
+        using var dapper = _database.CreateConnection();
+        dapper.Execute("INSERT OR REPLACE INTO PlayTimeStats (GameBiz, Pid, StartTime, EndTime, Interruption, Type) VALUES (@GameBiz, @Pid, @StartTime, @EndTime, @Interruption, @Type);",
+            new { GameBiz = gameBiz, Pid = pid, StartTime = startTimeMs, EndTime = endTimeMs, Interruption = 0, Type = 0 });
     }
 
 
-    /// <summary>全部记录，按开始时间倒序（上游 <c>ORDER BY TimeStamp</c> 的倒序版本）。</summary>
+    /// <summary>全部记录，按开始时间倒序（列表页需要最近的在前；上游统计按 <c>TimeStamp</c> 正序）。</summary>
     public IReadOnlyList<PlayTimeRecord> GetAll(string? gameBiz = null)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = gameBiz is null
-            ? "SELECT GameBiz, Pid, StartTime, EndTime FROM PlayTimeStats ORDER BY StartTime DESC;"
-            : "SELECT GameBiz, Pid, StartTime, EndTime FROM PlayTimeStats WHERE GameBiz = @gameBiz ORDER BY StartTime DESC;";
-        if (gameBiz is not null)
-        {
-            command.Parameters.AddWithValue("@gameBiz", gameBiz);
-        }
+        using var dapper = _database.CreateConnection();
+        var rows = gameBiz is null
+            ? dapper.Query<PlayTimeStatsRow>("SELECT GameBiz, Pid, StartTime, EndTime FROM PlayTimeStats ORDER BY StartTime DESC;")
+            : dapper.Query<PlayTimeStatsRow>("SELECT GameBiz, Pid, StartTime, EndTime FROM PlayTimeStats WHERE GameBiz = @gameBiz ORDER BY StartTime DESC;", new { gameBiz });
+        return rows.Select(x => new PlayTimeRecord(x.GameBiz, x.Pid, x.StartTime, x.EndTime)).ToList();
+    }
 
-        var list = new List<PlayTimeRecord>();
-        using SqliteDataReader reader = command.ExecuteReader();
-        while (reader.Read())
-        {
-            list.Add(new PlayTimeRecord(
-                reader.GetString(0),
-                reader.GetInt32(1),
-                reader.GetInt64(2),
-                reader.GetInt64(3)));
-        }
 
-        return list;
+    /// <summary>Dapper 投影用（列名与上游 <c>PlayTimeStats</c> 一致）。</summary>
+    private sealed class PlayTimeStatsRow
+    {
+        public string GameBiz { get; set; } = "";
+
+        public int Pid { get; set; }
+
+        public long StartTime { get; set; }
+
+        public long EndTime { get; set; }
     }
 }

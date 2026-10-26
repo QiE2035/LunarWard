@@ -1,4 +1,4 @@
-using Microsoft.Data.Sqlite;
+using Dapper;
 using LunarWard.Core.Gacha.Genshin;
 using LunarWard.Launch.Gacha;
 
@@ -26,8 +26,6 @@ public sealed class GenshinBeyondGachaStore
 
     private const string GameBizUgc = "hk4eugc";
 
-    private const string TimeFormat = "yyyy-MM-dd HH:mm:ss";
-
 
     private readonly LunarWardDatabase _database;
 
@@ -45,17 +43,9 @@ public sealed class GenshinBeyondGachaStore
 
     public List<long> GetUids()
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        // 上游 GetUids：SELECT DISTINCT Uid FROM GenshinBeyondGachaItem
-        command.CommandText = $"SELECT DISTINCT Uid FROM {GachaTableName} ORDER BY Uid;";
-        using SqliteDataReader reader = command.ExecuteReader();
-        var list = new List<long>();
-        while (reader.Read())
-        {
-            list.Add(reader.GetInt64(0));
-        }
-        return list;
+        using var dapper = _database.CreateConnection();
+        // 上游 GetUids：SELECT DISTINCT Uid FROM GenshinBeyondGachaItem（无 ORDER BY）
+        return dapper.Query<long>($"SELECT DISTINCT Uid FROM {GachaTableName};").OrderBy(x => x).ToList();
     }
 
 
@@ -89,93 +79,51 @@ public sealed class GenshinBeyondGachaStore
 
     public int CountItems(long uid)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"SELECT COUNT(*) FROM {GachaTableName} WHERE Uid = @Uid;";
-        command.Parameters.AddWithValue("@Uid", uid);
-        return Convert.ToInt32(command.ExecuteScalar());
+        using var dapper = _database.CreateConnection();
+        return dapper.QueryFirstOrDefault<int>($"SELECT COUNT(*) FROM {GachaTableName} WHERE Uid = @Uid;", new { Uid = uid });
     }
 
 
     public long GetLastId(long uid)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"SELECT Id FROM {GachaTableName} WHERE Uid = @Uid ORDER BY Id DESC LIMIT 1;";
-        command.Parameters.AddWithValue("@Uid", uid);
-        return command.ExecuteScalar() is long id ? id : 0;
+        using var dapper = _database.CreateConnection();
+        return dapper.QueryFirstOrDefault<long>($"SELECT Id FROM {GachaTableName} WHERE Uid = @Uid ORDER BY Id DESC LIMIT 1;", new { Uid = uid });
     }
 
 
-    /// <summary>写入记录（上游 <c>INSERT OR REPLACE</c>，同 <c>(Uid, Id)</c> 覆盖）。</summary>
-    public void InsertItems(IEnumerable<GenshinBeyondGachaItemEx> items)
+    /// <summary>写入记录（上游 <c>InsertGachaLogItems</c>：<c>INSERT OR REPLACE</c>，同 <c>(Uid, Id)</c> 覆盖）。</summary>
+    public int InsertItems(IEnumerable<GenshinBeyondGachaItemEx> items)
     {
         List<GenshinBeyondGachaItemEx> list = items.ToList();
         if (list.Count == 0)
         {
-            return;
+            return 0;
         }
 
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteTransaction transaction = connection.BeginTransaction();
-        using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = $"""
-            INSERT OR REPLACE INTO {GachaTableName}
-                (Uid, Id, Region, OpGachaType, ScheduleId, ItemType, ItemId, ItemName, RankType, IsUp, Time)
+        using var dapper = _database.CreateConnection();
+        using var t = dapper.BeginTransaction();
+        int affect = dapper.Execute("""
+            INSERT OR REPLACE INTO GenshinBeyondGachaItem (Uid, Id, Region, OpGachaType, ScheduleId, ItemType, ItemId, ItemName, RankType, IsUp, Time)
             VALUES (@Uid, @Id, @Region, @OpGachaType, @ScheduleId, @ItemType, @ItemId, @ItemName, @RankType, @IsUp, @Time);
-            """;
-        SqliteParameter pUid = command.Parameters.Add("@Uid", SqliteType.Integer);
-        SqliteParameter pId = command.Parameters.Add("@Id", SqliteType.Integer);
-        SqliteParameter pRegion = command.Parameters.Add("@Region", SqliteType.Text);
-        SqliteParameter pOpGachaType = command.Parameters.Add("@OpGachaType", SqliteType.Integer);
-        SqliteParameter pScheduleId = command.Parameters.Add("@ScheduleId", SqliteType.Integer);
-        SqliteParameter pItemType = command.Parameters.Add("@ItemType", SqliteType.Text);
-        SqliteParameter pItemId = command.Parameters.Add("@ItemId", SqliteType.Integer);
-        SqliteParameter pItemName = command.Parameters.Add("@ItemName", SqliteType.Text);
-        SqliteParameter pRankType = command.Parameters.Add("@RankType", SqliteType.Integer);
-        SqliteParameter pIsUp = command.Parameters.Add("@IsUp", SqliteType.Integer);
-        SqliteParameter pTime = command.Parameters.Add("@Time", SqliteType.Text);
-        foreach (GenshinBeyondGachaItemEx item in list)
-        {
-            pUid.Value = item.Uid;
-            pId.Value = item.Id;
-            pRegion.Value = item.Region ?? "";
-            pOpGachaType.Value = item.OpGachaType;
-            pScheduleId.Value = item.ScheduleId;
-            pItemType.Value = item.ItemType ?? "";
-            pItemId.Value = item.ItemId;
-            pItemName.Value = item.ItemName ?? "";
-            pRankType.Value = item.RankType;
-            pIsUp.Value = item.IsUp;
-            pTime.Value = item.Time.ToString(TimeFormat);
-            command.ExecuteNonQuery();
-        }
-        transaction.Commit();
+            """, list, t);
+        t.Commit();
+        return affect;
     }
 
 
     public int DeleteUid(long uid)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        // 上游 DeleteGachaLogAsync：DELETE FROM 表 WHERE Uid = @uid
-        command.CommandText = $"DELETE FROM {GachaTableName} WHERE Uid = @Uid;";
-        command.Parameters.AddWithValue("@Uid", uid);
-        return command.ExecuteNonQuery();
+        using var dapper = _database.CreateConnection();
+        // 上游 DeleteUid：DELETE FROM 表 WHERE Uid = @uid
+        return dapper.Execute($"DELETE FROM {GachaTableName} WHERE Uid = @uid;", new { uid });
     }
 
 
     public int DeleteByTime(long uid, DateTime begin, DateTime end)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        // 上游：DELETE FROM 表 WHERE Uid = @uid AND Time >= @begin AND Time <= @end
-        command.CommandText = $"DELETE FROM {GachaTableName} WHERE Uid = @Uid AND Time >= @Begin AND Time <= @End;";
-        command.Parameters.AddWithValue("@Uid", uid);
-        command.Parameters.AddWithValue("@Begin", begin.ToString(TimeFormat));
-        command.Parameters.AddWithValue("@End", end.ToString(TimeFormat));
-        return command.ExecuteNonQuery();
+        using var dapper = _database.CreateConnection();
+        // 上游 DeleteByTime：DELETE FROM 表 WHERE Uid = @uid AND Time >= @begin AND Time <= @end
+        return dapper.Execute($"DELETE FROM {GachaTableName} WHERE Uid = @uid AND Time >= @begin AND Time <= @end;", new { uid, begin, end });
     }
 
 
@@ -184,38 +132,27 @@ public sealed class GenshinBeyondGachaStore
 
     public string? GetIcon(int itemId)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = "SELECT Icon FROM GenshinBeyondGachaInfo WHERE Id = @Id LIMIT 1;";
-        command.Parameters.AddWithValue("@Id", itemId);
-        return command.ExecuteScalar() as string;
+        using var dapper = _database.CreateConnection();
+        return dapper.QueryFirstOrDefault<string?>("SELECT Icon FROM GenshinBeyondGachaInfo WHERE Id = @Id LIMIT 1;", new { Id = itemId });
     }
 
 
     /// <summary>整表替换物品图标（上游 <c>UpdateGachaInfoAsync</c> 的 <c>INSERT OR REPLACE</c>）。</summary>
-    public void ReplaceInfo(IEnumerable<GenshinBeyondGachaInfo> info)
+    public int ReplaceInfo(IEnumerable<GenshinBeyondGachaInfo> info)
     {
         List<GenshinBeyondGachaInfo> list = info.ToList();
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteTransaction transaction = connection.BeginTransaction();
-        using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = """
-            INSERT OR REPLACE INTO GenshinBeyondGachaInfo (Id, Name, Rank, Icon) VALUES (@Id, @Name, @Rank, @Icon);
-            """;
-        SqliteParameter pId = command.Parameters.Add("@Id", SqliteType.Integer);
-        SqliteParameter pName = command.Parameters.Add("@Name", SqliteType.Text);
-        SqliteParameter pRank = command.Parameters.Add("@Rank", SqliteType.Integer);
-        SqliteParameter pIcon = command.Parameters.Add("@Icon", SqliteType.Text);
-        foreach (GenshinBeyondGachaInfo item in list)
+        if (list.Count == 0)
         {
-            pId.Value = item.Id;
-            pName.Value = item.Name ?? "";
-            pRank.Value = item.Rank;
-            pIcon.Value = item.Icon ?? "";
-            command.ExecuteNonQuery();
+            return 0;
         }
-        transaction.Commit();
+
+        using var dapper = _database.CreateConnection();
+        using var t = dapper.BeginTransaction();
+        int affect = dapper.Execute("""
+            INSERT OR REPLACE INTO GenshinBeyondGachaInfo (Id, Name, Rank, Icon) VALUES (@Id, @Name, @Rank, @Icon);
+            """, list, t);
+        t.Commit();
+        return affect;
     }
 
 
@@ -224,58 +161,25 @@ public sealed class GenshinBeyondGachaStore
 
     public string? GetUrl(long uid)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = "SELECT Url FROM GachaLogUrl WHERE Uid = @Uid AND GameBiz = @GameBiz LIMIT 1;";
-        command.Parameters.AddWithValue("@Uid", uid);
-        command.Parameters.AddWithValue("@GameBiz", GameBizUgc);
-        return command.ExecuteScalar() as string;
+        using var dapper = _database.CreateConnection();
+        return dapper.QueryFirstOrDefault<string?>("SELECT Url FROM GachaLogUrl WHERE Uid = @uid AND GameBiz = @GameBiz LIMIT 1;",
+            new { uid, GameBiz = GameBizUgc });
     }
 
 
     public void SetUrl(long uid, string url)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
+        using var dapper = _database.CreateConnection();
         // 上游：INSERT OR REPLACE INTO GachaLogUrl (GameBiz, Uid, Url, Time)
-        command.CommandText = """
-            INSERT OR REPLACE INTO GachaLogUrl (GameBiz, Uid, Url, Time) VALUES (@GameBiz, @Uid, @Url, @Time);
-            """;
-        command.Parameters.AddWithValue("@GameBiz", GameBizUgc);
-        command.Parameters.AddWithValue("@Uid", uid);
-        command.Parameters.AddWithValue("@Url", url);
-        command.Parameters.AddWithValue("@Time", DateTime.Now.ToString(TimeFormat));
-        command.ExecuteNonQuery();
+        dapper.Execute("INSERT OR REPLACE INTO GachaLogUrl (GameBiz, Uid, Url, Time) VALUES (@GameBiz, @Uid, @Url, @Time);",
+            new { GameBiz = GameBizUgc, Uid = uid, Url = url, Time = DateTime.Now });
     }
 
 
     private List<GenshinBeyondGachaItemEx> Query(string sql, long uid)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.AddWithValue("@Uid", uid);
-        using SqliteDataReader reader = command.ExecuteReader();
-        var list = new List<GenshinBeyondGachaItemEx>();
-        while (reader.Read())
-        {
-            list.Add(new GenshinBeyondGachaItemEx
-            {
-                Uid = reader.GetInt64(0),
-                Id = reader.GetInt64(1),
-                Region = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                OpGachaType = reader.GetInt32(3),
-                ScheduleId = reader.GetInt32(4),
-                ItemType = reader.IsDBNull(5) ? "" : reader.GetString(5),
-                ItemId = reader.GetInt32(6),
-                ItemName = reader.IsDBNull(7) ? "" : reader.GetString(7),
-                RankType = reader.GetInt32(8),
-                IsUp = reader.IsDBNull(9) ? 0 : reader.GetInt32(9),
-                Time = reader.GetDateTime(10),
-                Icon = reader.IsDBNull(11) ? "" : reader.GetString(11),
-            });
-        }
-        return list;
+        using var dapper = _database.CreateConnection();
+        return dapper.Query<GenshinBeyondGachaItemEx>(sql, new { Uid = uid }).ToList();
     }
 
 }

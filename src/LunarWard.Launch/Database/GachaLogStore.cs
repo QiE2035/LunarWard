@@ -1,5 +1,5 @@
 using System.Globalization;
-using Microsoft.Data.Sqlite;
+using Dapper;
 
 namespace LunarWard.Launch.Database;
 
@@ -8,7 +8,7 @@ namespace LunarWard.Launch.Database;
 /// </summary>
 /// <remarks>
 /// <para>
-/// 表结构、SQL 语义与上游一致：<c>INSERT OR REPLACE</c> 按 <c>(Uid, Id)</c> 覆盖、
+/// 表结构、SQL 与上游一致：<c>INSERT OR REPLACE</c> 按 <c>(Uid, Id)</c> 覆盖、
 /// <c>ORDER BY Id</c> 升序读出、<c>DELETE ... WHERE Uid=@uid AND Time BETWEEN</c> 删除时间段。
 /// 语言存在每行的 <c>Lang</c> 列（上游同款），不是存档级字段。
 /// </para>
@@ -70,78 +70,50 @@ public sealed class GachaLogStore
         }
 
         string table = TableName(game);
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteTransaction transaction = connection.BeginTransaction();
-        using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = game == StarRail
-            ? $"""
-               INSERT OR REPLACE INTO {table} (Uid, Id, Name, Time, ItemId, ItemType, RankType, GachaType, GachaId, Count, Lang)
-               VALUES (@Uid, @Id, @Name, @Time, @ItemId, @ItemType, @RankType, @GachaType, @GachaId, @Count, @Lang);
-               """
-            : $"""
-               INSERT OR REPLACE INTO {table} (Uid, Id, Name, Time, ItemId, ItemType, RankType, GachaType, Count, Lang)
-               VALUES (@Uid, @Id, @Name, @Time, @ItemId, @ItemType, @RankType, @GachaType, @Count, @Lang);
-               """;
-
-        SqliteParameter pUid = command.Parameters.Add("@Uid", SqliteType.Integer);
-        SqliteParameter pId = command.Parameters.Add("@Id", SqliteType.Integer);
-        SqliteParameter pName = command.Parameters.Add("@Name", SqliteType.Text);
-        SqliteParameter pTime = command.Parameters.Add("@Time", SqliteType.Text);
-        SqliteParameter pItemId = command.Parameters.Add("@ItemId", SqliteType.Integer);
-        SqliteParameter pItemType = command.Parameters.Add("@ItemType", SqliteType.Text);
-        SqliteParameter pRankType = command.Parameters.Add("@RankType", SqliteType.Integer);
-        SqliteParameter pGachaType = command.Parameters.Add("@GachaType", SqliteType.Integer);
-        SqliteParameter pCount = command.Parameters.Add("@Count", SqliteType.Integer);
-        SqliteParameter pLang = command.Parameters.Add("@Lang", SqliteType.Text);
-        SqliteParameter? pGachaId = game == StarRail ? command.Parameters.Add("@GachaId", SqliteType.Integer) : null;
-
-        foreach (GachaRecord record in list)
+        using var dapper = _database.CreateConnection();
+        using var t = dapper.BeginTransaction();
+        var items = list.Select(x => new
         {
-            pUid.Value = record.Uid;
-            pId.Value = record.Id;
-            pName.Value = record.Name;
-            pTime.Value = record.Time.ToString(TimeFormat, CultureInfo.InvariantCulture);
-            pItemId.Value = record.ItemId;
-            pItemType.Value = record.ItemType;
-            pRankType.Value = record.RankType;
-            pGachaType.Value = record.GachaType;
-            pGachaId?.Value = record.GachaId;
-            pCount.Value = record.Count;
-            pLang.Value = (object?)lang ?? DBNull.Value;
-            command.ExecuteNonQuery();
-        }
-
-        transaction.Commit();
-        return list.Count;
+            x.Uid,
+            x.Id,
+            x.Name,
+            Time = x.Time,
+            x.ItemId,
+            x.ItemType,
+            x.RankType,
+            x.GachaType,
+            GachaId = game == StarRail ? x.GachaId : 0,
+            x.Count,
+            Lang = lang,
+        });
+        int affect = game == StarRail
+            ? dapper.Execute("""
+                INSERT OR REPLACE INTO StarRailGachaItem (Uid, Id, Name, Time, ItemId, ItemType, RankType, GachaType, GachaId, Count, Lang)
+                VALUES (@Uid, @Id, @Name, @Time, @ItemId, @ItemType, @RankType, @GachaType, @GachaId, @Count, @Lang);
+                """, items, t)
+            : dapper.Execute($"""
+                INSERT OR REPLACE INTO {table} (Uid, Id, Name, Time, ItemId, ItemType, RankType, GachaType, Count, Lang)
+                VALUES (@Uid, @Id, @Name, @Time, @ItemId, @ItemType, @RankType, @GachaType, @Count, @Lang);
+                """, items, t);
+        t.Commit();
+        return affect;
     }
 
 
     /// <summary>重命名记录（上游 <c>ChangeGachaItemNameAsync</c>：改名并写回 <c>Lang</c>）。</summary>
+    /// <remarks>
+    /// 上游按 <c>INNER JOIN {info} ON item.ItemId = info.Id</c> 整表改名；LunarWard 的调用方
+    /// （<c>GachaPageViewModel</c>）是先取新语言的名字、再带着这批记录来改，
+    /// 而且信息表要到之后的 <c>RefreshWikiDataAsync</c> 才刷新，所以这里保留逐行 UPDATE。
+    /// </remarks>
     public int Rename(string game, string lang, IEnumerable<GachaRecord> records)
     {
         string table = TableName(game);
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteTransaction transaction = connection.BeginTransaction();
-        using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = $"UPDATE {table} SET Name = @Name, Lang = @Lang WHERE Uid = @Uid AND Id = @Id;";
-        SqliteParameter pName = command.Parameters.Add("@Name", SqliteType.Text);
-        SqliteParameter pLang = command.Parameters.Add("@Lang", SqliteType.Text);
-        SqliteParameter pUid = command.Parameters.Add("@Uid", SqliteType.Integer);
-        SqliteParameter pId = command.Parameters.Add("@Id", SqliteType.Integer);
-
-        int affected = 0;
-        foreach (GachaRecord record in records)
-        {
-            pName.Value = record.Name;
-            pLang.Value = lang;
-            pUid.Value = record.Uid;
-            pId.Value = record.Id;
-            affected += command.ExecuteNonQuery();
-        }
-
-        transaction.Commit();
+        using var dapper = _database.CreateConnection();
+        using var t = dapper.BeginTransaction();
+        int affected = dapper.Execute($"UPDATE {table} SET Name = @Name, Lang = @Lang WHERE Uid = @Uid AND Id = @Id;",
+            records.Select(x => new { x.Name, Lang = lang, x.Uid, x.Id }).ToList(), t);
+        t.Commit();
         return affected;
     }
 
@@ -149,40 +121,24 @@ public sealed class GachaLogStore
     /// <summary>某 UID 的全部记录，按 <c>Id</c> 升序（上游 <c>ORDER BY Id</c>）。</summary>
     public IReadOnlyList<GachaRecord> GetItems(string game, long uid)
     {
-        string table = TableName(game);
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"SELECT * FROM {table} WHERE Uid = @uid ORDER BY Id;";
-        command.Parameters.AddWithValue("@uid", uid);
-        return ReadRecords(game, command);
+        using var dapper = _database.CreateConnection();
+        return Map(game, dapper.Query<GachaRow>($"SELECT * FROM {TableName(game)} WHERE Uid = @uid ORDER BY Id;", new { uid }));
     }
 
 
-    /// <summary>某游戏的全部记录（跨 UID，按 Uid、Id 升序）。</summary>
+    /// <summary>某游戏的全部记录（跨 UID，按 Uid、Id 升序；上游没有对应查询，本地导出列表用）。</summary>
     public IReadOnlyList<GachaRecord> GetAll(string game)
     {
-        string table = TableName(game);
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"SELECT * FROM {table} ORDER BY Uid, Id;";
-        return ReadRecords(game, command);
+        using var dapper = _database.CreateConnection();
+        return Map(game, dapper.Query<GachaRow>($"SELECT * FROM {TableName(game)} ORDER BY Uid, Id;"));
     }
 
 
-    /// <summary>有记录的 UID 列表（上游 <c>GetUids</c>：<c>SELECT DISTINCT Uid</c>）。</summary>
+    /// <summary>有记录的 UID 列表（上游 <c>GetUids</c>：<c>SELECT DISTINCT Uid</c>，无 ORDER BY）。</summary>
     public IReadOnlyList<long> GetUids(string game)
     {
-        string table = TableName(game);
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"SELECT DISTINCT Uid FROM {table} ORDER BY Uid;";
-        using SqliteDataReader reader = command.ExecuteReader();
-        var uids = new List<long>();
-        while (reader.Read())
-        {
-            uids.Add(reader.GetInt64(0));
-        }
-        return uids;
+        using var dapper = _database.CreateConnection();
+        return dapper.Query<long>($"SELECT DISTINCT Uid FROM {TableName(game)};").OrderBy(x => x).ToList();
     }
 
 
@@ -190,46 +146,26 @@ public sealed class GachaLogStore
     /// 全部存档摘要（游戏顺序 <see cref="GameOrder"/>，同游戏内按 UID 升序），
     /// 用于 UIGF 导出列表与导入结果列表。
     /// </summary>
+    /// <remarks>
+    /// 三条查询与上游 <c>UIGFGachaService.GetLocalGachaArchives</c> 对应：
+    /// <c>SELECT DISTINCT Uid</c>、<c>SELECT COUNT(*)</c>、最近一条按 <c>ORDER BY Time DESC LIMIT 1</c>。
+    /// </remarks>
     public IReadOnlyList<GachaArchiveSummary> GetSummaries()
     {
         var result = new List<GachaArchiveSummary>();
         foreach (string game in GameOrder)
         {
             string table = TableName(game);
-            using SqliteConnection connection = _database.CreateConnection();
-            using SqliteCommand command = connection.CreateCommand();
-            command.CommandText = $"""
-                SELECT Uid, COUNT(*) AS Cnt, MAX(Time) AS LastTime
-                FROM {table}
-                GROUP BY Uid
-                ORDER BY Uid;
-                """;
-            using SqliteDataReader reader = command.ExecuteReader();
-            var rows = new List<(long Uid, int Count, DateTime LastTime)>();
-            while (reader.Read())
+            using var dapper = _database.CreateConnection();
+            foreach (long uid in dapper.Query<long>($"SELECT DISTINCT Uid FROM {table};").OrderBy(x => x))
             {
-                rows.Add((
-                    reader.GetInt64(0),
-                    reader.GetInt32(1),
-                    ParseTime(reader.GetString(2))));
-            }
-            reader.Close();
-
-            foreach ((long uid, int count, DateTime lastTime) in rows)
-            {
-                // 最近一条记录的物品名 / 卡池 / 语言（上游列表页也是这么取的）
-                using SqliteCommand lastCommand = connection.CreateCommand();
-                lastCommand.CommandText = $"SELECT Name, GachaType, Lang FROM {table} WHERE Uid = @uid ORDER BY Id DESC LIMIT 1;";
-                lastCommand.Parameters.AddWithValue("@uid", uid);
-                using SqliteDataReader lastReader = lastCommand.ExecuteReader();
-                if (!lastReader.Read())
+                int count = dapper.QueryFirstOrDefault<int>($"SELECT COUNT(*) FROM {table} WHERE Uid=@Uid;", new { Uid = uid });
+                GachaLastRow? last = dapper.QueryFirstOrDefault<GachaLastRow>($"SELECT * FROM {table} WHERE Uid=@Uid ORDER BY Time DESC LIMIT 1;", new { Uid = uid });
+                if (last is null)
                 {
                     continue;
                 }
-                string name = lastReader.IsDBNull(0) ? "" : lastReader.GetString(0);
-                int gachaType = lastReader.GetInt32(1);
-                string? lang = lastReader.IsDBNull(2) ? null : lastReader.GetString(2);
-                result.Add(new GachaArchiveSummary(game, uid, count, lang, lastTime, name, gachaType));
+                result.Add(new GachaArchiveSummary(game, uid, count, last.Lang, ParseTime(last.Time), last.Name ?? "", last.GachaType));
             }
         }
         return result;
@@ -239,39 +175,24 @@ public sealed class GachaLogStore
     /// <summary>某 UID 在某游戏下最近一次使用的语言（没有记录则为 <see langword="null"/>）。</summary>
     public string? GetLang(string game, long uid)
     {
-        string table = TableName(game);
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"SELECT Lang FROM {table} WHERE Uid = @uid AND Lang IS NOT NULL ORDER BY Id DESC LIMIT 1;";
-        command.Parameters.AddWithValue("@uid", uid);
-        object? value = command.ExecuteScalar();
-        return value is null or DBNull ? null : (string)value;
+        using var dapper = _database.CreateConnection();
+        return dapper.QueryFirstOrDefault<string?>($"SELECT Lang FROM {TableName(game)} WHERE Uid=@Uid AND Lang IS NOT NULL AND Lang <> '' ORDER BY Id DESC LIMIT 1;", new { Uid = uid });
     }
 
 
-    /// <summary>按 UID + 时间段删除（Starward <c>DeleteGachaLogByTime</c>）。</summary>
+    /// <summary>按 UID + 时间段删除（Starward <c>DeleteGachaLogByTime</c>，参数直接传 <see cref="DateTime"/>）。</summary>
     public int DeleteRange(string game, long uid, DateTime begin, DateTime end)
     {
-        string table = TableName(game);
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"DELETE FROM {table} WHERE Uid = @uid AND Time >= @begin AND Time <= @end;";
-        command.Parameters.AddWithValue("@uid", uid);
-        command.Parameters.AddWithValue("@begin", begin.ToString(TimeFormat, CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("@end", end.ToString(TimeFormat, CultureInfo.InvariantCulture));
-        return command.ExecuteNonQuery();
+        using var dapper = _database.CreateConnection();
+        return dapper.Execute($"DELETE FROM {TableName(game)} WHERE Uid = @uid AND Time >= @begin AND Time <= @end;", new { uid, begin, end });
     }
 
 
     /// <summary>删除某 UID 的全部记录（Starward <c>DeleteUid</c>）。</summary>
     public int DeleteUid(string game, long uid)
     {
-        string table = TableName(game);
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"DELETE FROM {table} WHERE Uid = @uid;";
-        command.Parameters.AddWithValue("@uid", uid);
-        return command.ExecuteNonQuery();
+        using var dapper = _database.CreateConnection();
+        return dapper.Execute($"DELETE FROM {TableName(game)} WHERE Uid = @uid;", new { uid });
     }
 
 
@@ -280,8 +201,8 @@ public sealed class GachaLogStore
     /// <c>GenshinGachaInfo</c> / <c>StarRailGachaInfo</c> / <c>ZZZGachaInfo</c>）。
     /// </summary>
     /// <remarks>
-    /// 三张表的列名不同（星铁是 <c>ItemId/ItemName/IconUrl</c>），所以按游戏分别写 SQL；
-    /// 上游还会写 Element/Rarity 等展示字段，这里只保留 Name/Icon 两个用得到的。
+    /// 三张表的列名不同（星铁是 <c>ItemId/ItemName/IconUrl</c>），SQL 与上游逐字一致；
+    /// 上游会从 wiki 接口填 Element/Rarity 等展示字段，LunarWard 只用到 Name/Icon，其余写 0。
     /// </remarks>
     public int UpsertGachaInfo(string game, IReadOnlyList<GachaInfoItem> items)
     {
@@ -290,61 +211,70 @@ public sealed class GachaLogStore
             return 0;
         }
 
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteTransaction transaction = connection.BeginTransaction();
-        using SqliteCommand command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = game switch
+        string sql = game switch
         {
             StarRail => """
                 INSERT OR REPLACE INTO StarRailGachaInfo (ItemId, ItemName, IconUrl, DamageType, Rarity, AvatarBaseType, WikiUrl, IsSystem)
-                VALUES (@Id, @Name, @Icon, 0, 0, 0, NULL, 0);
+                VALUES (@ItemId, @ItemName, @IconUrl, @DamageType, @Rarity, @AvatarBaseType, @WikiUrl, @IsSystem);
                 """,
             Zzz => """
                 INSERT OR REPLACE INTO ZZZGachaInfo (Id, Name, Icon, Rarity, ElementType, Profession)
-                VALUES (@Id, @Name, @Icon, 0, 0, 0);
+                VALUES (@Id, @Name, @Icon, @Rarity, @ElementType, @Profession);
                 """,
             _ => """
                 INSERT OR REPLACE INTO GenshinGachaInfo (Id, Name, Icon, Element, Level, CatId, WeaponCatId)
-                VALUES (@Id, @Name, @Icon, 0, 0, 0, 0);
+                VALUES (@Id, @Name, @Icon, @Element, @Level, @CatId, @WeaponCatId);
                 """,
         };
 
-        SqliteParameter id = command.Parameters.Add("@Id", SqliteType.Integer);
-        SqliteParameter name = command.Parameters.Add("@Name", SqliteType.Text);
-        SqliteParameter icon = command.Parameters.Add("@Icon", SqliteType.Text);
-        int affected = 0;
-        foreach (GachaInfoItem item in items)
+        using var dapper = _database.CreateConnection();
+        using var t = dapper.BeginTransaction();
+        int affect = game switch
         {
-            id.Value = item.Id;
-            name.Value = item.Name;
-            icon.Value = item.Icon ?? "";
-            affected += command.ExecuteNonQuery();
-        }
-
-        transaction.Commit();
-        return affected;
+            StarRail => dapper.Execute(sql, items.Select(x => new
+            {
+                ItemId = x.Id,
+                ItemName = x.Name,
+                IconUrl = x.Icon,
+                DamageType = 0,
+                Rarity = 0,
+                AvatarBaseType = 0,
+                WikiUrl = (string?)null,
+                IsSystem = 0,
+            }).ToList(), t),
+            _ => dapper.Execute(sql, items.Select(x => new
+            {
+                x.Id,
+                x.Name,
+                Icon = x.Icon,
+                Element = 0,
+                Level = 0,
+                CatId = 0,
+                WeaponCatId = 0,
+                Rarity = 0,
+                ElementType = 0,
+                Profession = 0,
+            }).ToList(), t),
+        };
+        t.Commit();
+        return affect;
     }
 
 
     /// <summary>读物品图标：<c>ItemId → Icon URL</c>（库里没有就给空字典）。</summary>
     public Dictionary<int, string> GetIconMap(string game)
     {
-        var result = new Dictionary<int, string>();
         string sql = game switch
         {
-            StarRail => "SELECT ItemId, IconUrl FROM StarRailGachaInfo WHERE IconUrl IS NOT NULL AND IconUrl <> '';",
-            Zzz => "SELECT Id, Icon FROM ZZZGachaInfo WHERE Icon IS NOT NULL AND Icon <> '';",
-            _ => "SELECT Id, Icon FROM GenshinGachaInfo WHERE Icon IS NOT NULL AND Icon <> '';",
+            StarRail => "SELECT ItemId AS Id, IconUrl AS Icon FROM StarRailGachaInfo WHERE IconUrl IS NOT NULL AND IconUrl <> '';",
+            _ => "SELECT Id, Icon FROM " + (game == Zzz ? "ZZZGachaInfo" : "GenshinGachaInfo") + " WHERE Icon IS NOT NULL AND Icon <> '';",
         };
 
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        using SqliteDataReader reader = command.ExecuteReader();
-        while (reader.Read())
+        using var dapper = _database.CreateConnection();
+        var result = new Dictionary<int, string>();
+        foreach (IconRow row in dapper.Query<IconRow>(sql))
         {
-            result[reader.GetInt32(0)] = reader.GetString(1);
+            result[row.Id] = row.Icon;
         }
         return result;
     }
@@ -354,79 +284,78 @@ public sealed class GachaLogStore
     /// 按名字回填 <c>ItemId</c>（Starward <c>UpdateGachaItemId</c>：老记录 <c>ItemId=0</c> 时用
     /// GachaInfo 表按 Name 匹配补齐，图标和 UP 判定都靠它）。
     /// </summary>
+    /// <remarks>
+    /// 原神 / 星铁与上游逐字一致（<c>INSERT OR REPLACE ... SELECT ... INNER JOIN</c>）。
+    /// 绝区零上游没有这一步（接口本来就给 <c>item_id</c>）；这里补一条同形态的语句，
+    /// 免得本地旧库里 <c>ItemId=0</c> 的 ZZZ 记录永远没有图标。
+    /// </remarks>
     public int UpdateItemIds(string game)
     {
-        (string table, string infoTable, string infoId, string infoName) = game switch
+        using var dapper = _database.CreateConnection();
+        return game switch
         {
-            StarRail => ("StarRailGachaItem", "StarRailGachaInfo", "ItemId", "ItemName"),
-            Zzz => ("ZZZGachaItem", "ZZZGachaInfo", "Id", "Name"),
-            _ => ("GenshinGachaItem", "GenshinGachaInfo", "Id", "Name"),
+            StarRail => dapper.Execute("""
+                INSERT OR REPLACE INTO StarRailGachaItem (Uid, Id, Name, Time, ItemId, ItemType, RankType, GachaType, GachaId, Count, Lang)
+                SELECT item.Uid, Id, Name, Time, info.ItemId, ItemType, RankType, GachaType, GachaId, Count, Lang
+                FROM StarRailGachaItem item INNER JOIN StarRailGachaInfo info ON item.Name = info.ItemName
+                WHERE item.ItemId = 0;
+                """),
+            Zzz => dapper.Execute("""
+                INSERT OR REPLACE INTO ZZZGachaItem (Uid, Id, Name, Time, ItemId, ItemType, RankType, GachaType, Count, Lang)
+                SELECT item.Uid, item.Id, info.Name, Time, info.Id, ItemType, RankType, GachaType, Count, Lang
+                FROM ZZZGachaItem item INNER JOIN ZZZGachaInfo info ON item.Name = info.Name
+                WHERE item.ItemId = 0;
+                """),
+            _ => dapper.Execute("""
+                INSERT OR REPLACE INTO GenshinGachaItem (Uid, Id, Name, Time, ItemId, ItemType, RankType, GachaType, Count, Lang)
+                SELECT item.Uid, item.Id, item.Name, Time, info.Id, ItemType, RankType, GachaType, Count, Lang
+                FROM GenshinGachaItem item INNER JOIN GenshinGachaInfo info ON item.Name = info.Name
+                WHERE item.ItemId = 0;
+                """),
         };
-
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"""
-            UPDATE {table}
-            SET ItemId = (SELECT {infoId} FROM {infoTable} WHERE {infoName} = {table}.Name LIMIT 1)
-            WHERE ItemId = 0
-              AND EXISTS (SELECT 1 FROM {infoTable} WHERE {infoName} = {table}.Name);
-            """;
-        return command.ExecuteNonQuery();
     }
 
 
-    /// <summary>读取某游戏最近一次保存的抽卡链接（Starward <c>GachaLogUrl</c> 表）。</summary>
+    /// <summary>
+    /// 读取某游戏最近一次保存的抽卡链接（Starward <c>GachaLogUrl</c> 表）。
+    /// </summary>
+    /// <remarks>
+    /// 上游按 <c>(GameBiz, Uid)</c> 取（<c>GetGachaLogUrlByUid</c>）；LunarWard 的页面只按区服取
+    /// 「上次用的链接」，所以这里没有 Uid 条件（表主键仍是 <c>(GameBiz, Uid)</c>）。
+    /// </remarks>
     public string? GetGachaLogUrl(string gameBiz)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = "SELECT Url FROM GachaLogUrl WHERE GameBiz = @gameBiz LIMIT 1;";
-        command.Parameters.AddWithValue("@gameBiz", gameBiz);
-        object? value = command.ExecuteScalar();
-        return value is null or DBNull ? null : (string)value;
+        using var dapper = _database.CreateConnection();
+        return dapper.QueryFirstOrDefault<string?>("SELECT Url FROM GachaLogUrl WHERE GameBiz = @GameBiz LIMIT 1;", new { GameBiz = gameBiz });
     }
 
 
     /// <summary>保存抽卡链接（Starward <c>GetUidFromGachaLogUrl</c> 里的 <c>INSERT OR REPLACE</c>）。</summary>
     public void SaveGachaLogUrl(string gameBiz, long uid, string url)
     {
-        using SqliteConnection connection = _database.CreateConnection();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = """
-            INSERT OR REPLACE INTO GachaLogUrl (GameBiz, Uid, Url, Time) VALUES (@GameBiz, @Uid, @Url, @Time);
-            """;
-        command.Parameters.AddWithValue("@GameBiz", gameBiz);
-        command.Parameters.AddWithValue("@Uid", uid);
-        command.Parameters.AddWithValue("@Url", url);
-        command.Parameters.AddWithValue("@Time", DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:sszzz", CultureInfo.InvariantCulture));
-        command.ExecuteNonQuery();
+        using var dapper = _database.CreateConnection();
+        dapper.Execute("INSERT OR REPLACE INTO GachaLogUrl (GameBiz, Uid, Url, Time) VALUES (@GameBiz, @Uid, @Url, @Time);",
+            new { GameBiz = gameBiz, Uid = uid, Url = url, Time = DateTime.Now });
     }
 
 
-    private static IReadOnlyList<GachaRecord> ReadRecords(string game, SqliteCommand command)
+    private static IReadOnlyList<GachaRecord> Map(string game, IEnumerable<GachaRow> rows)
     {
-        using SqliteDataReader reader = command.ExecuteReader();
-        var records = new List<GachaRecord>();
-        while (reader.Read())
+        return rows.Select(row => new GachaRecord
         {
-            int gachaType = reader.GetInt32(reader.GetOrdinal("GachaType"));
-            records.Add(new GachaRecord
-            {
-                Uid = reader.GetInt64(reader.GetOrdinal("Uid")),
-                Id = reader.GetInt64(reader.GetOrdinal("Id")),
-                Name = reader.GetString(reader.GetOrdinal("Name")),
-                Time = ParseTime(reader.GetString(reader.GetOrdinal("Time"))),
-                ItemId = reader.GetInt32(reader.GetOrdinal("ItemId")),
-                ItemType = reader.GetString(reader.GetOrdinal("ItemType")),
-                RankType = reader.GetInt32(reader.GetOrdinal("RankType")),
-                GachaType = gachaType,
-                GachaTypeName = GachaService.GetPoolName(game, gachaType),
-                Count = reader.GetInt32(reader.GetOrdinal("Count")),
-                GachaId = game == StarRail ? reader.GetInt32(reader.GetOrdinal("GachaId")) : 0,
-                IsUp = false,
-            });
-        }
-        return records;
+            Uid = row.Uid,
+            Id = row.Id,
+            Name = row.Name,
+            Time = ParseTime(row.Time),
+            ItemId = row.ItemId,
+            ItemType = row.ItemType,
+            RankType = row.RankType,
+            GachaType = row.GachaType,
+            GachaTypeName = GachaService.GetPoolName(game, row.GachaType),
+            Count = row.Count,
+            GachaId = row.GachaId,
+            IsUp = false,
+        }).ToList();
     }
 
 
@@ -434,6 +363,54 @@ public sealed class GachaLogStore
         => DateTime.TryParseExact(text, TimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime exact)
             ? exact
             : DateTime.Parse(text, CultureInfo.InvariantCulture);
+
+
+    /// <summary>抽卡记录表的行（列名与上游 <c>GachaLogItem</c> 一致；<c>Time</c> 按 TEXT 读再解析）。</summary>
+    private sealed class GachaRow
+    {
+        public long Uid { get; set; }
+
+        public long Id { get; set; }
+
+        public string Name { get; set; } = "";
+
+        public string Time { get; set; } = "";
+
+        public int ItemId { get; set; }
+
+        public string ItemType { get; set; } = "";
+
+        public int RankType { get; set; }
+
+        public int GachaType { get; set; }
+
+        /// <summary>星铁 SRGF 的 <c>gacha_id</c>；其它游戏的表没有这一列，保持 0。</summary>
+        public int GachaId { get; set; }
+
+        public int Count { get; set; }
+
+        public string? Lang { get; set; }
+    }
+
+
+    private sealed class GachaLastRow
+    {
+        public string? Name { get; set; }
+
+        public string Time { get; set; } = "";
+
+        public int GachaType { get; set; }
+
+        public string? Lang { get; set; }
+    }
+
+
+    private sealed class IconRow
+    {
+        public int Id { get; set; }
+
+        public string Icon { get; set; } = "";
+    }
 }
 
 
