@@ -79,10 +79,11 @@ public class GachaAlignmentTests
     [Fact]
     public void GachaBanner_ExposesGachaTypeValueAndLocalization()
     {
-        var banner = new GachaBanner(GenshinGachaType.CharacterEventWish);
+        var gachaType = new GenshinGachaType(GenshinGachaType.CharacterEventWish);
+        var banner = new GachaBanner(gachaType);
 
         Assert.Equal(301, banner.Value);
-        Assert.Equal(GenshinGachaType.CharacterEventWish.ToLocalization(), banner.ToLocalization());
+        Assert.Equal(gachaType.ToLocalization(), banner.ToLocalization());
         Assert.Equal(301, banner.GachaType.Value);
     }
 
@@ -93,11 +94,13 @@ public class GachaAlignmentTests
     [InlineData(301, 90)]   // 角色活动祈愿
     [InlineData(200, 90)]   // 常驻祈愿
     [InlineData(302, 80)]   // 武器活动祈愿（原神）
-    [InlineData(11, 80)]    // 光锥活动跃迁（星铁）
-    [InlineData(12, 80)]    // 光锥联动跃迁（星铁）
-    [InlineData(100, 90)]   // 常驻频段（ZZZ）
-    [InlineData(300, 80)]   // 音擎频段（ZZZ）
-    [InlineData(400, 80)]   // 邦布频段（ZZZ）
+    [InlineData(12, 80)]    // 光锥活动跃迁（星铁）
+    [InlineData(22, 80)]    // 光锥联动跃迁（星铁）
+    [InlineData(1, 90)]     // 常驻频段（ZZZ）
+    [InlineData(2, 90)]     // 独家频段（ZZZ）
+    [InlineData(3, 80)]     // 音擎频段（ZZZ）
+    [InlineData(5, 80)]     // 邦布频段（ZZZ）
+    [InlineData(103, 80)]   // 音擎回响（ZZZ）
     public void GachaLogItemEx_Progress_UsesUpstreamDenominator(int gachaType, int denominator)
     {
         var item = CreateItem(gachaType, pity: denominator / 2);
@@ -267,9 +270,10 @@ public class GachaAlignmentTests
     [Theory]
     [InlineData(301, 74)]   // 原神角色池：74 抽起变红，90 保底
     [InlineData(302, 63)]   // 原神武器池：63 抽起变红，80 保底
-    [InlineData(11, 63)]    // 星铁光锥池
-    [InlineData(300, 65)]   // ZZZ 音擎池：65 抽起变红，80 保底
-    [InlineData(400, 65)]   // ZZZ 邦布池
+    [InlineData(12, 63)]    // 星铁光锥池
+    [InlineData(22, 63)]    // 星铁联动光锥池
+    [InlineData(3, 65)]     // ZZZ 音擎池：65 抽起变红，80 保底
+    [InlineData(5, 65)]     // ZZZ 邦布池
     public void PityBrush_TurnsRedAtUpstreamThreshold(int gachaType, int point)
     {
         var green = PityBrush(gachaType, point - 1);
@@ -283,7 +287,7 @@ public class GachaAlignmentTests
     [Theory]
     [InlineData(301, 90)]
     [InlineData(302, 80)]
-    [InlineData(300, 80)]
+    [InlineData(3, 80)]
     public void PityBrush_UsesUpstreamGuaranteeForOffset(int gachaType, int guarantee)
     {
         var brush = PityBrush(gachaType, guarantee / 2);

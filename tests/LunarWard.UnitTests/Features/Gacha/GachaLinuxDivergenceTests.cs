@@ -49,7 +49,7 @@ public class GachaLinuxDivergenceTests
 
         Assert.NotNull(page);
         Assert.Contains(
-            page.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance),
+            page.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static),
             x => x.Name.Contains("RevealInFileManager", StringComparison.Ordinal));
     }
 

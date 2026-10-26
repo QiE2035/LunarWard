@@ -22,7 +22,7 @@ public class GachaModelParityTests
         var featureKeys = LunarWard.Features.Gacha.GachaNoUp.Dictionary.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray();
 
         Assert.Equal(coreKeys, featureKeys);
-        Assert.Equal(3, coreKeys.Select(x => x[..4]).Distinct().Count()); // hk4e / hkrpg / nap
+        Assert.Equal(3, coreKeys.Select(x => x.StartsWith("hkrpg", StringComparison.Ordinal) ? "hkrpg" : x.StartsWith("hk4e", StringComparison.Ordinal) ? "hk4e" : "nap").Distinct().Count());
     }
 
 
@@ -63,7 +63,9 @@ public class GachaModelParityTests
         var item = typeof(LunarWard.Features.Gacha.GachaNoUpItem);
 
         Assert.Equal("Game", pool.GetProperty("Game")!.Name);
-        Assert.Equal("Name", pool.GetProperty("Name")!.Name);
+        Assert.Equal("GachaType", pool.GetProperty("GachaType")!.Name);
+        Assert.Equal("Items", pool.GetProperty("Items")!.Name);
+        Assert.Equal("Name", item.GetProperty("Name")!.Name);
         Assert.Equal("NoUpTimes", item.GetProperty("NoUpTimes")!.Name);
     }
 
