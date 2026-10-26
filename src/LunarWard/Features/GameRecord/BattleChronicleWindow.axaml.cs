@@ -53,10 +53,27 @@ public sealed partial class BattleChronicleWindow : WindowEx
     }
 
 
-    public GameRecordRole? CurrentRole { get; set => SetProperty(ref field, value); }
+    private GameRecordRole? _currentRole;
+
+    /// <summary>
+    /// 上游用 <c>x:Bind</c> 把 <see cref="BBSWebBridge.CurrentGameBiz"/> / <c>GameRecordRole</c> 直接绑到这里；
+    /// Avalonia 的反射绑定无法把 <c>object</c> 赋给强类型 DirectProperty，故改为在 setter 里显式下推。
+    /// </summary>
+    public GameRecordRole? CurrentRole
+    {
+        get => _currentRole;
+        set
+        {
+            if (SetProperty(ref _currentRole, value) && value is { } role)
+            {
+                bbsWebBridge.CurrentGameBiz = role.GameBiz;
+                bbsWebBridge.GameRecordRole = role;
+            }
+        }
+    }
 
 
-    private void RootGrid_Loaded(object sender, RoutedEventArgs e)
+    private void RootGrid_Loaded(object? sender, RoutedEventArgs e)
     {
         RootGrid.Loaded -= RootGrid_Loaded;
         _ = bbsWebBridge.LoadPageAsync();

@@ -14,6 +14,8 @@
              xmlns:sfg="clr-namespace:LunarWard.Features.Gacha">
 
     <UserControl.Resources>
+        <grconv:MethodValueConverter x:Key="MethodValue" />
+
         <grconv:RangeConverter x:Key="RangeConverter" />
         <grconv:RankToVisibilityConverter x:Key="RankToVisibilityConverter" />
         <local:SpiralAbyssBattleAvatarsSelectConverter x:Key="SpiralAbyssBattleAvatarsSelectConverter" />
@@ -352,7 +354,7 @@
                                 <!--  第几层  -->
                                 <TextBlock VerticalAlignment="Center"
                                            FontSize="16"
-                                           Text="{Binding local:SpiralAbyssPage.FloorX(Index)}" />
+                                           Text="{Binding Index, Converter={StaticResource MethodValue}, ConverterParameter='SpiralAbyssPage.FloorX'}" />
                                 <StackPanel HorizontalAlignment="Right"
                                             Orientation="Horizontal"
                                             Spacing="8">
@@ -393,7 +395,7 @@
                                                                     Spacing="8">
                                                             <TextBlock FontSize="12"
                                                                        Foreground="{DynamicResource StarTextSecondary}"
-                                                                       Text="{Binding local:SpiralAbyssPage.LevelX(Index)}" />
+                                                                       Text="{Binding Index, Converter={StaticResource MethodValue}, ConverterParameter='SpiralAbyssPage.LevelX'}" />
                                                             <TextBlock FontSize="12"
                                                                        Foreground="{DynamicResource StarTextSecondary}"
                                                                        Text="{Binding FirstBattleTime.LocalDateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
@@ -419,7 +421,7 @@
                                                                 Spacing="4">
                                                         <TextBlock HorizontalAlignment="Center"
                                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                                   Text="{Binding local:SpiralAbyssPage.LevelX(Index)}" />
+                                                                   Text="{Binding Index, Converter={StaticResource MethodValue}, ConverterParameter='SpiralAbyssPage.LevelX'}" />
                                                         <TextBlock HorizontalAlignment="Center"
                                                                    FontSize="12"
                                                                    Foreground="{DynamicResource StarTextSecondary}"

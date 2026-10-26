@@ -6,6 +6,7 @@
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.Genshin"
+        xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
              xmlns:sc="clr-namespace:LunarWard.Controls"
              xmlns:scggi="using:LunarWard.Core.GameRecord.Genshin.ImaginariumTheater"
              xmlns:scv="clr-namespace:LunarWard.Converters"
@@ -13,6 +14,8 @@
              xmlns:sfg="clr-namespace:LunarWard.Features.Gacha">
 
     <UserControl.Resources>
+        <grconv:MethodValueConverter x:Key="MethodValue" />
+
         <local:TheaterStarIconVisibilityConverter x:Key="TheaterStarIconVisibilityConverter" />
         <sfg:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />
     </UserControl.Resources>
@@ -101,12 +104,12 @@
                                Width="20"
                                Height="20"
                                HorizontalAlignment="Left"
-                               Source="{Binding local:ImaginariumTheaterPage.HeraldryImage(Heraldry)}" />
+                               Source="{Binding Heraldry, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.HeraldryImage'}" />
                         <TextBlock Grid.Row="1"
                                    Margin="24,0,0,2"
                                    VerticalAlignment="Center"
                                    Foreground="{DynamicResource StarTextSecondary}">
-                            <Run Text="{Binding MaxRoundId}" /><Run Text="/" /><Run Text="{Binding local:ImaginariumTheaterPage.DifficultyIdToMaxRound(DifficultyId)}" />
+                            <Run Text="{Binding MaxRoundId}" /><Run Text="/" /><Run Text="{Binding DifficultyId, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.DifficultyIdToMaxRound'}" />
                         </TextBlock>
                         <Image Grid.Row="1"
                                Width="20"
@@ -118,7 +121,7 @@
                                    Margin="88,0,0,2"
                                    VerticalAlignment="Center"
                                    Foreground="{DynamicResource StarTextSecondary}">
-                            <Run Text="{Binding MedalNum}" /><Run Text="/" /><Run Text="{Binding local:ImaginariumTheaterPage.DifficultyIdToMaxRound(DifficultyId)}" />
+                            <Run Text="{Binding MedalNum}" /><Run Text="/" /><Run Text="{Binding DifficultyId, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.DifficultyIdToMaxRound'}" />
                         </TextBlock>
                     </Grid>
                 </DataTemplate>
@@ -197,13 +200,13 @@
                                Grid.Column="1"
                                Width="28"
                                Height="28"
-                               Source="{Binding local:ImaginariumTheaterPage.HeraldryImage(CurrentTheater.Stat.Heraldry)}" />
+                               Source="{Binding CurrentTheater.Stat.Heraldry, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.HeraldryImage'}" />
                         <TextBlock VerticalAlignment="Center">
-                            <Run Text="{Binding local:ImaginariumTheaterPage.DifficultyMode(CurrentTheater.Stat.DifficultyId)}" />
+                            <Run Text="{Binding CurrentTheater.Stat.DifficultyId, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.DifficultyMode'}" />
                             <Run Text="" />
-                            <Run Text="{Binding local:ImaginariumTheaterPage.ActX(CurrentTheater.Stat.MaxRoundId)}" />
+                            <Run Text="{Binding CurrentTheater.Stat.MaxRoundId, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.ActX'}" />
                         </TextBlock>
-                        <TextBlock VerticalAlignment="Center" IsVisible="{Binding local:ImaginariumTheaterPage.LunarModeVisibility(CurrentTheater.Stat.DifficultyId)}">
+                        <TextBlock VerticalAlignment="Center" IsVisible="{Binding CurrentTheater.Stat.DifficultyId, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.LunarModeVisibility'}">
                             <Run Text="{x:Static lang:Lang.ImaginariumTheaterPage_Arcana}" />
                             <Run Text="{Binding CurrentTheater.Stat.TarotFinishedCnt}" />
                         </TextBlock>
@@ -264,7 +267,7 @@
 
                 <!--  战斗统计  -->
                 <Grid Margin="0,8,0,0" RenderTransform="translate(0,0)"
-                      IsVisible="{Binding local:ImaginariumTheaterPage.FightStatisicVisibility(CurrentTheater.Detail.FightStatisic.TotalUseTime)}">
+                      IsVisible="{Binding CurrentTheater.Detail.FightStatisic.TotalUseTime, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.FightStatisicVisibility'}">
                     <Grid.RowDefinitions>
                         <RowDefinition MinHeight="32" />
                         <RowDefinition MinHeight="32" />
@@ -310,7 +313,7 @@
                                Grid.Column="1"
                                Margin="4,0,0,0"
                                VerticalAlignment="Center">
-                        <Run Text="{Binding local:ImaginariumTheaterPage.PerformancesTime(CurrentTheater.Detail.FightStatisic.TotalUseTime)}" />
+                        <Run Text="{Binding CurrentTheater.Detail.FightStatisic.TotalUseTime, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.PerformancesTime'}" />
                     </TextBlock>
                     <StackPanel Grid.Row="1"
                                 Grid.Column="1"
@@ -390,11 +393,11 @@
                                         </Grid>
                                         <TextBlock VerticalAlignment="Center"
                                                    FontSize="16"
-                                                   Text="{Binding local:ImaginariumTheaterPage.ActX(RoundId)}"
+                                                   Text="{Binding RoundId, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.ActX'}"
                                                    IsVisible="{Binding IsTarot, Converter={StaticResource BoolToVisibilityReversedConverter}}" />
                                         <TextBlock VerticalAlignment="Center"
                                                    FontSize="16"
-                                                   Text="{Binding local:ImaginariumTheaterPage.ArcanaChallengeX(TarotSerialNo)}"
+                                                   Text="{Binding TarotSerialNo, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.ArcanaChallengeX'}"
                                                    IsVisible="{Binding IsTarot}" />
                                         <TextBlock VerticalAlignment="Center"
                                                    Foreground="{DynamicResource StarTextSecondary}"
@@ -435,7 +438,7 @@
                                                 VerticalAlignment="Top"
                                                 Spacing="8">
                                         <!--  辉彩祝福  -->
-                                        <Grid RowSpacing="4" IsVisible="{Binding local:ImaginariumTheaterPage.IsBrilliantBlessingVisibility(SplendourBuff.Summary.TotalLevel)}">
+                                        <Grid RowSpacing="4" IsVisible="{Binding SplendourBuff.Summary.TotalLevel, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.IsBrilliantBlessingVisibility'}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
@@ -473,7 +476,7 @@
                                                             <StackPanel>
                                                                 <sc:CachedImage Width="32"
                                                                                 Height="32"
-                                                                                Opacity="{Binding local:ImaginariumTheaterPage.BrilliantBlessingBuffOpacity(Level)}"
+                                                                                Opacity="{Binding Level, Converter={StaticResource MethodValue}, ConverterParameter='ImaginariumTheaterPage.BrilliantBlessingBuffOpacity'}"
                                                                                 Source="{Binding Icon}">
                                                                     <ToolTip.Tip>
                                                                         <ToolTip>

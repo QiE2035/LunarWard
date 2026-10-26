@@ -14,6 +14,8 @@
              xmlns:sfgr="clr-namespace:LunarWard.Features.GameRecord">
 
     <UserControl.Resources>
+        <grconv:MethodValueConverter x:Key="MethodValue" />
+
         <grconv:RangeConverter x:Key="RangeConverter" />
         <grconv:RankToVisibilityConverter x:Key="RankToVisibilityConverter" />
         <local:ZZZRarityToIconConverter x:Key="ZZZRarityToIconConverter" />
@@ -106,14 +108,14 @@
                             <TextBlock Margin="6,0,0,2"
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource StarTextSecondary}"
-                                       IsVisible="{Binding local:ShiyuDefensePage.V1VersionVisibility(Version)}">
+                                       IsVisible="{Binding Version, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.V1VersionVisibility'}">
                                 <Run Text="x" />
                                 <Run Text="{Binding MaxRatingTimes}" />
                             </TextBlock>
                             <TextBlock Margin="2,0,0,2"
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource StarTextSecondary}"
-                                       IsVisible="{Binding local:ShiyuDefensePage.V2VersionVisibility(Version)}">
+                                       IsVisible="{Binding Version, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.V2VersionVisibility'}">
                                 <Run Text="" />
                                 <Run Text="{Binding V2Score}" />
                             </TextBlock>
@@ -238,7 +240,7 @@
                                    VerticalAlignment="Center">
                             <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ShiyuDefensePage_47LayerClearTime}" />
                             <Run Text="" />
-                            <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(CurrentShiyuDefense.BattleTime47)}" />
+                            <Run Text="{Binding CurrentShiyuDefense.BattleTime47, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.PerformancesTime'}" />
                         </TextBlock>
                     </Grid>
 
@@ -340,7 +342,6 @@
                                     <Image Grid.Row="2"
                                                 Height="20"
                                                 HorizontalAlignment="Left"
-                                                Foreground="{DynamicResource StarTextTertiary}"
                                                 Source="ms-appx:///Assets/Image/1.0064dde1.png" />
 
                                     <!--  敌方阵容  -->
@@ -395,19 +396,19 @@
                                                                                    Text="{x:Static lang:Lang.ShiyuDefensePage_Weakness}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(IceWeakness, 1)}" />
+                                                                               IsVisible="{Binding IceWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-fire-icon.aeddecee.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(FireWeakness, 1)}" />
+                                                                               IsVisible="{Binding FireWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-electric-icon.ad4c441f.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(ElecWeakness, 1)}" />
+                                                                               IsVisible="{Binding ElecWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ether-icon.9a1e42a1.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(EtherWeakness, 1)}" />
+                                                                               IsVisible="{Binding EtherWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-physical-icon.a657c07a.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(PhysicsWeakness, 1)}" />
+                                                                               IsVisible="{Binding PhysicsWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                     </StackPanel>
                                                                     <!--  抗性  -->
                                                                     <StackPanel Grid.Column="1"
@@ -421,19 +422,19 @@
                                                                                    Text="{x:Static lang:Lang.ShiyuDefensePage_Resistance}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(IceWeakness, -1)}" />
+                                                                               IsVisible="{Binding IceWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-fire-icon.aeddecee.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(FireWeakness, -1)}" />
+                                                                               IsVisible="{Binding FireWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-electric-icon.ad4c441f.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(ElecWeakness, -1)}" />
+                                                                               IsVisible="{Binding ElecWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ether-icon.9a1e42a1.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(EtherWeakness, -1)}" />
+                                                                               IsVisible="{Binding EtherWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-physical-icon.a657c07a.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(PhysicsWeakness, -1)}" />
+                                                                               IsVisible="{Binding PhysicsWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                     </StackPanel>
                                                                 </Grid>
                                                             </DataTemplate>
@@ -573,7 +574,7 @@
                                            Margin="2,0,0,0"
                                            FontSize="12">
                                     <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
-                                    <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(Node1.BattleTime)}" />
+                                    <Run Text="{Binding Node1.BattleTime, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.PerformancesTime'}" />
                                 </TextBlock>
 
                                 <!--  分割线  -->
@@ -587,7 +588,6 @@
                                     <Image Grid.Row="2"
                                                 Height="20"
                                                 HorizontalAlignment="Left"
-                                                Foreground="{DynamicResource StarTextTertiary}"
                                                 Source="ms-appx:///Assets/Image/2.d6319270.png" />
 
                                     <!--  敌方阵容  -->
@@ -642,19 +642,19 @@
                                                                                    Text="{x:Static lang:Lang.ShiyuDefensePage_Weakness}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(IceWeakness, 1)}" />
+                                                                               IsVisible="{Binding IceWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-fire-icon.aeddecee.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(FireWeakness, 1)}" />
+                                                                               IsVisible="{Binding FireWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-electric-icon.ad4c441f.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(ElecWeakness, 1)}" />
+                                                                               IsVisible="{Binding ElecWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ether-icon.9a1e42a1.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(EtherWeakness, 1)}" />
+                                                                               IsVisible="{Binding EtherWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-physical-icon.a657c07a.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(PhysicsWeakness, 1)}" />
+                                                                               IsVisible="{Binding PhysicsWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|1'}" />
                                                                     </StackPanel>
                                                                     <!--  抗性  -->
                                                                     <StackPanel Grid.Column="1"
@@ -668,19 +668,19 @@
                                                                                    Text="{x:Static lang:Lang.ShiyuDefensePage_Resistance}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ice-icon.5c85742d.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(IceWeakness, -1)}" />
+                                                                               IsVisible="{Binding IceWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-fire-icon.aeddecee.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(FireWeakness, -1)}" />
+                                                                               IsVisible="{Binding FireWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-electric-icon.ad4c441f.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(ElecWeakness, -1)}" />
+                                                                               IsVisible="{Binding ElecWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-ether-icon.9a1e42a1.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(EtherWeakness, -1)}" />
+                                                                               IsVisible="{Binding EtherWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                         <Image Width="20"
                                                                                Source="ms-appx:///Assets/Image/attribute-physical-icon.a657c07a.png"
-                                                                               IsVisible="{Binding local:ShiyuDefensePage.ElementWeaknessVisibility(PhysicsWeakness, -1)}" />
+                                                                               IsVisible="{Binding PhysicsWeakness, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ElementWeaknessVisibility|-1'}" />
                                                                     </StackPanel>
                                                                 </Grid>
                                                             </DataTemplate>
@@ -820,7 +820,7 @@
                                            Margin="2,0,0,0"
                                            FontSize="12">
                                     <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
-                                    <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(Node2.BattleTime)}" />
+                                    <Run Text="{Binding Node2.BattleTime, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.PerformancesTime'}" />
                                 </TextBlock>
 
                             </Grid>
@@ -873,20 +873,20 @@
                                       VerticalAlignment="Bottom">
                                     <Image Height="20"
                                            Stretch="Uniform"
-                                           Source="{Binding local:ShiyuDefensePage.RankBackground(CurrentShiyuDefenseV2.Brief.RankPercent)}" />
+                                           Source="{Binding CurrentShiyuDefenseV2.Brief.RankPercent, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.RankBackground'}" />
                                     <TextBlock Margin="8,0,0,1"
                                                HorizontalAlignment="Left"
                                                VerticalAlignment="Center"
                                                FontSize="14"
                                                Foreground="Black"
                                                FontWeight="Bold"
-                                               Text="{Binding local:ShiyuDefensePage.RankPercentText(CurrentShiyuDefenseV2.Brief.RankPercent)}" />
+                                               Text="{Binding CurrentShiyuDefenseV2.Brief.RankPercent, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.RankPercentText'}" />
                                 </Grid>
                             </StackPanel>
                             <TextBlock FontSize="12"
                                        Foreground="{DynamicResource StarTextSecondary}"
                                        Text="{Binding CurrentShiyuDefenseV2.Brief.ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
-                                       IsVisible="{Binding local:ShiyuDefensePage.ChallengeTimeVisibility(CurrentShiyuDefenseV2.Brief.ChallengeTime)}"/>
+                                       IsVisible="{Binding CurrentShiyuDefenseV2.Brief.ChallengeTime, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ChallengeTimeVisibility'}"/>
                         </StackPanel>
 
                         <Image Height="44"
@@ -900,7 +900,7 @@
                                    Foreground="{DynamicResource StarTextSecondary}"
                                    IsVisible="{Binding CurrentShiyuDefenseV2.Brief.BattleTime, Converter={StaticResource Int32NotZeroToVisibilityConverter}}">
                             <Run Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
-                            <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(CurrentShiyuDefenseV2.Brief.BattleTime)}" />
+                            <Run Text="{Binding CurrentShiyuDefenseV2.Brief.BattleTime, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.PerformancesTime'}" />
                         </TextBlock>
 
 
@@ -980,13 +980,13 @@
                                                    Foreground="{DynamicResource StarTextSecondary}"
                                                    IsVisible="{Binding BattleTime, Converter={StaticResource Int32NotZeroToVisibilityConverter}}">
                                             <Run Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
-                                            <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(BattleTime)}" />
+                                            <Run Text="{Binding BattleTime, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.PerformancesTime'}" />
                                         </TextBlock>
                                         <!--  通关时刻  -->
                                         <TextBlock Margin="0,4,0,0"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource StarTextSecondary}"
-                                                   IsVisible="{Binding local:ShiyuDefensePage.ChallengeTimeVisibility(ChallengeTime)}">
+                                                   IsVisible="{Binding ChallengeTime, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.ChallengeTimeVisibility'}">
                                             <Run Text="{x:Static lang:Lang.ClearedAt}" />
                                             <Run Text="{Binding ChallengeTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                         </TextBlock>
@@ -1210,7 +1210,7 @@
                                                FontSize="12"
                                                IsVisible="{Binding BattleTime, Converter={StaticResource Int32NotZeroToVisibilityConverter}}">
                                         <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ShiyuDefensePage_ClearTime}" />
-                                        <Run Text="{Binding local:ShiyuDefensePage.PerformancesTime(BattleTime)}" />
+                                        <Run Text="{Binding BattleTime, Converter={StaticResource MethodValue}, ConverterParameter='ShiyuDefensePage.PerformancesTime'}" />
                                     </TextBlock>
                                     
                                     <StackPanel Grid.Row="1"

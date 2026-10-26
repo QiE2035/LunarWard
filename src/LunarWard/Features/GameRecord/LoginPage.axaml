@@ -55,7 +55,6 @@
             <TextBox  x:Name="TextBox_Uri"
                      Grid.Column="1"
                      VerticalAlignment="Center"
-                     IsSpellCheckEnabled="False"
                      KeyDown="TextBox_Uri_KeyDown" />
             <Button  x:Name="Button_Finish"
                     Grid.Column="2"
@@ -69,13 +68,6 @@
                 <fw:FontIcon Classes="icon" FontSize="16" Glyph="&#xE8FB;" />
                 <FlyoutBase.AttachedFlyout>
                     <Flyout Placement="BottomEdgeAlignedLeft">
-                        <Flyout.FlyoutPresenterStyle>
-                            <Style TargetType="FlyoutPresenter">
-                                <Setter Property="Background" Value="{DynamicResource StarAccentBrush}" />
-                                <Setter Property="Padding" Value="16,12,16,12" />
-                                <Setter Property="BorderThickness" Value="0" />
-                            </Style>
-                        </Flyout.FlyoutPresenterStyle>
                         <TextBlock  x:Name="TextBlock_Tip"
                                    MaxWidth="360"
                                    Foreground="{DynamicResource StarAccentForegroundBrush}"

@@ -195,7 +195,7 @@
                                         <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="ControlFillColorTransparentBrush" />
                                     </Expander.Resources>
                                     <Expander.Header>
-                                        <StackPanel Padding="0,12,0,12" Spacing="8">
+                                        <StackPanel Spacing="8">
                                             <Grid>
                                                 <!--  第几世界  -->
                                                 <StackPanel Orientation="Horizontal">
@@ -275,7 +275,7 @@
                                                               Height="48"
                                                              
                                                               ToolTip.Tip="{Binding Name}">
-                                                            <sc:CachedImage Background="{DynamicResource StarControlOnImageBrush}"
+                                                            <sc:CachedImage
                                                                             CornerRadius="24"
                                                                             Source="{Binding Id, Converter={StaticResource SimulatedUniverseBuffIconConverter}}" />
                                                             <Border Width="16"
@@ -315,7 +315,6 @@
                                                     <DataTemplate x:DataType="su:SimulatedUniverseAvatar">
                                                         <sc:CachedImage Width="32"
                                                                         Height="32"
-                                                                        Background="{DynamicResource StarControlOnImageBrush}"
                                                                         CornerRadius="16"
                                                                         Source="{Binding Icon}" />
                                                     </DataTemplate>
@@ -332,7 +331,7 @@
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="su:SimulatedUniverseBuff" x:DefaultBindMode="OneWay">
+                                                    <DataTemplate x:DataType="su:SimulatedUniverseBuff">
                                                         <Grid RowSpacing="4">
                                                             <Grid.RowDefinitions>
                                                                 <RowDefinition Height="Auto" />
@@ -351,7 +350,7 @@
                                                                            ItemsSource="{Binding Items}">
                                                                 
                                                                 <ItemsControl.ItemTemplate>
-                                                                    <DataTemplate x:DataType="su:SimulatedUniverseBuffItem" x:DefaultBindMode="OneWay">
+                                                                    <DataTemplate x:DataType="su:SimulatedUniverseBuffItem">
                                                                         <Grid>
                                                                             <Grid.ColumnDefinitions>
                                                                                 <ColumnDefinition />
@@ -384,7 +383,6 @@
                                                     <DataTemplate x:DataType="su:SimulatedUniverseMiracleItem">
                                                         <sc:CachedImage Width="32"
                                                                         Height="32"
-                                                                        Background="{DynamicResource StarControlOnImageBrush}"
                                                                         CornerRadius="16"
                                                                         Source="{Binding Icon}"
                                                                         ToolTip.Tip="{Binding Name}" />

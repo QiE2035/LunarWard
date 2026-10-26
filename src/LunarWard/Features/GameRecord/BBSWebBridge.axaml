@@ -14,9 +14,7 @@
 
         <Grid x:Name="Grid_Screenshot" IsVisible="False">
             <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                          ScrollViewer.HorizontalScrollMode="Disabled"
-                          ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                          ScrollViewer.ZoomMode="Disabled">
+                          ScrollViewer.VerticalScrollBarVisibility="Hidden">
                 <Image x:Name="Image_Screenshot" Stretch="Uniform" />
             </ScrollViewer>
             <Grid

@@ -18,13 +18,12 @@
         <TextBlock Margin="24,0,144,0"
                    VerticalAlignment="Center"
                    FontSize="14"
-                   Text="{Binding bbsWebBridge.DocumentTitle}"
+                   Text="{Binding ElementName=bbsWebBridge, Path=DocumentTitle}"
                    TextTrimming="CharacterEllipsis" />
 
         <local:BBSWebBridge x:Name="bbsWebBridge"
                             Grid.Row="1"
-                            CurrentGameBiz="{Binding CurrentRole.GameBiz}"
-                            GameRecordRole="{Binding CurrentRole}" />
+ />
 
     </Grid>
 

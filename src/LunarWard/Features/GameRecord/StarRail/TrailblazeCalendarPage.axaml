@@ -84,7 +84,7 @@
                     <TextBlock Text="{x:Static lang:Lang.TravelersDiaryPage_GetDetails}" />
                 </StackPanel>
                 <Button.Flyout>
-                    <MenuFlyout x:Name="MenuFlyout_GetDetails" Placement="RightEdgeAlignedTop" />
+                    <MenuFlyout Placement="RightEdgeAlignedTop" />
                 </Button.Flyout>
             </Button>
         </StackPanel>

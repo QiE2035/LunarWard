@@ -6,6 +6,7 @@
         xmlns:fw="clr-namespace:LunarWard.Frameworks"
              xmlns:lang="using:LunarWard.Language"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.ZZZ"
+        xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
              xmlns:report="using:LunarWard.Core.GameRecord.ZZZ.InterKnotReport"
              xmlns:sc="clr-namespace:LunarWard.Controls"
              xmlns:sf="clr-namespace:LunarWard.Frameworks"
@@ -13,6 +14,8 @@
              xmlns:sp="clr-namespace:LunarWard.Pages">
 
     <UserControl.Resources>
+        <grconv:MethodValueConverter x:Key="MethodValue" />
+
         <sfg:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter" />
     </UserControl.Resources>
 
@@ -84,7 +87,7 @@
                     <TextBlock Text="{x:Static lang:Lang.TravelersDiaryPage_GetDetails}" />
                 </StackPanel>
                 <Button.Flyout>
-                    <MenuFlyout x:Name="MenuFlyout_GetDetails" Placement="RightEdgeAlignedTop" />
+                    <MenuFlyout Placement="RightEdgeAlignedTop" />
                 </Button.Flyout>
             </Button>
         </StackPanel>
@@ -123,7 +126,7 @@
                         <TextBlock Grid.Row="1"
                                    Margin="24,0,0,0"
                                    Foreground="{DynamicResource StarTextSecondary}"
-                                   Text="{Binding local:InterKnotMonthlyReportPage.GetPolychromeCount(MonthData)}" />
+                                   Text="{Binding MonthData, Converter={StaticResource MethodValue}, ConverterParameter='InterKnotMonthlyReportPage.GetPolychromeCount'}" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
@@ -161,13 +164,13 @@
                                 <StackPanel Spacing="4">
                                     <Image Width="32"
                                            Height="32"
-                                           Source="{Binding local:InterKnotMonthlyReportPage.DataTypeToImage(DataType)}" />
+                                           Source="{Binding DataType, Converter={StaticResource MethodValue}, ConverterParameter='InterKnotMonthlyReportPage.DataTypeToImage'}" />
                                     <TextBlock HorizontalAlignment="Center"
                                                Foreground="{DynamicResource StarTextSecondary}"
-                                               HorizontalTextAlignment="Center"
+                                               TextAlignment="Center"
                                                Text="{Binding DataName}" />
                                     <TextBlock HorizontalAlignment="Center"
-                                               HorizontalTextAlignment="Center"
+                                               TextAlignment="Center"
                                                Text="{Binding Count}" />
                                 </StackPanel>
                             </DataTemplate>
@@ -244,13 +247,13 @@
                                 <StackPanel Spacing="4">
                                     <Image Width="32"
                                            Height="32"
-                                           Source="{Binding local:InterKnotMonthlyReportPage.DataTypeToImage(DataType)}" />
+                                           Source="{Binding DataType, Converter={StaticResource MethodValue}, ConverterParameter='InterKnotMonthlyReportPage.DataTypeToImage'}" />
                                     <TextBlock HorizontalAlignment="Center"
                                                Foreground="{DynamicResource StarTextSecondary}"
-                                               HorizontalTextAlignment="Center"
+                                               TextAlignment="Center"
                                                Text="{Binding DataName}" />
                                     <TextBlock HorizontalAlignment="Center"
-                                               HorizontalTextAlignment="Center"
+                                               TextAlignment="Center"
                                                Text="{Binding Count}" />
                                 </StackPanel>
                             </DataTemplate>

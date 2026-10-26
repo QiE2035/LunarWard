@@ -189,7 +189,6 @@
                                Grid.Column="1"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
-                               IsTextTrimmedChanged="TextBlock_Deepest_IsTextTrimmedChanged"
                                TextTrimming="CharacterEllipsis">
                         <Run Foreground="{DynamicResource StarTextSecondary}" Text="{x:Static lang:Lang.ForgottenHallPage_FarthestStage}" />
                         <Run Text="" />
@@ -220,8 +219,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="fic:PureFictionFloorDetail">
                             <StackPanel Width="388"
-                                        Background="{DynamicResource StarOverlayAcrylicBrush}"
-                                        CornerRadius="8,28,8,8" RenderTransform="translate(0,0)">
+                                        Background="{DynamicResource StarOverlayAcrylicBrush}" RenderTransform="translate(0,0)">
 
                                 <!--  title & Node1 & Node2  -->
                                 <Grid Height="304">

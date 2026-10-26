@@ -16,6 +16,8 @@
              xmlns:sfgr="clr-namespace:LunarWard.Features.GameRecord">
 
     <UserControl.Resources>
+        <grconv:MethodValueConverter x:Key="MethodValue" />
+
         <grconv:RangeConverter x:Key="RangeConverter" />
         <grconv:RankToVisibilityConverter x:Key="RankToVisibilityConverter" />
         <local:ZZZRarityToIconConverter x:Key="ZZZRarityToIconConverter" />
@@ -180,14 +182,14 @@
                                       VerticalAlignment="Bottom">
                                     <Image Height="20"
                                            Stretch="Uniform"
-                                           Source="{Binding local:DeadlyAssaultPage.RankBackground(CurrentDeadlyAssault.HardRankPercent)}" />
+                                           Source="{Binding CurrentDeadlyAssault.HardRankPercent, Converter={StaticResource MethodValue}, ConverterParameter='DeadlyAssaultPage.RankBackground'}" />
                                     <TextBlock Margin="8,0,0,1"
                                                HorizontalAlignment="Left"
                                                VerticalAlignment="Center"
                                                FontSize="14"
                                                Foreground="Black"
                                                FontWeight="Bold"
-                                               Text="{Binding local:DeadlyAssaultPage.RankPercentText(CurrentDeadlyAssault.HardRankPercent)}" />
+                                               Text="{Binding CurrentDeadlyAssault.HardRankPercent, Converter={StaticResource MethodValue}, ConverterParameter='DeadlyAssaultPage.RankPercentText'}" />
                                 </Grid>
                             </StackPanel>
                         </StackPanel>
@@ -479,14 +481,14 @@
                                       VerticalAlignment="Bottom">
                                     <Image Height="20"
                                            Stretch="Uniform"
-                                           Source="{Binding local:DeadlyAssaultPage.RankBackground(CurrentDeadlyAssault.RankPercent)}" />
+                                           Source="{Binding CurrentDeadlyAssault.RankPercent, Converter={StaticResource MethodValue}, ConverterParameter='DeadlyAssaultPage.RankBackground'}" />
                                     <TextBlock Margin="8,0,0,1"
                                                HorizontalAlignment="Left"
                                                VerticalAlignment="Center"
                                                FontSize="14"
                                                Foreground="Black"
                                                FontWeight="Bold"
-                                               Text="{Binding local:DeadlyAssaultPage.RankPercentText(CurrentDeadlyAssault.RankPercent)}" />
+                                               Text="{Binding CurrentDeadlyAssault.RankPercent, Converter={StaticResource MethodValue}, ConverterParameter='DeadlyAssaultPage.RankPercentText'}" />
                                 </Grid>
                             </StackPanel>
                         </StackPanel>

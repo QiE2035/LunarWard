@@ -7,6 +7,7 @@
              xmlns:lang="using:LunarWard.Language"
              xmlns:linq="clr-namespace:System.Linq"
              xmlns:local="clr-namespace:LunarWard.Features.GameRecord.Genshin"
+        xmlns:grconv="clr-namespace:LunarWard.Features.GameRecord"
              xmlns:sc="clr-namespace:LunarWard.Controls"
              xmlns:sf="clr-namespace:LunarWard.Frameworks"
              xmlns:sfg="clr-namespace:LunarWard.Features.Gacha"
@@ -14,6 +15,8 @@
              xmlns:so="using:LunarWard.Core.GameRecord.Genshin.StygianOnslaught">
 
     <UserControl.Resources>
+        <grconv:MethodValueConverter x:Key="MethodValue" />
+
         <sfg:RarityToGIBgConverter x:Key="RarityToGIBgConverter" />
     </UserControl.Resources>
 
@@ -100,7 +103,7 @@
                                         Width="28"
                                         Height="28"
                                         HorizontalAlignment="Left"
-                                        Source="{Binding local:StygianOnslaughtPage.DifficultyToImage(Difficulty)}" />
+                                        Source="{Binding Difficulty, Converter={StaticResource MethodValue}, ConverterParameter='StygianOnslaughtPage.DifficultyToImage'}" />
                         <TextBlock Grid.Row="1"
                                    Margin="36,0,0,2"
                                    VerticalAlignment="Center"
@@ -144,7 +147,7 @@
                         <sc:CachedImage Width="24"
                                         Height="24"
                                         Margin="8,0,0,0"
-                                        Source="{Binding local:StygianOnslaughtPage.DifficultyToImage(CurrentSelectedBattle.Best.Difficulty)}" />
+                                        Source="{Binding CurrentSelectedBattle.Best.Difficulty, Converter={StaticResource MethodValue}, ConverterParameter='StygianOnslaughtPage.DifficultyToImage'}" />
                         <TextBlock Margin="4,0,0,0" FontSize="16">
                             <Run Text="{Binding CurrentSelectedBattle.Best.Seconds}" /><Run Text="s" />
                         </TextBlock>
@@ -223,7 +226,7 @@
                                                         VerticalAlignment="Top"
                                                         Background="{DynamicResource StarControlOnImageBrush}"
                                                         CornerRadius="0,4,0,4"
-                                                        IsVisible="{Binding local:StygianOnslaughtPage.RankToVisibility(Rank)}">
+                                                        IsVisible="{Binding Rank, Converter={StaticResource MethodValue}, ConverterParameter='StygianOnslaughtPage.RankToVisibility'}">
                                                     <TextBlock Foreground="{DynamicResource StarTextSecondary}" Text="{Binding Rank}" />
                                                 </Border>
                                                 <TextBlock HorizontalAlignment="Center"
@@ -281,9 +284,9 @@
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
-                                                        <DataTemplate x:DataType="x:String">
+                                                        <DataTemplate>
                                                             <sc:ColorfulTextBlock Foreground="{DynamicResource StarTextSecondary}"
-                                                                                  Text="{x:Bind}"
+                                                                                  Text="{Binding}"
                                                                                   TextWrapping="Wrap" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
@@ -314,7 +317,7 @@
                                                 <TextBlock Margin="4,0,0,0"
                                                            VerticalAlignment="Center"
                                                            Foreground="{DynamicResource StarTextSecondary}"
-                                                           Text="{Binding local:StygianOnslaughtPage.BestTypeToString(Type)}" />
+                                                           Text="{Binding Type, Converter={StaticResource MethodValue}, ConverterParameter='StygianOnslaughtPage.BestTypeToString'}" />
                                                 <TextBlock Margin="8,0,0,0"
                                                            HorizontalAlignment="Right"
                                                            VerticalAlignment="Center"
