@@ -3,7 +3,8 @@
 
 对上游 Starward 只读副本做四类机械检查：
 
-1. 工程表：本仓库是否具备与上游对应的工程（LunarWard / Core / Language / Setup.Core）。
+1. 工程表：本仓库是否具备与上游对应的工程（LunarWard / Core / Language / RPC / Setup.Core）。
+   额外工程（Launch/Games/Platform/Wine/Installer）已在 P6 收尾折叠进 app，工程表不再列出。
 2. 依赖表：上游用到的跨平台 NuGet 包，本仓库 Directory.Packages.props 是否有同名同版本。
 3. 文件映射：上游 src/Starward、src/Starward.Core、src/Starward.Language、src/Starward.Setup.Core
    的每个源文件，在本仓库是否有同名落点（.xaml → .axaml）。
@@ -33,7 +34,8 @@ PROJECTS = [
     ("src/Starward.Language/Starward.Language.csproj", "src/LunarWard.Language/LunarWard.Language.csproj", ""),
     ("src/Starward.Setup.Core/Starward.Setup.Core.csproj", "src/LunarWard.Setup.Core/LunarWard.Setup.Core.csproj", ""),
     ("src/Starward.RPC/Starward.RPC.csproj", "src/LunarWard.RPC/LunarWard.RPC.csproj", ""),
-    ("src/Starward.Setup/Starward.Setup.csproj", None, "以 src/LunarWard.Installer 等价（docs/10 §8.2）"),
+    ("src/Starward.Setup/Starward.Setup.csproj", None,
+     "安装流程已并入 app：src/LunarWard/Features/GameInstall/Installer/（道具链=进程内实现，承接原 LunarWard.Installer 工程，docs/10 §8.2）"),
     ("src/Starward.Launcher/Starward.Launcher.vcxproj", None, "以 Program.cs + .desktop 承担（docs/10 §8.3）"),
 ]
 

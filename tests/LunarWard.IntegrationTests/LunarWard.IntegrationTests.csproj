@@ -9,6 +9,9 @@
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
   <ItemGroup>
+    <!-- 折叠后 Platform/Wine/Launch/Games/Installer 都成了 app 的命名空间，
+         集成测试只需引 app 工程。 -->
+    <ProjectReference Include="..\..\src\LunarWard\LunarWard.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="native\fakeproc.c" CopyToOutputDirectory="PreserveNewest" />
