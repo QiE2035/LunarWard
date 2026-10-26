@@ -9,7 +9,7 @@
     Starward 依赖 Windows GameInput / XInput 模拟与全局按键注入，Linux 没有等价实现，
     因此所有可交互控件保留结构位置、统一禁用，并在源码里「警告文字」的位置（33-68 行）
     如实说明不可用；不伪造任何开关状态。
-      18-19   ScrollViewer > StackPanel Padding="0,0,24,0"（Avalonia 无 Padding → 用 Margin="0,0,24,0" 等价）
+      18-19   ScrollViewer > StackPanel Padding="0,0,24,0"（Avalonia 无 Padding；LunarWard 改由 SettingPage 的 SectionHost 统一留白）
       22-30   水平 StackPanel Spacing=20：20px「手柄增强」+ ToggleSwitch（Margin 0,-4）
       33-36   0,8 说明（14px 次要色）
       38-68   0,8 警示文字（Starward 是 GameInput 缺失/过时提示；这里说明 Linux 不支持）
@@ -33,7 +33,8 @@
   <ScrollViewer Background="{x:Null}"
                 VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="0,0,24,0">
+    <!-- 右侧/底部留白由 SettingPage 的 SectionHost(Margin 24) 统一提供，子页不再重复。 -->
+    <StackPanel>
 
       <!-- GamepadControlSetting.xaml:22-30 -->
       <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Spacing="20">

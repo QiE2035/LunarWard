@@ -6,7 +6,7 @@
 
   <!--
     1:1 复刻 Starward Features/Setting/ScreenshotSetting.xaml（189 行）：
-      16      StackPanel Padding="0,0,24,24"（Avalonia 无 Padding → 用 Margin="0,0,24,24" 等价）
+      16      StackPanel Padding="0,0,24,24"（Avalonia 无 Padding；LunarWard 改由 SettingPage 的 SectionHost 统一留白）
       19      20px「游戏截图」
       22-25   0,12 说明（14px 次要色）
       28-73   0,8 Grid：修改文件夹强调按钮（40 高 / 16,0 / 8,20,20,8，E8DE）+ 当前文件夹胶囊
@@ -36,7 +36,8 @@
   <ScrollViewer Background="{x:Null}"
                 VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="0,0,24,24">
+    <!-- 右侧/底部留白由 SettingPage 的 SectionHost(Margin 24) 统一提供，子页不再重复。 -->
+    <StackPanel>
 
       <!-- ScreenshotSetting.xaml:19 -->
       <TextBlock Classes="section" Text="{Binding Strings[Screenshot.Title]}" />
