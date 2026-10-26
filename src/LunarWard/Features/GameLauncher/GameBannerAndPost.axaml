@@ -1,0 +1,132 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lang="using:LunarWard.Language"
+             xmlns:local="using:LunarWard.Features.GameLauncher"
+             xmlns:sch="using:LunarWard.Core.HoYoPlay"
+             x:Class="LunarWard.Features.GameLauncher.GameBannerAndPost"
+             x:DataType="local:GameBannerAndPost"
+             Opacity="0"
+             IsHitTestVisible="False">
+  <!-- 移植自 Starward/src/Starward/Features/GameLauncher/GameBannerAndPost.xaml
+       控件替换：FlipView→Carousel，Pivot→TabControl（ItemTemplate=页签标题，ContentTemplate=内容），
+       ItemsRepeater+StackLayout→ItemsControl+StackPanel，CachedImage→Image（待 task-4），
+       Hyperlink→TextBlock+PointerPressed（Launcher.LaunchUriAsync）。 -->
+  <UserControl.Transitions>
+    <Transitions>
+      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+    </Transitions>
+  </UserControl.Transitions>
+
+  <Grid Name="Grid_BannerAndPost"
+        Width="380"
+        Height="304"
+        RowSpacing="4">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="176" />
+      <RowDefinition Height="124" />
+    </Grid.RowDefinitions>
+
+    <Border Grid.Row="0"
+            Background="{DynamicResource StarAcrylicBrush}"
+            CornerRadius="8"
+            ClipToBounds="True">
+      <Grid Name="Grid_BannerContainer"
+            PointerEntered="Grid_BannerContainer_PointerEntered"
+            PointerExited="Grid_BannerContainer_PointerExited">
+        <Carousel Name="FlipView_Banner"
+                  Background="Transparent"
+                  CornerRadius="8"
+                  ItemsSource="{Binding Banners, Mode=OneWay}"
+                  Loaded="FlipView_Banner_Loaded">
+          <Carousel.ItemTemplate>
+            <DataTemplate x:DataType="sch:GameBanner">
+              <!-- TODO(task-4)：待 Controls/CachedImage 落地后换回 CachedImage -->
+              <Image Name="Image_Banner"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Cursor="Hand"
+                     Source="{Binding Image.Url, Mode=OneWay}"
+                     Stretch="UniformToFill"
+                     Tapped="Image_Banner_Tapped" />
+            </DataTemplate>
+          </Carousel.ItemTemplate>
+        </Carousel>
+        <Border Name="Border_PipsPager"
+                Padding="10,2,10,2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Background="{DynamicResource StarOverlayAcrylicBrush}"
+                CornerRadius="8,0,8,0"
+                IsVisible="False">
+          <TextBlock FontSize="14" Foreground="{DynamicResource StarTextSecondary}">
+            <Run Text="{Binding CurrentBannerIndexText, Mode=OneWay}" /><Run Text="/" /><Run Text="{Binding Banners.Count, Mode=OneWay}" />
+          </TextBlock>
+        </Border>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1">
+      <TabControl ItemsSource="{Binding PostGroups, Mode=OneWay}"
+                  SelectedIndex="{Binding SelectedPostGroupIndex, Mode=TwoWay}">
+        <TabControl.ItemTemplate>
+          <DataTemplate x:DataType="local:GamePostGroup">
+            <TextBlock FontSize="16"
+                       FontWeight="Bold"
+                       Text="{Binding Header, Mode=OneWay}" />
+          </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+          <DataTemplate x:DataType="local:GamePostGroup">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+              <ItemsControl Margin="12,0,12,8" ItemsSource="{Binding List, Mode=OneWay}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="sch:GamePost">
+                    <Grid ColumnSpacing="16" Margin="0,0,0,8">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis"
+                                 Cursor="Hand"
+                                 PointerPressed="PostTitle_PointerPressed"
+                                 Tag="{Binding Link, Mode=OneWay}"
+                                 Text="{Binding Title, Mode=OneWay}" />
+                      <TextBlock Grid.Column="1"
+                                 VerticalAlignment="Center"
+                                 Foreground="{DynamicResource StarTextSecondary}"
+                                 Text="{Binding Date, Mode=OneWay}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </DataTemplate>
+        </TabControl.ContentTemplate>
+      </TabControl>
+
+      <Button Name="Button_InGameNotices"
+              Margin="0,0,8,0"
+              Padding="8,0,8,0"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Top"
+              Background="Transparent"
+              BorderThickness="0"
+              Command="{Binding OpenGameNoticeWindowCommand}"
+              ToolTip.Tip="{x:Static lang:Lang.MainPage_GameNotices}"
+              IsVisible="False">
+        <Grid>
+          <TextBlock Classes="icon" FontSize="18" Foreground="{DynamicResource StarTextSecondary}" Text="&#xE789;" />
+          <Image Name="Image_GameNoticesAlert"
+                 Width="20"
+                 Margin="0,-8,-12,0"
+                 HorizontalAlignment="Right"
+                 VerticalAlignment="Top"
+                 Source="avares://LunarWard/Assets/Image/alert.png"
+                 IsVisible="{Binding IsGameNoticesAlert, Mode=OneWay}" />
+        </Grid>
+      </Button>
+    </Grid>
+  </Grid>
+</UserControl>

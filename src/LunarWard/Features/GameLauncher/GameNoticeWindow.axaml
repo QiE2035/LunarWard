@@ -1,0 +1,28 @@
+<sf:WindowEx xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:LunarWard.Features.GameLauncher"
+             xmlns:sf="using:LunarWard.Frameworks"
+             xmlns:webview="using:LunarWard.Frameworks.WebView"
+             x:Class="LunarWard.Features.GameLauncher.GameNoticeWindow"
+             Background="Transparent">
+  <!-- 移植自 Starward/src/Starward/Features/GameLauncher/GameNoticeWindow.xaml
+       WebView2 → LunarWard.Frameworks.WebView（WebKitGTK，同形 API）。 -->
+  <Grid Loaded="Grid_Loaded">
+    <Border Padding="20"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="#60000000"
+            CornerRadius="8">
+      <ProgressBar Width="60"
+                   Height="60"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource StarAccentBrush}"
+                   IsIndeterminate="True" />
+    </Border>
+    <webview:WebView Name="webview"
+                     IsVisible="False"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch" />
+  </Grid>
+</sf:WindowEx>
