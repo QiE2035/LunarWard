@@ -38,6 +38,9 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
     private bool _disposed;
 
+    /// <summary>资讯加载的「游戏代次」：只允许最新一代的结果落到 UI 上。</summary>
+    private readonly ContentGenerationGate _contentGate = new();
+
 
     public GameLauncherPageViewModel(PageContext context)
     {
@@ -179,15 +182,25 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
 
     private async Task LoadContentAsync()
     {
+        // 切游戏时页面会重建，但旧页面的 HTTP 请求可能比新页面更晚返回；用代次令牌把过期结果丢掉，
+        // 取不到内容时也清空而不是沿用上一个游戏的数据。
+        var generation = _contentGate.Next();
+        var launcherId = _context.Shell.CurrentLauncherId;
+        var gameBiz = GameBiz;
+
+        ResetContent();
         ContentStatus = Strings["Launcher.LoadingContent"];
         try
         {
             var assets = _context.Shell.Assets;
-            await assets.LoadAsync(_context.Shell.CurrentLauncherId, GameBiz).ConfigureAwait(true);
-            var content = assets.Content;
+            var content = await assets.GetContentAsync(launcherId, gameBiz).ConfigureAwait(true);
+            if (_disposed || !_contentGate.IsCurrent(generation))
+            {
+                return;
+            }
+
             if (content is null)
             {
-                HasContent = false;
                 ContentStatus = Strings["Launcher.OfflineContent"];
                 return;
             }
@@ -195,6 +208,11 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             foreach (var banner in content.Banners ?? [])
             {
                 var bitmap = await assets.BitmapAsync(banner.Image?.Url).ConfigureAwait(true);
+                if (_disposed || !_contentGate.IsCurrent(generation))
+                {
+                    return;
+                }
+
                 if (bitmap is not null)
                 {
                     Banners.Add(new BannerViewModel(bitmap, banner.Image?.Link));
@@ -222,6 +240,7 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
             if (Banners.Count > 0)
             {
                 CurrentBanner = Banners[0];
+                CurrentBannerIndex = 0;
                 BannerCounterText = $"1/{Banners.Count}";
                 _bannerTimer.Start();
             }
@@ -231,14 +250,37 @@ public sealed partial class GameLauncherPageViewModel : ObservableObject, IDispo
         }
         catch (Exception ex)
         {
+            if (_disposed || !_contentGate.IsCurrent(generation))
+            {
+                return;
+            }
+
             _log.Warn($"启动器页资讯加载失败：{ex.Message}");
-            HasContent = false;
+            ResetContent();
             ContentStatus = Strings["Launcher.ContentFailed"];
         }
         finally
         {
-            OnPropertyChanged(nameof(CurrentPivotHeader));
+            if (_contentGate.IsCurrent(generation))
+            {
+                OnPropertyChanged(nameof(CurrentPivotHeader));
+            }
         }
+    }
+
+
+    /// <summary>清空公告卡上可能属于「上一个游戏」的数据（切游戏 / 加载失败时调用）。</summary>
+    private void ResetContent()
+    {
+        _bannerTimer.Stop();
+        Banners.Clear();
+        Posts.Clear();
+        CurrentBanner = null;
+        CurrentBannerIndex = 0;
+        BannerCounterText = "";
+        ShowBannerCounter = false;
+        SelectedPostGroup = null;
+        HasContent = false;
     }
 
 
@@ -1833,3 +1875,25 @@ public sealed record BackgroundSwitchItem(
 /// <param name="GameBiz">游戏区服标识。</param>
 /// <param name="InstallPath">已安装游戏的目录。</param>
 public sealed record PredownloadDialogArgs(string LauncherId, string GameBiz, string InstallPath);
+
+
+/// <summary>
+/// 页面内容加载的「游戏代次」令牌：每次（重新）开始加载时递增，
+/// 异步结果应用前用 <see cref="IsCurrent"/> 比对，晚到的旧请求直接丢弃。
+/// </summary>
+/// <remarks>
+/// 切游戏时页面会重建（新的 VM + 新令牌），但旧页面的 HTTP 请求可能比新页面更晚返回；
+/// 没有这个校验时旧游戏的公告会覆盖当前页。
+/// </remarks>
+public sealed class ContentGenerationGate
+{
+    private int _current;
+
+
+    /// <summary>开始新一代加载，返回本代令牌。</summary>
+    public int Next() => Interlocked.Increment(ref _current);
+
+
+    /// <summary>该令牌是否仍是最新一代。</summary>
+    public bool IsCurrent(int token) => Volatile.Read(ref _current) == token;
+}
