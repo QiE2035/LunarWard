@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:WelcomeWindow x:Class="LunarWard.Features.ViewHost.WelcomeWindow"
+                     xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:lang="using:LunarWard.Language"
+                     xmlns:local="using:LunarWard.Features.ViewHost"
+                     Title="LunarWard"
+                     x:CompileBindings="False"
+                     Width="1200"
+                     Height="676">
+
+    <!--  上游 Features/ViewHost/WelcomeWindow.xaml 的移植；平台替换点见 .axaml.cs 的 remarks 与 docs/09。  -->
+    <Grid Loaded="Grid_Loaded">
+        <Image HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Source="avares://LunarWard/Assets/Image/UI_CutScene_1130320101A.png"
+               Stretch="UniformToFill" />
+        <Rectangle HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                   Fill="{StaticResource StarControlOnImageBrush}" />
+
+
+        <StackPanel Margin="48,0,48,0" VerticalAlignment="Center">
+            <!--  欢迎  -->
+            <TextBlock FontSize="24"
+                       Foreground="{StaticResource StarAccentBrush}"
+                       Text="{x:Static lang:Lang.WelcomeView_DearPlayerWelcomeToStarward}" />
+            <TextBlock Margin="0,20,0,0"
+                       FontSize="16"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.WelcomeView_WelcomeToStarwardDescription}"
+                       TextWrapping="Wrap" />
+
+            <!--  数据文件夹  -->
+            <TextBlock Margin="0,28,0,0"
+                       FontSize="16"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.WelcomeView_SelectUserDataFolderDescription}"
+                       TextWrapping="Wrap" />
+            <StackPanel Margin="0,12,0,0"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                <TextBlock VerticalAlignment="Center"
+                           FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                           FontSize="16"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="&#xE838;" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="{Binding UserDataFolder}" />
+            </StackPanel>
+            <!--  选择文件夹  -->
+            <StackPanel Margin="0,16,0,0"
+                        Orientation="Horizontal"
+                        Spacing="12">
+                <Button Classes="accent"
+                        BorderThickness="0"
+                        Click="ChangeUserDataFolderButton_Click"
+                        Content="{x:Static lang:Lang.SelectDirectoryPage_SelectFolder}" />
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="12"
+                           Foreground="{StaticResource StarCautionBrush}"
+                           Text="{Binding UserDataFolderErrorMessage}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!--  必要的检查  -->
+            <TextBlock Margin="0,32,0,0"
+                       FontSize="16"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       Text="{x:Static lang:Lang.WelcomeView_BeforeStartingSomeNecessaryEnvironmentChecksAreRequired}" />
+
+
+            <!--  WebView2 Runtime → WebKitGTK（属性名沿用上游 WebView2Version）  -->
+            <StackPanel Height="32"
+                        Margin="0,8,0,0"
+                        Orientation="Horizontal"
+                        Spacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                           FontSize="16"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="&#xE774;" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="WebKitGTK Runtime" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarSuccessBrush}"
+                           IsVisible="{Binding !WebViewVersionMissing}"
+                           Text="{Binding WebView2Version}" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarCautionBrush}"
+                           IsVisible="{Binding WebViewVersionMissing}"
+                           Text="{x:Static lang:Lang.WelcomeView_NotInstalled}" />
+                <Button Padding="8,4"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="InstallWebViewButton_Click"
+                        Content="{x:Static lang:Lang.WelcomeView_InstallNow}"
+                        Foreground="{StaticResource StarAccentBrush}"
+                        IsVisible="{Binding WebViewVersionMissing}" />
+            </StackPanel>
+
+            <!--  WebP  -->
+            <StackPanel Height="32"
+                        Margin="0,8,0,0"
+                        Orientation="Horizontal"
+                        Spacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                           FontSize="16"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="&#xE91B;" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarTextSecondary}"
+                           Text="WebP Decoder" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarSuccessBrush}"
+                           IsVisible="{Binding WebpDecoderSupport}"
+                           Text="{x:Static lang:Lang.WelcomeView_Installed}" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{StaticResource StarCautionBrush}"
+                           IsVisible="{Binding !WebpDecoderSupport}"
+                           Text="{x:Static lang:Lang.WelcomeView_NotInstalled}" />
+                <Button Padding="8,4"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="InstallWebpButton_Click"
+                        Content="{x:Static lang:Lang.WelcomeView_InstallNow}"
+                        Foreground="{StaticResource StarAccentBrush}"
+                        IsVisible="{Binding !WebpDecoderSupport}" />
+            </StackPanel>
+
+            <!--
+                透明/动画效果引导：上游用 ms-settings: 深链接指向 Windows 设置。
+                Linux 桌面没有对应开关（窗口透明由合成器/主题决定），整块隐藏但保留上游文案结构。
+            -->
+            <TextBlock Margin="0,32,0,0"
+                       HorizontalAlignment="Left"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       IsVisible="False"
+                       Text="{x:Static lang:Lang.SettingPage_ForABetterExperiencePleaseEnableTheFollowingFeaturesInSystemSettings}"
+                       TextWrapping="Wrap" />
+
+            <!--  智能应用控制提醒（Windows 11 专属）：IsWin11 在 Linux 恒 false  -->
+            <TextBlock Margin="0,20,0,0"
+                       HorizontalAlignment="Left"
+                       Foreground="{StaticResource StarTextSecondary}"
+                       IsVisible="{Binding IsWin11}"
+                       Text="{x:Static lang:Lang.WelcomeView_IfStarwardTakesALongTimeToStartItIsRecommendedToDisableSmartAppControlInWindowsSecurity}"
+                       TextWrapping="Wrap" />
+            <TextBlock Margin="0,12,0,0"
+                       HorizontalAlignment="Left"
+                       IsVisible="{Binding IsWin11}"
+                       Text="{x:Static lang:Lang.WelcomeView_OpenWindowsSecurity}" />
+
+
+        </StackPanel>
+
+
+        <!--  LunarWard 启动  -->
+        <Button Height="40"
+                Margin="0,0,80,48"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                BorderThickness="0"
+                Classes="accent"
+                Click="StartButton_Click"
+                CornerRadius="8,20,20,8"
+                IsEnabled="{Binding CanStartStarward}">
+            <TextBlock Margin="4,0,8,0"
+                       FontSize="14"
+                       Text="{x:Static lang:Lang.WelcomeView_StarwardStart}" />
+        </Button>
+
+
+    </Grid>
+
+
+</local:WelcomeWindow>
